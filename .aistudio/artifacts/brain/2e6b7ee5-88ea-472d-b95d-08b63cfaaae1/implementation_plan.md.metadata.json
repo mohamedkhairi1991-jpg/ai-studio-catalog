@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan to convert the Drug Class list on the Doctor Official Catalog into a compact secondary horizontal scrolling (\"rolling\") strip directly beneath the search bar, displaying each class name and its published medication count badge.",
+  "updatedAt":  "2026-10-23T21:33:53.126971650Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

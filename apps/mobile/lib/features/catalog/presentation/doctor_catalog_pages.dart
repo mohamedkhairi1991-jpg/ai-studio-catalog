@@ -410,7 +410,11 @@ class _CatalogResults extends StatelessWidget {
         else if (filteredProducts.isEmpty)
           _CatalogStatePanel.noMatch(query: query.trim())
         else
-          _ResponsiveProductResults(products: filteredProducts, isWide: isWide),
+          _ResponsiveProductResults(
+            products: filteredProducts,
+            query: query,
+            isWide: isWide,
+          ),
       ],
     );
   }
@@ -465,10 +469,12 @@ class _ResultsHeading extends StatelessWidget {
 class _ResponsiveProductResults extends StatelessWidget {
   const _ResponsiveProductResults({
     required this.products,
+    required this.query,
     required this.isWide,
   });
 
   final List<ProductSummary> products;
+  final String query;
   final bool isWide;
 
   @override
@@ -479,7 +485,7 @@ class _ResponsiveProductResults extends StatelessWidget {
         children: <Widget>[
           for (int index = 0; index < products.length; index++) ...<Widget>[
             if (index > 0) const SizedBox(height: PharmaConnectSpacing.compact),
-            _DoctorProductCard(product: products[index]),
+            _DoctorProductCard(product: products[index], query: query),
           ],
         ],
       );
@@ -497,15 +503,16 @@ class _ResponsiveProductResults extends StatelessWidget {
         mainAxisExtent: 232,
       ),
       itemBuilder: (BuildContext context, int index) =>
-          _DoctorProductCard(product: products[index]),
+          _DoctorProductCard(product: products[index], query: query),
     );
   }
 }
 
 class _DoctorProductCard extends StatelessWidget {
-  const _DoctorProductCard({required this.product});
+  const _DoctorProductCard({required this.product, required this.query});
 
   final ProductSummary product;
+  final String query;
 
   @override
   Widget build(BuildContext context) {
@@ -542,17 +549,17 @@ class _DoctorProductCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: PharmaConnectSpacing.medium),
-                  Text(
-                    data.brandName,
+                  _HighlightedCatalogText(
+                    text: data.brandName,
+                    query: query,
                     maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: PharmaConnectTypography.featureTitle,
                   ),
                   const SizedBox(height: PharmaConnectSpacing.xSmall),
-                  Text(
-                    data.genericName,
+                  _HighlightedCatalogText(
+                    text: data.genericName,
+                    query: query,
                     maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                     style: PharmaConnectTypography.body.copyWith(
                       color: PharmaConnectColors.linkFocus,
                     ),
@@ -561,11 +568,13 @@ class _DoctorProductCard extends StatelessWidget {
                   _ProductMetadataLine(
                     icon: Icons.apartment_outlined,
                     value: data.companyName,
+                    query: query,
                   ),
                   const SizedBox(height: PharmaConnectSpacing.small),
                   _ProductMetadataLine(
                     icon: Icons.medication_outlined,
                     value: data.presentation,
+                    query: query,
                   ),
                   const Spacer(),
                   const Align(
@@ -614,10 +623,15 @@ class _PublishedProductBadge extends StatelessWidget {
 }
 
 class _ProductMetadataLine extends StatelessWidget {
-  const _ProductMetadataLine({required this.icon, required this.value});
+  const _ProductMetadataLine({
+    required this.icon,
+    required this.value,
+    required this.query,
+  });
 
   final IconData icon;
   final String value;
+  final String query;
 
   @override
   Widget build(BuildContext context) {
@@ -626,14 +640,99 @@ class _ProductMetadataLine extends StatelessWidget {
         Icon(icon, color: PharmaConnectColors.secondaryText, size: 18),
         const SizedBox(width: PharmaConnectSpacing.small),
         Expanded(
-          child: Text(
-            value,
+          child: _HighlightedCatalogText(
+            text: value,
+            query: query,
             maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: PharmaConnectTypography.supporting,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _HighlightedCatalogText extends StatelessWidget {
+  const _HighlightedCatalogText({
+    required this.text,
+    required this.query,
+    required this.maxLines,
+    required this.style,
+  });
+
+  final String text;
+  final String query;
+  final int maxLines;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    final String trimmed = query.trim();
+    if (trimmed.isEmpty || text.isEmpty) {
+      return Text(
+        text,
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        style: style,
+      );
+    }
+
+    final List<String> tokens = <String>{
+      trimmed,
+      ...trimmed.split(RegExp(r'\s+')).where((String part) => part.isNotEmpty),
+    }.toList()
+      ..sort((String a, String b) => b.length.compareTo(a.length));
+
+    final RegExp pattern = RegExp(
+      tokens.map(RegExp.escape).join('|'),
+      caseSensitive: false,
+    );
+    final List<RegExpMatch> matches = pattern.allMatches(text).toList();
+    if (matches.isEmpty) {
+      return Text(
+        text,
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        style: style,
+      );
+    }
+
+    final List<InlineSpan> spans = <InlineSpan>[];
+    int currentIndex = 0;
+    for (final RegExpMatch match in matches) {
+      if (match.start > currentIndex) {
+        spans.add(
+          TextSpan(
+            text: text.substring(currentIndex, match.start),
+            style: style,
+          ),
+        );
+      }
+      spans.add(
+        TextSpan(
+          text: text.substring(match.start, match.end),
+          style: style.copyWith(
+            color: PharmaConnectColors.primaryText,
+            backgroundColor: PharmaConnectColors.deepBlue,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+      currentIndex = match.end;
+    }
+    if (currentIndex < text.length) {
+      spans.add(
+        TextSpan(
+          text: text.substring(currentIndex),
+          style: style,
+        ),
+      );
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
     );
   }
 }
@@ -1266,18 +1365,21 @@ final class _DoctorProductSummaryData {
       if (_hasText(market?.dosageForm)) market!.dosageForm.trim(),
     ];
 
+    final String presentation = presentationParts.isEmpty
+        ? 'Presentation not recorded'
+        : presentationParts.join(' / ');
+
     return _DoctorProductSummaryData(
       brandName: brandName,
       genericName: genericName,
       companyName: companyName,
-      presentation: presentationParts.isEmpty
-          ? 'Presentation not recorded'
-          : presentationParts.join(' / '),
+      presentation: presentation,
       updatedLabel: _formatShortDate(product.updatedAt),
       searchText: <String>[
         brandName,
         genericName,
         companyName,
+        presentation,
       ].join(' ').toLowerCase(),
     );
   }

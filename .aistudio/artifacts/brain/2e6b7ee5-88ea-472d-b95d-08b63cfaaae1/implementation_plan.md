@@ -1,31 +1,53 @@
-# Compact Secondary Rolling Drug Class Strip Plan
+# Unified Physician-Facing Entrance & Email-Based Role Routing Plan
 
 ## 1. Objective
-Convert the Drug Class list on the Doctor Official Catalog page into a **compact secondary horizontal scrolling ("rolling") strip** positioned directly beneath the main search bar, displaying each pharmacological class name and its matching published drug count badge.
+Redesign the Pharamty authentication experience (`Sign In` & `Sign Up`) and top navigation so that **Healthcare Professionals (Doctors)**—the primary target audience—experience a clean, dedicated clinical portal without seeing internal **Company** or **Admin** login tabs, role switchers, or governance workspace tabs.
+
+At the same time, **Pharmaceutical Companies** and **Platform Administrators** sign in through the **exact same email and password entrance**, and the platform automatically detects their assigned email address and routes them directly to their respective workspace:
+- **Assigned Company Email** (e.g., `iraq.medinfo@astrazeneca.local` or any Admin-assigned company email) $\rightarrow$ Automatically authenticates and opens that company's **Company Workspace / Company Page**.
+- **Platform Admin Email** (e.g., `admin.demo@pharmaconnect.local` or `admin@pharamty.iq`) $\rightarrow$ Automatically authenticates and opens the **Admin Governance Workspace** for the entire application.
+- **Doctor Email** (registered via Sign Up or pre-existing physician email) $\rightarrow$ Authenticates as a Healthcare Professional and opens the **Official Iraq Clinical Catalog** (or the Section 9.1 Pending Verification screen if awaiting approval).
 
 ---
 
-## 2. Key UI & Interaction Changes
+## 2. Key Architectural & UX Changes
 
-### A. Secondary Horizontal Rolling Strip Under the Search Bar
-- **Placement**: Directly below the primary search input row inside the `Official Medicine Catalog` search panel (`/src/App.tsx`).
-- **Compact Rolling Layout**:
-  - A single-row horizontal scrollable container (`flex items-center gap-1.5 overflow-x-auto py-1`) with subtle left/right scroll nudge buttons for effortless mouse and touch rolling.
-  - A compact leading label (`Drug Classes:`) and an `All` reset button when a class is active.
-- **Item Content & Styling**:
-  - Each button in the rolling strip is a compact interactive control (`px-2.5 py-1 rounded-[8px] text-[12px] font-semibold whitespace-nowrap shrink-0`) showing:
-    1. **Drug Class Name** (e.g., *Beta Blockers*, *SGLT2 Inhibitors*, *HMG-CoA Reductase Inhibitors (Statins)*, *Proton Pump Inhibitors (PPIs)*).
-    2. **Matching Drug Count Badge** (`text-[11px] font-mono px-1.5 py-0.5 rounded`).
-- **Filtering Behavior**:
-  - Clicking any drug class in the secondary rolling strip selects that class (`selectedDrugClassId`), switches or filters the catalog across **all pharmaceutical companies in Iraq**, and immediately displays all matching published medications below.
-  - Clicking the active drug class again (or clicking `All`) clears the class filter and returns to the default Doctor Home view.
+### A. Unified Doctor-Facing Sign In & Sign Up Portal (`activeWorkspace === 'auth'`)
+1. **Remove Role Tabs & Session Switchers from the Entrance**:
+   - Remove the `[Doctor | Company | Admin]` selector tabs, the company dropdown selector, and the right-column "Quick Role & Company Session Switcher" from the Sign In / Sign Up view so doctors never see internal company or administrative portals.
+2. **Two Clean Modes (`Sign In` | `Doctor Sign Up`)**:
+   - **Sign In Tab**:
+     - Single unified **Professional Email Address** and **Password** form.
+     - Intelligent **Email-to-Role Resolution Engine** on submit:
+       1. Checks if the entered email matches a **Platform Admin** email (`admin.demo@pharmaconnect.local`, `admin@pharamty.iq`, `catalog.admin@pharamty.iq`). If matched, signs in as `PlatformRole.Admin` and routes to `Admin Governance`.
+       2. Checks if the entered email matches any **Pharmaceutical Company's** assigned login email (`company.contactEmail` or assigned portal email in `companiesList`, such as `iraq.medinfo@astrazeneca.local` for AstraZeneca Iraq). If matched, signs in as `PlatformRole.CompanyUser` for that specific `companyId` and opens their **Company Workspace**.
+       3. Checks if the entered email matches a registered **Healthcare Professional** account (either approved or pending verification) or treats any other clinical email as a Doctor login, routing to the **Doctor Catalog**.
+   - **Doctor Sign Up Tab**:
+     - Dedicated registration form for Iraq Healthcare Professionals:
+       - **Full Name** (e.g., `Dr. Ahmed Al-Bayati`)
+       - **Profession & Medical Specialty** (Cardiology, Pulmonology, Endocrinology, Gastroenterology, Oncology, etc.)
+       - **Iraq Medical Syndicate / Practice License Number**
+       - **Primary Hospital / Clinical Workplace**
+       - **Professional Email Address & Password**
+       - **Registration Verification Mode (for testing)**: Toggle allowing the registering doctor to either enter immediately as a **Verified Physician** (instant catalog access) or register in **Pending Verification** (queued for Admin approval in the Admin Governance workspace).
 
-### B. Streamlined Drug Class Search Mode View
-- Replace the large multi-row `Pharmacological Drug Classes` card below the search panel with a compact single-line active filter banner when a drug class is selected, keeping the vertical footprint minimal so cross-company medication cards appear immediately below the search bar.
+### B. Role-Isolated Top Navigation Bar
+- **Strict Role Visibility**:
+  - When signed in as a **Doctor**, the header displays **only** the **Official Catalog** view and the signed-in physician's profile badge + **Sign Out** button. `Company Workspace`, `Admin Review`, and internal readiness tabs are completely hidden from Doctors.
+  - When signed in as a **Pharmaceutical Company**, the header displays their **Company Workspace** (and option to preview the Doctor Catalog) + **Sign Out** button.
+  - When signed in as the **Platform Admin**, the header displays **Admin Governance**, **Company Workspace**, **Doctor Catalog**, and **Launch Readiness**, plus **Sign Out**.
+  - When on the **Sign In / Sign Up** page (`auth`), only the clean brand header is shown without exposing internal workspace buttons.
+
+### C. Admin Governance: Company Login Email & Doctor Verification Management
+- **Company Login Email Assignment**:
+  - In the Admin Governance workspace (`Company Pages & Ad Space` / `Credentials`), allow the Admin to view and edit the **Assigned Login Email** (`contactEmail`) for each pharmaceutical company (e.g., `iraq.medinfo@astrazeneca.local` for AstraZeneca Iraq) and copy it with one click for testing in the unified Sign In screen.
+- **Doctor Verification Queue**:
+  - Doctors who sign up with "Pending Verification" appear in an **Admin Physician Verification Queue** inside Admin Governance where the Admin can approve their license with one click, upgrading their status to `approved`.
 
 ---
 
-## 3. Compliance & Quality Guardrails
-- Preserves the formal clinical dark-graphite palette (`#18222B`, `#1F2D38`, `#263744`, `#304451`, `#51616D`, `#5DB4F2`, `#1769AA`).
-- Enforces minimum `11px` typography on all count badges and secondary labels.
-- Maintains existing Company Page navigation, Admin controls, and cross-company catalog filtering logic.
+## 3. Verification Plan
+1. **Doctor Flow**: Sign up as a new Doctor (both Verified and Pending modes) and sign in via the unified entrance; confirm `Company Workspace` and `Admin Review` tabs are hidden.
+2. **Company Email Flow**: Sign out and sign in at the same entrance using `iraq.medinfo@astrazeneca.local`; confirm automatic routing to the **AstraZeneca Iraq Company Workspace**.
+3. **Admin Email Flow**: Sign out and sign in at the same entrance using `admin.demo@pharmaconnect.local` (or `admin@pharamty.iq`); confirm automatic routing to the **Admin Governance Workspace** with full access to all companies, products, and doctor approvals.
+4. **Build Verification**: Run `compile_applet` to ensure zero TypeScript or build issues.

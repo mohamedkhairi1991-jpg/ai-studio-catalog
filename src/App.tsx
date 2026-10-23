@@ -219,7 +219,7 @@ export default function App() {
   const [products, setProducts] = useState<ProductRecord[]>(INITIAL_PRODUCTS);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
   const [favoriteProductIds, setFavoriteProductIds] = useState<string[]>([
-    '71000000-0000-4000-8000-000000000001',
+    '71000000-0000-4000-8000-000000000101',
   ]);
   const [favoriteCompanyIds, setFavoriteCompanyIds] = useState<string[]>([
     DEMO_COMPANY.id,
@@ -232,8 +232,8 @@ export default function App() {
   const [specialtiesList, setSpecialtiesList] =
     useState<TaxonomyItem[]>(DEMO_SPECIALTIES);
   const [paidHomeProductIds, setPaidHomeProductIds] = useState<string[]>([
-    '71000000-0000-4000-8000-000000000001',
-    '71000000-0000-4000-8000-000000000003',
+    '71000000-0000-4000-8000-000000000101',
+    '71000000-0000-4000-8000-000000000103',
   ]);
 
   // Doctor Catalog state
@@ -265,7 +265,8 @@ export default function App() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [enforceMediaForPublication, setEnforceMediaForPublication] = useState<boolean>(false);
 
-  // Interactive Auth / Login Workspace state
+  // Unified Auth / Login & Doctor Sign-Up state
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authLoginRole, setAuthLoginRole] = useState<'doctor' | 'company_admin' | 'admin'>(
     'doctor'
   );
@@ -277,10 +278,50 @@ export default function App() {
   const [authDoctorVerificationMode, setAuthDoctorVerificationMode] = useState<
     'approved' | 'pending'
   >('approved');
+  const [showDemoCredentialsHelper, setShowDemoCredentialsHelper] = useState<boolean>(false);
+
+  // Registered Doctors store (supports Doctor Sign-Up + Admin Physician Verification Queue)
+  const [registeredDoctors, setRegisteredDoctors] = useState<
+    Array<
+      DemoUserSession & {
+        specialty?: string;
+        workplace?: string;
+        licenseNumber?: string;
+        phone?: string;
+      }
+    >
+  >([
+    {
+      ...DEMO_USERS.doctor,
+      specialty: 'Cardiology',
+      workplace: 'Baghdad Medical City — Cardiology Center',
+      licenseNumber: 'IQ-IMA-2019-4412',
+      phone: '+964 770 112 3344',
+    },
+    {
+      ...DEMO_USERS.pending_doctor,
+      specialty: 'Internal Medicine',
+      workplace: 'Al-Yarmouk Teaching Hospital, Baghdad',
+      licenseNumber: 'IQ-IMA-2025-9180',
+      phone: '+964 780 554 1920',
+    },
+  ]);
+
+  // Doctor Sign-Up form fields
+  const [signupFullName, setSignupFullName] = useState<string>('');
+  const [signupEmail, setSignupEmail] = useState<string>('');
+  const [signupPassword, setSignupPassword] = useState<string>('');
+  const [signupSpecialty, setSignupSpecialty] = useState<string>('Cardiology');
+  const [signupWorkplace, setSignupWorkplace] = useState<string>('');
+  const [signupLicenseNumber, setSignupLicenseNumber] = useState<string>('');
+  const [signupPhone, setSignupPhone] = useState<string>('');
+  const [signupVerificationMode, setSignupVerificationMode] = useState<
+    'approved' | 'pending'
+  >('approved');
 
   // Admin Workspace state
   const [adminViewMode, setAdminViewMode] = useState<
-    'review_queue' | 'company_pages' | 'search_lists' | 'paid_home'
+    'review_queue' | 'company_pages' | 'search_lists' | 'paid_home' | 'access_accounts'
   >('review_queue');
   const [selectedAdminCompanyId, setSelectedAdminCompanyId] = useState<string | null>(null);
   const [adminGlobalSearchQuery, setAdminGlobalSearchQuery] = useState<string>('');
@@ -379,17 +420,30 @@ export default function App() {
   );
 
   const currentUser: DemoUserSession = useMemo(() => {
-    const base = DEMO_USERS[currentUserKey] ?? DEMO_USERS.doctor;
     if (currentUserKey === 'company_admin') {
       return {
-        ...base,
+        ...DEMO_USERS.company_admin,
         companyId: activeCompanyWorkspaceRecord.id,
-        fullName: `${activeCompanyWorkspaceRecord.companyName} — Catalog Manager`,
+        fullName: `${activeCompanyWorkspaceRecord.companyName} — Official Account`,
         email: activeCompanyWorkspaceRecord.contactEmail,
       };
     }
-    return base;
-  }, [currentUserKey, activeCompanyWorkspaceRecord]);
+    if (currentUserKey === 'admin') {
+      return DEMO_USERS.admin;
+    }
+    const matchedRegisteredDoctor = registeredDoctors.find(
+      (doc) =>
+        doc.profileId === currentUserKey ||
+        (currentUserKey === 'doctor' &&
+          doc.profileId === DEMO_USERS.doctor.profileId) ||
+        (currentUserKey === 'pending_doctor' &&
+          doc.profileId === DEMO_USERS.pending_doctor.profileId)
+    );
+    if (matchedRegisteredDoctor) {
+      return matchedRegisteredDoctor;
+    }
+    return DEMO_USERS[currentUserKey] ?? DEMO_USERS.doctor;
+  }, [currentUserKey, activeCompanyWorkspaceRecord, registeredDoctors]);
 
   const switchRoleAndWorkspace = (
     userKey: string,
@@ -413,49 +467,205 @@ export default function App() {
 
   const handleInteractiveLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (authLoginRole === 'doctor') {
-      const targetKey =
-        authDoctorVerificationMode === 'approved' ? 'doctor' : 'pending_doctor';
-      switchRoleAndWorkspace(targetKey, 'doctor');
-      appendAudit(
-        'auth.session.login',
-        authEmail.trim() || DEMO_USERS[targetKey].email,
-        `Physician signed in (${authDoctorVerificationMode} verification state).`
-      );
-      setBannerNotice({
-        tone: 'success',
-        message: `Signed in as ${
-          authDoctorVerificationMode === 'approved'
-            ? 'Approved Physician (Dr. Demo Doctor)'
-            : 'Pending Verification Physician'
-        }.`,
-      });
-    } else if (authLoginRole === 'company_admin') {
-      const comp =
-        companiesList.find((c) => c.id === authSelectedCompanyId) ??
-        activeCompanyWorkspaceRecord;
-      switchRoleAndWorkspace('company_admin', 'company', comp.id);
-      appendAudit(
-        'auth.session.login',
-        comp.companyName,
-        `Authenticated into Company Catalog Workspace for ${comp.companyName}.`
-      );
-      setBannerNotice({
-        tone: 'success',
-        message: `Signed in to ${comp.companyName} Company Workspace.`,
-      });
-    } else {
+    const enteredEmail = authEmail.trim().toLowerCase();
+    if (!enteredEmail) return;
+
+    // 1. Check if email belongs to Platform Admin
+    const adminEmails = [
+      DEMO_USERS.admin.email.toLowerCase(),
+      'admin@pharamty.iq',
+      'catalog.admin@pharamty.iq',
+      'admin@pharmaconnect.local',
+    ];
+    if (adminEmails.includes(enteredEmail)) {
       switchRoleAndWorkspace('admin', 'admin');
       appendAudit(
         'auth.session.login',
-        authEmail.trim() || DEMO_USERS.admin.email,
-        'Platform Administrator signed in to Governance Workspace.'
+        enteredEmail,
+        'Platform Administrator authenticated via unified login portal into Admin Governance Workspace.'
       );
       setBannerNotice({
         tone: 'success',
-        message: 'Signed in as Platform Administrator.',
+        message: 'Signed in as Platform Governance Administrator.',
       });
+      return;
     }
+
+    // 2. Check if email matches an assigned Pharmaceutical Company login email (or domain)
+    const matchedCompany = companiesList.find((comp) => {
+      const compEmail = comp.contactEmail.trim().toLowerCase();
+      if (compEmail === enteredEmail) return true;
+      const compDomain = compEmail.split('@')[1];
+      const enteredDomain = enteredEmail.split('@')[1];
+      return Boolean(
+        compDomain &&
+          enteredDomain &&
+          compDomain !== 'pharmaconnect.local' &&
+          compDomain !== 'pharamty.iq' &&
+          compDomain === enteredDomain
+      );
+    });
+
+    if (matchedCompany) {
+      switchRoleAndWorkspace('company_admin', 'company', matchedCompany.id);
+      appendAudit(
+        'auth.session.login',
+        enteredEmail,
+        `Company authenticated via assigned email (${enteredEmail}) directly into ${matchedCompany.companyName} Workspace.`
+      );
+      setBannerNotice({
+        tone: 'success',
+        message: `Signed in to ${matchedCompany.companyName} Official Company Workspace (${matchedCompany.contactEmail}).`,
+      });
+      return;
+    }
+
+    // 3. Otherwise authenticate as a Healthcare Professional (Doctor)
+    const existingDoctor = registeredDoctors.find(
+      (doc) => doc.email.trim().toLowerCase() === enteredEmail
+    );
+
+    if (existingDoctor) {
+      switchRoleAndWorkspace(existingDoctor.profileId, 'doctor');
+      appendAudit(
+        'auth.session.login',
+        existingDoctor.email,
+        `Physician signed in (${existingDoctor.verificationStatus} verification status).`
+      );
+      setBannerNotice({
+        tone: existingDoctor.verificationStatus === 'approved' ? 'success' : 'warning',
+        message:
+          existingDoctor.verificationStatus === 'approved'
+            ? `Welcome back, ${existingDoctor.fullName} — Official Physician Catalog unlocked.`
+            : `Signed in as ${existingDoctor.fullName}. Your physician account is awaiting Admin verification.`,
+      });
+      return;
+    }
+
+    // If a new doctor email is entered directly in Sign In, create an approved physician session
+    const localPart = enteredEmail.split('@')[0] || 'Physician';
+    const formattedName =
+      'Dr. ' +
+      localPart
+        .replace(/[._-]+/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+    const newDocSession = {
+      ...DEMO_USERS.doctor,
+      profileId: `doc-${Date.now()}`,
+      fullName: formattedName,
+      email: enteredEmail,
+      role: PlatformRole.HealthcareProfessional,
+      verificationStatus: 'approved' as const,
+      specialty: 'Internal Medicine',
+      workplace: 'Iraq Clinical Practice',
+      licenseNumber: 'IQ-IMA-VERIFIED',
+    };
+    setRegisteredDoctors((prev) => [...prev, newDocSession]);
+    switchRoleAndWorkspace(newDocSession.profileId, 'doctor');
+    appendAudit(
+      'auth.session.login',
+      enteredEmail,
+      `Physician signed in via unified entrance (${formattedName}).`
+    );
+    setBannerNotice({
+      tone: 'success',
+      message: `Signed in as ${formattedName} — Official Physician Catalog unlocked.`,
+    });
+  };
+
+  const handleDoctorSignUpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = signupEmail.trim().toLowerCase();
+    const cleanName = signupFullName.trim();
+    if (!cleanEmail || !cleanName) return;
+
+    // Prevent signing up with reserved Admin or Company emails
+    const isCompanyEmail = companiesList.some(
+      (c) => c.contactEmail.trim().toLowerCase() === cleanEmail
+    );
+    if (
+      isCompanyEmail ||
+      cleanEmail === DEMO_USERS.admin.email.toLowerCase() ||
+      cleanEmail === 'admin@pharamty.iq'
+    ) {
+      setBannerNotice({
+        tone: 'error',
+        message:
+          'This email is assigned to an institutional account. Please use the Sign In tab with this email.',
+      });
+      setAuthMode('signin');
+      setAuthEmail(cleanEmail);
+      return;
+    }
+
+    const formattedDoctorName = cleanName.toLowerCase().startsWith('dr.')
+      ? cleanName
+      : `Dr. ${cleanName}`;
+
+    const newDoctor = {
+      ...DEMO_USERS.doctor,
+      profileId: `doc-${Date.now()}`,
+      fullName: formattedDoctorName,
+      email: cleanEmail,
+      role: PlatformRole.HealthcareProfessional,
+      verificationStatus: signupVerificationMode,
+      specialty: signupSpecialty,
+      workplace: signupWorkplace.trim() || 'Baghdad Teaching Hospital, Iraq',
+      licenseNumber: signupLicenseNumber.trim() || 'IQ-IMA-2026-5092',
+      phone: signupPhone.trim() || '+964 770 000 0000',
+    };
+
+    setRegisteredDoctors((prev) => [
+      ...prev.filter((d) => d.email.toLowerCase() !== cleanEmail),
+      newDoctor,
+    ]);
+    switchRoleAndWorkspace(newDoctor.profileId, 'doctor');
+    appendAudit(
+      'auth.doctor.signup',
+      newDoctor.email,
+      `Physician registered via Doctor Sign Up (${newDoctor.fullName}, status: ${newDoctor.verificationStatus}).`
+    );
+
+    setSignupFullName('');
+    setSignupEmail('');
+    setSignupPassword('');
+    setSignupWorkplace('');
+    setSignupLicenseNumber('');
+    setSignupPhone('');
+
+    setBannerNotice({
+      tone: newDoctor.verificationStatus === 'approved' ? 'success' : 'warning',
+      message:
+        newDoctor.verificationStatus === 'approved'
+          ? `Physician account created and verified for ${newDoctor.fullName}. Welcome to Pharamty.`
+          : `Registration submitted for ${newDoctor.fullName}. Your physician credential is now in the Admin Verification Queue.`,
+    });
+  };
+
+  const handleAdminToggleDoctorVerification = (profileId: string) => {
+    const targetDoc = registeredDoctors.find((d) => d.profileId === profileId);
+    if (!targetDoc) return;
+    const nextStatus =
+      targetDoc.verificationStatus === 'approved' ? 'pending' : 'approved';
+    setRegisteredDoctors((prev) =>
+      prev.map((d) =>
+        d.profileId === profileId ? { ...d, verificationStatus: nextStatus } : d
+      )
+    );
+    appendAudit(
+      nextStatus === 'approved'
+        ? 'admin.doctor.approve_verification'
+        : 'admin.doctor.set_pending',
+      targetDoc.fullName,
+      `Set physician verification status for ${targetDoc.email} to ${nextStatus}.`
+    );
+    setBannerNotice({
+      tone: nextStatus === 'approved' ? 'success' : 'warning',
+      message:
+        nextStatus === 'approved'
+          ? `Approved physician access for ${targetDoc.fullName} (${targetDoc.email}).`
+          : `Set ${targetDoc.fullName} (${targetDoc.email}) to Pending Verification.`,
+    });
   };
 
   const appendAudit = (action: string, targetName: string, details: string) => {
@@ -1748,7 +1958,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
-      {/* Top Platform Workspace Switcher Bar */}
+      {/* Role-Isolated Top Platform Header */}
       <header className="sticky top-0 z-30 bg-[#123F68]/95 backdrop-blur border-b border-[#46718F]">
         <div className="max-w-[1120px] mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -1761,94 +1971,206 @@ export default function App() {
                   Pharamty
                 </span>
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#253F51] border border-[#46718F] text-[#5DB4F2]">
-                  PharmaConnect Demo
+                  Iraq Clinical Catalog
                 </span>
               </div>
               <p className="text-[11px] text-[#B8C3CC] leading-tight">
-                Iraq Professional Pharmaceutical Information Platform • Non-Ecommerce Clinical Catalog
+                Iraq Professional Pharmaceutical Information Platform • Official Clinical Monographs
               </p>
             </div>
           </div>
 
-          {/* Role & Surface Navigation */}
+          {/* Role-Isolated Surface Navigation */}
           <nav
             aria-label="Workspace selector"
-            className="flex flex-wrap items-center gap-1.5"
+            className="flex flex-wrap items-center gap-2"
           >
-            <button
-              type="button"
-              onClick={() => switchRoleAndWorkspace('doctor', 'doctor')}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
-                activeWorkspace === 'doctor' && currentUserKey === 'doctor'
-                  ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
-                  : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
-              }`}
-            >
-              <Stethoscope className="w-3.5 h-3.5" />
-              <span>Doctor Catalog</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => switchRoleAndWorkspace('company_admin', 'company')}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
-                activeWorkspace === 'company'
-                  ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
-                  : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Company Workspace</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => switchRoleAndWorkspace('admin', 'admin')}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
-                activeWorkspace === 'admin'
-                  ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
-                  : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
-              }`}
-            >
-              <ClipboardCheck className="w-3.5 h-3.5" />
-              <span>Admin Review</span>
-              {products.filter((p) => p.status === ProductLifecycleStatus.Submitted)
-                .length > 0 && (
-                <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B] text-[11px] font-bold">
-                  {
-                    products.filter(
-                      (p) => p.status === ProductLifecycleStatus.Submitted
-                    ).length
-                  }
+            {activeWorkspace === 'auth' ? (
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1.5 rounded-[10px] bg-[#253F51] border border-[#46718F] text-[#5DB4F2] text-[12px] font-semibold flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Unified Clinical Authentication Portal</span>
                 </span>
-              )}
-            </button>
+              </div>
+            ) : currentUser.role === PlatformRole.HealthcareProfessional ? (
+              /* DOCTOR NAVIGATION: Only Doctor Catalog + Profile Badge + Sign Out (No Company or Admin Tabs) */
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDoctorProductId(null);
+                    setSelectedDoctorCompanyId(null);
+                    setActiveWorkspace('doctor');
+                  }}
+                  className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
+                    activeWorkspace === 'doctor'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
+                      : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  <span>Official Catalog</span>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => switchRoleAndWorkspace(currentUserKey, 'auth')}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
-                activeWorkspace === 'auth'
-                  ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
-                  : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
-              }`}
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Identity & Access</span>
-            </button>
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-[10px] bg-[#263744] border border-[#51616D]">
+                  <span className="text-[12px] font-bold text-[#F2F5F8]">
+                    {currentUser.fullName}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                      currentUser.verificationStatus === 'approved'
+                        ? 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
+                        : 'bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B]'
+                    }`}
+                  >
+                    {currentUser.verificationStatus === 'approved'
+                      ? 'Verified Physician'
+                      : 'Pending Verification'}
+                  </span>
+                </div>
 
-            <button
-              type="button"
-              onClick={() => switchRoleAndWorkspace(currentUserKey, 'readiness')}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
-                activeWorkspace === 'readiness'
-                  ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
-                  : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Launch Readiness (78%)</span>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signin');
+                    setAuthEmail(currentUser.email);
+                    setActiveWorkspace('auth');
+                  }}
+                  className="px-3 py-1.5 rounded-[10px] bg-[#263744] hover:bg-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8] border border-[#51616D] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out</span>
+                </button>
+              </>
+            ) : currentUser.role === PlatformRole.CompanyUser ? (
+              /* COMPANY NAVIGATION: Company Workspace + Catalog Preview + Sign Out */
+              <>
+                <button
+                  type="button"
+                  onClick={() => setActiveWorkspace('company')}
+                  className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
+                    activeWorkspace === 'company'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
+                      : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>{activeCompanyWorkspaceRecord.companyName} Workspace</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveWorkspace('doctor')}
+                  className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
+                    activeWorkspace === 'doctor'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
+                      : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  <span>Catalog Preview</span>
+                </button>
+
+                <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-[#263744] border border-[#51616D] text-[11px] font-mono text-[#5DB4F2]">
+                  <span>{activeCompanyWorkspaceRecord.contactEmail}</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signin');
+                    setAuthEmail(activeCompanyWorkspaceRecord.contactEmail);
+                    setActiveWorkspace('auth');
+                  }}
+                  className="px-3 py-1.5 rounded-[10px] bg-[#263744] hover:bg-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8] border border-[#51616D] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out</span>
+                </button>
+              </>
+            ) : (
+              /* ADMIN NAVIGATION: Full Platform Governance + Company Workspace + Doctor Catalog + Readiness + Sign Out */
+              <>
+                <button
+                  type="button"
+                  onClick={() => switchRoleAndWorkspace('admin', 'admin')}
+                  className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
+                    activeWorkspace === 'admin'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
+                      : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <ClipboardCheck className="w-3.5 h-3.5" />
+                  <span>Admin Governance</span>
+                  {products.filter((p) => p.status === ProductLifecycleStatus.Submitted)
+                    .length +
+                    registeredDoctors.filter((d) => d.verificationStatus === 'pending')
+                      .length >
+                    0 && (
+                    <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B] text-[11px] font-bold">
+                      {products.filter(
+                        (p) => p.status === ProductLifecycleStatus.Submitted
+                      ).length +
+                        registeredDoctors.filter(
+                          (d) => d.verificationStatus === 'pending'
+                        ).length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveWorkspace('company')}
+                  className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
+                    activeWorkspace === 'company'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
+                      : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Company Workspace</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveWorkspace('doctor')}
+                  className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
+                    activeWorkspace === 'doctor'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
+                      : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  <span>Doctor Catalog</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveWorkspace('readiness')}
+                  className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer border ${
+                    activeWorkspace === 'readiness'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border-[#5DB4F2]'
+                      : 'bg-[#263744] text-[#B8C3CC] border-[#51616D] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Launch Readiness (78%)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signin');
+                    setAuthEmail(DEMO_USERS.admin.email);
+                    setActiveWorkspace('auth');
+                  }}
+                  className="px-3 py-1.5 rounded-[10px] bg-[#263744] hover:bg-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8] border border-[#51616D] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out</span>
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -1893,27 +2215,33 @@ export default function App() {
             {/* Access Gate Check if Pending HCP */}
             {currentUser.verificationStatus !== 'approved' &&
             currentUser.role === PlatformRole.HealthcareProfessional ? (
-              <div className="bg-[#263744] border border-[#A56F0B] rounded-[16px] p-8 max-w-xl mx-auto my-8 text-center">
-                <div className="w-12 h-12 rounded-full bg-[#4A3B1C] border border-[#A56F0B] flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#263744] border border-[#A56F0B] rounded-[16px] p-8 max-w-xl mx-auto my-8 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#4A3B1C] border border-[#A56F0B] flex items-center justify-center mx-auto">
                   <ShieldAlert className="w-6 h-6 text-[#F59E0B]" />
                 </div>
-                <h1 className="text-[22px] font-extrabold text-[#F2F5F8] mb-2">
+                <h1 className="text-[22px] font-extrabold text-[#F2F5F8]">
                   Physician Verification Pending
                 </h1>
-                <p className="text-[14px] text-[#B8C3CC] leading-relaxed mb-6">
-                  Per PharmaConnect Architecture Closure Section 9.1, only authenticated
-                  active profiles with{' '}
-                  <code className="text-[#5DB4F2]">profession_type = physician</code> and{' '}
-                  <code className="text-[#38C976]">verification_status = approved</code>{' '}
-                  receive access to the official doctor-facing catalog.
+                <p className="text-[14px] text-[#B8C3CC] leading-relaxed">
+                  Welcome, <strong className="text-[#F2F5F8]">{currentUser.fullName}</strong> (
+                  <code className="text-[#5DB4F2]">{currentUser.email}</code>). Your Iraq
+                  Medical Association credential is currently queued for Platform Administrator
+                  verification. Only approved physicians can browse official pharmaceutical
+                  monographs.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => switchRoleAndWorkspace('doctor', 'doctor')}
-                  className="px-4 py-2.5 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[13px] font-bold transition cursor-pointer"
-                >
-                  Switch to Approved Demo Doctor Account
-                </button>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('signin');
+                      setAuthEmail(DEMO_USERS.doctor.email);
+                      setActiveWorkspace('auth');
+                    }}
+                    className="px-4 py-2.5 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[13px] font-bold transition cursor-pointer"
+                  >
+                    Return to Sign In Portal
+                  </button>
+                </div>
               </div>
             ) : selectedDoctorProduct ? (
               /* DOCTOR PRODUCT DETAIL VIEW (`DoctorCatalogProductDetailPage`) */
@@ -2727,84 +3055,6 @@ export default function App() {
                       )}
                     </div>
                   </div>
-
-                  {/* SECONDARY HORIZONTAL ROLLING DRUG CLASS STRIP */}
-                  <div className="pt-2 border-t border-[#51616D]/50 flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#B8C3CC] shrink-0 pr-1">
-                      <Pill className="w-3.5 h-3.5 text-[#5DB4F2]" />
-                      <span>Drug Classes:</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 overflow-x-auto flex-nowrap pb-1 scrollbar-thin">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedDrugClassId('all');
-                          if (doctorSearchMode === 'drug_class') {
-                            setDoctorSearchMode('all');
-                            setSearchQuery('');
-                          }
-                        }}
-                        className={`px-2.5 py-1 rounded-[8px] border text-[12px] font-semibold shrink-0 whitespace-nowrap flex items-center gap-1.5 transition cursor-pointer ${
-                          selectedDrugClassId === 'all' && doctorSearchMode !== 'drug_class'
-                            ? 'bg-[#304451] border-[#5DB4F2] text-[#F2F5F8]'
-                            : 'bg-[#1F2D38] hover:bg-[#304451] border-[#51616D] text-[#B8C3CC] hover:text-[#F2F5F8]'
-                        }`}
-                      >
-                        <span>All Classes</span>
-                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-[#263744] text-[#B8C3CC] font-mono">
-                          {activeDrugClassesList.length}
-                        </span>
-                      </button>
-                      {(doctorSearchMode === 'drug_class'
-                        ? matchingDoctorDrugClasses
-                        : activeDrugClassesList
-                      ).map((dc) => {
-                        const count = publishedOfficialProducts.filter(
-                          (p) => p.drugClassId === dc.id
-                        ).length;
-                        const isSelected = selectedDrugClassId === dc.id;
-                        return (
-                          <button
-                            key={dc.id}
-                            type="button"
-                            onClick={() => {
-                              if (isSelected) {
-                                setSelectedDrugClassId('all');
-                                setSearchQuery('');
-                                if (doctorSearchMode === 'drug_class') {
-                                  setDoctorSearchMode('all');
-                                }
-                              } else {
-                                setDoctorSearchMode('drug_class');
-                                setSelectedDrugClassId(dc.id);
-                                setSearchQuery(dc.nameEn);
-                              }
-                            }}
-                            className={`px-2.5 py-1 rounded-[8px] border text-[12px] font-semibold shrink-0 whitespace-nowrap flex items-center gap-1.5 transition cursor-pointer ${
-                              isSelected
-                                ? 'bg-[#1769AA] border-[#5DB4F2] text-[#F2F5F8]'
-                                : count > 0
-                                ? 'bg-[#1F2D38] hover:bg-[#304451] border-[#51616D] text-[#F2F5F8]'
-                                : 'bg-[#1F2D38]/60 border-[#51616D]/60 text-[#B8C3CC]'
-                            }`}
-                          >
-                            <span>{dc.nameEn}</span>
-                            <span
-                              className={`text-[11px] px-1.5 py-0.5 rounded font-mono ${
-                                isSelected
-                                  ? 'bg-[#123F68] text-[#F2F5F8]'
-                                  : count > 0
-                                  ? 'bg-[#193D2D] text-[#38C976]'
-                                  : 'bg-[#263744] text-[#B8C3CC]'
-                              }`}
-                            >
-                              {count}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
 
                 {/* DEFAULT HOME VIEW (Before Search): Show ONLY Admin-Selected Paid Medications (Clicking opens Company Page) */}
@@ -3031,7 +3281,7 @@ export default function App() {
                             <span>
                               {selectedDrugClassId !== 'all'
                                 ? 'Selected Drug Class — Cross-Company Catalog'
-                                : 'Drug Class Filter Mode — Select a class from the rolling strip above'}
+                                : 'Drug Class Filter Mode — Select a class from the dropdown list or type above'}
                             </span>
                           </div>
                           {selectedDrugClassId !== 'all' && (
@@ -3304,31 +3554,40 @@ export default function App() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2.5">
-                <div className="flex items-center gap-2">
-                  <label className="text-[12px] font-semibold text-[#B8C3CC]">
-                    Active Company:
-                  </label>
-                  <select
-                    value={activeCompanyWorkspaceRecord.id}
-                    onChange={(e) => {
-                      const nextId = e.target.value;
-                      setActiveCompanyWorkspaceId(nextId);
-                      const firstProd = products.find((p) => p.companyId === nextId);
-                      if (firstProd) {
-                        setSelectedCompanyProductId(firstProd.id);
-                      }
-                    }}
-                    aria-label="Select active company workspace"
-                    className="px-3 py-1.5 rounded-[10px] bg-[#1F2D38] border border-[#5DB4F2] text-[12px] font-bold text-[#F2F5F8]"
-                  >
-                    {companiesList.map((comp) => (
-                      <option key={comp.id} value={comp.id}>
-                        {comp.companyName} (
-                        {products.filter((p) => p.companyId === comp.id).length} products)
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {currentUser.role === PlatformRole.Admin ? (
+                  <div className="flex items-center gap-2">
+                    <label className="text-[12px] font-semibold text-[#B8C3CC]">
+                      Admin Company View:
+                    </label>
+                    <select
+                      value={activeCompanyWorkspaceRecord.id}
+                      onChange={(e) => {
+                        const nextId = e.target.value;
+                        setActiveCompanyWorkspaceId(nextId);
+                        const firstProd = products.find((p) => p.companyId === nextId);
+                        if (firstProd) {
+                          setSelectedCompanyProductId(firstProd.id);
+                        }
+                      }}
+                      aria-label="Select active company workspace"
+                      className="px-3 py-1.5 rounded-[10px] bg-[#1F2D38] border border-[#5DB4F2] text-[12px] font-bold text-[#F2F5F8]"
+                    >
+                      {companiesList.map((comp) => (
+                        <option key={comp.id} value={comp.id}>
+                          {comp.companyName} (
+                          {products.filter((p) => p.companyId === comp.id).length} products)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="px-3 py-1.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] text-[12px] text-[#B8C3CC]">
+                    Assigned Login Email:{' '}
+                    <span className="font-mono font-bold text-[#5DB4F2]">
+                      {activeCompanyWorkspaceRecord.contactEmail}
+                    </span>
+                  </div>
+                )}
 
                 <button
                   type="button"
@@ -4203,6 +4462,29 @@ export default function App() {
                 <CheckCircle2 className="w-4 h-4" />
                 <span>
                   Home Page Ad Space ({paidHomeProductIds.length})
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedAdminCompanyId(null);
+                  setAdminViewMode('access_accounts');
+                }}
+                className={`px-4 py-2 rounded-[10px] text-[13px] font-bold flex items-center gap-2 border transition cursor-pointer ${
+                  adminViewMode === 'access_accounts'
+                    ? 'bg-[#1769AA] border-[#5DB4F2] text-[#F2F5F8]'
+                    : 'bg-[#263744] border-[#51616D] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                }`}
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>
+                  Company Login Emails & Physician Verification (
+                  {
+                    registeredDoctors.filter((d) => d.verificationStatus === 'pending')
+                      .length
+                  }{' '}
+                  Pending)
                 </span>
               </button>
             </div>
@@ -5643,153 +5925,263 @@ export default function App() {
                 </div>
               </div>
             )}
+
+            {/* ===============================================================
+                ADMIN TAB 4: COMPANY LOGIN EMAILS & PHYSICIAN VERIFICATION QUEUE
+            =============================================================== */}
+            {adminViewMode === 'access_accounts' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Column: Physician Sign-Up Verification Queue */}
+                <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-5 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h2 className="text-[19px] font-bold text-[#F2F5F8]">
+                        Physician Sign-Up & Verification Queue ({registeredDoctors.length})
+                      </h2>
+                      <p className="text-[12px] text-[#B8C3CC] mt-0.5">
+                        Approve or review physicians registered through the Doctor Sign Up
+                        portal. Approved physicians gain immediate access to the official
+                        catalog.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-2 border-t border-[#51616D]">
+                    {registeredDoctors.map((doc) => {
+                      const isApproved = doc.verificationStatus === 'approved';
+                      return (
+                        <div
+                          key={doc.profileId}
+                          className="p-4 rounded-[12px] bg-[#1F2D38] border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[15px] font-bold text-[#F2F5F8]">
+                                {doc.fullName}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                                  isApproved
+                                    ? 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
+                                    : 'bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B]'
+                                }`}
+                              >
+                                {isApproved ? 'Verified Physician' : 'Pending Approval'}
+                              </span>
+                            </div>
+                            <div className="text-[12px] font-mono text-[#5DB4F2]">
+                              {doc.email}
+                            </div>
+                            <div className="text-[12px] text-[#B8C3CC]">
+                              Specialty: <strong className="text-[#F2F5F8]">{doc.specialty}</strong>{' '}
+                              • License:{' '}
+                              <span className="font-mono text-[#F2F5F8]">
+                                {doc.licenseNumber ?? 'IQ-IMA-2026'}
+                              </span>
+                            </div>
+                            {doc.workplace && (
+                              <div className="text-[11px] text-[#B8C3CC]">
+                                Workplace: {doc.workplace}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleAdminToggleDoctorVerification(doc.profileId)
+                              }
+                              className={`px-3.5 py-1.5 rounded-[8px] border text-[12px] font-bold cursor-pointer transition ${
+                                isApproved
+                                  ? 'bg-[#4A3B1C] border-[#A56F0B] text-[#F59E0B]'
+                                  : 'bg-[#193D2D] border-[#2F8F5C] text-[#38C976]'
+                              }`}
+                            >
+                              {isApproved ? 'Set Pending' : 'Approve Physician'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right Column: Official Company Login Emails Directory */}
+                <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-5 space-y-4">
+                  <div>
+                    <h2 className="text-[19px] font-bold text-[#F2F5F8]">
+                      Assigned Company Entrance Login Emails ({companiesList.length})
+                    </h2>
+                    <p className="text-[12px] text-[#B8C3CC] mt-0.5">
+                      Each pharmaceutical company enters the platform from the same Sign In
+                      entrance as doctors using their assigned company email below, which
+                      routes them directly to their Company Workspace.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1 pt-2 border-t border-[#51616D]">
+                    {companiesList.map((comp) => {
+                      const isEditingEmail = editingCompanyId === comp.id;
+                      return (
+                        <div
+                          key={comp.id}
+                          className="p-3.5 rounded-[12px] bg-[#1F2D38] border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
+                        >
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[14px] font-bold text-[#F2F5F8]">
+                                {comp.companyName}
+                              </span>
+                              <span className="text-[11px] text-[#B8C3CC]">
+                                ({products.filter((p) => p.companyId === comp.id).length}{' '}
+                                products)
+                              </span>
+                            </div>
+
+                            {isEditingEmail ? (
+                              <div className="flex items-center gap-2 pt-1">
+                                <input
+                                  type="email"
+                                  value={editCompanyEmail}
+                                  onChange={(e) => setEditCompanyEmail(e.target.value)}
+                                  placeholder="Assigned company login email"
+                                  className="flex-1 px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#5DB4F2] text-[12px] font-mono text-[#F2F5F8]"
+                                />
+                              </div>
+                            ) : (
+                              <div className="text-[12px] text-[#B8C3CC] flex items-center gap-1.5">
+                                <span>Login Email:</span>
+                                <code className="text-[#5DB4F2] font-bold">
+                                  {comp.contactEmail}
+                                </code>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {isEditingEmail ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdminSaveCompanyEdit(comp.id)}
+                                  className="px-3 py-1.5 rounded-[8px] bg-[#193D2D] border border-[#2F8F5C] text-[#38C976] text-[11px] font-bold cursor-pointer"
+                                >
+                                  Save Email
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingCompanyId(null)}
+                                  className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#51616D] text-[#B8C3CC] text-[11px] font-bold cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingCompanyId(comp.id);
+                                    setEditCompanyName(comp.companyName);
+                                    setEditCompanyLegalName(comp.legalName);
+                                    setEditCompanyDescription(comp.description);
+                                    setEditCompanyWebsite(comp.websiteUrl);
+                                    setEditCompanyEmail(comp.contactEmail);
+                                    setEditCompanyPhone(comp.contactPhone);
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] hover:bg-[#304451] border border-[#51616D] text-[#F2F5F8] text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Edit3 className="w-3 h-3" />
+                                  <span>Edit Login Email</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedAdminCompanyId(comp.id);
+                                    setAdminViewMode('company_pages');
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[11px] font-bold cursor-pointer"
+                                >
+                                  Company Page →
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* ===================================================================
-            4. IDENTITY, MULTI-ROLE LOGIN & SESSION SWITCHER VIEW
+            4. UNIFIED CLINICAL SIGN IN & DOCTOR SIGN UP ENTRANCE
+               (Doctor-facing portal; Companies & Admin authenticate via their
+                assigned email through the same Sign In input without exposing
+                internal role switchers or admin/company entrances to Doctors)
         =================================================================== */}
         {activeWorkspace === 'auth' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left Column: Interactive Multi-Role Login Portal */}
-              <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-6 space-y-5">
-                <div>
-                  <div className="text-[12px] font-bold text-[#5DB4F2] uppercase tracking-wider">
-                    PHARAMTY AUTHENTICATION PORTAL
-                  </div>
-                  <h1 className="text-[24px] font-extrabold text-[#F2F5F8] mt-1">
-                    Sign In to Pharamty
-                  </h1>
-                  <p className="text-[13px] text-[#B8C3CC] mt-1">
-                    Authenticate as an Iraq Physician, a Pharmaceutical Company
-                    Representative, or a Platform Governance Administrator.
-                  </p>
+          <div className="max-w-xl mx-auto py-4 space-y-5">
+            <div className="bg-[#263744] border border-[#51616D] rounded-[16px] p-6 sm:p-8 space-y-6">
+              {/* Portal Header */}
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 rounded-[14px] bg-[#1769AA] border border-[#5DB4F2]/50 flex items-center justify-center mx-auto">
+                  <Stethoscope className="w-6 h-6 text-[#F2F5F8]" />
                 </div>
-
-                {/* Role Tabs */}
-                <div className="grid grid-cols-3 gap-2 p-1 rounded-[12px] bg-[#1F2D38] border border-[#51616D]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthLoginRole('doctor');
-                      setAuthEmail('doctor.approved@pharamty.iq');
-                    }}
-                    className={`py-2 px-3 rounded-[8px] text-[12px] font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
-                      authLoginRole === 'doctor'
-                        ? 'bg-[#1769AA] text-[#F2F5F8]'
-                        : 'text-[#B8C3CC] hover:text-[#F2F5F8]'
-                    }`}
-                  >
-                    <Stethoscope className="w-3.5 h-3.5" />
-                    <span>Doctor</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthLoginRole('company_admin');
-                      setAuthEmail('medical.affairs@astrazeneca.iq');
-                    }}
-                    className={`py-2 px-3 rounded-[8px] text-[12px] font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
-                      authLoginRole === 'company_admin'
-                        ? 'bg-[#1769AA] text-[#F2F5F8]'
-                        : 'text-[#B8C3CC] hover:text-[#F2F5F8]'
-                    }`}
-                  >
-                    <Building2 className="w-3.5 h-3.5" />
-                    <span>Company</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthLoginRole('admin');
-                      setAuthEmail('catalog.admin@pharamty.iq');
-                    }}
-                    className={`py-2 px-3 rounded-[8px] text-[12px] font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
-                      authLoginRole === 'admin'
-                        ? 'bg-[#1769AA] text-[#F2F5F8]'
-                        : 'text-[#B8C3CC] hover:text-[#F2F5F8]'
-                    }`}
-                  >
-                    <ClipboardCheck className="w-3.5 h-3.5" />
-                    <span>Admin</span>
-                  </button>
+                <div className="text-[11px] font-bold text-[#5DB4F2] uppercase tracking-wider">
+                  PHARAMTY IRAQ CLINICAL GATEWAY
                 </div>
+                <h1 className="text-[24px] sm:text-[26px] font-extrabold text-[#F2F5F8]">
+                  {authMode === 'signin'
+                    ? 'Sign In to Pharamty'
+                    : 'Physician Registration (Sign Up)'}
+                </h1>
+                <p className="text-[13px] text-[#B8C3CC] max-w-md mx-auto leading-relaxed">
+                  {authMode === 'signin'
+                    ? 'Enter your professional email address and password to access official Iraq clinical drug monographs.'
+                    : 'Register as a licensed Healthcare Professional in Iraq to access verified pharmaceutical monographs and scientific brochures.'}
+                </p>
+              </div>
 
+              {/* Mode Toggle: Sign In vs Doctor Sign Up */}
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-[12px] bg-[#1F2D38] border border-[#51616D]">
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('signin')}
+                  className={`py-2.5 px-4 rounded-[8px] text-[13px] font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                    authMode === 'signin'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border border-[#5DB4F2]/40'
+                      : 'text-[#B8C3CC] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Sign In</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('signup')}
+                  className={`py-2.5 px-4 rounded-[8px] text-[13px] font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                    authMode === 'signup'
+                      ? 'bg-[#1769AA] text-[#F2F5F8] border border-[#5DB4F2]/40'
+                      : 'text-[#B8C3CC] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span>Doctor Sign Up</span>
+                </button>
+              </div>
+
+              {authMode === 'signin' ? (
+                /* UNIFIED SIGN IN FORM (Routes Doctors -> Catalog, Company Email -> Company Page/Workspace, Admin Email -> Admin Governance) */
                 <form onSubmit={handleInteractiveLoginSubmit} className="space-y-4">
-                  {authLoginRole === 'doctor' && (
-                    <div>
-                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
-                        Physician Verification Status (Section 9.1 Access Gate)
-                      </label>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAuthDoctorVerificationMode('approved');
-                            setAuthEmail('doctor.approved@pharamty.iq');
-                          }}
-                          className={`p-3 rounded-[10px] border text-left transition cursor-pointer ${
-                            authDoctorVerificationMode === 'approved'
-                              ? 'bg-[#193D2D]/60 border-[#2F8F5C] text-[#38C976]'
-                              : 'bg-[#1F2D38] border-[#51616D] text-[#B8C3CC]'
-                          }`}
-                        >
-                          <div className="text-[12px] font-bold">Approved Physician</div>
-                          <div className="text-[11px] opacity-90 mt-0.5">
-                            Full Official Catalog access
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAuthDoctorVerificationMode('pending');
-                            setAuthEmail('doctor.pending@pharamty.iq');
-                          }}
-                          className={`p-3 rounded-[10px] border text-left transition cursor-pointer ${
-                            authDoctorVerificationMode === 'pending'
-                              ? 'bg-[#4A3B1C]/60 border-[#A56F0B] text-[#F59E0B]'
-                              : 'bg-[#1F2D38] border-[#51616D] text-[#B8C3CC]'
-                          }`}
-                        >
-                          <div className="text-[12px] font-bold">Pending Verification</div>
-                          <div className="text-[11px] opacity-90 mt-0.5">
-                            Tests verification gate screen
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {authLoginRole === 'company_admin' && (
-                    <div>
-                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
-                        Select Pharmaceutical Company Account in Iraq
-                      </label>
-                      <select
-                        value={authSelectedCompanyId}
-                        onChange={(e) => setAuthSelectedCompanyId(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#5DB4F2] text-[13px] font-semibold text-[#F2F5F8]"
-                      >
-                        {companiesList.map((comp) => {
-                          const count = products.filter(
-                            (p) => p.companyId === comp.id
-                          ).length;
-                          return (
-                            <option key={comp.id} value={comp.id}>
-                              {comp.companyName} ({count} catalog products)
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  )}
-
                   <div>
-                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
                       Professional Email Address
                     </label>
                     <input
@@ -5797,12 +6189,13 @@ export default function App() {
                       required
                       value={authEmail}
                       onChange={(e) => setAuthEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      placeholder="doctor@hospital.iq"
+                      className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[14px] text-[#F2F5F8]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
                       Password
                     </label>
                     <input
@@ -5810,115 +6203,260 @@ export default function App() {
                       required
                       value={authPassword}
                       onChange={(e) => setAuthPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      placeholder="••••••••••••"
+                      className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[14px] text-[#F2F5F8]"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 px-4 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[13px] font-bold flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full py-3 px-4 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[14px] font-bold flex items-center justify-center gap-2 transition cursor-pointer"
                   >
                     <UserCheck className="w-4 h-4" />
-                    <span>
-                      {authLoginRole === 'doctor'
-                        ? `Sign In as ${
-                            authDoctorVerificationMode === 'approved'
-                              ? 'Approved Physician'
-                              : 'Pending Physician'
-                          }`
-                        : authLoginRole === 'company_admin'
-                        ? `Sign In to ${getCompanyName(authSelectedCompanyId)} Workspace`
-                        : 'Sign In to Admin Governance Workspace'}
-                    </span>
+                    <span>Sign In</span>
+                  </button>
+
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('signup')}
+                      className="text-[12px] font-semibold text-[#5DB4F2] hover:underline cursor-pointer"
+                    >
+                      New physician in Iraq? Create a Doctor Account →
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* DOCTOR SIGN UP FORM */
+                <form onSubmit={handleDoctorSignUpSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="sm:col-span-2">
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Physician Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={signupFullName}
+                        onChange={(e) => setSignupFullName(e.target.value)}
+                        placeholder="Dr. Ahmed Al-Rubaye"
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Professional Email *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        placeholder="dr.ahmed@baghdadmed.iq"
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Password *
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        placeholder="Create strong password"
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Medical Specialty *
+                      </label>
+                      <select
+                        value={signupSpecialty}
+                        onChange={(e) => setSignupSpecialty(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      >
+                        {specialtiesList.map((sp) => (
+                          <option key={sp.id} value={sp.nameEn}>
+                            {sp.nameEn}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Iraq Medical Syndicate License # *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={signupLicenseNumber}
+                        onChange={(e) => setSignupLicenseNumber(e.target.value)}
+                        placeholder="IQ-IMA-2026-4810"
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Hospital / Clinical Workplace
+                      </label>
+                      <input
+                        type="text"
+                        value={signupWorkplace}
+                        onChange={(e) => setSignupWorkplace(e.target.value)}
+                        placeholder="Baghdad Medical City"
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Mobile Phone (Iraq)
+                      </label>
+                      <input
+                        type="text"
+                        value={signupPhone}
+                        onChange={(e) => setSignupPhone(e.target.value)}
+                        placeholder="+964 770 123 4567"
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Verification Mode Selector for Testing */}
+                  <div className="pt-1">
+                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
+                      Initial Verification State (Testing Option)
+                    </label>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setSignupVerificationMode('approved')}
+                        className={`p-3 rounded-[10px] border text-left transition cursor-pointer ${
+                          signupVerificationMode === 'approved'
+                            ? 'bg-[#193D2D]/60 border-[#2F8F5C] text-[#38C976]'
+                            : 'bg-[#1F2D38] border-[#51616D] text-[#B8C3CC]'
+                        }`}
+                      >
+                        <div className="text-[12px] font-bold">
+                          Verified Physician (Instant)
+                        </div>
+                        <div className="text-[11px] opacity-90 mt-0.5">
+                          Opens Official Catalog immediately
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSignupVerificationMode('pending')}
+                        className={`p-3 rounded-[10px] border text-left transition cursor-pointer ${
+                          signupVerificationMode === 'pending'
+                            ? 'bg-[#4A3B1C]/60 border-[#A56F0B] text-[#F59E0B]'
+                            : 'bg-[#1F2D38] border-[#51616D] text-[#B8C3CC]'
+                        }`}
+                      >
+                        <div className="text-[12px] font-bold">
+                          Pending Admin Verification
+                        </div>
+                        <div className="text-[11px] opacity-90 mt-0.5">
+                          Queued for Admin approval
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 px-4 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[14px] font-bold flex items-center justify-center gap-2 transition cursor-pointer"
+                  >
+                    <Stethoscope className="w-4 h-4" />
+                    <span>Complete Physician Sign Up</span>
                   </button>
                 </form>
-              </div>
+              )}
+            </div>
 
-              {/* Right Column: Instant Role & Company Switcher Cards */}
-              <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-6 space-y-4">
-                <div>
-                  <h2 className="text-[20px] font-extrabold text-[#F2F5F8]">
-                    Quick Role & Company Session Switcher
-                  </h2>
-                  <p className="text-[13px] text-[#B8C3CC] mt-1">
-                    One-click session switching across Doctor, Company (including AstraZeneca
-                    Iraq & Tigris Pharma), and Admin accounts.
+            {/* Subtle Collapsible Demo Email Helper (Allows testing email-based routing without exposing Admin/Company entrances in the main UI) */}
+            <div className="bg-[#263744]/70 border border-[#51616D]/80 rounded-[12px] p-4">
+              <button
+                type="button"
+                onClick={() => setShowDemoCredentialsHelper((prev) => !prev)}
+                className="w-full flex items-center justify-between text-left text-[12px] font-semibold text-[#B8C3CC] hover:text-[#F2F5F8] cursor-pointer"
+              >
+                <span>
+                  Testing Reference: Pre-assigned Emails for Unified Entrance Routing
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    showDemoCredentialsHelper ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {showDemoCredentialsHelper && (
+                <div className="mt-3 pt-3 border-t border-[#51616D]/60 space-y-2.5 text-[12px]">
+                  <p className="text-[#B8C3CC]">
+                    Click any email below to auto-fill the Sign In form and test automatic
+                    role routing through the single entrance:
                   </p>
-                </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('signin');
+                        setAuthEmail(DEMO_USERS.doctor.email);
+                      }}
+                      className="p-2.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] flex items-center justify-between text-left cursor-pointer"
+                    >
+                      <span className="font-semibold text-[#38C976]">
+                        Verified Physician
+                      </span>
+                      <code className="text-[#F2F5F8] font-mono">
+                        {DEMO_USERS.doctor.email}
+                      </code>
+                    </button>
 
-                {/* Quick Company Workspace Launchers */}
-                <div className="p-3.5 rounded-[12px] bg-[#1F2D38] border border-[#51616D] space-y-2.5">
-                  <div className="text-[12px] font-bold text-[#5DB4F2]">
-                    Instant Company Workspace Switcher
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('signin');
+                        setAuthEmail('iraq.medinfo@astrazeneca.local');
+                      }}
+                      className="p-2.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] flex items-center justify-between text-left cursor-pointer"
+                    >
+                      <span className="font-semibold text-[#5DB4F2]">
+                        AstraZeneca Iraq (Opens Company Page)
+                      </span>
+                      <code className="text-[#F2F5F8] font-mono">
+                        iraq.medinfo@astrazeneca.local
+                      </code>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('signin');
+                        setAuthEmail(DEMO_USERS.admin.email);
+                      }}
+                      className="p-2.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] flex items-center justify-between text-left cursor-pointer"
+                    >
+                      <span className="font-semibold text-[#F59E0B]">
+                        Platform Admin (Opens Admin Governance)
+                      </span>
+                      <code className="text-[#F2F5F8] font-mono">
+                        {DEMO_USERS.admin.email}
+                      </code>
+                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {companiesList.slice(0, 6).map((comp) => (
-                      <button
-                        key={comp.id}
-                        type="button"
-                        onClick={() => {
-                          setActiveCompanyWorkspaceId(comp.id);
-                          switchRoleAndWorkspace('company_admin', 'company', comp.id);
-                        }}
-                        className={`px-3 py-1.5 rounded-[8px] border text-[12px] font-bold cursor-pointer transition ${
-                          activeCompanyWorkspaceId === comp.id
-                            ? 'bg-[#1769AA] border-[#5DB4F2] text-[#F2F5F8]'
-                            : 'bg-[#263744] hover:bg-[#304451] border-[#51616D] text-[#F2F5F8]'
-                        }`}
-                      >
-                        {comp.companyName}
-                      </button>
-                    ))}
-                  </div>
                 </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  {Object.entries(DEMO_USERS).map(([key, user]) => {
-                    const isCurrent = currentUserKey === key;
-                    return (
-                      <div
-                        key={key}
-                        className={`p-3.5 rounded-[12px] border flex flex-wrap items-center justify-between gap-3 ${
-                          isCurrent
-                            ? 'bg-[#304451] border-[#5DB4F2]'
-                            : 'bg-[#1F2D38] border-[#51616D]'
-                        }`}
-                      >
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[14px] font-bold text-[#F2F5F8]">
-                              {user.fullName}
-                            </span>
-                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#253F51] border border-[#46718F] text-[#5DB4F2] font-bold">
-                              {user.companyRole ?? user.role}
-                            </span>
-                          </div>
-                          <div className="text-[12px] font-mono text-[#B8C3CC] mt-0.5">
-                            {user.email}
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            switchRoleAndWorkspace(
-                              key,
-                              user.role === PlatformRole.Admin
-                                ? 'admin'
-                                : user.role === PlatformRole.CompanyUser
-                                ? 'company'
-                                : 'doctor'
-                            )
-                          }
-                          className="px-3.5 py-2 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[12px] font-bold cursor-pointer shrink-0"
-                        >
-                          {isCurrent ? 'Active — Open Workspace' : 'Assume Session'}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}

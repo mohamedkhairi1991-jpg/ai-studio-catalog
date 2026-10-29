@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { resolveAccess, type AccessResult, type Audience } from '../lib/access';
+import AdminApprovals from './AdminApprovals';
+import Onboarding from './Onboarding';
+import { Screen, buttonClass, inputClass } from './ui';
 
 const ROUTE_FOR: Partial<Record<Audience, string>> = {
   officialCatalog: '/catalog',
@@ -14,22 +17,6 @@ const BLOCKED_MESSAGE: Partial<Record<Audience, string>> = {
   suspended: 'This account is suspended or archived. Contact the platform administrator.',
   roleIneligible: 'This account is not eligible for catalog access (verification, role, or company status).',
 };
-
-function Screen({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#263744] border border-[#304451] rounded-lg p-6 space-y-4">
-        <h1 className="text-xl font-semibold">Pharamty</h1>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-const inputClass =
-  'w-full rounded-md bg-[#1F2D38] border border-[#304451] px-3 py-2 text-sm text-[#F2F5F8] focus:outline-none focus:border-[#5DB4F2]';
-const buttonClass =
-  'w-full rounded-md bg-[#1769AA] hover:bg-[#1E78BA] px-3 py-2 text-sm font-medium text-white disabled:opacity-60';
 
 export default function AuthGate() {
   const [session, setSession] = useState<Session | null>(null);
@@ -105,6 +92,20 @@ export default function AuthGate() {
   };
 
   if (session && access) {
+    if (access.audience === 'pending') {
+      return (
+        <Onboarding
+          client={client}
+          authUserId={session.user.id}
+          email={access.email}
+          onChanged={() => void load(session)}
+          onSignOut={() => void signOut()}
+        />
+      );
+    }
+    if (access.audience === 'administrator') {
+      return <AdminApprovals client={client} email={access.email} onSignOut={() => void signOut()} />;
+    }
     const home = ROUTE_FOR[access.audience];
     const blocked = BLOCKED_MESSAGE[access.audience];
     return (

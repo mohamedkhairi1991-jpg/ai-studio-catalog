@@ -8,6 +8,10 @@
   identifiers, URL schemes, Supabase names, and other technical identifiers
   unchanged unless a dedicated rename phase is explicitly approved.
 
+- The React/Vite app in `src/` is a web client. It must use real Supabase
+  authentication, take roles only from the database, and never ship publicly
+  with `VITE_DEMO_MODE=true`.
+
 ## Product purpose
 
 Pharamty is an Iraq-focused professional pharmaceutical information platform.

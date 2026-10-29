@@ -677,11 +677,14 @@ class _HighlightedCatalogText extends StatelessWidget {
       );
     }
 
-    final List<String> tokens = <String>{
-      trimmed,
-      ...trimmed.split(RegExp(r'\s+')).where((String part) => part.isNotEmpty),
-    }.toList()
-      ..sort((String a, String b) => b.length.compareTo(a.length));
+    final Set<String> tokenSet = <String>{trimmed};
+    for (final String part in trimmed.split(RegExp(r'\s+'))) {
+      if (part.isNotEmpty) {
+        tokenSet.add(part);
+      }
+    }
+    final List<String> tokens = tokenSet.toList();
+    tokens.sort((String a, String b) => b.length.compareTo(a.length));
 
     final RegExp pattern = RegExp(
       tokens.map(RegExp.escape).join('|'),
@@ -721,12 +724,7 @@ class _HighlightedCatalogText extends StatelessWidget {
       currentIndex = match.end;
     }
     if (currentIndex < text.length) {
-      spans.add(
-        TextSpan(
-          text: text.substring(currentIndex),
-          style: style,
-        ),
-      );
+      spans.add(TextSpan(text: text.substring(currentIndex), style: style));
     }
 
     return Text.rich(

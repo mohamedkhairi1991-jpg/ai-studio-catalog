@@ -83,7 +83,7 @@ export const DEMO_USERS: Record<string, DemoUserSession> = {
   },
 };
 
-export const DEMO_COMPANIES: CompanyRecord[] = [
+const RAW_DEMO_COMPANIES: CompanyRecord[] = [
   {
     id: '75000000-0000-4000-8000-000000000001',
     companyName: 'Tigris Pharma',
@@ -349,6 +349,12 @@ export const DEMO_COMPANIES: CompanyRecord[] = [
     verifiedAt: '2026-06-29T09:00:00Z',
   },
 ];
+
+export const DEMO_COMPANIES: CompanyRecord[] = RAW_DEMO_COMPANIES.map((comp) => ({
+  ...comp,
+  password: comp.password ?? 'Temp#2026',
+  isTemporaryPassword: comp.isTemporaryPassword ?? true,
+}));
 
 export const DEMO_COMPANY: CompanyRecord =
   DEMO_COMPANIES.find((c) => c.id === '75000000-0000-4000-8000-000000000012') ??

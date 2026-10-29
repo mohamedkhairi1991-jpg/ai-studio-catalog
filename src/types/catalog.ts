@@ -69,6 +69,9 @@ export interface CompanyRecord {
   contactPhone: string;
   status: 'verified' | 'pending' | 'suspended' | 'archived';
   verifiedAt: string;
+  password?: string;
+  isTemporaryPassword?: boolean;
+  passwordUpdatedAt?: string;
 }
 
 export interface ProductMediaRecord {

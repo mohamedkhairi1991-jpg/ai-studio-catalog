@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -214,8 +214,21 @@ function readableEnum(value: string): string {
 }
 
 export default function App() {
-  const [currentUserKey, setCurrentUserKey] = useState<string>('doctor');
-  const [activeWorkspace, setActiveWorkspace] = useState<ActiveWorkspace>('doctor');
+  const [currentUserKey, setCurrentUserKey] = useState<string>(() => {
+    try {
+      return localStorage.getItem('pharamty_current_user_key_v1') || 'doctor';
+    } catch {
+      return 'doctor';
+    }
+  });
+  const [activeWorkspace, setActiveWorkspace] = useState<ActiveWorkspace>(() => {
+    try {
+      const saved = localStorage.getItem('pharamty_active_workspace_v1') as ActiveWorkspace | null;
+      return saved || 'auth';
+    } catch {
+      return 'auth';
+    }
+  });
   const [products, setProducts] = useState<ProductRecord[]>(INITIAL_PRODUCTS);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
   const [favoriteProductIds, setFavoriteProductIds] = useState<string[]>([
@@ -226,7 +239,24 @@ export default function App() {
   ]);
 
   // Admin-governed Search Lists & Paid Home Medications state
-  const [companiesList, setCompaniesList] = useState<CompanyRecord[]>(DEMO_COMPANIES);
+  const [companiesList, setCompaniesList] = useState<CompanyRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('pharamty_companies_list_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((c: CompanyRecord) => ({
+            ...c,
+            password: c.password || 'Temp#2026',
+            isTemporaryPassword: c.isTemporaryPassword ?? true,
+          }));
+        }
+      }
+    } catch {
+      // Fallback to default seed companies
+    }
+    return DEMO_COMPANIES;
+  });
   const [drugClassesList, setDrugClassesList] =
     useState<TaxonomyItem[]>(DEMO_DRUG_CLASSES);
   const [specialtiesList, setSpecialtiesList] =
@@ -255,23 +285,34 @@ export default function App() {
   } | null>(null);
 
   // Company Workspace state
-  const [activeCompanyWorkspaceId, setActiveCompanyWorkspaceId] = useState<string>(
-    '75000000-0000-4000-8000-000000000012'
-  );
+  const [activeCompanyWorkspaceId, setActiveCompanyWorkspaceId] = useState<string>(() => {
+    try {
+      return (
+        localStorage.getItem('pharamty_active_company_id_v1') ||
+        '75000000-0000-4000-8000-000000000012'
+      );
+    } catch {
+      return '75000000-0000-4000-8000-000000000012';
+    }
+  });
   const [selectedCompanyProductId, setSelectedCompanyProductId] = useState<string>(
     '71000000-0000-4000-8000-000000000101'
   );
   const [isCreatingDraft, setIsCreatingDraft] = useState<boolean>(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [enforceMediaForPublication, setEnforceMediaForPublication] = useState<boolean>(false);
+  const [showCompanySecuritySettings, setShowCompanySecuritySettings] = useState<boolean>(false);
+  const [companyCurrentPassword, setCompanyCurrentPassword] = useState<string>('');
+  const [companyNewPassword, setCompanyNewPassword] = useState<string>('');
+  const [companyConfirmPassword, setCompanyConfirmPassword] = useState<string>('');
 
   // Unified Auth / Login & Doctor Sign-Up state
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
   const [authLoginRole, setAuthLoginRole] = useState<'doctor' | 'company_admin' | 'admin'>(
     'doctor'
   );
-  const [authEmail, setAuthEmail] = useState<string>('doctor.demo@pharmaconnect.local');
-  const [authPassword, setAuthPassword] = useState<string>('••••••••••••');
+  const [authEmail, setAuthEmail] = useState<string>('');
+  const [authPassword, setAuthPassword] = useState<string>('');
   const [authSelectedCompanyId, setAuthSelectedCompanyId] = useState<string>(
     '75000000-0000-4000-8000-000000000012'
   );
@@ -288,24 +329,65 @@ export default function App() {
         workplace?: string;
         licenseNumber?: string;
         phone?: string;
+        password?: string;
       }
     >
-  >([
-    {
-      ...DEMO_USERS.doctor,
-      specialty: 'Cardiology',
-      workplace: 'Baghdad Medical City — Cardiology Center',
-      licenseNumber: 'IQ-IMA-2019-4412',
-      phone: '+964 770 112 3344',
-    },
-    {
-      ...DEMO_USERS.pending_doctor,
-      specialty: 'Internal Medicine',
-      workplace: 'Al-Yarmouk Teaching Hospital, Baghdad',
-      licenseNumber: 'IQ-IMA-2025-9180',
-      phone: '+964 780 554 1920',
-    },
-  ]);
+  >(() => {
+    const defaultDoctors = [
+      {
+        ...DEMO_USERS.doctor,
+        specialty: 'Cardiology',
+        workplace: 'Baghdad Medical City — Cardiology Center',
+        licenseNumber: 'IQ-IMA-2019-4412',
+        phone: '+964 770 112 3344',
+      },
+      {
+        ...DEMO_USERS.pending_doctor,
+        specialty: 'Internal Medicine',
+        workplace: 'Al-Yarmouk Teaching Hospital, Baghdad',
+        licenseNumber: 'IQ-IMA-2025-9180',
+        phone: '+964 780 554 1920',
+      },
+    ];
+    try {
+      const saved = localStorage.getItem('pharamty_registered_doctors_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Fallback to default seed doctors
+    }
+    return defaultDoctors;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pharamty_registered_doctors_v1', JSON.stringify(registeredDoctors));
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [registeredDoctors]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pharamty_companies_list_v1', JSON.stringify(companiesList));
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [companiesList]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pharamty_current_user_key_v1', currentUserKey);
+      localStorage.setItem('pharamty_active_workspace_v1', activeWorkspace);
+      localStorage.setItem('pharamty_active_company_id_v1', activeCompanyWorkspaceId);
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [currentUserKey, activeWorkspace, activeCompanyWorkspaceId]);
 
   // Doctor Sign-Up form fields
   const [signupFullName, setSignupFullName] = useState<string>('');
@@ -322,8 +404,18 @@ export default function App() {
   // Admin Workspace state
   const [adminViewMode, setAdminViewMode] = useState<
     'review_queue' | 'company_pages' | 'search_lists' | 'paid_home' | 'access_accounts'
-  >('review_queue');
+  >('access_accounts');
   const [selectedAdminCompanyId, setSelectedAdminCompanyId] = useState<string | null>(null);
+  const [selectedAdminDoctorId, setSelectedAdminDoctorId] = useState<string | null>(null);
+  const [adminInspectingMember, setAdminInspectingMember] = useState<boolean>(false);
+  const [editingDoctorId, setEditingDoctorId] = useState<string | null>(null);
+  const [editDoctorFullName, setEditDoctorFullName] = useState<string>('');
+  const [editDoctorEmail, setEditDoctorEmail] = useState<string>('');
+  const [editDoctorSpecialty, setEditDoctorSpecialty] = useState<string>('Cardiology');
+  const [editDoctorWorkplace, setEditDoctorWorkplace] = useState<string>('');
+  const [editDoctorLicense, setEditDoctorLicense] = useState<string>('');
+  const [editDoctorPhone, setEditDoctorPhone] = useState<string>('');
+  const [editDoctorPassword, setEditDoctorPassword] = useState<string>('');
   const [adminGlobalSearchQuery, setAdminGlobalSearchQuery] = useState<string>('');
   const [adminSearchListTab, setAdminSearchListTab] = useState<
     'companies' | 'drug_classes' | 'specialties'
@@ -349,6 +441,7 @@ export default function App() {
   const [newCompanyWebsite, setNewCompanyWebsite] = useState('');
   const [newCompanyEmail, setNewCompanyEmail] = useState('');
   const [newCompanyPhone, setNewCompanyPhone] = useState('');
+  const [newCompanyTempPassword, setNewCompanyTempPassword] = useState('Temp#2026');
   const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
   const [editCompanyName, setEditCompanyName] = useState('');
   const [editCompanyLegalName, setEditCompanyLegalName] = useState('');
@@ -356,6 +449,7 @@ export default function App() {
   const [editCompanyWebsite, setEditCompanyWebsite] = useState('');
   const [editCompanyEmail, setEditCompanyEmail] = useState('');
   const [editCompanyPhone, setEditCompanyPhone] = useState('');
+  const [editCompanyTempPassword, setEditCompanyTempPassword] = useState('');
 
   const [newDrugClassName, setNewDrugClassName] = useState('');
   const [newDrugClassCode, setNewDrugClassCode] = useState('');
@@ -507,16 +601,33 @@ export default function App() {
     });
 
     if (matchedCompany) {
+      const expectedPassword = matchedCompany.password || 'Temp#2026';
+      const enteredPassword = authPassword.trim();
+      if (enteredPassword && enteredPassword !== expectedPassword) {
+        setBannerNotice({
+          tone: 'error',
+          message: `Invalid password for ${matchedCompany.companyName} (${matchedCompany.contactEmail}). Enter the temporary password assigned by the Platform Admin or your updated company password.`,
+        });
+        return;
+      }
+
       switchRoleAndWorkspace('company_admin', 'company', matchedCompany.id);
+      const isUsingTemp = matchedCompany.isTemporaryPassword !== false;
+      if (isUsingTemp) {
+        setShowCompanySecuritySettings(true);
+      }
       appendAudit(
         'auth.session.login',
         enteredEmail,
-        `Company authenticated via assigned email (${enteredEmail}) directly into ${matchedCompany.companyName} Workspace.`
+        `Company Admin authenticated via unified Sign In (${enteredEmail}) into ${matchedCompany.companyName} Workspace.`
       );
       setBannerNotice({
-        tone: 'success',
-        message: `Signed in to ${matchedCompany.companyName} Official Company Workspace (${matchedCompany.contactEmail}).`,
+        tone: isUsingTemp ? 'warning' : 'success',
+        message: isUsingTemp
+          ? `Signed in to ${matchedCompany.companyName} with Admin-assigned temporary password. Please update your password in Security Settings below.`
+          : `Signed in to ${matchedCompany.companyName} Official Company Workspace (${matchedCompany.contactEmail}).`,
       });
+      setAuthPassword('');
       return;
     }
 
@@ -576,8 +687,7 @@ export default function App() {
   const handleDoctorSignUpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = signupEmail.trim().toLowerCase();
-    const cleanName = signupFullName.trim();
-    if (!cleanEmail || !cleanName) return;
+    if (!cleanEmail) return;
 
     // Prevent signing up with reserved Admin or Company emails
     const isCompanyEmail = companiesList.some(
@@ -598,9 +708,17 @@ export default function App() {
       return;
     }
 
-    const formattedDoctorName = cleanName.toLowerCase().startsWith('dr.')
-      ? cleanName
-      : `Dr. ${cleanName}`;
+    const derivedNameFromEmail =
+      cleanEmail
+        .split('@')[0]
+        ?.replace(/[._0-9-]+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (l) => l.toUpperCase()) || 'Physician';
+
+    const rawName = signupFullName.trim() || derivedNameFromEmail;
+    const formattedDoctorName = rawName.toLowerCase().startsWith('dr.')
+      ? rawName
+      : `Dr. ${rawName}`;
 
     const newDoctor = {
       ...DEMO_USERS.doctor,
@@ -613,6 +731,7 @@ export default function App() {
       workplace: signupWorkplace.trim() || 'Baghdad Teaching Hospital, Iraq',
       licenseNumber: signupLicenseNumber.trim() || 'IQ-IMA-2026-5092',
       phone: signupPhone.trim() || '+964 770 000 0000',
+      password: signupPassword,
     };
 
     setRegisteredDoctors((prev) => [
@@ -623,7 +742,7 @@ export default function App() {
     appendAudit(
       'auth.doctor.signup',
       newDoctor.email,
-      `Physician registered via Doctor Sign Up (${newDoctor.fullName}, status: ${newDoctor.verificationStatus}).`
+      `Physician registered via Doctor Sign Up (${newDoctor.fullName}, email: ${newDoctor.email}, status: ${newDoctor.verificationStatus}).`
     );
 
     setSignupFullName('');
@@ -637,8 +756,8 @@ export default function App() {
       tone: newDoctor.verificationStatus === 'approved' ? 'success' : 'warning',
       message:
         newDoctor.verificationStatus === 'approved'
-          ? `Physician account created and verified for ${newDoctor.fullName}. Welcome to Pharamty.`
-          : `Registration submitted for ${newDoctor.fullName}. Your physician credential is now in the Admin Verification Queue.`,
+          ? `Physician account created and verified for ${newDoctor.fullName} (${newDoctor.email}). Welcome to Pharamty.`
+          : `Registration submitted for ${newDoctor.fullName} (${newDoctor.email}). Your physician credential is now in the Admin Verification Queue.`,
     });
   };
 
@@ -666,6 +785,54 @@ export default function App() {
           ? `Approved physician access for ${targetDoc.fullName} (${targetDoc.email}).`
           : `Set ${targetDoc.fullName} (${targetDoc.email}) to Pending Verification.`,
     });
+  };
+
+  const openAdminDoctorPage = (profileId: string) => {
+    setSelectedAdminDoctorId(profileId);
+    setSelectedAdminCompanyId(null);
+    setEditingDoctorId(null);
+    setAdminViewMode('access_accounts');
+    setAdminGlobalSearchQuery('');
+  };
+
+  const openAdminCompanyPage = (companyId: string) => {
+    setSelectedAdminCompanyId(companyId);
+    setSelectedAdminDoctorId(null);
+    setEditingCompanyId(null);
+    setAdminViewMode('company_pages');
+    setAdminGlobalSearchQuery('');
+  };
+
+  const handleAdminSaveDoctorEdit = (profileId: string) => {
+    if (!editDoctorFullName.trim()) return;
+    const formattedName = editDoctorFullName.trim().toLowerCase().startsWith('dr.')
+      ? editDoctorFullName.trim()
+      : `Dr. ${editDoctorFullName.trim()}`;
+    setRegisteredDoctors((prev) =>
+      prev.map((doc) => {
+        if (doc.profileId !== profileId) return doc;
+        return {
+          ...doc,
+          fullName: formattedName,
+          email: editDoctorEmail.trim().toLowerCase() || doc.email,
+          specialty: editDoctorSpecialty || doc.specialty,
+          workplace: editDoctorWorkplace.trim() || doc.workplace,
+          licenseNumber: editDoctorLicense.trim() || doc.licenseNumber,
+          phone: editDoctorPhone.trim() || doc.phone,
+          password: editDoctorPassword.trim() || doc.password,
+        };
+      })
+    );
+    appendAudit(
+      'admin.doctor.profile_update',
+      formattedName,
+      `Admin updated physician member profile (${editDoctorEmail.trim()}).`
+    );
+    setBannerNotice({
+      tone: 'success',
+      message: `Saved Doctor Page profile changes for ${formattedName}.`,
+    });
+    setEditingDoctorId(null);
   };
 
   const appendAudit = (action: string, targetName: string, details: string) => {
@@ -923,13 +1090,19 @@ export default function App() {
     [companiesList, selectedAdminCompanyId]
   );
 
-  // Unified Admin Global Search across Products, Companies, Drug Classes, and Specialties
+  const selectedAdminDoctor = useMemo(
+    () => registeredDoctors.find((d) => d.profileId === selectedAdminDoctorId) ?? null,
+    [registeredDoctors, selectedAdminDoctorId]
+  );
+
+  // Unified Admin Global Search across Products, Companies, Doctors, Drug Classes, and Specialties
   const adminGlobalSearchResults = useMemo(() => {
     const q = adminGlobalSearchQuery.trim().toLowerCase();
     if (!q) {
       return {
         products: [] as ProductRecord[],
         companies: [] as CompanyRecord[],
+        doctors: [] as typeof registeredDoctors,
         drugClasses: [] as TaxonomyItem[],
         specialties: [] as TaxonomyItem[],
       };
@@ -938,6 +1111,11 @@ export default function App() {
 
     const matchedCompanies = companiesList.filter((comp) => {
       const hay = `${comp.companyName} ${comp.legalName} ${comp.description} ${comp.contactEmail}`.toLowerCase();
+      return tokens.every((t) => hay.includes(t));
+    });
+
+    const matchedDoctors = registeredDoctors.filter((doc) => {
+      const hay = `${doc.fullName} ${doc.email} ${doc.specialty ?? ''} ${doc.workplace ?? ''} ${doc.licenseNumber ?? ''}`.toLowerCase();
       return tokens.every((t) => hay.includes(t));
     });
 
@@ -973,12 +1151,14 @@ export default function App() {
     return {
       products: matchedProducts,
       companies: matchedCompanies,
+      doctors: matchedDoctors,
       drugClasses: matchedDrugClasses,
       specialties: matchedSpecialties,
     };
   }, [
     adminGlobalSearchQuery,
     companiesList,
+    registeredDoctors,
     products,
     drugClassesList,
     specialtiesList,
@@ -1670,10 +1850,77 @@ export default function App() {
     });
   };
 
+  const generateRandomTempPassword = (prefix = 'Temp') => {
+    const code = Math.floor(1000 + Math.random() * 9000);
+    return `${prefix}#${code}IQ`;
+  };
+
+  // Company Security Settings: change temporary password to custom company password
+  const handleCompanyChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    const expectedCurrent = activeCompanyWorkspaceRecord.password || 'Temp#2026';
+    if (companyCurrentPassword.trim() !== expectedCurrent) {
+      setBannerNotice({
+        tone: 'error',
+        message:
+          'Current or temporary password does not match. Please enter the password currently assigned to this company account.',
+      });
+      return;
+    }
+    if (companyNewPassword.trim().length < 6) {
+      setBannerNotice({
+        tone: 'warning',
+        message: 'New company password must be at least 6 characters long.',
+      });
+      return;
+    }
+    if (companyNewPassword.trim() !== companyConfirmPassword.trim()) {
+      setBannerNotice({
+        tone: 'error',
+        message: 'New password and password confirmation do not match.',
+      });
+      return;
+    }
+
+    const updatedPassword = companyNewPassword.trim();
+    const nowIso = new Date().toISOString();
+    setCompaniesList((prev) =>
+      prev.map((comp) =>
+        comp.id === activeCompanyWorkspaceRecord.id
+          ? {
+              ...comp,
+              password: updatedPassword,
+              isTemporaryPassword: false,
+              passwordUpdatedAt: nowIso,
+            }
+          : comp
+      )
+    );
+    setCompanyCurrentPassword('');
+    setCompanyNewPassword('');
+    setCompanyConfirmPassword('');
+    appendAudit(
+      'company.security.password_update',
+      activeCompanyWorkspaceRecord.companyName,
+      `Company Admin (${activeCompanyWorkspaceRecord.contactEmail}) replaced the temporary password with a new company password in Security Settings.`
+    );
+    setBannerNotice({
+      tone: 'success',
+      message: `Password updated for ${activeCompanyWorkspaceRecord.companyName}. Use your new password next time you sign in from the main Sign In page.`,
+    });
+  };
+
   // Admin Search Lists & Paid Home Medications handlers
   const handleAdminAddCompany = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCompanyName.trim()) return;
+    const assignedTempPassword = newCompanyTempPassword.trim() || 'Temp#2026';
+    const assignedEmail =
+      newCompanyEmail.trim().toLowerCase() ||
+      `admin@${newCompanyName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '')}.iq`;
     const created: CompanyRecord = {
       id: `comp-${Date.now()}`,
       companyName: newCompanyName.trim(),
@@ -1682,10 +1929,12 @@ export default function App() {
         newCompanyDescription.trim() ||
         'Verified pharmaceutical company operating in the Iraq healthcare market.',
       websiteUrl: newCompanyWebsite.trim() || 'https://pharamty.iq',
-      contactEmail: newCompanyEmail.trim() || 'medical@pharamty.iq',
+      contactEmail: assignedEmail,
       contactPhone: newCompanyPhone.trim() || '+964 770 000 0000',
       status: 'verified',
       verifiedAt: new Date().toISOString(),
+      password: assignedTempPassword,
+      isTemporaryPassword: true,
     };
     setCompaniesList((prev) => [created, ...prev]);
     setNewCompanyName('');
@@ -1694,42 +1943,48 @@ export default function App() {
     setNewCompanyWebsite('');
     setNewCompanyEmail('');
     setNewCompanyPhone('');
+    setNewCompanyTempPassword(generateRandomTempPassword('Temp'));
     appendAudit(
       'taxonomy.company.create',
       created.companyName,
-      `Admin added company "${created.companyName}" to the official search list.`
+      `Admin added company "${created.companyName}" with login email (${created.contactEmail}) and temporary password.`
     );
     setBannerNotice({
       tone: 'success',
-      message: `Added "${created.companyName}" to the Companies search list.`,
+      message: `Added "${created.companyName}" with login email ${created.contactEmail} and temporary password "${assignedTempPassword}".`,
     });
   };
 
   const handleAdminSaveCompanyEdit = (companyId: string) => {
     if (!editCompanyName.trim()) return;
     setCompaniesList((prev) =>
-      prev.map((comp) =>
-        comp.id === companyId
-          ? {
-              ...comp,
-              companyName: editCompanyName.trim(),
-              legalName: editCompanyLegalName.trim() || comp.legalName,
-              description: editCompanyDescription.trim() || comp.description,
-              websiteUrl: editCompanyWebsite.trim() || comp.websiteUrl,
-              contactEmail: editCompanyEmail.trim() || comp.contactEmail,
-              contactPhone: editCompanyPhone.trim() || comp.contactPhone,
-            }
-          : comp
-      )
+      prev.map((comp) => {
+        if (comp.id !== companyId) return comp;
+        const nextTemp = editCompanyTempPassword.trim();
+        const passwordChangedByAdmin = Boolean(nextTemp && nextTemp !== comp.password);
+        return {
+          ...comp,
+          companyName: editCompanyName.trim(),
+          legalName: editCompanyLegalName.trim() || comp.legalName,
+          description: editCompanyDescription.trim() || comp.description,
+          websiteUrl: editCompanyWebsite.trim() || comp.websiteUrl,
+          contactEmail: editCompanyEmail.trim().toLowerCase() || comp.contactEmail,
+          contactPhone: editCompanyPhone.trim() || comp.contactPhone,
+          password: nextTemp || comp.password || 'Temp#2026',
+          isTemporaryPassword: passwordChangedByAdmin
+            ? true
+            : comp.isTemporaryPassword ?? true,
+        };
+      })
     );
     appendAudit(
       'taxonomy.company.update',
       editCompanyName.trim(),
-      `Admin updated company profile and search list details.`
+      `Admin updated company login email (${editCompanyEmail.trim()}) and temporary password credentials.`
     );
     setBannerNotice({
       tone: 'success',
-      message: `Saved profile updates for "${editCompanyName.trim()}".`,
+      message: `Saved login email & temporary password credentials for "${editCompanyName.trim()}".`,
     });
     setEditingCompanyId(null);
   };
@@ -2016,6 +2271,9 @@ export default function App() {
                   <span className="text-[12px] font-bold text-[#F2F5F8]">
                     {currentUser.fullName}
                   </span>
+                  <span className="text-[11px] font-mono text-[#5DB4F2]">
+                    ({currentUser.email})
+                  </span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                       currentUser.verificationStatus === 'approved'
@@ -2028,6 +2286,18 @@ export default function App() {
                       : 'Pending Verification'}
                   </span>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setActiveWorkspace('auth');
+                  }}
+                  className="px-3 py-1.5 rounded-[10px] bg-[#253F51] hover:bg-[#1769AA] text-[#5DB4F2] hover:text-[#F2F5F8] border border-[#46718F] text-[12px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span>Doctor Sign Up</span>
+                </button>
 
                 <button
                   type="button"
@@ -2174,6 +2444,37 @@ export default function App() {
           </nav>
         </div>
       </header>
+
+      {/* Admin Member Page Inspection Return Bar */}
+      {adminInspectingMember && activeWorkspace !== 'admin' && activeWorkspace !== 'auth' && (
+        <div className="bg-[#1769AA] border-b border-[#5DB4F2] px-4 sm:px-6 py-2">
+          <div className="max-w-[1120px] mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-[12px] font-bold text-[#F2F5F8]">
+              <Shield className="w-4 h-4 text-[#F2F5F8]" />
+              <span>
+                Admin Member Access Mode — Currently Viewing Page for:{' '}
+                <strong className="underline">
+                  {activeWorkspace === 'company'
+                    ? `${activeCompanyWorkspaceRecord.companyName} (${activeCompanyWorkspaceRecord.contactEmail})`
+                    : `${currentUser.fullName} (${currentUser.email})`}
+                </strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setAdminInspectingMember(false);
+                switchRoleAndWorkspace('admin', 'admin');
+                setAdminViewMode('access_accounts');
+              }}
+              className="px-3 py-1 rounded-[8px] bg-[#1F2D38] hover:bg-[#263744] border border-[#5DB4F2] text-[#F2F5F8] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Admin Members List (Doctors & Companies)</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Optional Notification Banner */}
       {bannerNotice && (
@@ -3545,6 +3846,15 @@ export default function App() {
                     <span className="px-2.5 py-0.5 rounded-full bg-[#193D2D] border border-[#2F8F5C] text-[#38C976] text-[11px] font-bold">
                       Verified Company Account
                     </span>
+                    {activeCompanyWorkspaceRecord.isTemporaryPassword !== false ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B] text-[11px] font-bold">
+                        Temporary Password Active
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#123F68] border border-[#46718F] text-[#5DB4F2] text-[11px] font-bold">
+                        Company Password Secured
+                      </span>
+                    )}
                   </div>
                   <p className="text-[13px] text-[#B8C3CC]">
                     {activeCompanyWorkspaceRecord.legalName} •{' '}
@@ -3591,6 +3901,19 @@ export default function App() {
 
                 <button
                   type="button"
+                  onClick={() => setShowCompanySecuritySettings((prev) => !prev)}
+                  className={`px-3.5 py-2 rounded-[10px] border text-[12px] font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    showCompanySecuritySettings
+                      ? 'bg-[#123F68] border-[#5DB4F2] text-[#F2F5F8]'
+                      : 'bg-[#304451] hover:bg-[#3A5262] border-[#51616D] text-[#F2F5F8]'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5 text-[#5DB4F2]" />
+                  <span>Security Settings</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => openEditDraftModal(undefined, activeCompanyWorkspaceRecord.id)}
                   className="px-4 py-2 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[13px] font-bold flex items-center gap-1.5 transition cursor-pointer"
                 >
@@ -3599,6 +3922,144 @@ export default function App() {
                 </button>
               </div>
             </div>
+
+            {/* Temporary Password Action Required Banner */}
+            {activeCompanyWorkspaceRecord.isTemporaryPassword !== false &&
+              !showCompanySecuritySettings && (
+                <div className="bg-[#4A3B1C]/80 border border-[#A56F0B] rounded-[12px] p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <ShieldAlert className="w-5 h-5 text-[#F59E0B] shrink-0" />
+                    <div className="text-[13px] text-[#F2F5F8]">
+                      <strong>Action Required — Temporary Password Active:</strong> You
+                      signed in with the temporary password assigned by the Platform Admin.
+                      Open <strong>Security Settings</strong> to set your permanent company
+                      password.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowCompanySecuritySettings(true)}
+                    className="px-3.5 py-1.5 rounded-[8px] bg-[#F59E0B] text-[#1F2D38] text-[12px] font-extrabold cursor-pointer"
+                  >
+                    Change Password in Security Settings →
+                  </button>
+                </div>
+              )}
+
+            {/* Company Security Settings — Change Password Card */}
+            {showCompanySecuritySettings && (
+              <div className="bg-[#263744] border border-[#5DB4F2] rounded-[16px] p-5 space-y-4">
+                <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-[#51616D]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[10px] bg-[#123F68] border border-[#5DB4F2]/50 flex items-center justify-center shrink-0">
+                      <Lock className="w-5 h-5 text-[#5DB4F2]" />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-[17px] font-bold text-[#F2F5F8]">
+                          Company Security Settings — Change Account Password
+                        </h2>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                            activeCompanyWorkspaceRecord.isTemporaryPassword !== false
+                              ? 'bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B]'
+                              : 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
+                          }`}
+                        >
+                          {activeCompanyWorkspaceRecord.isTemporaryPassword !== false
+                            ? 'Using Admin Temporary Password'
+                            : 'Custom Company Password Active'}
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-[#B8C3CC] mt-0.5">
+                        Assigned Company Login Email:{' '}
+                        <code className="text-[#5DB4F2] font-bold">
+                          {activeCompanyWorkspaceRecord.contactEmail}
+                        </code>{' '}
+                        (Signs in from the main Sign In entrance and opens this Company
+                        Workspace directly)
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowCompanySecuritySettings(false)}
+                    className="px-3 py-1.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] text-[12px] font-semibold text-[#B8C3CC] hover:text-[#F2F5F8] cursor-pointer"
+                  >
+                    Close Security Settings
+                  </button>
+                </div>
+
+                <form
+                  onSubmit={handleCompanyChangePassword}
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end"
+                >
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
+                      Current / Temporary Password *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={companyCurrentPassword}
+                      onChange={(e) => setCompanyCurrentPassword(e.target.value)}
+                      placeholder="Enter Admin temporary or current password"
+                      className="w-full px-3 py-2 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
+                      New Company Password (min. 6 chars) *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={companyNewPassword}
+                      onChange={(e) => setCompanyNewPassword(e.target.value)}
+                      placeholder="Enter new permanent password"
+                      className="w-full px-3 py-2 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1.5">
+                      Confirm New Password *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={companyConfirmPassword}
+                      onChange={(e) => setCompanyConfirmPassword(e.target.value)}
+                      placeholder="Re-enter new password"
+                      className="w-full px-3 py-2 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <div className="text-[12px] text-[#B8C3CC]">
+                      {activeCompanyWorkspaceRecord.passwordUpdatedAt
+                        ? `Last updated by Company Admin on ${formatShortDate(
+                            activeCompanyWorkspaceRecord.passwordUpdatedAt
+                          )}`
+                        : `Initial temporary password provisioned by Platform Admin (${
+                            activeCompanyWorkspaceRecord.password || 'Temp#2026'
+                          })`}
+                    </div>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-[10px] bg-[#193D2D] hover:bg-[#22523D] border border-[#2F8F5C] text-[#38C976] text-[13px] font-bold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Update Company Password</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
             {/* _CompanyWorkflowOverview */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -4061,28 +4522,59 @@ export default function App() {
             <div className="rounded-[16px] p-6 bg-gradient-to-br from-[#123F68] to-[#1769AA] border border-[#46718F] flex flex-wrap items-center justify-between gap-6">
               <div className="max-w-2xl">
                 <div className="text-[12px] font-extrabold tracking-wider text-[#F2F5F8] uppercase">
-                  OFFICIAL CATALOG GOVERNANCE & PORTFOLIO CONTROL
+                  OFFICIAL CATALOG GOVERNANCE & MEMBER DIRECTORY
                 </div>
                 <h1 className="text-[28px] font-extrabold text-[#F2F5F8] tracking-tight mt-1">
-                  Admin Governance & Company Pages Workspace
+                  Admin Governance — Doctors & Companies Members Directory
                 </h1>
                 <p className="text-[14px] text-[#F2F5F8]/90 leading-relaxed mt-1.5">
-                  Search across all products, companies, drug classes, and specialties. Enter
-                  any Company Page to edit its profile, add or edit medications, and assign
-                  products to the Doctor Home Page Ad Space.
+                  View all signed-up Doctors and Companies. Press directly on any Doctor&apos;s
+                  name or Company&apos;s name to open their dedicated page, manage credentials,
+                  or enter their live workspace.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <div className="min-w-[138px] p-3.5 rounded-[12px] bg-[#1F2D38]/40 border border-[#F2F5F8]/20">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAdminDoctorId(null);
+                    setSelectedAdminCompanyId(null);
+                    setAdminViewMode('access_accounts');
+                  }}
+                  className="min-w-[138px] p-3.5 rounded-[12px] bg-[#1F2D38]/50 hover:bg-[#1F2D38]/80 border border-[#F2F5F8]/30 text-left transition cursor-pointer"
+                >
                   <div className="text-[11px] font-bold tracking-wider text-[#F2F5F8]/80 uppercase">
-                    COMPANIES
+                    DOCTORS SIGN-UP
+                  </div>
+                  <div className="text-[24px] font-extrabold text-[#F2F5F8] mt-0.5 font-mono tabular-nums">
+                    {registeredDoctors.length}
+                  </div>
+                  <div className="text-[11px] text-[#38C976] font-semibold">
+                    {registeredDoctors.filter((d) => d.verificationStatus === 'approved').length}{' '}
+                    verified •{' '}
+                    {registeredDoctors.filter((d) => d.verificationStatus === 'pending').length}{' '}
+                    pending
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAdminDoctorId(null);
+                    setSelectedAdminCompanyId(null);
+                    setAdminViewMode('access_accounts');
+                  }}
+                  className="min-w-[138px] p-3.5 rounded-[12px] bg-[#1F2D38]/50 hover:bg-[#1F2D38]/80 border border-[#F2F5F8]/30 text-left transition cursor-pointer"
+                >
+                  <div className="text-[11px] font-bold tracking-wider text-[#F2F5F8]/80 uppercase">
+                    COMPANIES SIGN-UP
                   </div>
                   <div className="text-[24px] font-extrabold text-[#F2F5F8] mt-0.5 font-mono tabular-nums">
                     {companiesList.length}
                   </div>
-                  <div className="text-[11px] text-[#F2F5F8]/80">In Iraq registry</div>
-                </div>
+                  <div className="text-[11px] text-[#F2F5F8]/80">Click any name to open page</div>
+                </button>
 
                 <div className="min-w-[138px] p-3.5 rounded-[12px] bg-[#1F2D38]/40 border border-[#F2F5F8]/20">
                   <div className="text-[11px] font-bold tracking-wider text-[#F2F5F8]/80 uppercase">
@@ -4104,12 +4596,15 @@ export default function App() {
                 <div>
                   <h2 className="text-[16px] font-bold text-[#F2F5F8] flex items-center gap-2">
                     <Search className="w-4 h-4 text-[#5DB4F2]" />
-                    <span>Admin Global Search (Products, Companies, Drug Classes & Specialties)</span>
+                    <span>
+                      Admin Global Search (Doctors, Companies, Products, Drug Classes &
+                      Specialties)
+                    </span>
                   </h2>
                   <p className="text-[12px] text-[#B8C3CC] mt-0.5">
-                    Search any medication brand, generic name, registration number, company
-                    name, therapeutic class, or specialty for immediate editing and ad-space
-                    assignment.
+                    Search any signed-up Doctor, Company, medication brand, generic name,
+                    registration number, therapeutic class, or specialty. Press on any Doctor
+                    or Company name to open their page.
                   </p>
                 </div>
                 <button
@@ -4128,8 +4623,8 @@ export default function App() {
                   type="text"
                   value={adminGlobalSearchQuery}
                   onChange={(e) => setAdminGlobalSearchQuery(e.target.value)}
-                  placeholder="Search everything in Admin: e.g. AstraZeneca, Betaloc, Forxiga, Beta Blockers, Cardiology..."
-                  aria-label="Admin global search across products, companies, classes, and specialties"
+                  placeholder="Search Doctors, Companies, or Medications: e.g. Dr. Tariq, AstraZeneca, Betaloc, Forxiga..."
+                  aria-label="Admin global search across doctors, companies, products, classes, and specialties"
                   className="w-full pl-10 pr-10 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[14px] text-[#F2F5F8] placeholder-[#84919B]"
                 />
                 {adminGlobalSearchQuery.trim().length > 0 && (
@@ -4145,7 +4640,7 @@ export default function App() {
               </div>
 
               {/* Global Search Results Panel */}
-              {adminGlobalSearchResults && (
+              {adminGlobalSearchQuery.trim().length > 0 && (
                 <div className="bg-[#1F2D38] border border-[#5DB4F2] rounded-[12px] p-4 space-y-5">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#51616D] pb-3">
                     <div className="text-[13px] font-bold text-[#F2F5F8]">
@@ -4155,6 +4650,10 @@ export default function App() {
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-[#B8C3CC]">
+                      <span>
+                        Doctors: {adminGlobalSearchResults.doctors.length}
+                      </span>
+                      <span>•</span>
                       <span>
                         Companies: {adminGlobalSearchResults.companies.length}
                       </span>
@@ -4173,11 +4672,52 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* Matching Signed-Up Doctors */}
+                  {adminGlobalSearchResults.doctors.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-[12px] font-bold text-[#5DB4F2] uppercase tracking-wider">
+                        Matching Signed-Up Doctors ({adminGlobalSearchResults.doctors.length})
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {adminGlobalSearchResults.doctors.map((doc) => (
+                          <div
+                            key={doc.profileId}
+                            className="p-3.5 rounded-[10px] bg-[#263744] border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <button
+                                type="button"
+                                onClick={() => openAdminDoctorPage(doc.profileId)}
+                                className="text-[14px] font-bold text-[#5DB4F2] hover:text-[#F2F5F8] hover:underline text-left cursor-pointer"
+                              >
+                                <HighlightMatch
+                                  text={doc.fullName}
+                                  query={adminGlobalSearchQuery}
+                                />
+                              </button>
+                              <div className="text-[12px] text-[#B8C3CC] truncate">
+                                {doc.email} • {doc.specialty ?? 'Physician'}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => openAdminDoctorPage(doc.profileId)}
+                              className="px-3 py-1.5 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Stethoscope className="w-3.5 h-3.5" />
+                              <span>Open Doctor Page</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Matching Companies */}
                   {adminGlobalSearchResults.companies.length > 0 && (
                     <div className="space-y-2">
                       <div className="text-[12px] font-bold text-[#5DB4F2] uppercase tracking-wider">
-                        Matching Companies ({adminGlobalSearchResults.companies.length})
+                        Matching Signed-Up Companies ({adminGlobalSearchResults.companies.length})
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {adminGlobalSearchResults.companies.map((comp) => {
@@ -4190,12 +4730,16 @@ export default function App() {
                               className="p-3.5 rounded-[10px] bg-[#263744] border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
                             >
                               <div className="min-w-0">
-                                <div className="text-[14px] font-bold text-[#F2F5F8]">
+                                <button
+                                  type="button"
+                                  onClick={() => openAdminCompanyPage(comp.id)}
+                                  className="text-[14px] font-bold text-[#5DB4F2] hover:text-[#F2F5F8] hover:underline text-left cursor-pointer"
+                                >
                                   <HighlightMatch
                                     text={comp.companyName}
                                     query={adminGlobalSearchQuery}
                                   />
-                                </div>
+                                </button>
                                 <div className="text-[12px] text-[#B8C3CC] truncate">
                                   {comp.legalName} • {companyProductsCount} product(s)
                                 </div>
@@ -4203,11 +4747,7 @@ export default function App() {
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    setSelectedAdminCompanyId(comp.id);
-                                    setAdminViewMode('company_pages');
-                                    setAdminGlobalSearchQuery('');
-                                  }}
+                                  onClick={() => openAdminCompanyPage(comp.id)}
                                   className="px-3 py-1.5 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer"
                                 >
                                   <Building2 className="w-3.5 h-3.5" />
@@ -4248,9 +4788,13 @@ export default function App() {
                               <div>
                                 <div className="flex items-center justify-between gap-2">
                                   <StatusPill status={product.status} />
-                                  <span className="text-[11px] text-[#B8C3CC] font-semibold">
+                                  <button
+                                    type="button"
+                                    onClick={() => openAdminCompanyPage(product.companyId)}
+                                    className="text-[11px] text-[#5DB4F2] hover:underline font-semibold cursor-pointer"
+                                  >
                                     {getCompanyName(product.companyId)}
-                                  </span>
+                                  </button>
                                 </div>
                                 <div className="text-[15px] font-bold text-[#F2F5F8] mt-1.5">
                                   <HighlightMatch
@@ -4292,11 +4836,7 @@ export default function App() {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    setSelectedAdminCompanyId(product.companyId);
-                                    setAdminViewMode('company_pages');
-                                    setAdminGlobalSearchQuery('');
-                                  }}
+                                  onClick={() => openAdminCompanyPage(product.companyId)}
                                   className="px-2.5 py-1 rounded bg-[#304451] hover:bg-[#3A5262] border border-[#51616D] text-[#5DB4F2] text-[11px] font-semibold cursor-pointer"
                                 >
                                   Company Page →
@@ -4385,13 +4925,14 @@ export default function App() {
                     </div>
                   )}
 
-                  {adminGlobalSearchResults.companies.length === 0 &&
+                  {adminGlobalSearchResults.doctors.length === 0 &&
+                    adminGlobalSearchResults.companies.length === 0 &&
                     adminGlobalSearchResults.products.length === 0 &&
                     adminGlobalSearchResults.drugClasses.length === 0 &&
                     adminGlobalSearchResults.specialties.length === 0 && (
                       <div className="text-center py-4 text-[13px] text-[#B8C3CC]">
-                        No matching products, companies, drug classes, or specialties found for
-                        &ldquo;{adminGlobalSearchQuery.trim()}&rdquo;.
+                        No matching doctors, companies, products, drug classes, or specialties
+                        found for &ldquo;{adminGlobalSearchQuery.trim()}&rdquo;.
                       </div>
                     )}
                 </div>
@@ -4403,6 +4944,27 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => {
+                  setSelectedAdminCompanyId(null);
+                  setSelectedAdminDoctorId(null);
+                  setAdminViewMode('access_accounts');
+                }}
+                className={`px-4 py-2 rounded-[10px] text-[13px] font-bold flex items-center gap-2 border transition cursor-pointer ${
+                  adminViewMode === 'access_accounts'
+                    ? 'bg-[#1769AA] border-[#5DB4F2] text-[#F2F5F8]'
+                    : 'bg-[#263744] border-[#51616D] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                }`}
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>
+                  Members List: Doctors Sign-Up ({registeredDoctors.length}) & Companies Sign-Up (
+                  {companiesList.length})
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedAdminDoctorId(null);
                   setAdminViewMode('company_pages');
                 }}
                 className={`px-4 py-2 rounded-[10px] text-[13px] font-bold flex items-center gap-2 border transition cursor-pointer ${
@@ -4419,6 +4981,7 @@ export default function App() {
                 type="button"
                 onClick={() => {
                   setSelectedAdminCompanyId(null);
+                  setSelectedAdminDoctorId(null);
                   setAdminViewMode('review_queue');
                 }}
                 className={`px-4 py-2 rounded-[10px] text-[13px] font-bold flex items-center gap-2 border transition cursor-pointer ${
@@ -4435,6 +4998,7 @@ export default function App() {
                 type="button"
                 onClick={() => {
                   setSelectedAdminCompanyId(null);
+                  setSelectedAdminDoctorId(null);
                   setAdminViewMode('search_lists');
                 }}
                 className={`px-4 py-2 rounded-[10px] text-[13px] font-bold flex items-center gap-2 border transition cursor-pointer ${
@@ -4451,6 +5015,7 @@ export default function App() {
                 type="button"
                 onClick={() => {
                   setSelectedAdminCompanyId(null);
+                  setSelectedAdminDoctorId(null);
                   setAdminViewMode('paid_home');
                 }}
                 className={`px-4 py-2 rounded-[10px] text-[13px] font-bold flex items-center gap-2 border transition cursor-pointer ${
@@ -4462,29 +5027,6 @@ export default function App() {
                 <CheckCircle2 className="w-4 h-4" />
                 <span>
                   Home Page Ad Space ({paidHomeProductIds.length})
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedAdminCompanyId(null);
-                  setAdminViewMode('access_accounts');
-                }}
-                className={`px-4 py-2 rounded-[10px] text-[13px] font-bold flex items-center gap-2 border transition cursor-pointer ${
-                  adminViewMode === 'access_accounts'
-                    ? 'bg-[#1769AA] border-[#5DB4F2] text-[#F2F5F8]'
-                    : 'bg-[#263744] border-[#51616D] text-[#B8C3CC] hover:text-[#F2F5F8]'
-                }`}
-              >
-                <UserCheck className="w-4 h-4" />
-                <span>
-                  Company Login Emails & Physician Verification (
-                  {
-                    registeredDoctors.filter((d) => d.verificationStatus === 'pending')
-                      .length
-                  }{' '}
-                  Pending)
                 </span>
               </button>
             </div>
@@ -4548,6 +5090,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => {
+                            setAdminInspectingMember(true);
                             setActiveCompanyWorkspaceId(selectedAdminCompany.id);
                             switchRoleAndWorkspace(
                               'company_admin',
@@ -4557,12 +5100,13 @@ export default function App() {
                           }}
                           className="px-3.5 py-2 rounded-[10px] bg-[#263744] hover:bg-[#304451] border border-[#51616D] text-[#5DB4F2] text-[12px] font-bold cursor-pointer"
                         >
-                          Open in Company Workspace →
+                          Open Live Company Admin Workspace →
                         </button>
 
                         <button
                           type="button"
                           onClick={() => {
+                            setAdminInspectingMember(true);
                             switchRoleAndWorkspace('doctor', 'doctor');
                             setSelectedDoctorCompanyId(selectedAdminCompany.id);
                           }}
@@ -4932,9 +5476,13 @@ export default function App() {
                                 </div>
                               </div>
 
-                              <h3 className="text-[18px] font-bold text-[#F2F5F8] mt-2">
+                              <button
+                                type="button"
+                                onClick={() => openAdminCompanyPage(comp.id)}
+                                className="text-[18px] font-bold text-[#5DB4F2] hover:text-[#F2F5F8] hover:underline text-left mt-2 cursor-pointer"
+                              >
                                 {comp.companyName}
-                              </h3>
+                              </button>
                               <p className="text-[12px] text-[#5DB4F2] font-semibold">
                                 {comp.legalName}
                               </p>
@@ -5337,7 +5885,10 @@ export default function App() {
                       >
                         <div className="text-[13px] font-bold text-[#5DB4F2] flex items-center gap-1.5">
                           <Plus className="w-4 h-4" />
-                          <span>Add New Company to Search List</span>
+                          <span>
+                            Add New Company to List (With Assigned Login Email & Temporary
+                            Password)
+                          </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <input
@@ -5349,24 +5900,38 @@ export default function App() {
                             className="px-3 py-2 rounded-[8px] bg-[#263744] border border-[#51616D] text-[13px] text-[#F2F5F8]"
                           />
                           <input
+                            type="email"
+                            required
+                            value={newCompanyEmail}
+                            onChange={(e) => setNewCompanyEmail(e.target.value)}
+                            placeholder="Company Admin Login Email (e.g. admin@company.iq) *"
+                            className="px-3 py-2 rounded-[8px] bg-[#263744] border border-[#5DB4F2] text-[13px] font-mono text-[#F2F5F8]"
+                          />
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              required
+                              value={newCompanyTempPassword}
+                              onChange={(e) => setNewCompanyTempPassword(e.target.value)}
+                              placeholder="Temporary Password *"
+                              className="flex-1 px-3 py-2 rounded-[8px] bg-[#263744] border border-[#F59E0B] text-[13px] font-mono text-[#F2F5F8]"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setNewCompanyTempPassword(generateRandomTempPassword('Temp'))
+                              }
+                              title="Generate new temporary password"
+                              className="px-2.5 py-2 rounded-[8px] bg-[#304451] hover:bg-[#3A5262] border border-[#51616D] text-[11px] font-bold text-[#F59E0B] shrink-0 cursor-pointer"
+                            >
+                              Generate
+                            </button>
+                          </div>
+                          <input
                             type="text"
                             value={newCompanyLegalName}
                             onChange={(e) => setNewCompanyLegalName(e.target.value)}
                             placeholder="Legal Name (e.g. Al-Mansour Industries Ltd.)"
-                            className="px-3 py-2 rounded-[8px] bg-[#263744] border border-[#51616D] text-[13px] text-[#F2F5F8]"
-                          />
-                          <input
-                            type="text"
-                            value={newCompanyWebsite}
-                            onChange={(e) => setNewCompanyWebsite(e.target.value)}
-                            placeholder="Website URL (e.g. https://mansourpharma.iq)"
-                            className="px-3 py-2 rounded-[8px] bg-[#263744] border border-[#51616D] text-[13px] text-[#F2F5F8]"
-                          />
-                          <input
-                            type="text"
-                            value={newCompanyEmail}
-                            onChange={(e) => setNewCompanyEmail(e.target.value)}
-                            placeholder="Contact Email"
                             className="px-3 py-2 rounded-[8px] bg-[#263744] border border-[#51616D] text-[13px] text-[#F2F5F8]"
                           />
                           <input
@@ -5384,13 +5949,18 @@ export default function App() {
                             className="px-3 py-2 rounded-[8px] bg-[#263744] border border-[#51616D] text-[13px] text-[#F2F5F8]"
                           />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] text-[#B8C3CC]">
+                            The company signs in from the main Doctor Sign In page using the
+                            assigned email + temporary password, then changes it in Security
+                            Settings.
+                          </span>
                           <button
                             type="submit"
                             className="px-4 py-2 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer"
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Add Company</span>
+                            <span>Add Company & Create Temp Password</span>
                           </button>
                         </div>
                       </form>
@@ -5399,42 +5969,70 @@ export default function App() {
                         {companiesList.map((comp) => {
                           const isEditing = editingCompanyId === comp.id;
                           const isVisible = comp.status === 'verified';
+                          const isTemp = comp.isTemporaryPassword !== false;
                           return (
                             <div
                               key={comp.id}
                               className="p-3.5 rounded-[10px] bg-[#304451]/70 border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
                             >
                               {isEditing ? (
-                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-2">
                                   <input
                                     type="text"
                                     value={editCompanyName}
                                     onChange={(e) => setEditCompanyName(e.target.value)}
+                                    placeholder="Company Name"
                                     className="px-2.5 py-1.5 rounded bg-[#1F2D38] border border-[#5DB4F2] text-[12px] text-[#F2F5F8]"
                                   />
                                   <input
-                                    type="text"
-                                    value={editCompanyLegalName}
-                                    onChange={(e) =>
-                                      setEditCompanyLegalName(e.target.value)
-                                    }
-                                    className="px-2.5 py-1.5 rounded bg-[#1F2D38] border border-[#51616D] text-[12px] text-[#F2F5F8]"
+                                    type="email"
+                                    value={editCompanyEmail}
+                                    onChange={(e) => setEditCompanyEmail(e.target.value)}
+                                    placeholder="Assigned Login Email"
+                                    className="px-2.5 py-1.5 rounded bg-[#1F2D38] border border-[#5DB4F2] text-[12px] font-mono text-[#F2F5F8]"
                                   />
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="text"
+                                      value={editCompanyTempPassword}
+                                      onChange={(e) =>
+                                        setEditCompanyTempPassword(e.target.value)
+                                      }
+                                      placeholder="Temp / Reset Password"
+                                      className="flex-1 px-2.5 py-1.5 rounded bg-[#1F2D38] border border-[#F59E0B] text-[12px] font-mono text-[#F2F5F8]"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setEditCompanyTempPassword(
+                                          generateRandomTempPassword('Temp')
+                                        )
+                                      }
+                                      className="px-2 py-1.5 rounded bg-[#263744] border border-[#51616D] text-[11px] font-bold text-[#F59E0B] cursor-pointer"
+                                    >
+                                      Gen
+                                    </button>
+                                  </div>
                                   <input
                                     type="text"
                                     value={editCompanyDescription}
                                     onChange={(e) =>
                                       setEditCompanyDescription(e.target.value)
                                     }
+                                    placeholder="Description"
                                     className="px-2.5 py-1.5 rounded bg-[#1F2D38] border border-[#51616D] text-[12px] text-[#F2F5F8]"
                                   />
                                 </div>
                               ) : (
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[14px] font-bold text-[#F2F5F8]">
+                                <div className="min-w-0 flex-1 space-y-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => openAdminCompanyPage(comp.id)}
+                                      className="text-[14px] font-bold text-[#5DB4F2] hover:text-[#F2F5F8] hover:underline text-left cursor-pointer"
+                                    >
                                       {comp.companyName}
-                                    </span>
+                                    </button>
                                     <span
                                       className={`text-[11px] font-bold ${
                                         isVisible ? 'text-[#38C976]' : 'text-[#F59E0B]'
@@ -5443,8 +6041,24 @@ export default function App() {
                                       · {isVisible ? 'Active in Search' : 'Hidden'}
                                     </span>
                                   </div>
-                                  <div className="text-[12px] text-[#B8C3CC] truncate">
-                                    {comp.legalName} — {comp.description}
+                                  <div className="flex flex-wrap items-center gap-2 text-[12px] text-[#B8C3CC]">
+                                    <span>
+                                      Login:{' '}
+                                      <code className="text-[#5DB4F2] font-bold">
+                                        {comp.contactEmail}
+                                      </code>
+                                    </span>
+                                    <span className="text-[#51616D]">•</span>
+                                    {isTemp ? (
+                                      <span className="text-[#F59E0B] font-mono text-[11px]">
+                                        Temp Password:{' '}
+                                        <strong>{comp.password || 'Temp#2026'}</strong>
+                                      </span>
+                                    ) : (
+                                      <span className="text-[#38C976] text-[11px] font-semibold">
+                                        Password Changed by Company
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -5489,11 +6103,14 @@ export default function App() {
                                         setEditCompanyWebsite(comp.websiteUrl);
                                         setEditCompanyEmail(comp.contactEmail);
                                         setEditCompanyPhone(comp.contactPhone);
+                                        setEditCompanyTempPassword(
+                                          comp.password || 'Temp#2026'
+                                        );
                                       }}
                                       className="px-2.5 py-1 rounded bg-[#263744] hover:bg-[#3A5262] border border-[#51616D] text-[#F2F5F8] text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
                                     >
                                       <Edit3 className="w-3 h-3" />
-                                      <span>Edit</span>
+                                      <span>Edit Email / Temp Password</span>
                                     </button>
                                     <button
                                       type="button"
@@ -5927,193 +6544,678 @@ export default function App() {
             )}
 
             {/* ===============================================================
-                ADMIN TAB 4: COMPANY LOGIN EMAILS & PHYSICIAN VERIFICATION QUEUE
+                ADMIN TAB 4: MEMBERS DIRECTORY (DOCTORS SIGN-UP & COMPANIES SIGN-UP)
             =============================================================== */}
             {adminViewMode === 'access_accounts' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left Column: Physician Sign-Up Verification Queue */}
-                <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-5 space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <h2 className="text-[19px] font-bold text-[#F2F5F8]">
-                        Physician Sign-Up & Verification Queue ({registeredDoctors.length})
-                      </h2>
-                      <p className="text-[12px] text-[#B8C3CC] mt-0.5">
-                        Approve or review physicians registered through the Doctor Sign Up
-                        portal. Approved physicians gain immediate access to the official
-                        catalog.
-                      </p>
+              <div className="space-y-6">
+                {selectedAdminDoctor ? (
+                  /* INSIDE SPECIFIC DOCTOR MEMBER PAGE (ADMIN MANAGEMENT VIEW) */
+                  <div className="space-y-6">
+                    {/* Top Bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedAdminDoctorId(null);
+                            setEditingDoctorId(null);
+                          }}
+                          className="w-10 h-10 rounded-[10px] bg-[#263744] border border-[#51616D] hover:border-[#5DB4F2] flex items-center justify-center text-[#F2F5F8] transition cursor-pointer"
+                          title="Back to All Signed-Up Members"
+                        >
+                          <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h2 className="text-[20px] font-bold text-[#F2F5F8]">
+                              Admin Doctor Member Page — {selectedAdminDoctor.fullName}
+                            </h2>
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                selectedAdminDoctor.verificationStatus === 'approved'
+                                  ? 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
+                                  : 'bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B]'
+                              }`}
+                            >
+                              {selectedAdminDoctor.verificationStatus === 'approved'
+                                ? 'Verified Physician'
+                                : 'Pending Verification'}
+                            </span>
+                          </div>
+                          <p className="text-[13px] text-[#B8C3CC]">
+                            Inspect or edit this physician&apos;s sign-up profile, manage their
+                            verification status, or open their live Doctor Catalog page.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAdminToggleDoctorVerification(selectedAdminDoctor.profileId)
+                          }
+                          className={`px-3.5 py-2 rounded-[10px] border text-[12px] font-bold cursor-pointer transition ${
+                            selectedAdminDoctor.verificationStatus === 'approved'
+                              ? 'bg-[#4A3B1C] border-[#A56F0B] text-[#F59E0B]'
+                              : 'bg-[#193D2D] border-[#2F8F5C] text-[#38C976]'
+                          }`}
+                        >
+                          {selectedAdminDoctor.verificationStatus === 'approved'
+                            ? 'Set Pending Verification'
+                            : 'Approve Physician Now'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdminInspectingMember(true);
+                            switchRoleAndWorkspace(selectedAdminDoctor.profileId, 'doctor');
+                          }}
+                          className="px-4 py-2 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Stethoscope className="w-4 h-4" />
+                          <span>
+                            Open Doctor&apos;s Live Catalog Page (as {selectedAdminDoctor.fullName}) →
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Doctor Member Profile Card with Inline Admin Editor */}
+                    <div className="bg-[#263744] border border-[#51616D] rounded-[16px] p-6 space-y-4">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 rounded-[12px] bg-[#123F68] border border-[#5DB4F2]/60 flex items-center justify-center shrink-0">
+                            <Stethoscope className="w-7 h-7 text-[#5DB4F2]" />
+                          </div>
+                          <div>
+                            <h3 className="text-[24px] font-extrabold text-[#F2F5F8]">
+                              {selectedAdminDoctor.fullName}
+                            </h3>
+                            <p className="text-[14px] font-mono font-semibold text-[#5DB4F2]">
+                              {selectedAdminDoctor.email}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {editingDoctorId === selectedAdminDoctor.profileId ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleAdminSaveDoctorEdit(selectedAdminDoctor.profileId)
+                                }
+                                className="px-3.5 py-1.5 rounded-[8px] bg-[#193D2D] border border-[#2F8F5C] text-[#38C976] text-[12px] font-bold cursor-pointer"
+                              >
+                                Save Doctor Changes
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingDoctorId(null)}
+                                className="px-3.5 py-1.5 rounded-[8px] bg-[#304451] border border-[#51616D] text-[#B8C3CC] text-[12px] font-bold cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingDoctorId(selectedAdminDoctor.profileId);
+                                setEditDoctorFullName(selectedAdminDoctor.fullName);
+                                setEditDoctorEmail(selectedAdminDoctor.email);
+                                setEditDoctorSpecialty(
+                                  selectedAdminDoctor.specialty ?? 'Cardiology'
+                                );
+                                setEditDoctorWorkplace(
+                                  selectedAdminDoctor.workplace ??
+                                    'Baghdad Teaching Hospital, Iraq'
+                                );
+                                setEditDoctorLicense(
+                                  selectedAdminDoctor.licenseNumber ?? 'IQ-IMA-2026'
+                                );
+                                setEditDoctorPhone(
+                                  selectedAdminDoctor.phone ?? '+964 770 000 0000'
+                                );
+                                setEditDoctorPassword(
+                                  selectedAdminDoctor.password ?? 'Doctor#2026'
+                                );
+                              }}
+                              className="px-3.5 py-1.5 rounded-[8px] bg-[#304451] hover:bg-[#3A5262] border border-[#5DB4F2] text-[#F2F5F8] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-[#5DB4F2]" />
+                              <span>Edit Doctor Profile & Credentials</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {editingDoctorId === selectedAdminDoctor.profileId ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3 border-t border-[#51616D]">
+                          <div>
+                            <label className="block text-[11px] font-semibold text-[#B8C3CC] mb-1">
+                              Physician Full Name
+                            </label>
+                            <input
+                              type="text"
+                              value={editDoctorFullName}
+                              onChange={(e) => setEditDoctorFullName(e.target.value)}
+                              className="w-full px-3 py-2 rounded-[8px] bg-[#1F2D38] border border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-[#B8C3CC] mb-1">
+                              Doctor Login Email
+                            </label>
+                            <input
+                              type="email"
+                              value={editDoctorEmail}
+                              onChange={(e) => setEditDoctorEmail(e.target.value)}
+                              className="w-full px-3 py-2 rounded-[8px] bg-[#1F2D38] border border-[#51616D] text-[13px] font-mono text-[#F2F5F8]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-[#B8C3CC] mb-1">
+                              Medical Specialty
+                            </label>
+                            <select
+                              value={editDoctorSpecialty}
+                              onChange={(e) => setEditDoctorSpecialty(e.target.value)}
+                              className="w-full px-3 py-2 rounded-[8px] bg-[#1F2D38] border border-[#51616D] text-[13px] text-[#F2F5F8]"
+                            >
+                              {specialtiesList.map((sp) => (
+                                <option key={sp.id} value={sp.nameEn}>
+                                  {sp.nameEn}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-[#B8C3CC] mb-1">
+                              Iraq Medical Syndicate License #
+                            </label>
+                            <input
+                              type="text"
+                              value={editDoctorLicense}
+                              onChange={(e) => setEditDoctorLicense(e.target.value)}
+                              className="w-full px-3 py-2 rounded-[8px] bg-[#1F2D38] border border-[#51616D] text-[13px] font-mono text-[#F2F5F8]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-[#B8C3CC] mb-1">
+                              Hospital / Clinical Workplace
+                            </label>
+                            <input
+                              type="text"
+                              value={editDoctorWorkplace}
+                              onChange={(e) => setEditDoctorWorkplace(e.target.value)}
+                              className="w-full px-3 py-2 rounded-[8px] bg-[#1F2D38] border border-[#51616D] text-[13px] text-[#F2F5F8]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-[#B8C3CC] mb-1">
+                              Mobile Phone & Password
+                            </label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={editDoctorPhone}
+                                onChange={(e) => setEditDoctorPhone(e.target.value)}
+                                placeholder="+964..."
+                                className="px-2.5 py-2 rounded-[8px] bg-[#1F2D38] border border-[#51616D] text-[12px] text-[#F2F5F8]"
+                              />
+                              <input
+                                type="text"
+                                value={editDoctorPassword}
+                                onChange={(e) => setEditDoctorPassword(e.target.value)}
+                                placeholder="Password"
+                                className="px-2.5 py-2 rounded-[8px] bg-[#1F2D38] border border-[#F59E0B] text-[12px] font-mono text-[#F2F5F8]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#51616D]/60 text-[12px]">
+                          <div className="bg-[#304451]/60 border border-[#51616D] rounded-[10px] p-3">
+                            <div className="text-[#B8C3CC]">Medical Specialty</div>
+                            <div className="text-[#5DB4F2] font-bold mt-0.5">
+                              {selectedAdminDoctor.specialty ?? 'Internal Medicine'}
+                            </div>
+                          </div>
+                          <div className="bg-[#304451]/60 border border-[#51616D] rounded-[10px] p-3">
+                            <div className="text-[#B8C3CC]">Iraq Syndicate License #</div>
+                            <div className="text-[#F2F5F8] font-mono font-bold mt-0.5">
+                              {selectedAdminDoctor.licenseNumber ?? 'IQ-IMA-2026'}
+                            </div>
+                          </div>
+                          <div className="bg-[#304451]/60 border border-[#51616D] rounded-[10px] p-3">
+                            <div className="text-[#B8C3CC]">Hospital / Workplace</div>
+                            <div className="text-[#F2F5F8] font-semibold truncate mt-0.5">
+                              {selectedAdminDoctor.workplace ??
+                                'Baghdad Medical City, Iraq'}
+                            </div>
+                          </div>
+                          <div className="bg-[#304451]/60 border border-[#51616D] rounded-[10px] p-3">
+                            <div className="text-[#B8C3CC]">Contact Phone & Access</div>
+                            <div className="text-[#F2F5F8] font-mono font-semibold mt-0.5">
+                              {selectedAdminDoctor.phone ?? '+964 770 000 0000'}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Specialty-Matched Catalog Medications for this Doctor */}
+                    <div className="bg-[#263744] border border-[#51616D] rounded-[16px] p-5 space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-[17px] font-bold text-[#F2F5F8]">
+                            Official Catalog Access Preview for {selectedAdminDoctor.fullName}
+                          </h3>
+                          <p className="text-[12px] text-[#B8C3CC]">
+                            Published clinical monographs visible to this physician in the
+                            official Iraq catalog ({publishedOfficialProducts.length} total
+                            published medications).
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdminInspectingMember(true);
+                            switchRoleAndWorkspace(selectedAdminDoctor.profileId, 'doctor');
+                          }}
+                          className="px-3.5 py-2 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[12px] font-bold cursor-pointer"
+                        >
+                          Enter Full Doctor Catalog as {selectedAdminDoctor.fullName} →
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-[#51616D]">
+                        {publishedOfficialProducts.map((product) => {
+                          const generic = DEMO_GENERIC_DRUGS.find(
+                            (g) => g.id === product.genericDrugId
+                          );
+                          return (
+                            <div
+                              key={product.id}
+                              className="p-4 rounded-[12px] bg-[#1F2D38] border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
+                            >
+                              <div>
+                                <div className="text-[15px] font-bold text-[#F2F5F8]">
+                                  {product.brandNameEn}
+                                </div>
+                                <div className="text-[12px] font-semibold text-[#5DB4F2]">
+                                  {generic?.nameEn ?? 'Generic drug'} •{' '}
+                                  {product.iraqMarket.strength}
+                                </div>
+                                <div className="text-[11px] text-[#B8C3CC] mt-0.5">
+                                  Company:{' '}
+                                  <button
+                                    type="button"
+                                    onClick={() => openAdminCompanyPage(product.companyId)}
+                                    className="text-[#5DB4F2] font-semibold hover:underline cursor-pointer"
+                                  >
+                                    {getCompanyName(product.companyId)}
+                                  </button>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAdminInspectingMember(true);
+                                  switchRoleAndWorkspace(
+                                    selectedAdminDoctor.profileId,
+                                    'doctor'
+                                  );
+                                  setSelectedDoctorProductId(product.id);
+                                }}
+                                className="px-3 py-1.5 rounded-[8px] bg-[#263744] hover:bg-[#304451] border border-[#5DB4F2] text-[#5DB4F2] text-[11px] font-bold cursor-pointer"
+                              >
+                                View Monograph as Doctor →
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="space-y-3 pt-2 border-t border-[#51616D]">
-                    {registeredDoctors.map((doc) => {
-                      const isApproved = doc.verificationStatus === 'approved';
-                      return (
-                        <div
-                          key={doc.profileId}
-                          className="p-4 rounded-[12px] bg-[#1F2D38] border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
-                        >
-                          <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-[15px] font-bold text-[#F2F5F8]">
-                                {doc.fullName}
-                              </span>
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                                  isApproved
-                                    ? 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
-                                    : 'bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B]'
-                                }`}
-                              >
-                                {isApproved ? 'Verified Physician' : 'Pending Approval'}
-                              </span>
-                            </div>
-                            <div className="text-[12px] font-mono text-[#5DB4F2]">
-                              {doc.email}
-                            </div>
-                            <div className="text-[12px] text-[#B8C3CC]">
-                              Specialty: <strong className="text-[#F2F5F8]">{doc.specialty}</strong>{' '}
-                              • License:{' '}
-                              <span className="font-mono text-[#F2F5F8]">
-                                {doc.licenseNumber ?? 'IQ-IMA-2026'}
-                              </span>
-                            </div>
-                            {doc.workplace && (
-                              <div className="text-[11px] text-[#B8C3CC]">
-                                Workplace: {doc.workplace}
-                              </div>
-                            )}
+                ) : (
+                  /* SIDE-BY-SIDE MEMBERS DIRECTORY: DOCTORS SIGN-UP LIST & COMPANIES SIGN-UP LIST */
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Left Column: Doctors Sign-Up Members List */}
+                    <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-5 space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <div className="text-[11px] font-bold text-[#5DB4F2] uppercase tracking-wider">
+                            PHYSICIAN MEMBERS DIRECTORY
                           </div>
+                          <h2 className="text-[19px] font-bold text-[#F2F5F8] mt-0.5">
+                            Doctors Sign-Up List ({registeredDoctors.length} Members)
+                          </h2>
+                          <p className="text-[12px] text-[#B8C3CC] mt-0.5">
+                            Press directly on any Doctor&apos;s name below to open their
+                            dedicated Doctor Page, inspect credentials, or open their live
+                            Doctor Catalog page.
+                          </p>
+                        </div>
+                      </div>
 
-                          <div className="flex items-center gap-2">
+                      <div className="space-y-3 pt-2 border-t border-[#51616D]">
+                        {registeredDoctors.map((doc) => {
+                          const isApproved = doc.verificationStatus === 'approved';
+                          return (
+                            <div
+                              key={doc.profileId}
+                              className="p-4 rounded-[12px] bg-[#1F2D38] hover:bg-[#304451]/50 border border-[#51616D] hover:border-[#5DB4F2] flex flex-wrap items-center justify-between gap-3 transition"
+                            >
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => openAdminDoctorPage(doc.profileId)}
+                                    title={`Press to open Doctor Page for ${doc.fullName}`}
+                                    className="text-[16px] font-bold text-[#5DB4F2] hover:text-[#F2F5F8] hover:underline text-left flex items-center gap-1.5 cursor-pointer"
+                                  >
+                                    <Stethoscope className="w-4 h-4 shrink-0" />
+                                    <span>{doc.fullName}</span>
+                                  </button>
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                                      isApproved
+                                        ? 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
+                                        : 'bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B]'
+                                    }`}
+                                  >
+                                    {isApproved ? 'Verified Physician' : 'Pending Approval'}
+                                  </span>
+                                </div>
+                                <div className="text-[12px] font-mono text-[#F2F5F8]">
+                                  {doc.email}
+                                </div>
+                                <div className="text-[12px] text-[#B8C3CC]">
+                                  Specialty:{' '}
+                                  <strong className="text-[#F2F5F8]">
+                                    {doc.specialty ?? 'Internal Medicine'}
+                                  </strong>{' '}
+                                  • License:{' '}
+                                  <span className="font-mono text-[#F2F5F8]">
+                                    {doc.licenseNumber ?? 'IQ-IMA-2026'}
+                                  </span>
+                                </div>
+                                {doc.workplace && (
+                                  <div className="text-[11px] text-[#B8C3CC]">
+                                    Workplace: {doc.workplace}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openAdminDoctorPage(doc.profileId)}
+                                  className="px-3 py-1.5 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[11px] font-bold cursor-pointer"
+                                >
+                                  Doctor Page →
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setAdminInspectingMember(true);
+                                    switchRoleAndWorkspace(doc.profileId, 'doctor');
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] hover:bg-[#304451] border border-[#51616D] text-[#5DB4F2] text-[11px] font-semibold cursor-pointer"
+                                >
+                                  Live View
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleAdminToggleDoctorVerification(doc.profileId)
+                                  }
+                                  className={`px-3 py-1.5 rounded-[8px] border text-[11px] font-bold cursor-pointer transition ${
+                                    isApproved
+                                      ? 'bg-[#4A3B1C] border-[#A56F0B] text-[#F59E0B]'
+                                      : 'bg-[#193D2D] border-[#2F8F5C] text-[#38C976]'
+                                  }`}
+                                >
+                                  {isApproved ? 'Set Pending' : 'Approve'}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Companies Sign-Up Members List */}
+                    <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-5 space-y-4">
+                      <div>
+                        <div className="text-[11px] font-bold text-[#5DB4F2] uppercase tracking-wider">
+                          PHARMACEUTICAL COMPANIES DIRECTORY
+                        </div>
+                        <h2 className="text-[19px] font-bold text-[#F2F5F8] mt-0.5">
+                          Companies Sign-Up List ({companiesList.length} Members)
+                        </h2>
+                        <p className="text-[12px] text-[#B8C3CC] mt-0.5">
+                          Press directly on any Company&apos;s name below to open its Company
+                          Page, edit its products, or enter its live Company Admin workspace.
+                        </p>
+                      </div>
+
+                      {/* Quick Provision Company Account Form */}
+                      <form
+                        onSubmit={handleAdminAddCompany}
+                        className="p-3.5 rounded-[12px] bg-[#1F2D38] border border-[#51616D] space-y-2.5"
+                      >
+                        <div className="text-[12px] font-bold text-[#5DB4F2] flex items-center gap-1.5">
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Company Member & Create Temporary Password</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <input
+                            type="text"
+                            required
+                            value={newCompanyName}
+                            onChange={(e) => setNewCompanyName(e.target.value)}
+                            placeholder="Company Name *"
+                            className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#51616D] text-[12px] text-[#F2F5F8]"
+                          />
+                          <input
+                            type="email"
+                            required
+                            value={newCompanyEmail}
+                            onChange={(e) => setNewCompanyEmail(e.target.value)}
+                            placeholder="Company Login Email *"
+                            className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#5DB4F2] text-[12px] font-mono text-[#F2F5F8]"
+                          />
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              required
+                              value={newCompanyTempPassword}
+                              onChange={(e) => setNewCompanyTempPassword(e.target.value)}
+                              placeholder="Temp Password *"
+                              className="flex-1 px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#F59E0B] text-[12px] font-mono text-[#F2F5F8]"
+                            />
                             <button
                               type="button"
                               onClick={() =>
-                                handleAdminToggleDoctorVerification(doc.profileId)
+                                setNewCompanyTempPassword(generateRandomTempPassword('Temp'))
                               }
-                              className={`px-3.5 py-1.5 rounded-[8px] border text-[12px] font-bold cursor-pointer transition ${
-                                isApproved
-                                  ? 'bg-[#4A3B1C] border-[#A56F0B] text-[#F59E0B]'
-                                  : 'bg-[#193D2D] border-[#2F8F5C] text-[#38C976]'
-                              }`}
+                              className="px-2 py-1.5 rounded-[8px] bg-[#304451] border border-[#51616D] text-[11px] font-bold text-[#F59E0B] cursor-pointer"
                             >
-                              {isApproved ? 'Set Pending' : 'Approve Physician'}
+                              Gen
                             </button>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Right Column: Official Company Login Emails Directory */}
-                <div className="lg:col-span-6 bg-[#263744] border border-[#51616D] rounded-[16px] p-5 space-y-4">
-                  <div>
-                    <h2 className="text-[19px] font-bold text-[#F2F5F8]">
-                      Assigned Company Entrance Login Emails ({companiesList.length})
-                    </h2>
-                    <p className="text-[12px] text-[#B8C3CC] mt-0.5">
-                      Each pharmaceutical company enters the platform from the same Sign In
-                      entrance as doctors using their assigned company email below, which
-                      routes them directly to their Company Workspace.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1 pt-2 border-t border-[#51616D]">
-                    {companiesList.map((comp) => {
-                      const isEditingEmail = editingCompanyId === comp.id;
-                      return (
-                        <div
-                          key={comp.id}
-                          className="p-3.5 rounded-[12px] bg-[#1F2D38] border border-[#51616D] flex flex-wrap items-center justify-between gap-3"
-                        >
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[14px] font-bold text-[#F2F5F8]">
-                                {comp.companyName}
-                              </span>
-                              <span className="text-[11px] text-[#B8C3CC]">
-                                ({products.filter((p) => p.companyId === comp.id).length}{' '}
-                                products)
-                              </span>
-                            </div>
-
-                            {isEditingEmail ? (
-                              <div className="flex items-center gap-2 pt-1">
-                                <input
-                                  type="email"
-                                  value={editCompanyEmail}
-                                  onChange={(e) => setEditCompanyEmail(e.target.value)}
-                                  placeholder="Assigned company login email"
-                                  className="flex-1 px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#5DB4F2] text-[12px] font-mono text-[#F2F5F8]"
-                                />
-                              </div>
-                            ) : (
-                              <div className="text-[12px] text-[#B8C3CC] flex items-center gap-1.5">
-                                <span>Login Email:</span>
-                                <code className="text-[#5DB4F2] font-bold">
-                                  {comp.contactEmail}
-                                </code>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {isEditingEmail ? (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handleAdminSaveCompanyEdit(comp.id)}
-                                  className="px-3 py-1.5 rounded-[8px] bg-[#193D2D] border border-[#2F8F5C] text-[#38C976] text-[11px] font-bold cursor-pointer"
-                                >
-                                  Save Email
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingCompanyId(null)}
-                                  className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#51616D] text-[#B8C3CC] text-[11px] font-bold cursor-pointer"
-                                >
-                                  Cancel
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingCompanyId(comp.id);
-                                    setEditCompanyName(comp.companyName);
-                                    setEditCompanyLegalName(comp.legalName);
-                                    setEditCompanyDescription(comp.description);
-                                    setEditCompanyWebsite(comp.websiteUrl);
-                                    setEditCompanyEmail(comp.contactEmail);
-                                    setEditCompanyPhone(comp.contactPhone);
-                                  }}
-                                  className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] hover:bg-[#304451] border border-[#51616D] text-[#F2F5F8] text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
-                                >
-                                  <Edit3 className="w-3 h-3" />
-                                  <span>Edit Login Email</span>
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedAdminCompanyId(comp.id);
-                                    setAdminViewMode('company_pages');
-                                  }}
-                                  className="px-2.5 py-1.5 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[11px] font-bold cursor-pointer"
-                                >
-                                  Company Page →
-                                </button>
-                              </>
-                            )}
-                          </div>
+                        <div className="flex justify-end">
+                          <button
+                            type="submit"
+                            className="px-3 py-1.5 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] text-[#F2F5F8] text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Add Company Email & Temp Password</span>
+                          </button>
                         </div>
-                      );
-                    })}
+                      </form>
+
+                      <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1 pt-2 border-t border-[#51616D]">
+                        {companiesList.map((comp) => {
+                          const isEditingEmail = editingCompanyId === comp.id;
+                          const isTemp = comp.isTemporaryPassword !== false;
+                          const compProductCount = products.filter(
+                            (p) => p.companyId === comp.id
+                          ).length;
+                          return (
+                            <div
+                              key={comp.id}
+                              className="p-3.5 rounded-[12px] bg-[#1F2D38] hover:bg-[#304451]/50 border border-[#51616D] hover:border-[#5DB4F2] flex flex-wrap items-center justify-between gap-3 transition"
+                            >
+                              <div className="min-w-0 flex-1 space-y-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => openAdminCompanyPage(comp.id)}
+                                    title={`Press to open Company Page for ${comp.companyName}`}
+                                    className="text-[15px] font-bold text-[#5DB4F2] hover:text-[#F2F5F8] hover:underline text-left flex items-center gap-1.5 cursor-pointer"
+                                  >
+                                    <Building2 className="w-4 h-4 shrink-0" />
+                                    <span>{comp.companyName}</span>
+                                  </button>
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                                      isTemp
+                                        ? 'bg-[#4A3B1C] border border-[#A56F0B] text-[#F59E0B]'
+                                        : 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
+                                    }`}
+                                  >
+                                    {isTemp
+                                      ? `Temp Password: ${comp.password || 'Temp#2026'}`
+                                      : 'Changed by Company'}
+                                  </span>
+                                </div>
+
+                                {isEditingEmail ? (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1.5">
+                                    <input
+                                      type="email"
+                                      value={editCompanyEmail}
+                                      onChange={(e) => setEditCompanyEmail(e.target.value)}
+                                      placeholder="Assigned company login email"
+                                      className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#5DB4F2] text-[12px] font-mono text-[#F2F5F8]"
+                                    />
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="text"
+                                        value={editCompanyTempPassword}
+                                        onChange={(e) =>
+                                          setEditCompanyTempPassword(e.target.value)
+                                        }
+                                        placeholder="Temporary password"
+                                        className="flex-1 px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#F59E0B] text-[12px] font-mono text-[#F2F5F8]"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setEditCompanyTempPassword(
+                                            generateRandomTempPassword('Temp')
+                                          )
+                                        }
+                                        className="px-2 py-1.5 rounded-[8px] bg-[#304451] border border-[#51616D] text-[11px] font-bold text-[#F59E0B] cursor-pointer"
+                                      >
+                                        Gen
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="text-[12px] text-[#B8C3CC] flex flex-wrap items-center gap-1.5">
+                                    <span>Login Email:</span>
+                                    <code className="text-[#5DB4F2] font-bold">
+                                      {comp.contactEmail}
+                                    </code>
+                                    <span>•</span>
+                                    <span>{compProductCount} product(s)</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2">
+                                {isEditingEmail ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAdminSaveCompanyEdit(comp.id)}
+                                      className="px-3 py-1.5 rounded-[8px] bg-[#193D2D] border border-[#2F8F5C] text-[#38C976] text-[11px] font-bold cursor-pointer"
+                                    >
+                                      Save Credentials
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingCompanyId(null)}
+                                      className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] border border-[#51616D] text-[#B8C3CC] text-[11px] font-bold cursor-pointer"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => openAdminCompanyPage(comp.id)}
+                                      className="px-2.5 py-1.5 rounded-[8px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[11px] font-bold cursor-pointer"
+                                    >
+                                      Company Page →
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setAdminInspectingMember(true);
+                                        setActiveCompanyWorkspaceId(comp.id);
+                                        switchRoleAndWorkspace(
+                                          'company_admin',
+                                          'company',
+                                          comp.id
+                                        );
+                                      }}
+                                      className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] hover:bg-[#304451] border border-[#51616D] text-[#5DB4F2] text-[11px] font-semibold cursor-pointer"
+                                    >
+                                      Live Workspace
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingCompanyId(comp.id);
+                                        setEditCompanyName(comp.companyName);
+                                        setEditCompanyLegalName(comp.legalName);
+                                        setEditCompanyDescription(comp.description);
+                                        setEditCompanyWebsite(comp.websiteUrl);
+                                        setEditCompanyEmail(comp.contactEmail);
+                                        setEditCompanyPhone(comp.contactPhone);
+                                        setEditCompanyTempPassword(
+                                          comp.password || 'Temp#2026'
+                                        );
+                                      }}
+                                      className="px-2.5 py-1.5 rounded-[8px] bg-[#263744] hover:bg-[#304451] border border-[#51616D] text-[#F2F5F8] text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Edit3 className="w-3 h-3" />
+                                      <span>Edit Email / Pass</span>
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -6230,30 +7332,16 @@ export default function App() {
                 /* DOCTOR SIGN UP FORM */
                 <form onSubmit={handleDoctorSignUpSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div className="sm:col-span-2">
-                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
-                        Physician Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={signupFullName}
-                        onChange={(e) => setSignupFullName(e.target.value)}
-                        placeholder="Dr. Ahmed Al-Rubaye"
-                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
-                      />
-                    </div>
-
                     <div>
                       <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
-                        Professional Email *
+                        Your Email Address *
                       </label>
                       <input
                         type="email"
                         required
                         value={signupEmail}
                         onChange={(e) => setSignupEmail(e.target.value)}
-                        placeholder="dr.ahmed@baghdadmed.iq"
+                        placeholder="youremail@gmail.com"
                         className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
                       />
                     </div>
@@ -6267,14 +7355,27 @@ export default function App() {
                         required
                         value={signupPassword}
                         onChange={(e) => setSignupPassword(e.target.value)}
-                        placeholder="Create strong password"
+                        placeholder="Create your password"
+                        className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
+                        Physician Full Name (Optional — auto-filled from email if blank)
+                      </label>
+                      <input
+                        type="text"
+                        value={signupFullName}
+                        onChange={(e) => setSignupFullName(e.target.value)}
+                        placeholder="Dr. Ahmed Al-Rubaye"
                         className="w-full px-3.5 py-2.5 rounded-[10px] bg-[#1F2D38] border border-[#51616D] focus:border-[#5DB4F2] text-[13px] text-[#F2F5F8]"
                       />
                     </div>
 
                     <div>
                       <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
-                        Medical Specialty *
+                        Medical Specialty
                       </label>
                       <select
                         value={signupSpecialty}
@@ -6291,11 +7392,10 @@ export default function App() {
 
                     <div>
                       <label className="block text-[12px] font-semibold text-[#B8C3CC] mb-1">
-                        Iraq Medical Syndicate License # *
+                        Iraq Medical Syndicate License # (Optional)
                       </label>
                       <input
                         type="text"
-                        required
                         value={signupLicenseNumber}
                         onChange={(e) => setSignupLicenseNumber(e.target.value)}
                         placeholder="IQ-IMA-2026-4810"
@@ -6412,6 +7512,7 @@ export default function App() {
                       onClick={() => {
                         setAuthMode('signin');
                         setAuthEmail(DEMO_USERS.doctor.email);
+                        setAuthPassword('Doctor#2026');
                       }}
                       className="p-2.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] flex items-center justify-between text-left cursor-pointer"
                     >
@@ -6426,16 +7527,28 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => {
+                        const azComp = companiesList.find(
+                          (c) =>
+                            c.contactEmail.toLowerCase() ===
+                              'iraq.medinfo@astrazeneca.local' ||
+                            c.id === '75000000-0000-4000-8000-000000000012'
+                        );
                         setAuthMode('signin');
-                        setAuthEmail('iraq.medinfo@astrazeneca.local');
+                        setAuthEmail(
+                          azComp?.contactEmail ?? 'iraq.medinfo@astrazeneca.local'
+                        );
+                        setAuthPassword(azComp?.password ?? 'Temp#2026');
                       }}
-                      className="p-2.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] flex items-center justify-between text-left cursor-pointer"
+                      className="p-2.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] flex flex-wrap items-center justify-between gap-2 text-left cursor-pointer"
                     >
                       <span className="font-semibold text-[#5DB4F2]">
-                        AstraZeneca Iraq (Opens Company Page)
+                        AstraZeneca Iraq (Opens Company Admin)
                       </span>
                       <code className="text-[#F2F5F8] font-mono">
-                        iraq.medinfo@astrazeneca.local
+                        iraq.medinfo@astrazeneca.local •{' '}
+                        {companiesList.find(
+                          (c) => c.id === '75000000-0000-4000-8000-000000000012'
+                        )?.password ?? 'Temp#2026'}
                       </code>
                     </button>
 
@@ -6444,6 +7557,7 @@ export default function App() {
                       onClick={() => {
                         setAuthMode('signin');
                         setAuthEmail(DEMO_USERS.admin.email);
+                        setAuthPassword('Admin#2026');
                       }}
                       className="p-2.5 rounded-[8px] bg-[#1F2D38] hover:bg-[#304451] border border-[#51616D] flex items-center justify-between text-left cursor-pointer"
                     >

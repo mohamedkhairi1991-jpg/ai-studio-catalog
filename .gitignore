@@ -34,3 +34,12 @@ supabase/.env
 
 # iOS generated state
 **/ios/Flutter/.last_build_id
+
+# Local web env files and AI Studio working artifacts
+.env
+.env.local
+.env.*.local
+.aistudio/
+node_modules/
+dist/
+*.tsbuildinfo

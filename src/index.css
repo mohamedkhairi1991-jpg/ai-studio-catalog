@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --pc-canvas: #1F2D38;
+  --pc-surface: #263744;
+  --pc-elevated-surface: #304451;
+  --pc-primary: #1769AA;
+  --pc-primary-hover: #1E78BA;
+  --pc-deep-blue: #123F68;
+  --pc-link-focus: #5DB4F2;
+  --pc-primary-text: #F2F5F8;
+  --pc-secondary-text: #B8C3CC;
+  --pc-disabled-text: #84919B;
+  --pc-subtle-border: #51616D;
+  --pc-strong-border: #83939F;
+  --pc-success: #38C976;
+  --pc-warning: #F59E0B;
+  --pc-error: #FF7272;
+  --pc-destructive: #B42318;
+  --pc-disabled-container: #3A4650;
+  --pc-success-container: #193D2D;
+  --pc-success-border: #2F8F5C;
+  --pc-warning-container: #4A3B1C;
+  --pc-warning-border: #A56F0B;
+  --pc-error-container: #4B2528;
+  --pc-error-border: #A9474E;
+  --pc-unresolved-container: #253F51;
+  --pc-unresolved-border: #46718F;
+}
+
+body {
+  background-color: var(--pc-canvas);
+  color: var(--pc-primary-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--pc-link-focus);
+  outline-offset: 2px;
+}

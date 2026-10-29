@@ -1,11 +1,15 @@
-<div align="center">
+# pharmaconnect
+Pharmaceutical engagement platform for healthcare professionals and pharmaceutical companies.
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+## Web app (React)
 
-  <h1>Built with AI Studio</h2>
+The web client in `src/` uses real Supabase authentication by default. Roles and approval status come only from the database (read under Row Level Security); the browser never decides who is an admin.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+```
+npm ci
+npm run dev
+```
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+Environment variables (see `.env.example`): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (public anon/publishable key only, never a service-role key), and `VITE_DEMO_MODE` (default `false`).
 
-</div>
+`VITE_DEMO_MODE=true` runs the offline demo prototype with fake data and no real authentication. It shows a permanent DEMO banner and must never be deployed publicly.

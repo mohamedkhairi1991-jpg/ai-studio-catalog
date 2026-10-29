@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { resolveAccess, type AccessResult, type Audience } from '../lib/access';
-import AdminApprovals from './AdminApprovals';
+import { AdminCatalogReview } from './AdminCatalogReview';
+import { CompanyCatalog } from './CompanyCatalog';
+import { DoctorCatalog } from './DoctorCatalog';
 import Onboarding from './Onboarding';
 import { Screen, buttonClass, inputClass } from './ui';
 
@@ -104,26 +106,19 @@ export default function AuthGate() {
       );
     }
     if (access.audience === 'administrator') {
-      return <AdminApprovals client={client} email={access.email} onSignOut={() => void signOut()} />;
+      return <AdminCatalogReview client={client} access={access} onSignOut={() => void signOut()} />;
     }
-    const home = ROUTE_FOR[access.audience];
+    if (access.audience === 'officialCatalog') {
+      return <DoctorCatalog client={client} access={access} onSignOut={() => void signOut()} />;
+    }
+    if (access.audience === 'companyWorkflow') {
+      return <CompanyCatalog client={client} access={access} onSignOut={() => void signOut()} />;
+    }
     const blocked = BLOCKED_MESSAGE[access.audience];
     return (
       <Screen>
         <p className="text-sm text-[#B8C3CC]">Signed in as {access.email}</p>
-        {blocked ? (
-          <p className="text-sm text-[#F59E0B]">{blocked}</p>
-        ) : (
-          <div className="space-y-2 text-sm">
-            <p className="text-[#38C976]">Access verified by the database.</p>
-            <p>Workspace: {home}</p>
-            {access.companyName && <p>Company: {access.companyName}</p>}
-            <p className="text-[#B8C3CC]">
-              Catalog data is not connected in this web client yet. Use the Pharamty Flutter apps for the
-              official catalog until it is wired to the database.
-            </p>
-          </div>
-        )}
+        {blocked && <p className="text-sm text-[#F59E0B]">{blocked}</p>}
         <button className={buttonClass} onClick={() => void signOut()}>
           Sign out
         </button>

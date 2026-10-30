@@ -1,6 +1,21 @@
 # PharmaConnect / Pharamty Project Status
 
-Last canonical update: Secure catalog media foundation
+Last canonical update: Admin-managed catalog operating model (2026-10-30)
+
+## Operating model (temporary, owner decision 2026-10-30)
+
+The app currently has two kinds of users only:
+
+- **Administrators** add the companies that work in Iraq and enter their
+  products (details, clinical information, images, brochures), then publish.
+- **Approved doctors** search and read published products.
+
+Company accounts and company self-signup are switched off in the UI for now.
+The company database paths and screens stay in the repository, unused, so
+companies may later manage their own pages through dedicated accounts.
+
+Backend support: migration `admin_managed_catalog` (PR #19). UI build brief
+for Google AI Studio: `docs/AI_STUDIO_BRIEF_ADMIN_CATALOG.md`.
 
 ## Identity and environment
 
@@ -67,7 +82,9 @@ The next planned feature phase will be selected after Phase 6D.3A6 closes.
 | Pharamty admin catalog review UI | Verified |
 | Phase 6D.3A6 GitHub Actions validation | Verified |
 | End-to-end official catalog lifecycle | Verified |
-| Secure catalog storage foundation | In progress |
+| Secure catalog storage foundation | Verified |
+| Admin-managed catalog backend (PR #19) | In progress |
+| Admin company/product entry, media upload, doctor media UI | Not started |
 | Scoped local Flutter validation | Verified |
 | Pull Request merge | Blocked — user approval required |
 

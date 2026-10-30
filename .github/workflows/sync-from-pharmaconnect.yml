@@ -1,0 +1,56 @@
+# Runs in ai-studio-catalog only (the repository Google AI Studio is linked to).
+# Every 30 minutes: merge the latest pharmaconnect main into this repository's
+# main, so AI Studio's GitHub sync pulls in what Claude merged.
+# See docs/HANDOFF.md.
+name: Sync from pharmaconnect
+
+on:
+  schedule:
+    - cron: "0,30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-from-pharmaconnect
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'mohamedkhairi1991-jpg/ai-studio-catalog'
+    runs-on: ubuntu-latest
+    env:
+      PHARMACONNECT_REPO: https://github.com/mohamedkhairi1991-jpg/pharmaconnect.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Merge pharmaconnect main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --quiet "$PHARMACONNECT_REPO" main:refs/remotes/upstream/main
+
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Already up to date with pharmaconnect main."
+            exit 0
+          fi
+
+          if git merge --ff-only upstream/main 2>/dev/null; then
+            echo "Fast-forwarded to pharmaconnect main."
+          elif ! git merge --no-edit -m "sync: merge pharmaconnect main" upstream/main; then
+            git merge --abort
+            echo "::error::AI Studio changes conflict with pharmaconnect main. Merge the open 'AI Studio changes (auto-sync)' pull request in pharmaconnect first; this sync then succeeds on its own."
+            exit 1
+          fi
+
+          if ! git push origin HEAD:main; then
+            echo "::error::Push refused. If pharmaconnect changed files under .github/workflows, GitHub does not let this workflow copy them; ask Claude to sync once by hand."
+            exit 1
+          fi
+          git log --oneline -1 >> "$GITHUB_STEP_SUMMARY"

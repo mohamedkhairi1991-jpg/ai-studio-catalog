@@ -55,6 +55,11 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-30 — Claude (coordination test)
+- End-to-end test of the AI Studio → Claude direction: this entry was pushed
+  to `ai-studio-catalog` the way AI Studio pushes, and should arrive in
+  `pharmaconnect` as the "AI Studio changes (auto-sync)" pull request.
+
 ### 2026-10-30 — Claude
 - **Coordination set up** (this file, two sync workflows). `ai-studio-catalog`
   history joined to `pharmaconnect` so syncs are plain merges.

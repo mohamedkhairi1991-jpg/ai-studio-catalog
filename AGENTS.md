@@ -36,6 +36,17 @@ ordering or delivery system, supply-chain system, or medical-device catalog.
 4. The approved task-specific prompt
 5. Previous reports and chat history
 
+## Coordination between Claude and Google AI Studio
+
+- Before any task, read `docs/HANDOFF.md`; after finishing, add an entry at
+  the top of its log (what changed, why, what the other side must do next).
+- Google AI Studio owns screens in `src/` and works in the
+  `ai-studio-catalog` repository. It does not edit `supabase/` or `.github/`.
+- Claude owns the database, auth, CI and final review, and works in
+  `pharmaconnect` (the source of truth).
+- The two repositories sync automatically every 30 minutes, as described in
+  `docs/HANDOFF.md`.
+
 ## Communication
 
 - Report in English only.

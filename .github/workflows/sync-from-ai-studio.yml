@@ -1,0 +1,80 @@
+# Runs in pharmaconnect only.
+# Every 30 minutes: if Google AI Studio pushed changes to ai-studio-catalog,
+# put them on the `ai-studio/sync` branch here, open (or update) a pull request
+# to main, and start the validation workflows on it. Claude reviews and merges.
+# See docs/HANDOFF.md.
+name: Sync from AI Studio
+
+on:
+  schedule:
+    - cron: "15,45 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: sync-from-ai-studio
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'mohamedkhairi1991-jpg/pharmaconnect'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH: ai-studio/sync
+      AI_STUDIO_REPO: https://github.com/mohamedkhairi1991-jpg/ai-studio-catalog.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Look for new AI Studio changes
+        id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --quiet "$AI_STUDIO_REPO" main:refs/remotes/aistudio/main
+          base="$(git merge-base origin/main aistudio/main || true)"
+          if [ -z "$base" ]; then
+            echo "::error::ai-studio-catalog and pharmaconnect share no history. See docs/HANDOFF.md (one-time setup)."
+            exit 1
+          fi
+          # Changes AI Studio made since it last received pharmaconnect main.
+          if git diff --quiet "$base" aistudio/main; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No new AI Studio changes."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat "$base" aistudio/main | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Update branch, pull request and checks
+        if: steps.check.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push --force origin aistudio/main:refs/heads/$BRANCH
+
+          pr="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$pr" ]; then
+            if gh pr create --base main --head "$BRANCH" \
+                 --title "AI Studio changes (auto-sync)" \
+                 --body "Changes pushed by Google AI Studio to ai-studio-catalog, synced automatically. Claude reviews before merge. Merge with **Create a merge commit** (not squash). See docs/HANDOFF.md."; then
+              echo "Opened a pull request." >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::Could not open the pull request. Enable Settings → Actions → General → 'Allow GitHub Actions to create and approve pull requests', or open it from branch $BRANCH."
+            fi
+          else
+            echo "Updated pull request #$pr." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # Pushes made with GITHUB_TOKEN do not start other workflows, but
+          # manual dispatches do; their results show on the pull request.
+          for wf in web-validation.yml db-validation.yml ui-validation.yml; do
+            gh workflow run "$wf" --ref "$BRANCH" || echo "::warning::Could not start $wf"
+          done

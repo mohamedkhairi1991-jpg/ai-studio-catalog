@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  COMPANY_SELF_SIGNUP_ENABLED,
   blankToNull,
   onboardingStep,
   reviewProfessional,
@@ -114,5 +115,12 @@ describe('database function calls match the migrations', () => {
     expect((await reviewProfessional(client, 'id', 'documents_requested', '')).ok).toBe(false);
     expect((await verifyCompany(client, 'id', '')).ok).toBe(false);
     expect(calls).toHaveLength(0);
+  });
+});
+
+describe('operating model', () => {
+  it('keeps company self-signup off while administrators manage the catalog', () => {
+    // Change docs/PROJECT_STATUS.md (operating model) before flipping this.
+    expect(COMPANY_SELF_SIGNUP_ENABLED).toBe(false);
   });
 });

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  COMPANY_SELF_SIGNUP_ENABLED,
   listCities,
   listCountries,
   listSpecialties,
@@ -27,6 +28,9 @@ interface Props {
 
 type Path = 'choose' | 'doctor' | 'company';
 
+// With company self-signup off, new users go straight to the physician form.
+const initialPath: Path = COMPANY_SELF_SIGNUP_ENABLED ? 'choose' : 'doctor';
+
 const emptyCompany: CompanyForm = {
   countryId: '',
   cityId: '',
@@ -41,7 +45,7 @@ const emptyCompany: CompanyForm = {
 export default function Onboarding({ client, authUserId, email, onChanged, onSignOut }: Props) {
   const [state, setState] = useState<OnboardingState | null>(null);
   const [loading, setLoading] = useState(true);
-  const [path, setPath] = useState<Path>('choose');
+  const [path, setPath] = useState<Path>(initialPath);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [specialties, setSpecialties] = useState<Option[]>([]);
@@ -106,7 +110,7 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
     const result = await submitDoctorRecord(client, doctor, update);
     setBusy(false);
     if (!result.ok) return setErrors([result.message]);
-    setPath('choose');
+    setPath(initialPath);
     await refresh();
   };
 
@@ -211,10 +215,22 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
       <Screen>
         {header}
         <p className="text-sm">Physician registration</p>
+        {!COMPANY_SELF_SIGNUP_ENABLED && (
+          <p className="text-sm text-[#B8C3CC]">
+            Register to access the official Iraq product catalog. A platform administrator verifies every physician
+            before access is granted.
+          </p>
+        )}
         {doctorFields(false)}
-        <button className={secondaryButtonClass} onClick={() => { setPath('choose'); setErrors([]); }}>
-          Back
-        </button>
+        {COMPANY_SELF_SIGNUP_ENABLED ? (
+          <button className={secondaryButtonClass} onClick={() => { setPath('choose'); setErrors([]); }}>
+            Back
+          </button>
+        ) : (
+          <button className={secondaryButtonClass} onClick={onSignOut}>
+            Sign out
+          </button>
+        )}
       </Screen>
     );
   }

@@ -64,6 +64,11 @@ export interface PendingCompany {
   description: string | null;
 }
 
+// Temporary operating model (docs/PROJECT_STATUS.md): only administrators and
+// doctors use the app, so new users register as physicians only. Set to true
+// to offer company self-signup again; the company form and RPCs are kept.
+export const COMPANY_SELF_SIGNUP_ENABLED = false;
+
 // ---------- Pure helpers (unit tested) ----------
 export function onboardingStep(state: OnboardingState): OnboardingStep {
   if (state.professional) {

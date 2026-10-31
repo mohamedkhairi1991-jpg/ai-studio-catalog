@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-31 — Claude
+- **Brief Priority 1 done by Claude** (owner is trying Claude for screens):
+  sign-up is now doctors only. New users go straight to the physician form.
+  Switch: `COMPANY_SELF_SIGNUP_ENABLED` in `src/lib/onboarding.ts` (false);
+  the company form and RPCs are kept, unused. A unit test guards the switch.
+- **For AI Studio:** do not redo Priority 1. If you continue, start at
+  Priority 2 of `docs/AI_STUDIO_BRIEF_ADMIN_CATALOG.md`.
+
 ### 2026-10-30 — Claude (coordination test)
 - End-to-end test of the AI Studio → Claude direction: this entry was pushed
   to `ai-studio-catalog` the way AI Studio pushes, and should arrive in

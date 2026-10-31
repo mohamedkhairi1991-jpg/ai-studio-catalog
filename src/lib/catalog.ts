@@ -121,6 +121,7 @@ export interface CatalogProduct {
   reviewReason: string | null;
   createdAt: string;
   updatedAt: string;
+  hasAiDraft?: boolean;
 }
 
 export interface CatalogBundle {
@@ -171,7 +172,7 @@ export interface UpsertMarketTranslationInput {
 
 export type RpcResult<T = void> =
   | { ok: true; data: T }
-  | { ok: false; message: string; reasons?: string[] };
+  | { ok: false; message: string; reasons?: string[]; quota?: boolean };
 
 export const PUBLISH_CHECKLIST_MESSAGES: Record<string, string> = {
   english_product_translation_missing: 'English brand name is missing',
@@ -566,6 +567,7 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
     .select(
       'id,company_name,legal_name,status,country_id,city_id,contact_email,contact_phone,website_url,description'
     )
+    .neq('status', 'archived')
     .order('company_name');
 
   if (error || !data) return [];
@@ -584,6 +586,7 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
       description?: string | null;
     }>
   )
+    .filter((c) => c.status !== 'archived')
     .map((c) => ({
       id: c.id,
       companyName: c.company_name,
@@ -607,14 +610,12 @@ export async function loadCatalogBundle(
     .select(
       'id,company_id,generic_drug_id,drug_class_id,category,status,submitted_at,reviewed_at,review_reason,created_at,updated_at'
     )
+    .neq('status', 'archived')
     .order('updated_at', { ascending: false });
 
   if (productsError) {
     return { ok: false, message: formatRpcError(productsError) };
   }
-
-  const productRows = (rawProducts ?? []) as RawProductRow[];
-  const productIds = productRows.map((p) => p.id);
 
   const [companies, drugClasses, genericDrugs, specialties] = await Promise.all([
     loadCompanies(client),
@@ -624,6 +625,11 @@ export async function loadCatalogBundle(
   ]);
 
   const companyById = new Map(companies.map((c) => [c.id, c]));
+  const productRows = ((rawProducts ?? []) as RawProductRow[]).filter(
+    (p) => p.status !== 'archived' && companyById.has(p.company_id)
+  );
+  const productIds = productRows.map((p) => p.id);
+
   const drugClassById = new Map(drugClasses.map((d) => [d.id, d]));
   const genericById = new Map(genericDrugs.map((g) => [g.id, g]));
   const specialtyById = new Map(specialties.map((s) => [s.id, s]));
@@ -638,34 +644,46 @@ export async function loadCatalogBundle(
   const mediaByProduct = new Map<string, ProductMediaRecord[]>();
   const brochuresByMarket = new Map<string, ProductBrochureRecord[]>();
   const keywordsByProduct = new Map<string, string[]>();
+  const aiDraftProductIds = new Set<string>();
 
   if (productIds.length > 0) {
-    const [transRes, marketsRes, specRes, mediaRes, keywordsRes] = await Promise.all([
-      client
-        .from('product_translations')
-        .select('product_id,locale,brand_name')
-        .in('product_id', productIds),
-      client
-        .from('product_markets')
-        .select(
-          'id,product_id,strength,dosage_form,route,pack_size,market_status,registration_status,registration_number,registration_authority,registration_expires_on'
-        )
-        .in('product_id', productIds),
-      client
-        .from('product_specialties')
-        .select('product_id,specialty_id')
-        .in('product_id', productIds),
-      client
-        .from('product_media')
-        .select(
-          'id,product_id,media_type,storage_path,mime_type,file_size_bytes,sort_order,is_primary'
-        )
-        .in('product_id', productIds),
-      client
-        .from('product_search_keywords')
-        .select('product_id,locale,keyword,keyword_type')
-        .in('product_id', productIds),
-    ]);
+    const [transRes, marketsRes, specRes, mediaRes, keywordsRes, aiDraftsRes] =
+      await Promise.all([
+        client
+          .from('product_translations')
+          .select('product_id,locale,brand_name')
+          .in('product_id', productIds),
+        client
+          .from('product_markets')
+          .select(
+            'id,product_id,strength,dosage_form,route,pack_size,market_status,registration_status,registration_number,registration_authority,registration_expires_on'
+          )
+          .in('product_id', productIds),
+        client
+          .from('product_specialties')
+          .select('product_id,specialty_id')
+          .in('product_id', productIds),
+        client
+          .from('product_media')
+          .select(
+            'id,product_id,media_type,storage_path,mime_type,file_size_bytes,sort_order,is_primary'
+          )
+          .in('product_id', productIds),
+        client
+          .from('product_search_keywords')
+          .select('product_id,locale,keyword,keyword_type')
+          .in('product_id', productIds),
+        client
+          .from('product_ai_drafts')
+          .select('product_id')
+          .in('product_id', productIds),
+      ]);
+
+    for (const row of (aiDraftsRes.data ?? []) as Array<{ product_id: string }>) {
+      if (row.product_id) {
+        aiDraftProductIds.add(row.product_id);
+      }
+    }
 
     for (const row of (transRes.data ?? []) as RawTranslationRow[]) {
       if (row.locale === 'en') {
@@ -812,6 +830,7 @@ export async function loadCatalogBundle(
         reviewReason: row.review_reason,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
+        hasAiDraft: aiDraftProductIds.has(row.id),
       };
     });
 
@@ -1285,6 +1304,72 @@ export interface InvokeAiDraftInput {
   extraContext?: string;
 }
 
+export type IraqEvidence = 'confirmed' | 'likely' | 'unknown';
+export type CompanySuggestionType =
+  | 'iraqi_manufacturer'
+  | 'regional'
+  | 'multinational';
+
+export interface CompanySuggestion {
+  name: string;
+  legalName: string;
+  type: CompanySuggestionType | null;
+  headquartersCountry: string | null;
+  website: string | null;
+  description: string | null;
+  iraqEvidence: IraqEvidence;
+  source: AiDraftSource | null;
+}
+
+export interface ProductSuggestion {
+  brandName: string;
+  genericName: string | null;
+  strength: string;
+  dosageForm: string;
+  category: ProductCategory | null;
+  iraqEvidence: IraqEvidence;
+  source: AiDraftSource | null;
+}
+
+export interface DiscoveryResponse<T> {
+  mode: 'companies' | 'company_products';
+  items: T[];
+  notes: string | null;
+  groundingSources: AiDraftSource[];
+  searchSuggestionsHtml: string | null;
+  model: string;
+}
+
+async function extractFunctionsError(
+  error: unknown,
+  fallbackMessage: string
+): Promise<{ message: string; quota: boolean }> {
+  const body = await (error as { context?: Response })?.context
+    ?.json?.()
+    .catch(() => null);
+  const isQuota = Boolean(
+    body &&
+      typeof body === 'object' &&
+      (body as { quota?: unknown }).quota === true
+  );
+  if (isQuota) {
+    return {
+      message: 'The AI quota is used up for now. Try again later.',
+      quota: true,
+    };
+  }
+  const bodyError =
+    body &&
+    typeof body === 'object' &&
+    typeof (body as { error?: unknown }).error === 'string'
+      ? (body as { error: string }).error
+      : null;
+  return {
+    message: bodyError ?? fallbackMessage,
+    quota: false,
+  };
+}
+
 export async function invokeAiDraftProduct(
   client: SupabaseClient,
   input: InvokeAiDraftInput
@@ -1309,18 +1394,14 @@ export async function invokeAiDraftProduct(
   });
 
   if (error) {
-    const body = await (error as { context?: Response }).context
-      ?.json?.()
-      .catch(() => null);
-    const bodyError =
-      body &&
-      typeof body === 'object' &&
-      typeof (body as { error?: unknown }).error === 'string'
-        ? (body as { error: string }).error
-        : null;
+    const parsedErr = await extractFunctionsError(
+      error,
+      'AI draft failed. Try again.'
+    );
     return {
       ok: false,
-      message: bodyError ?? 'AI draft failed. Try again.',
+      message: parsedErr.message,
+      ...(parsedErr.quota ? { quota: true } : {}),
     };
   }
 
@@ -1329,6 +1410,176 @@ export async function invokeAiDraftProduct(
   }
 
   return { ok: true, data: data as AiDraftProductResponse };
+}
+
+export interface SuggestCompaniesInput {
+  focus?: string;
+  exclude?: string[];
+}
+
+export async function invokeAiSuggestCompanies(
+  client: SupabaseClient,
+  input: SuggestCompaniesInput = {}
+): Promise<RpcResult<DiscoveryResponse<CompanySuggestion>>> {
+  const focus = input.focus?.trim();
+  const exclude = (input.exclude ?? []).map((s) => s.trim()).filter(Boolean);
+
+  const { data, error } = await client.functions.invoke('ai-draft-product', {
+    body: {
+      mode: 'companies',
+      ...(focus ? { focus } : {}),
+      exclude,
+    },
+  });
+
+  if (error) {
+    const parsedErr = await extractFunctionsError(
+      error,
+      'Company suggestion failed. Try again.'
+    );
+    return {
+      ok: false,
+      message: parsedErr.message,
+      ...(parsedErr.quota ? { quota: true } : {}),
+    };
+  }
+
+  if (!data || typeof data !== 'object' || !Array.isArray((data as { items?: unknown }).items)) {
+    return { ok: false, message: 'Company suggestion failed. Try again.' };
+  }
+
+  return { ok: true, data: data as DiscoveryResponse<CompanySuggestion> };
+}
+
+export interface FindCompanyProductsInput {
+  companyName: string;
+  therapeuticArea?: string;
+  exclude?: string[];
+}
+
+export async function invokeAiFindCompanyProducts(
+  client: SupabaseClient,
+  input: FindCompanyProductsInput
+): Promise<RpcResult<DiscoveryResponse<ProductSuggestion>>> {
+  const companyName = input.companyName.trim();
+  if (!companyName) {
+    return { ok: false, message: 'Please select a company first.' };
+  }
+  const therapeuticArea = input.therapeuticArea?.trim();
+  const exclude = (input.exclude ?? []).map((s) => s.trim()).filter(Boolean);
+
+  const { data, error } = await client.functions.invoke('ai-draft-product', {
+    body: {
+      mode: 'company_products',
+      companyName,
+      ...(therapeuticArea ? { therapeuticArea } : {}),
+      exclude,
+    },
+  });
+
+  if (error) {
+    const parsedErr = await extractFunctionsError(
+      error,
+      'Product discovery failed. Try again.'
+    );
+    return {
+      ok: false,
+      message: parsedErr.message,
+      ...(parsedErr.quota ? { quota: true } : {}),
+    };
+  }
+
+  if (!data || typeof data !== 'object' || !Array.isArray((data as { items?: unknown }).items)) {
+    return { ok: false, message: 'Product discovery failed. Try again.' };
+  }
+
+  return { ok: true, data: data as DiscoveryResponse<ProductSuggestion> };
+}
+
+export interface SaveAiProductDraftInput {
+  companyId: string;
+  draft: AiProductDraft;
+  sources: AiDraftSource[];
+  model: string | null;
+}
+
+export interface SaveAiProductDraftResult {
+  productId: string;
+  outcome: 'created' | 'exists';
+  missing: string[];
+}
+
+export async function rpcAdminSaveAiProductDraft(
+  client: SupabaseClient,
+  input: SaveAiProductDraftInput
+): Promise<RpcResult<SaveAiProductDraftResult>> {
+  const { data, error } = await client
+    .rpc('admin_save_ai_product_draft', {
+      p_company_id: input.companyId,
+      p_draft: input.draft,
+      p_sources: input.sources,
+      p_model: input.model,
+    })
+    .single();
+
+  if (error) {
+    return { ok: false, message: error.message || formatRpcError(error) };
+  }
+
+  const rawRow = Array.isArray(data) ? data[0] : data;
+  const row = rawRow as {
+    product_id?: string;
+    outcome?: 'created' | 'exists';
+    missing?: string[] | null;
+  } | null;
+
+  if (!row?.product_id || !row.outcome) {
+    return { ok: false, message: 'Failed to save AI product draft.' };
+  }
+
+  return {
+    ok: true,
+    data: {
+      productId: row.product_id,
+      outcome: row.outcome,
+      missing: row.missing ?? [],
+    },
+  };
+}
+
+export interface StoredProductAiDraft {
+  draft: AiProductDraft;
+  sources: AiDraftSource[];
+  model: string | null;
+  createdAt: string;
+}
+
+export async function loadProductAiDraft(
+  client: SupabaseClient,
+  productId: string
+): Promise<StoredProductAiDraft | null> {
+  const { data, error } = await client
+    .from('product_ai_drafts')
+    .select('draft,sources,model,created_at')
+    .eq('product_id', productId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const row = data as {
+    draft?: AiProductDraft;
+    sources?: AiDraftSource[];
+    model?: string | null;
+    created_at?: string;
+  };
+  if (!row.draft || typeof row.draft !== 'object') return null;
+
+  return {
+    draft: row.draft,
+    sources: Array.isArray(row.sources) ? row.sources : [],
+    model: row.model ?? null,
+    createdAt: row.created_at ?? '',
+  };
 }
 
 export interface EnsureGenericDrugInput {
@@ -1601,4 +1852,18 @@ export async function saveAndPublishCompleteProduct(
     ok: true,
     data: { productId, finalStatus: 'published' },
   };
+}
+
+export async function rpcAdminArchiveCompany(
+  client: SupabaseClient,
+  companyId: string,
+  reason = 'Archived by administrator.'
+): Promise<RpcResult> {
+  const { error } = await client.rpc('admin_archive_company', {
+    p_company_id: companyId,
+    p_reason: reason.trim() || 'Archived by administrator.',
+  });
+
+  if (error) return { ok: false, message: formatRpcError(error) };
+  return { ok: true, data: undefined };
 }

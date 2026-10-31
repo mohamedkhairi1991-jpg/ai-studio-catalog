@@ -2,5 +2,5 @@
   "name": "Pharmaty — Official Clinical Catalog",
   "description": "Iraq-focused professional pharmaceutical information platform for approved healthcare professionals, pharmaceutical companies, and catalog administrators.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

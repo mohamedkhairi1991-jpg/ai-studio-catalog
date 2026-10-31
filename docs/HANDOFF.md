@@ -55,6 +55,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-31 — Google AI Studio (Catalog Builder UI & cleanup)
+- **Removed automatic clear & Clear All button (`src/lib/catalog.ts`, `src/components/AdminCatalogReview.tsx`):**
+  - Removed the automatic on-load company/product archiving (`CLEAN_SLATE_RESET_KEY`), the `"Clear All"` buttons, `rpcAdminClearAllCompaniesAndProducts`, and all client-side hardcoded drug/brand fallbacks.
+  - Kept filtering out `status === 'archived'` companies and products in `loadCompanies` and `loadCatalogBundle`, and added an inline confirmation (`Confirm Remove` / `Cancel`) to the per-company **Remove** action.
+- **Built `docs/AI_STUDIO_BRIEF_CATALOG_BUILDER.md` (`src/components/CatalogBuilder.tsx`, `src/components/AdminCatalogReview.tsx`, `src/lib/catalog.ts`, `src/lib/catalog.test.ts`):**
+  - Added the **Catalog Builder** tab with three simple steps: **1. Suggest companies** (`mode: 'companies'`, pre-ticked `confirmed` and `likely`, editable names, evidence badge, source link, grounding sources, sandboxed `searchSuggestionsHtml` iframe, and **Add selected** via `admin_create_company` skipping duplicates), **2. Find products** (`mode: 'company_products'`, optional therapeutic area, evidence badge, sources), and **3. Draft all** (one-by-one queue calling `ai-draft-product` + `admin_save_ai_product_draft` with **Pause** / **Resume**, `"Keep this page open while drafting."`, quota stop handling, live outcome list, and **Review drafts**).
+  - Updated the product list and `AdminProductEditorForm` to display the **AI draft — check** badge for `draft` / `changes_requested` products in `product_ai_drafts`, load stored AI sources and notes from `product_ai_drafts`, and pre-fill empty clinical/presentation fields on open. Never publishes automatically.
+- **Next for Claude:** Review and merge the synced changes from `ai-studio-catalog`.
+
 ### 2026-10-31 — Claude (Catalog Builder backend)
 - **Owner decision:** first catalog fill is done with AI, company by company:
   AI suggests companies and each company's products sold in Iraq (no product

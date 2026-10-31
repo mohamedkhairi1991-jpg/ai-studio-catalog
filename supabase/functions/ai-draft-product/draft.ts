@@ -93,7 +93,9 @@ Rules:
 - Write clinical text in plain English sentences, concise, no markdown, no bullet symbols. "usualAdultDose" is the usual adult dose for the main indication(s) as stated on the label.
 - "drugClass" is a pharmacological class such as "SGLT2 inhibitors" or "Proton pump inhibitors".
 - "specialties" are medical specialties that commonly prescribe it, such as "Cardiology", "Endocrinology", "Oncology".
+- "brandName" is the trade name followed by the strength as printed on the pack, for example "Forxiga 10 mg". Each strength is a separate product.
 - "brandNameAr" is the brand name written in Arabic letters as used in the Middle East, or null if unsure.
+- Never include prices.
 - Answer with ONE JSON object only, no text before or after it, exactly in this shape:
 {
   "found": true,

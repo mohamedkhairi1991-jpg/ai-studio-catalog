@@ -15,5 +15,11 @@ the admin screen saves through the normal audited RPCs after review.
   and the administrator role itself.
 - Pure logic lives in `draft.ts` and is unit-tested by Vitest
   (`draft.test.ts`, run by `npm test`).
-- Call from the web client:
-  `client.functions.invoke('ai-draft-product', { body: { productName, companyName?, extraContext? } })`.
+- Modes (POST body):
+  - default: `{ productName, companyName?, extraContext? }` → one product draft
+  - `{ mode: 'companies', focus?, exclude? }` → companies selling in Iraq
+  - `{ mode: 'company_products', companyName, therapeuticArea?, exclude? }` →
+    that company's products sold in Iraq
+- Bulk saving goes through `admin_save_ai_product_draft` (drafts only).
+- Pure logic: `draft.ts`, `discovery.ts` (tests: `draft.test.ts`,
+  `discovery.test.ts`).

@@ -412,3 +412,8 @@ enabled = true
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# AI product drafting (administrator-only). The function verifies the caller's
+# session and administrator role itself, so platform JWT verification is off.
+[functions.ai-draft-product]
+verify_jwt = false

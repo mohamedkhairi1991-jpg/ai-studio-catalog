@@ -55,6 +55,20 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-31 — Claude (Catalog Builder backend)
+- **Owner decision:** first catalog fill is done with AI, company by company:
+  AI suggests companies and each company's products sold in Iraq (no product
+  lists from companies), drafts each product from official labeling, saves it
+  as a **draft** with sources; the administrator reviews and publishes.
+- **Function `ai-draft-product`:** new modes `companies` and
+  `company_products` (Iraq evidence: confirmed / likely / unknown; no prices;
+  manufacturers only, not scientific bureaus). Default mode unchanged.
+- **Database:** table `product_ai_drafts` (admin-only, AI answer + sources per
+  product) and RPC `admin_save_ai_product_draft` (one transaction; skips an
+  existing brand+strength; never submits/publishes; registration stays
+  `not_recorded`).
+- **For AI Studio — next task:** build `docs/AI_STUDIO_BRIEF_CATALOG_BUILDER.md`.
+
 ### 2026-10-31 — Claude (brand spelling)
 - **Owner confirmed the brand is spelled "Pharmaty".** Updated `AGENTS.md`,
   `docs/PROJECT_STATUS.md`, `metadata.json`; the web app (`src/`) was already

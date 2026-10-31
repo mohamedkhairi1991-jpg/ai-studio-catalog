@@ -55,6 +55,20 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-31 — Claude (AI drafting backend)
+- **Owner decision:** the administrator enters each company's products; AI
+  drafts each product, the administrator checks and publishes.
+- **New edge function `ai-draft-product`** (admin-only, Gemini + Google
+  Search, official labeling only, never writes to the database, never fills
+  Iraqi registration numbers). Secret `GEMINI_API_KEY` set by the owner.
+- **New RPCs** `admin_ensure_generic_drug`, `admin_ensure_specialties`:
+  find-or-create missing classes, generics, ingredients and specialties.
+- **Live data:** 11 products (demo "Tigris Pharma" + 8 AstraZeneca with
+  unverified content) were hidden from doctors at the owner's request.
+- **For AI Studio — next task:** build `docs/AI_STUDIO_BRIEF_AI_DRAFT.md`
+  (the "AI draft" button in the admin product form). Still pending from the
+  last review: remove the name-based demo filter in `src/lib/catalog.ts`.
+
 ### 2026-10-31 — Claude
 - **Brief Priority 1 done by Claude** (owner is trying Claude for screens):
   sign-up is now doctors only. New users go straight to the physician form.

@@ -10,7 +10,9 @@ import {
   findMatchingTaxonomyOption,
   invokeAiDraftProduct,
   loadCatalogBundle,
+  loadProductAiDraft,
   publishProduct,
+  rpcAdminArchiveCompany,
   rpcAdminArchiveProduct,
   rpcAdminCreateCompany,
   rpcAdminEnsureGenericDrug,
@@ -28,9 +30,11 @@ import {
   type ProductCategory,
   type ProductRegistrationStatus,
   type ProductStatus,
+  type StoredProductAiDraft,
 } from '../lib/catalog';
 import { listCities, listCountries, type Option } from '../lib/onboarding';
 import AdminApprovals from './AdminApprovals';
+import { CatalogBuilder } from './CatalogBuilder';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
 import { BrandLogo, Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
@@ -43,12 +47,18 @@ interface Props {
 
 export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [adminView, setAdminView] = useState<
-    'catalog' | 'companies' | 'approvals'
+    'catalog' | 'builder' | 'companies' | 'approvals'
   >('catalog');
   const [bundle, setBundle] = useState<CatalogBundle | null>(null);
   const [cities, setCities] = useState<Option[]>([]);
   const [defaultCountryId, setDefaultCountryId] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [confirmingRemoveCompanyId, setConfirmingRemoveCompanyId] = useState<
+    string | null
+  >(null);
+  const [removingCompanyId, setRemovingCompanyId] = useState<string | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [errorReasons, setErrorReasons] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -125,6 +135,41 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const handleRemoveCompany = async (comp: CompanySummary) => {
+    setRemovingCompanyId(comp.id);
+    clearFeedback();
+
+    const companyProducts = (bundle?.products ?? []).filter(
+      (p) => p.companyId === comp.id
+    );
+    for (const prod of companyProducts) {
+      await rpcAdminArchiveProduct(
+        client,
+        prod.id,
+        `Archived with company ${comp.companyName}.`
+      );
+    }
+
+    const res = await rpcAdminArchiveCompany(
+      client,
+      comp.id,
+      'Removed by administrator.'
+    );
+    setRemovingCompanyId(null);
+    setConfirmingRemoveCompanyId(null);
+
+    if (!res.ok) {
+      setFailure(res.message, res.reasons);
+      return;
+    }
+
+    if (companyFilterId === comp.id) {
+      setCompanyFilterId('all');
+    }
+    setNotice(`Removed company "${comp.companyName}".`);
+    await refresh();
+  };
 
   const filteredProducts = useMemo(() => {
     if (!bundle) return [];
@@ -210,7 +255,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     setNotice(
       wasEditing
         ? `Updated company "${res.data.companyName}".`
-        : `Added company "${res.data.companyName}" (${res.data.status}).`
+        : `Added company "${res.data.companyName}".`
     );
     await refresh();
   };
@@ -261,11 +306,6 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     return filteredProducts[0] ?? null;
   }, [filteredProducts, selectedId]);
 
-  const cityById = useMemo(
-    () => new Map(cities.map((c) => [c.id, c.label])),
-    [cities]
-  );
-
   return (
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
       {/* Header */}
@@ -284,7 +324,18 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     : 'text-[#B8C3CC] hover:text-white'
                 }`}
               >
-                Catalog & Products ({bundle?.products.length ?? 0})
+                Catalog ({bundle?.products.length ?? 0})
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdminView('builder')}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                  adminView === 'builder'
+                    ? 'bg-[#1769AA] text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
+                }`}
+              >
+                Catalog Builder
               </button>
               <button
                 type="button"
@@ -358,30 +409,48 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
           )}
           {notice && <Banner tone="success">{notice}</Banner>}
 
-          {adminView === 'companies' ? (
+          {adminView === 'builder' && bundle ? (
+            <CatalogBuilder
+              client={client}
+              bundle={bundle}
+              defaultCountryId={defaultCountryId}
+              onRefresh={refresh}
+              onOpenDraftsForReview={(companyId) => {
+                setStatusFilter('draft');
+                if (companyId) {
+                  setCompanyFilterId(companyId);
+                } else {
+                  setCompanyFilterId('all');
+                }
+                setAdminView('catalog');
+              }}
+            />
+          ) : adminView === 'companies' ? (
             <section className="space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
                 <div>
-                  <h2 className="text-lg font-semibold text-[#F2F5F8]">
-                    Companies in Iraq
-                  </h2>
+                  <h1 className="text-base font-semibold text-[#F2F5F8]">
+                    Companies ({bundle?.companies.length ?? 0})
+                  </h1>
                   <p className="text-xs text-[#B8C3CC] mt-0.5">
-                    Add and edit pharmaceutical companies operating in Iraq.
+                    Manage pharmaceutical companies in the catalog.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (creatingCompany) {
-                      closeCompanyForm();
-                    } else {
-                      openAddCompanyForm();
-                    }
-                  }}
-                  className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-4 py-2 transition-colors"
-                >
-                  {creatingCompany ? 'Cancel' : '+ Add Company'}
-                </button>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (creatingCompany) {
+                        closeCompanyForm();
+                      } else {
+                        openAddCompanyForm();
+                      }
+                    }}
+                    className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-4 py-2 transition-colors"
+                  >
+                    {creatingCompany ? 'Close Form' : '+ Add Company'}
+                  </button>
+                </div>
               </div>
 
               {creatingCompany && (
@@ -408,97 +477,128 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 />
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(bundle?.companies ?? []).map((comp) => {
-                  const compProducts = (bundle?.products ?? []).filter(
-                    (p) => p.companyId === comp.id
-                  );
-                  const publishedCount = compProducts.filter(
-                    (p) => p.status === 'published'
-                  ).length;
-                  const cityName = comp.cityId
-                    ? cityById.get(comp.cityId)
-                    : null;
-
-                  return (
-                    <div
-                      key={comp.id}
-                      className="rounded-xl bg-[#263744] border border-[#304451] p-5 flex flex-col justify-between gap-4"
-                    >
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="text-base font-semibold text-[#F2F5F8]">
-                            {comp.companyName}
-                          </h3>
-                          <span
-                            className={`text-xs font-medium ${
-                              comp.status === 'verified'
-                                ? 'text-[#38C976]'
-                                : comp.status === 'archived'
-                                ? 'text-[#B8C3CC]'
-                                : 'text-[#F59E0B]'
-                            }`}
-                          >
-                            {comp.status}
-                          </span>
+              {loading ? (
+                <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+                  Loading companies…
+                </div>
+              ) : (bundle?.companies.length ?? 0) === 0 ? (
+                <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-2">
+                  <div className="text-sm font-medium text-[#F2F5F8]">
+                    No companies in the catalog
+                  </div>
+                  <p className="text-xs text-[#B8C3CC]">
+                    Click "+ Add Company" or use "Catalog Builder" to add
+                    companies.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {(bundle?.companies ?? []).map((comp) => {
+                    const compProducts = (bundle?.products ?? []).filter(
+                      (p) => p.companyId === comp.id
+                    );
+                    const isConfirmingRemove =
+                      confirmingRemoveCompanyId === comp.id;
+                    const isRemoving = removingCompanyId === comp.id;
+                    return (
+                      <div
+                        key={comp.id}
+                        className="rounded-xl bg-[#263744] border border-[#304451] p-5 flex flex-col justify-between gap-4"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h3 className="text-base font-semibold text-[#F2F5F8]">
+                                {comp.companyName}
+                              </h3>
+                              {comp.legalName &&
+                                comp.legalName !== comp.companyName && (
+                                  <div className="text-xs text-[#B8C3CC] mt-0.5">
+                                    {comp.legalName}
+                                  </div>
+                                )}
+                            </div>
+                            <span className="rounded-md bg-[#1F2D38] border border-[#304451] px-2 py-0.5 text-xs text-[#38C976] font-medium">
+                              {comp.status}
+                            </span>
+                          </div>
+                          {comp.description && (
+                            <p className="text-xs text-[#B8C3CC]">
+                              {comp.description}
+                            </p>
+                          )}
+                          <div className="text-xs text-[#B8C3CC]">
+                            Products:{' '}
+                            <span className="font-mono text-[#F2F5F8]">
+                              {compProducts.length}
+                            </span>
+                          </div>
                         </div>
-                        {comp.legalName && comp.legalName !== comp.companyName && (
-                          <p className="text-xs text-[#B8C3CC]">
-                            {comp.legalName}
-                          </p>
-                        )}
-                        {cityName && (
-                          <p className="text-xs text-[#B8C3CC]">
-                            City: {cityName}
-                          </p>
-                        )}
-                        {comp.description && (
-                          <p className="text-xs text-[#B8C3CC] line-clamp-2">
-                            {comp.description}
-                          </p>
-                        )}
-                        <p className="text-xs text-[#5DB4F2] pt-1">
-                          {compProducts.length} product
-                          {compProducts.length === 1 ? '' : 's'} ·{' '}
-                          {publishedCount} published
-                        </p>
+
+                        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#304451]">
+                          {isConfirmingRemove ? (
+                            <>
+                              <span className="text-xs text-[#F59E0B] w-full">
+                                Remove {comp.companyName} and archive its{' '}
+                                {compProducts.length} product
+                                {compProducts.length === 1 ? '' : 's'}?
+                              </span>
+                              <button
+                                type="button"
+                                disabled={isRemoving}
+                                onClick={() => void handleRemoveCompany(comp)}
+                                className="rounded-md bg-[#B42318] hover:bg-[#991B1B] text-white text-xs font-medium px-3 py-1.5 transition-colors disabled:opacity-50"
+                              >
+                                {isRemoving ? 'Removing…' : 'Confirm Remove'}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isRemoving}
+                                onClick={() =>
+                                  setConfirmingRemoveCompanyId(null)
+                                }
+                                className={secondaryButtonClass}
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => openEditCompanyForm(comp)}
+                                className={secondaryButtonClass}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCompanyFilterId(comp.id);
+                                  setCreatingProduct(true);
+                                  setAdminView('catalog');
+                                }}
+                                className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
+                              >
+                                + Add Product
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setConfirmingRemoveCompanyId(comp.id)
+                                }
+                                className="rounded-md bg-[#1F2D38] hover:bg-[#B42318] border border-[#304451] text-[#B8C3CC] hover:text-white text-xs font-medium px-3 py-2 transition-colors"
+                              >
+                                Remove
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#304451]">
-                        {comp.status !== 'archived' && (
-                          <button
-                            type="button"
-                            onClick={() => openEditCompanyForm(comp)}
-                            className={secondaryButtonClass}
-                          >
-                            Edit
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCompanyFilterId(comp.id);
-                            setAdminView('catalog');
-                          }}
-                          className={secondaryButtonClass}
-                        >
-                          View Products
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCompanyFilterId(comp.id);
-                            setCreatingProduct(true);
-                            setAdminView('catalog');
-                          }}
-                          className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
-                        >
-                          + Add Product
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
           ) : (
             <>
@@ -516,7 +616,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     </option>
                     {(bundle?.companies ?? []).map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.companyName} ({c.status})
+                        {c.companyName}
                       </option>
                     ))}
                   </select>
@@ -629,7 +729,6 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     'draft',
                     'changes_requested',
                     'hidden',
-                    'archived',
                   ] as const
                 ).map((st) => {
                   const active = statusFilter === st;
@@ -674,14 +773,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
               ) : filteredProducts.length === 0 ? (
                 <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
                   <h2 className="text-base font-medium text-[#F2F5F8]">
-                    No products in{' '}
-                    {statusFilter === 'all'
-                      ? 'this view'
-                      : STATUS_LABELS[statusFilter].toLowerCase()}
+                    No products in the catalog
                   </h2>
                   <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
-                    Use "+ New Product" to add a company product and publish it
-                    to the Official Doctor Catalog.
+                    Use "Catalog Builder" or "+ New Product" to add products.
                   </p>
                 </div>
               ) : (
@@ -702,6 +797,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     <div className="divide-y divide-[#304451] max-h-[700px] overflow-y-auto">
                       {filteredProducts.map((product) => {
                         const isSelected = selectedProduct?.id === product.id;
+                        const showAiDraftCheck =
+                          product.hasAiDraft &&
+                          (product.status === 'draft' ||
+                            product.status === 'changes_requested');
                         return (
                           <button
                             key={product.id}
@@ -720,7 +819,14 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                               <span className="font-medium text-sm text-[#F2F5F8]">
                                 {product.brandNameEn}
                               </span>
-                              <StatusText status={product.status} />
+                              <div className="flex items-center gap-1.5">
+                                {showAiDraftCheck && (
+                                  <span className="rounded bg-[#F59E0B]/20 border border-[#F59E0B] px-1.5 py-0.5 text-xs font-medium text-[#F59E0B]">
+                                    AI draft — check
+                                  </span>
+                                )}
+                                <StatusText status={product.status} />
+                              </div>
                             </div>
 
                             <div className="text-xs text-[#5DB4F2] mt-0.5">
@@ -821,7 +927,7 @@ function CompanyEditorForm({
       <h3 className="text-sm font-semibold text-[#F2F5F8]">
         {editingCompany
           ? `Edit Company: ${editingCompany.companyName}`
-          : 'Add Company in Iraq'}
+          : 'Add Company'}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Field label="Company Name">
@@ -955,7 +1061,7 @@ function AdminProductEditorForm({
     existingProduct?.genericDrugId ?? bundle.genericDrugs[0]?.id ?? ''
   );
 
-  // AI Draft state
+  // Single-product AI Draft state
   const [aiProductName, setAiProductName] = useState(
     existingProduct?.brandNameEn ?? ''
   );
@@ -963,6 +1069,8 @@ function AdminProductEditorForm({
   const [aiDrafting, setAiDrafting] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<AiDraftProductResponse | null>(null);
+  const [storedAiDraft, setStoredAiDraft] =
+    useState<StoredProductAiDraft | null>(null);
   const [activeIngredients, setActiveIngredients] = useState<string[]>([]);
   const [newDrugClassName, setNewDrugClassName] = useState<string | null>(null);
   const [newGenericName, setNewGenericName] = useState<string | null>(null);
@@ -1017,26 +1125,68 @@ function AdminProductEditorForm({
 
   const [busy, setBusy] = useState(false);
 
+  // Load stored product_ai_drafts record when editing an existing product
+  useEffect(() => {
+    if (!existingProduct?.id) return;
+    let active = true;
+    void loadProductAiDraft(client, existingProduct.id).then((row) => {
+      if (!active || !row) return;
+      setStoredAiDraft(row);
+      const d = row.draft;
+      if (d.strength) setStrength((prev) => prev || d.strength);
+      if (d.dosageForm) setDosageForm((prev) => prev || d.dosageForm);
+      if (d.route) setRoute((prev) => prev || d.route);
+      if (d.packSize) setPackSize((prev) => prev || d.packSize);
+      if (d.clinical?.approvedIndications) {
+        setApprovedIndications((prev) => prev || d.clinical.approvedIndications);
+      }
+      if (d.clinical?.usualAdultDose) {
+        setUsualAdultDose((prev) => prev || d.clinical.usualAdultDose);
+      }
+      if (d.clinical?.contraindications) {
+        setContraindications((prev) => prev || d.clinical.contraindications);
+      }
+      if (d.clinical?.commonAdverseEffects) {
+        setCommonAdverseEffects(
+          (prev) => prev || d.clinical.commonAdverseEffects
+        );
+      }
+      if (d.clinical?.storageConditions) {
+        setStorageConditions((prev) => prev || d.clinical.storageConditions);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [client, existingProduct?.id]);
+
   const selectedCompany = useMemo(
     () => bundle.companies.find((c) => c.id === companyId) ?? null,
     [bundle.companies, companyId]
   );
 
   const combinedSources = useMemo(() => {
-    if (!aiResult) return [];
+    const rawList = aiResult
+      ? [
+          ...(aiResult.draft.sources ?? []),
+          ...(aiResult.groundingSources ?? []),
+        ]
+      : storedAiDraft
+      ? [
+          ...(storedAiDraft.sources ?? []),
+          ...(storedAiDraft.draft.sources ?? []),
+        ]
+      : [];
     const seen = new Set<string>();
     const list: Array<{ title: string; url: string }> = [];
-    for (const s of [
-      ...(aiResult.draft.sources ?? []),
-      ...(aiResult.groundingSources ?? []),
-    ]) {
+    for (const s of rawList) {
       const url = s?.url?.trim();
       if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
       seen.add(url);
       list.push({ title: s.title?.trim() || url, url });
     }
     return list;
-  }, [aiResult]);
+  }, [aiResult, storedAiDraft]);
 
   const toggleSpecialty = (id: string) => {
     setSelectedSpecialties((prev) =>
@@ -1227,7 +1377,7 @@ function AdminProductEditorForm({
       createdTaxonomy.push(...taxRes.data.created);
     }
 
-    let resolvedSpecialtyIds = [...selectedSpecialties];
+    const resolvedSpecialtyIds = [...selectedSpecialties];
     if (newSpecialtyNames.length > 0) {
       const specRes = await rpcAdminEnsureSpecialties(
         client,
@@ -1283,9 +1433,13 @@ function AdminProductEditorForm({
     await onSaved(res.data.productId, res.data.finalStatus, createdTaxonomy);
   };
 
+  const activeDraftNotes =
+    aiResult?.draft.notes ?? storedAiDraft?.draft.notes ?? null;
+  const activeDraftWarnings = aiResult?.warnings ?? [];
+
   return (
     <section className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-6">
-      <div className="flex items-center justify-between border-b border-[#304451] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#304451] pb-4">
         <div>
           <h2 className="text-base font-semibold text-[#F2F5F8]">
             {existingProduct
@@ -1307,7 +1461,7 @@ function AdminProductEditorForm({
         </button>
       </div>
 
-      {/* 1. AI Draft Box */}
+      {/* Single-Product AI Draft Box */}
       <div className="rounded-xl bg-[#1F2D38] border border-[#304451] p-4 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -1383,23 +1537,23 @@ function AdminProductEditorForm({
           </Banner>
         )}
 
-        {aiResult && aiResult.draft.found && (
+        {((aiResult && aiResult.draft.found) || storedAiDraft) && (
           <div className="rounded-lg border border-[#F59E0B]/60 bg-[#F59E0B]/10 p-4 space-y-3 text-xs">
             <div className="font-semibold text-[#F59E0B]">
               AI draft — check every field against the sources before publishing
             </div>
 
-            {aiResult.draft.notes && (
-              <p className="text-[#F2F5F8]">{aiResult.draft.notes}</p>
+            {activeDraftNotes && (
+              <p className="text-[#F2F5F8]">{activeDraftNotes}</p>
             )}
 
-            {aiResult.warnings.length > 0 && (
+            {activeDraftWarnings.length > 0 && (
               <div className="space-y-1">
                 <div className="font-medium text-[#F2F5F8]">
                   Checklist before publishing:
                 </div>
                 <ul className="list-disc list-inside space-y-1 text-[#B8C3CC]">
-                  {aiResult.warnings.map((w) => (
+                  {activeDraftWarnings.map((w) => (
                     <li key={w}>{w}</li>
                   ))}
                 </ul>
@@ -1426,7 +1580,7 @@ function AdminProductEditorForm({
               </div>
             )}
 
-            {aiResult.searchSuggestionsHtml && (
+            {aiResult?.searchSuggestionsHtml && (
               <div className="pt-1">
                 <iframe
                   title="Google Search suggestions"
@@ -1928,12 +2082,23 @@ function AdminProductInspector({
     await onSuccess(`Product restored to ${STATUS_LABELS[restoreDestination]}.`);
   };
 
+  const showAiDraftCheck =
+    product.hasAiDraft &&
+    (product.status === 'draft' || product.status === 'changes_requested');
+
   return (
     <div className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-6">
       {/* Header */}
       <div className="border-b border-[#304451] pb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <StatusText status={product.status} />
+          <div className="flex items-center gap-2">
+            <StatusText status={product.status} />
+            {showAiDraftCheck && (
+              <span className="rounded bg-[#F59E0B]/20 border border-[#F59E0B] px-2 py-0.5 text-xs font-medium text-[#F59E0B]">
+                AI draft — check
+              </span>
+            )}
+          </div>
           <h2 className="text-2xl font-semibold text-[#F2F5F8] mt-1">
             {product.brandNameEn}
           </h2>

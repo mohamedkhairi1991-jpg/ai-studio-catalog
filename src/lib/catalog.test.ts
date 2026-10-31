@@ -7,9 +7,14 @@ import {
   findMatchingTaxonomyOption,
   formatRpcError,
   invokeAiDraftProduct,
+  invokeAiFindCompanyProducts,
+  invokeAiSuggestCompanies,
+  loadProductAiDraft,
   parsePublishChecklistErrors,
+  rpcAdminArchiveCompany,
   rpcAdminEnsureGenericDrug,
   rpcAdminEnsureSpecialties,
+  rpcAdminSaveAiProductDraft,
   type CatalogProduct,
   type TaxonomyItem,
 } from './catalog';
@@ -127,7 +132,7 @@ describe('publish checklist parsing and taxonomy matching', () => {
 });
 
 describe('AI draft and taxonomy ensure helpers', () => {
-  it('invokes ai-draft-product and extracts FunctionsHttpError JSON error messages', async () => {
+  it('invokes ai-draft-product and extracts FunctionsHttpError JSON error messages and quota flag', async () => {
     const okClient = {
       functions: {
         invoke: async (name: string, opts: { body: Record<string, unknown> }) => {
@@ -184,31 +189,150 @@ describe('AI draft and taxonomy ensure helpers', () => {
       expect(okRes.data.draft.genericName).toBe('Dapagliflozin');
     }
 
-    const errClient = {
+    const quotaClient = {
       functions: {
         invoke: async () => ({
           data: null,
           error: {
             message: 'Edge Function returned a non-2xx status code',
             context: {
-              json: async () => ({ error: 'Gemini quota exceeded. Try again in a minute.' }),
+              json: async () => ({ error: 'Quota exceeded', quota: true }),
             },
           },
         }),
       },
     } as unknown as SupabaseClient;
 
-    const errRes = await invokeAiDraftProduct(errClient, {
+    const quotaRes = await invokeAiDraftProduct(quotaClient, {
       productName: 'Forxiga 10 mg',
       companyName: 'AstraZeneca',
     });
-    expect(errRes).toEqual({
+    expect(quotaRes).toEqual({
       ok: false,
-      message: 'Gemini quota exceeded. Try again in a minute.',
+      message: 'The AI quota is used up for now. Try again later.',
+      quota: true,
     });
   });
 
-  it('calls admin_ensure_generic_drug and admin_ensure_specialties and surfaces errors as-is', async () => {
+  it('invokes company and product discovery modes and saves AI product drafts', async () => {
+    const calls: Array<{ type: string; name: string; payload: unknown }> = [];
+    const client = {
+      functions: {
+        invoke: async (name: string, opts: { body: Record<string, unknown> }) => {
+          calls.push({ type: 'fn', name, payload: opts.body });
+          if (opts.body.mode === 'companies') {
+            return {
+              data: {
+                items: [
+                  {
+                    legalName: 'Pioneer Co.',
+                    companyType: 'manufacturer',
+                    headquarters: 'Iraq',
+                    iraqEvidence: 'confirmed',
+                    notes: 'Sulaymaniyah plant',
+                    sourceUrl: 'https://moh.gov.iq/',
+                    sourceTitle: 'KIMADIA',
+                  },
+                ],
+                notes: null,
+                groundingSources: [],
+                searchSuggestionsHtml: null,
+                model: 'gemini-2.5-flash',
+              },
+              error: null,
+            };
+          }
+          return {
+            data: {
+              items: [
+                {
+                  brandName: 'Concor',
+                  genericName: 'Bisoprolol',
+                  strength: '5 mg',
+                  dosageForm: 'Film-coated tablet',
+                  category: 'prescription_drug',
+                  iraqEvidence: 'confirmed',
+                  notes: null,
+                  sourceUrl: 'https://www.medicines.org.uk/',
+                  sourceTitle: 'EMC',
+                },
+              ],
+              notes: null,
+              groundingSources: [],
+              searchSuggestionsHtml: null,
+              model: 'gemini-2.5-flash',
+            },
+            error: null,
+          };
+        },
+      },
+      rpc: (fn: string, args: Record<string, unknown>) => {
+        calls.push({ type: 'rpc', name: fn, payload: args });
+        return {
+          single: async () => ({
+            data: {
+              product_id: 'prod-new',
+              outcome: 'created',
+              missing: ['packSize'],
+            },
+            error: null,
+          }),
+        };
+      },
+      from: (table: string) => ({
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({
+              data:
+                table === 'product_ai_drafts'
+                  ? {
+                      model: 'gemini-2.5-flash',
+                      draft: { notes: 'Verify storage' },
+                      sources: [{ title: 'EMC', url: 'https://www.medicines.org.uk/' }],
+                      created_at: '2026-10-31T10:00:00Z',
+                    }
+                  : null,
+              error: null,
+            }),
+          }),
+        }),
+      }),
+    } as unknown as SupabaseClient;
+
+    const compRes = await invokeAiSuggestCompanies(client, {
+      focus: ' Iraqi manufacturers ',
+      exclude: ['AstraZeneca'],
+    });
+    expect(compRes.ok).toBe(true);
+
+    const prodRes = await invokeAiFindCompanyProducts(client, {
+      companyName: ' Merck ',
+      therapeuticArea: ' Cardiology ',
+      exclude: ['Glucophage'],
+    });
+    expect(prodRes.ok).toBe(true);
+
+    const saveRes = await rpcAdminSaveAiProductDraft(client, {
+      companyId: 'comp-1',
+      draft: { found: true, brandName: 'Concor' } as never,
+      sources: [{ title: 'EMC', url: 'https://www.medicines.org.uk/' }],
+      model: 'gemini-2.5-flash',
+    });
+    expect(saveRes).toEqual({
+      ok: true,
+      data: {
+        productId: 'prod-new',
+        outcome: 'created',
+        missing: ['packSize'],
+      },
+    });
+
+    const loaded = await loadProductAiDraft(client, 'prod-new');
+    expect(loaded?.model).toBe('gemini-2.5-flash');
+    expect(loaded?.sources).toHaveLength(1);
+  });
+
+  it('calls admin_ensure_generic_drug, admin_ensure_specialties, and admin_archive_company', async () => {
     const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
     const client = {
       rpc: (fn: string, args: Record<string, unknown>) => {
@@ -224,6 +348,9 @@ describe('AI draft and taxonomy ensure helpers', () => {
               error: null,
             }),
           };
+        }
+        if (fn === 'admin_archive_company') {
+          return Promise.resolve({ data: null, error: null });
         }
         return Promise.resolve({
           data: [{ specialty_id: 'spec-endo', name: 'Endocrinology', created: true }],
@@ -252,6 +379,9 @@ describe('AI draft and taxonomy ensure helpers', () => {
       data: [{ specialtyId: 'spec-endo', name: 'Endocrinology', created: true }],
     });
 
+    const archRes = await rpcAdminArchiveCompany(client, 'comp-tigris', 'Clear catalog');
+    expect(archRes).toEqual({ ok: true, data: undefined });
+
     expect(rpcCalls).toEqual([
       {
         fn: 'admin_ensure_generic_drug',
@@ -265,6 +395,13 @@ describe('AI draft and taxonomy ensure helpers', () => {
         fn: 'admin_ensure_specialties',
         args: {
           p_names: ['Endocrinology'],
+        },
+      },
+      {
+        fn: 'admin_archive_company',
+        args: {
+          p_company_id: 'comp-tigris',
+          p_reason: 'Clear catalog',
         },
       },
     ]);

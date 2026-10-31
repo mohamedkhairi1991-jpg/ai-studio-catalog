@@ -452,7 +452,7 @@ export const DoctorCatalogView: React.FC = () => {
 
               {/* Legal Notice Footer */}
               <div className="bg-[#1F2D38] p-3 rounded text-[11px] text-[#84919B] border border-[#51616D] text-center">
-                This document is issued by {selectedProduct.companyName} and approved by Pharamty Official Catalog Administrators. It does not reflect inventory, commercial stock, or retail availability.
+                This document is issued by {selectedProduct.companyName} and approved by Pharmaty Official Catalog Administrators. It does not reflect inventory, commercial stock, or retail availability.
               </div>
             </div>
 

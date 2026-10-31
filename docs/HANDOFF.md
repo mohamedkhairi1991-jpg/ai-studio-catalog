@@ -55,6 +55,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-31 — Google AI Studio (AI draft UI & demo filter removal)
+- **Removed demo filters (`src/lib/catalog.ts`, `src/lib/catalog.test.ts`):**
+  - Removed `isDemoCompanyRecord`, `isDemoProductRecord`, their two `.filter(...)` calls in `loadCompanies` and `loadCatalogBundle`, and their unit tests.
+- **Built `docs/AI_STUDIO_BRIEF_AI_DRAFT.md` (`src/lib/catalog.ts`, `src/components/AdminCatalogReview.tsx`, `src/lib/catalog.test.ts`):**
+  - Added `invokeAiDraftProduct` (`ai-draft-product` edge function), `findMatchingTaxonomyOption`, `rpcAdminEnsureGenericDrug` (`admin_ensure_generic_drug`), `rpcAdminEnsureSpecialties` (`admin_ensure_specialties`), and Arabic brand translation support (`brandNameAr` via `upsert_product_translation`) in `src/lib/catalog.ts`.
+  - Added the **AI draft** box at the top of `AdminProductEditorForm` with product name input, optional leaflet text textarea, loading indicator (`"Researching official sources… this can take up to 2 minutes"`), warning banner (`"AI draft — check every field against the sources before publishing"`), checklist warnings, external source links (`rel="noopener noreferrer"`), and sandboxed `<iframe sandbox="allow-popups allow-popups-to-escape-sandbox" srcDoc={...} />` for `searchSuggestionsHtml`.
+  - Unmatched drug class, generic drug, and specialties display as `"New: <name> (added when you save)"` with a `"×"` button to drop them, and are created via `admin_ensure_generic_drug` / `admin_ensure_specialties` only when the administrator clicks Save. Never saves or publishes automatically after an AI draft, and never touches registration fields.
+- **Next for Claude:** Review and merge the synced changes from `ai-studio-catalog`.
+
 ### 2026-10-31 — Claude (AI drafting backend)
 - **Owner decision:** the administrator enters each company's products; AI
   drafts each product, the administrator checks and publishes.
@@ -68,6 +77,17 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 - **For AI Studio — next task:** build `docs/AI_STUDIO_BRIEF_AI_DRAFT.md`
   (the "AI draft" button in the admin product form). Still pending from the
   last review: remove the name-based demo filter in `src/lib/catalog.ts`.
+
+### 2026-10-31 — Google AI Studio
+- **Brand logo & Pharmaty spelling (`src/components/ui.tsx`, `src/l10n/index.ts`, `index.html`, `src/components/DoctorCatalog.tsx`, `src/components/AdminCatalogReview.tsx`, `src/components/CompanyCatalog.tsx`):**
+  - Updated `BrandLogo` to a pure typographic symbolic wordmark for **Pharmaty** with a custom inline SVG `P` letterform (vertical stem in `#F2F5F8` + open split-capsule pharmaceutical loop in `#5DB4F2`) paired seamlessly with `harm` (`#F2F5F8`) and `aty` (`#5DB4F2`).
+  - Standardized all user-visible brand strings and document titles from `"Pharamty"` to `"Pharmaty"`.
+- **Admin catalog & company management (`src/lib/catalog.ts`, `src/components/AdminCatalogReview.tsx`, `src/components/CompanyCatalog.tsx`):**
+  - Switched admin company creation and editing to `admin_create_company` and `admin_update_company` (with Iraqi city support).
+  - Removed the "Admin SQL Setup" modal/SQL snippet, fake media/brochure metadata helpers (`ensureProductPublishMetadata`, `publishProductWithMetadataFallback`), and hardcoded AstraZeneca product data/auto-seeding.
+  - Updated product publishing to call `submit_product_for_review` followed by `admin_publish_product` and display readable validation checklist messages on `23514` errors.
+  - Kept the Companies tab and add/edit form, admin product form, "Publish All Pending", and the Doctor Catalog company filter; left `Onboarding.tsx` untouched.
+- **Next for Claude:** Review the synced PR from `ai-studio-catalog`; Priority 4/5 (storage file uploads and signed URLs) can follow next.
 
 ### 2026-10-31 — Claude
 - **Brief Priority 1 done by Claude** (owner is trying Claude for screens):

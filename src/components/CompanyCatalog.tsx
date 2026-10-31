@@ -14,6 +14,7 @@ import {
   rpcSubmitProductForReview,
   rpcUpdateProductDraft,
   rpcUpsertProductMarket,
+  rpcUpsertProductMarketTranslation,
   rpcUpsertProductTranslation,
   rpcWithdrawProductSubmission,
   type CatalogBundle,
@@ -24,18 +25,7 @@ import {
   type ProductStatus,
 } from '../lib/catalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
-import { Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
-
-const INPUT_CLASS = inputClass;
-const SELECT_CLASS = inputClass;
-
-function GhostButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button {...props} className={secondaryButtonClass} />;
-}
-
-function PrimaryButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button {...props} className={buttonClass} />;
-}
+import { BrandLogo, Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
   client: SupabaseClient;
@@ -49,10 +39,10 @@ export function StatusText({ status }: { status: ProductStatus }) {
       ? 'text-[#38C976]'
       : status === 'submitted' || status === 'changes_requested'
       ? 'text-[#F59E0B]'
-      : 'text-[#94A3B8]';
+      : 'text-[#B8C3CC]';
 
   return (
-    <span className={`text-xs font-mono uppercase tracking-wider ${colorClass}`}>
+    <span className={`text-xs font-medium ${colorClass}`}>
       {STATUS_LABELS[status]}
     </span>
   );
@@ -70,12 +60,10 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
 
-  // New draft creation state
   const [newCategory, setNewCategory] = useState<ProductCategory>('prescription_drug');
   const [newGenericId, setNewGenericId] = useState('');
   const [newDrugClassId, setNewDrugClassId] = useState('');
   const [newBrandEn, setNewBrandEn] = useState('');
-  const [newBrandAr, setNewBrandAr] = useState('');
   const [creatingBusy, setCreatingBusy] = useState(false);
 
   const refresh = useCallback(
@@ -108,7 +96,9 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
   const activeCompany = useMemo(() => {
     if (!bundle) return null;
     if (access.companyName) {
-      const byName = bundle.companies.find((c) => c.companyName === access.companyName);
+      const byName = bundle.companies.find(
+        (c) => c.companyName === access.companyName
+      );
       if (byName) return byName;
     }
     return (
@@ -143,7 +133,10 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
     const createRes = await rpcCreateProductDraft(client, {
       companyId,
       category: newCategory,
-      genericDrugId: newCategory === 'dietary_supplement' && !newGenericId ? null : newGenericId,
+      genericDrugId:
+        newCategory === 'dietary_supplement' && !newGenericId
+          ? null
+          : newGenericId,
       drugClassId: newDrugClassId,
       englishBrandName: newBrandEn,
     });
@@ -155,56 +148,32 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
     }
 
     const newProductId = createRes.data.id;
-
-    if (newBrandAr.trim()) {
-      const arRes = await rpcUpsertProductTranslation(
-        client,
-        newProductId,
-        'ar',
-        newBrandAr
-      );
-      if (!arRes.ok) {
-        setCreatingBusy(false);
-        setError(arRes.message);
-        await refresh(newProductId);
-        return;
-      }
-    }
-
     setCreatingBusy(false);
     setCreatingNew(false);
     setNewBrandEn('');
-    setNewBrandAr('');
-    setNotice('Product draft created. You can now fill in market details and specialties.');
+    setNotice('Product draft created.');
     await refresh(newProductId);
   };
 
   return (
-    <div className="min-h-screen bg-[#1F2D38] text-[#F1F5F9] flex flex-col">
+    <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
       {/* Header */}
-      <header className="border-b border-[#304451] bg-[#263744] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono uppercase tracking-wider text-[#5DB4F2]">
-                Pharamty · Company Workspace
-              </span>
-              <span className="text-xs text-[#94A3B8]">/company/catalog</span>
-            </div>
-            <h1 className="text-xl font-semibold tracking-tight mt-0.5">
-              {access.companyName ?? activeCompany?.companyName ?? 'Company Product Catalog'}
-            </h1>
+      <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <BrandLogo />
+            <span className="h-4 w-px bg-[#304451]" />
+            <span className="text-sm text-[#B8C3CC]">
+              {access.companyName ??
+                activeCompany?.companyName ??
+                'Company Catalog'}
+            </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <div className="text-xs text-[#E2E8F0]">{access.email}</div>
-              <div className="text-[11px] text-[#94A3B8]">
-                {canManageDrafts
-                  ? 'Draft Management Enabled (Admin / Product Manager)'
-                  : 'Read-only Company Access'}
-              </div>
-            </div>
+            <span className="text-xs text-[#B8C3CC] hidden sm:inline">
+              {access.email}
+            </span>
             {canManageDrafts && (
               <button
                 type="button"
@@ -213,15 +182,26 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
                   setError(null);
                   setNotice(null);
                 }}
-                className="rounded-lg bg-[#1769AA] hover:bg-[#1E7AC2] text-white text-xs font-semibold px-3.5 py-2 transition-colors"
+                className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3.5 py-2 transition-colors"
               >
-                {creatingNew ? 'Close New Product Form' : '+ New Product'}
+                {creatingNew ? 'Close' : 'New product'}
               </button>
             )}
-            <GhostButton onClick={() => void refresh()} disabled={loading}>
+            <button
+              type="button"
+              className={secondaryButtonClass}
+              onClick={() => void refresh()}
+              disabled={loading}
+            >
               Refresh
-            </GhostButton>
-            <GhostButton onClick={onSignOut}>Sign out</GhostButton>
+            </button>
+            <button
+              type="button"
+              className={secondaryButtonClass}
+              onClick={onSignOut}
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </header>
@@ -230,70 +210,54 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
         {error && <Banner tone="error">{error}</Banner>}
         {notice && <Banner tone="success">{notice}</Banner>}
 
-        {/* New Product Form (only for canManageDrafts) */}
+        {/* New Product Form */}
         {canManageDrafts && creatingNew && bundle && (
           <section className="rounded-xl bg-[#263744] border border-[#304451] p-6">
-            <div className="flex items-center justify-between border-b border-[#304451] pb-3 mb-4">
-              <div>
-                <h2 className="text-base font-semibold text-[#F1F5F9]">
-                  Create New Product Draft
-                </h2>
-                <p className="text-xs text-[#94A3B8] mt-0.5">
-                  Calls <code className="font-mono">create_product_draft</code> to initialize a new draft record, then opens market and specialty fields.
-                </p>
-              </div>
-            </div>
+            <h2 className="text-base font-medium text-[#F2F5F8] mb-4">
+              New Product Draft
+            </h2>
 
             <form onSubmit={handleCreateDraft} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="English Brand Name *">
+                <Field label="Brand Name">
                   <input
                     type="text"
                     required
                     value={newBrandEn}
                     onChange={(e) => setNewBrandEn(e.target.value)}
-                    placeholder="e.g. Amoxicare"
-                    className={INPUT_CLASS}
+                    className={inputClass}
                   />
                 </Field>
 
-                <Field label="Arabic Brand Name (الاسم التجاري بالعربية — optional)">
-                  <input
-                    type="text"
-                    dir="rtl"
-                    value={newBrandAr}
-                    onChange={(e) => setNewBrandAr(e.target.value)}
-                    placeholder="مثال: أموكسي كير"
-                    className={INPUT_CLASS}
-                  />
-                </Field>
-
-                <Field label="Product Category *">
+                <Field label="Category">
                   <select
                     value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value as ProductCategory)}
-                    className={SELECT_CLASS}
+                    onChange={(e) =>
+                      setNewCategory(e.target.value as ProductCategory)
+                    }
+                    className={inputClass}
                   >
-                    {(Object.keys(CATEGORY_LABELS) as ProductCategory[]).map((cat) => (
-                      <option key={cat} value={cat}>
-                        {CATEGORY_LABELS[cat]}
-                      </option>
-                    ))}
+                    {(Object.keys(CATEGORY_LABELS) as ProductCategory[]).map(
+                      (cat) => (
+                        <option key={cat} value={cat}>
+                          {CATEGORY_LABELS[cat]}
+                        </option>
+                      )
+                    )}
                   </select>
                 </Field>
 
-                <Field label="Drug Class *">
+                <Field label="Drug Class">
                   <select
                     required
                     value={newDrugClassId}
                     onChange={(e) => setNewDrugClassId(e.target.value)}
-                    className={SELECT_CLASS}
+                    className={inputClass}
                   >
-                    <option value="">Select drug class…</option>
+                    <option value="">Select drug class</option>
                     {bundle.drugClasses.map((dc) => (
                       <option key={dc.id} value={dc.id}>
                         {dc.nameEn}
-                        {dc.nameAr ? ` · ${dc.nameAr}` : ''}
                       </option>
                     ))}
                   </select>
@@ -302,25 +266,24 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
                 <Field
                   label={
                     newCategory === 'dietary_supplement'
-                      ? 'Generic / Scientific Drug (optional for dietary supplement)'
-                      : 'Generic / Scientific Drug *'
+                      ? 'Generic Drug (optional)'
+                      : 'Generic Drug'
                   }
                 >
                   <select
                     required={newCategory !== 'dietary_supplement'}
                     value={newGenericId}
                     onChange={(e) => setNewGenericId(e.target.value)}
-                    className={SELECT_CLASS}
+                    className={inputClass}
                   >
                     <option value="">
                       {newCategory === 'dietary_supplement'
-                        ? 'None (Dietary Supplement)'
-                        : 'Select generic drug…'}
+                        ? 'None'
+                        : 'Select generic drug'}
                     </option>
                     {bundle.genericDrugs.map((gd) => (
                       <option key={gd.id} value={gd.id}>
                         {gd.nameEn}
-                        {gd.nameAr ? ` · ${gd.nameAr}` : ''}
                       </option>
                     ))}
                   </select>
@@ -328,13 +291,21 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                <GhostButton type="button" onClick={() => setCreatingNew(false)}>
+                <button
+                  type="button"
+                  className={secondaryButtonClass}
+                  onClick={() => setCreatingNew(false)}
+                >
                   Cancel
-                </GhostButton>
-                <div className="w-48">
-                  <PrimaryButton type="submit" disabled={creatingBusy}>
-                    {creatingBusy ? 'Creating draft…' : 'Create Product Draft'}
-                  </PrimaryButton>
+                </button>
+                <div className="w-44">
+                  <button
+                    type="submit"
+                    className={buttonClass}
+                    disabled={creatingBusy}
+                  >
+                    {creatingBusy ? 'Creating…' : 'Create draft'}
+                  </button>
                 </div>
               </div>
             </form>
@@ -342,68 +313,66 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
         )}
 
         {/* Filter Bar */}
-        <section className="rounded-xl bg-[#263744] border border-[#304451] p-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {(
-              [
-                'all',
-                'draft',
-                'submitted',
-                'changes_requested',
-                'published',
-                'hidden',
-                'archived',
-              ] as const
-            ).map((st) => {
-              const active = statusFilter === st;
-              const count =
-                st === 'all'
-                  ? bundle?.products.length ?? 0
-                  : (bundle?.products ?? []).filter((p) => p.status === st).length;
-              return (
-                <button
-                  key={st}
-                  type="button"
-                  onClick={() => setStatusFilter(st)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                    active
-                      ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
-                      : 'bg-[#1F2D38] border-[#304451] text-[#CBD5E1] hover:border-[#475569]'
-                  }`}
-                >
-                  {st === 'all' ? 'All Products' : STATUS_LABELS[st]}{' '}
-                  <span className="font-mono tabular-nums opacity-80">({count})</span>
-                </button>
-              );
-            })}
-          </div>
+        <section className="flex flex-wrap items-center gap-2">
+          {(
+            [
+              'all',
+              'draft',
+              'submitted',
+              'changes_requested',
+              'published',
+              'hidden',
+              'archived',
+            ] as const
+          ).map((st) => {
+            const active = statusFilter === st;
+            const count =
+              st === 'all'
+                ? bundle?.products.length ?? 0
+                : (bundle?.products ?? []).filter((p) => p.status === st).length;
+            return (
+              <button
+                key={st}
+                type="button"
+                onClick={() => setStatusFilter(st)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  active
+                    ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                    : 'bg-[#263744] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                }`}
+              >
+                {st === 'all' ? 'All' : STATUS_LABELS[st]}{' '}
+                <span className="font-mono tabular-nums opacity-75">
+                  ({count})
+                </span>
+              </button>
+            );
+          })}
         </section>
 
         {/* Main Master-Detail Split */}
         {loading ? (
-          <div className="rounded-xl bg-[#263744] border border-[#304451] p-10 text-center text-sm text-[#94A3B8]">
-            Loading company products from Supabase…
+          <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+            Loading products…
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="rounded-xl bg-[#263744] border border-[#304451] p-10 text-center">
-            <h2 className="text-base font-semibold text-[#F1F5F9]">
-              No company products found
+          <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
+            <h2 className="text-base font-medium text-[#F2F5F8]">
+              No products found
             </h2>
-            <p className="text-xs text-[#94A3B8] mt-1.5 max-w-md mx-auto">
+            <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
               {canManageDrafts
-                ? 'Click "+ New Product" in the top bar to create your first product draft.'
-                : 'No products match the selected status filter for your company.'}
+                ? 'Create a new product draft to get started.'
+                : 'No products match the selected filter.'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Product List */}
-            <div className="lg:col-span-5 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-                  Company Products
-                </span>
-                <span className="text-xs font-mono tabular-nums text-[#94A3B8]">
+            <div className="lg:col-span-4 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
+                <span className="font-medium">Products</span>
+                <span className="font-mono tabular-nums">
                   {filteredProducts.length}
                 </span>
               </div>
@@ -423,32 +392,28 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
                       className={`w-full text-left px-4 py-3.5 transition-colors ${
                         isSelected
                           ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
-                          : 'hover:bg-[#1F2D38]/60'
+                          : 'hover:bg-[#1F2D38]/50'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-sm text-[#F1F5F9]">
+                        <span className="font-medium text-sm text-[#F2F5F8]">
                           {product.brandNameEn}
                         </span>
                         <StatusText status={product.status} />
                       </div>
 
-                      {product.brandNameAr && (
-                        <div dir="rtl" className="text-xs text-[#CBD5E1] mt-0.5">
-                          {product.brandNameAr}
-                        </div>
-                      )}
-
-                      <div className="text-xs text-[#94A3B8] mt-1">
-                        {product.genericNameEn ?? 'No Generic'} · {product.drugClassNameEn}
+                      <div className="text-xs text-[#B8C3CC] mt-1">
+                        {product.market
+                          ? `${product.market.strength} · ${product.market.dosageForm}`
+                          : product.drugClassNameEn}
                       </div>
 
-                      {product.status === 'changes_requested' && product.reviewReason && (
-                        <div className="mt-2 rounded bg-[#F59E0B]/10 border border-[#F59E0B]/40 px-2.5 py-1.5 text-[11px] text-[#FCD34D]">
-                          <span className="font-semibold">Changes requested:</span>{' '}
-                          {product.reviewReason}
-                        </div>
-                      )}
+                      {product.status === 'changes_requested' &&
+                        product.reviewReason && (
+                          <div className="mt-2 rounded bg-[#F59E0B]/10 border border-[#F59E0B]/40 px-2.5 py-1.5 text-xs text-[#F59E0B]">
+                            {product.reviewReason}
+                          </div>
+                        )}
                     </button>
                   );
                 })}
@@ -456,7 +421,7 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
             </div>
 
             {/* Detail / Editor Panel */}
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-8">
               {selectedProduct && bundle && (
                 <CompanyProductPanel
                   key={selectedProduct.id + ':' + selectedProduct.updatedAt}
@@ -504,16 +469,19 @@ function CompanyProductPanel({
     product.status === 'draft' || product.status === 'changes_requested';
   const canEdit = canManageDrafts && isEditableStatus;
 
-  // Draft & Translation State
+  const enClinical = product.marketTranslations.en;
+
   const [category, setCategory] = useState<ProductCategory>(product.category);
   const [drugClassId, setDrugClassId] = useState(product.drugClassId);
-  const [genericDrugId, setGenericDrugId] = useState(product.genericDrugId ?? '');
+  const [genericDrugId, setGenericDrugId] = useState(
+    product.genericDrugId ?? ''
+  );
   const [brandEn, setBrandEn] = useState(product.brandNameEn);
-  const [brandAr, setBrandAr] = useState(product.brandNameAr ?? '');
 
-  // Market State
   const [strength, setStrength] = useState(product.market?.strength ?? '');
-  const [dosageForm, setDosageForm] = useState(product.market?.dosageForm ?? '');
+  const [dosageForm, setDosageForm] = useState(
+    product.market?.dosageForm ?? ''
+  );
   const [route, setRoute] = useState(product.market?.route ?? '');
   const [packSize, setPackSize] = useState(product.market?.packSize ?? '');
   const [marketStatus, setMarketStatus] = useState<IraqMarketStatus>(
@@ -533,12 +501,26 @@ function CompanyProductPanel({
     product.market?.registrationExpiresOn ?? ''
   );
 
-  // Specialties State
+  const [approvedIndications, setApprovedIndications] = useState(
+    enClinical?.approvedIndications ?? ''
+  );
+  const [usualAdultDose, setUsualAdultDose] = useState(
+    enClinical?.usualAdultDose ?? ''
+  );
+  const [contraindications, setContraindications] = useState(
+    enClinical?.contraindications ?? ''
+  );
+  const [commonAdverseEffects, setCommonAdverseEffects] = useState(
+    enClinical?.commonAdverseEffects ?? ''
+  );
+  const [storageConditions, setStorageConditions] = useState(
+    enClinical?.storageConditions ?? ''
+  );
+
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>(
     product.specialtyIds
   );
 
-  // Archive Reason State
   const [archiveReason, setArchiveReason] = useState('');
   const [showArchivePrompt, setShowArchivePrompt] = useState(false);
 
@@ -557,7 +539,10 @@ function CompanyProductPanel({
     const draftRes = await rpcUpdateProductDraft(client, {
       productId: product.id,
       category,
-      genericDrugId: category === 'dietary_supplement' && !genericDrugId ? null : genericDrugId,
+      genericDrugId:
+        category === 'dietary_supplement' && !genericDrugId
+          ? null
+          : genericDrugId,
       drugClassId,
     });
     if (!draftRes.ok) {
@@ -578,22 +563,8 @@ function CompanyProductPanel({
       return;
     }
 
-    if (brandAr.trim()) {
-      const arRes = await rpcUpsertProductTranslation(
-        client,
-        product.id,
-        'ar',
-        brandAr
-      );
-      if (!arRes.ok) {
-        setBusy(false);
-        onError(arRes.message);
-        return;
-      }
-    }
-
     setBusy(false);
-    await onSuccess('Product classification and brand translations saved.');
+    await onSuccess('Product details saved.');
   };
 
   const handleSaveMarket = async (e: React.FormEvent) => {
@@ -616,7 +587,27 @@ function CompanyProductPanel({
       onError(res.message);
       return;
     }
-    await onSuccess('Iraq market details saved.');
+    await onSuccess('Market details saved.');
+  };
+
+  const handleSaveClinicalContent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const res = await rpcUpsertProductMarketTranslation(client, {
+      productId: product.id,
+      locale: 'en',
+      storageConditions,
+      approvedIndications,
+      usualAdultDose,
+      contraindications,
+      commonAdverseEffects,
+    });
+    setBusy(false);
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+    await onSuccess('Clinical monograph information saved.');
   };
 
   const handleSaveSpecialties = async () => {
@@ -631,7 +622,7 @@ function CompanyProductPanel({
       onError(res.message);
       return;
     }
-    await onSuccess('Product specialties updated.');
+    await onSuccess('Specialties updated.');
   };
 
   const handleSubmitForReview = async () => {
@@ -642,7 +633,7 @@ function CompanyProductPanel({
       onError(res.message);
       return;
     }
-    await onSuccess('Product submitted for administrator review.');
+    await onSuccess('Submitted for review.');
   };
 
   const handleWithdraw = async () => {
@@ -653,7 +644,7 @@ function CompanyProductPanel({
       onError(res.message);
       return;
     }
-    await onSuccess('Product submission withdrawn back to draft.');
+    await onSuccess('Submission withdrawn.');
   };
 
   const handleArchive = async (e: React.FormEvent) => {
@@ -676,14 +667,9 @@ function CompanyProductPanel({
       <div className="border-b border-[#304451] pb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <StatusText status={product.status} />
-          <h2 className="text-2xl font-semibold text-[#F1F5F9] mt-1">
+          <h2 className="text-2xl font-semibold text-[#F2F5F8] mt-1">
             {product.brandNameEn}
           </h2>
-          {product.brandNameAr && (
-            <div dir="rtl" className="text-base text-[#CBD5E1] mt-0.5">
-              {product.brandNameAr}
-            </div>
-          )}
         </div>
 
         {canManageDrafts && (
@@ -694,9 +680,9 @@ function CompanyProductPanel({
                 type="button"
                 disabled={busy}
                 onClick={() => void handleSubmitForReview()}
-                className="rounded-lg bg-[#1769AA] hover:bg-[#1E7AC2] disabled:opacity-50 text-white text-xs font-semibold px-3.5 py-2 transition-colors"
+                className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-medium px-3.5 py-2 transition-colors"
               >
-                Submit for Review
+                Submit for review
               </button>
             )}
 
@@ -705,9 +691,9 @@ function CompanyProductPanel({
                 type="button"
                 disabled={busy}
                 onClick={() => void handleWithdraw()}
-                className="rounded-lg bg-[#1F2D38] border border-[#F59E0B]/60 text-[#FCD34D] hover:bg-[#F59E0B]/10 disabled:opacity-50 text-xs font-semibold px-3.5 py-2 transition-colors"
+                className={secondaryButtonClass}
               >
-                Withdraw Submission
+                Withdraw
               </button>
             )}
 
@@ -716,7 +702,7 @@ function CompanyProductPanel({
                 type="button"
                 disabled={busy}
                 onClick={() => setShowArchivePrompt((v) => !v)}
-                className="rounded-lg bg-[#1F2D38] border border-[#FF7272]/50 text-[#FCA5A5] hover:bg-[#FF7272]/10 disabled:opacity-50 text-xs font-semibold px-3.5 py-2 transition-colors"
+                className={secondaryButtonClass}
               >
                 Archive
               </button>
@@ -728,8 +714,8 @@ function CompanyProductPanel({
       {/* Review Reason Alert when changes_requested */}
       {product.status === 'changes_requested' && product.reviewReason && (
         <Banner tone="warn">
-          <div className="font-semibold">Changes requested by administrator:</div>
-          <div className="mt-1">{product.reviewReason}</div>
+          <span className="font-medium">Changes requested:</span>{' '}
+          {product.reviewReason}
         </Banner>
       )}
 
@@ -737,34 +723,31 @@ function CompanyProductPanel({
       {canManageDrafts && showArchivePrompt && product.status !== 'archived' && (
         <form
           onSubmit={handleArchive}
-          className="rounded-lg bg-[#1F2D38] border border-[#FF7272]/50 p-4 space-y-3"
+          className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-3"
         >
-          <div className="text-xs font-semibold text-[#FCA5A5]">
-            Archive Product (<code className="font-mono">archive_own_product</code>)
-          </div>
-          <Field label="Archive Reason *">
+          <Field label="Reason for archiving">
             <input
               type="text"
               required
               value={archiveReason}
               onChange={(e) => setArchiveReason(e.target.value)}
-              placeholder="Explain why this product is being archived…"
-              className={INPUT_CLASS}
+              className={inputClass}
             />
           </Field>
           <div className="flex items-center justify-end gap-2">
-            <GhostButton
+            <button
               type="button"
+              className={secondaryButtonClass}
               onClick={() => setShowArchivePrompt(false)}
             >
               Cancel
-            </GhostButton>
+            </button>
             <button
               type="submit"
               disabled={busy || !archiveReason.trim()}
-              className="rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] disabled:opacity-50 text-white text-xs font-semibold px-3.5 py-2"
+              className="rounded-md bg-[#B42318] hover:bg-[#991B1B] disabled:opacity-50 text-white text-xs font-medium px-3.5 py-2"
             >
-              Confirm Archive
+              Confirm archive
             </button>
           </div>
         </form>
@@ -772,48 +755,31 @@ function CompanyProductPanel({
 
       {/* Editable Form vs Read-Only Summary */}
       {canEdit ? (
-        <div className="space-y-6">
-          {/* Section 1: Core Classification & Brand Translations */}
-          <form
-            onSubmit={handleSaveCoreAndNames}
-            className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-                1. Classification & Brand Names
-              </h3>
-              <span className="text-[11px] font-mono text-[#94A3B8]">
-                update_product_draft + upsert_product_translation
-              </span>
-            </div>
+        <div className="space-y-8">
+          {/* Section 1: Core Classification & Brand Name */}
+          <form onSubmit={handleSaveCoreAndNames} className="space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+              Product Classification
+            </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="English Brand Name (en) *">
+              <Field label="Brand Name">
                 <input
                   type="text"
                   required
                   value={brandEn}
                   onChange={(e) => setBrandEn(e.target.value)}
-                  className={INPUT_CLASS}
+                  className={inputClass}
                 />
               </Field>
 
-              <Field label="Arabic Brand Name (ar)">
-                <input
-                  type="text"
-                  dir="rtl"
-                  value={brandAr}
-                  onChange={(e) => setBrandAr(e.target.value)}
-                  placeholder="الاسم التجاري بالعربية"
-                  className={INPUT_CLASS}
-                />
-              </Field>
-
-              <Field label="Category *">
+              <Field label="Category">
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as ProductCategory)}
-                  className={SELECT_CLASS}
+                  onChange={(e) =>
+                    setCategory(e.target.value as ProductCategory)
+                  }
+                  className={inputClass}
                 >
                   {(Object.keys(CATEGORY_LABELS) as ProductCategory[]).map(
                     (cat) => (
@@ -825,14 +791,14 @@ function CompanyProductPanel({
                 </select>
               </Field>
 
-              <Field label="Drug Class *">
+              <Field label="Drug Class">
                 <select
                   required
                   value={drugClassId}
                   onChange={(e) => setDrugClassId(e.target.value)}
-                  className={SELECT_CLASS}
+                  className={inputClass}
                 >
-                  <option value="">Select drug class…</option>
+                  <option value="">Select drug class</option>
                   {bundle.drugClasses.map((dc) => (
                     <option key={dc.id} value={dc.id}>
                       {dc.nameEn}
@@ -845,19 +811,19 @@ function CompanyProductPanel({
                 label={
                   category === 'dietary_supplement'
                     ? 'Generic Drug (optional)'
-                    : 'Generic Drug *'
+                    : 'Generic Drug'
                 }
               >
                 <select
                   required={category !== 'dietary_supplement'}
                   value={genericDrugId}
                   onChange={(e) => setGenericDrugId(e.target.value)}
-                  className={SELECT_CLASS}
+                  className={inputClass}
                 >
                   <option value="">
                     {category === 'dietary_supplement'
                       ? 'None'
-                      : 'Select generic drug…'}
+                      : 'Select generic drug'}
                   </option>
                   {bundle.genericDrugs.map((gd) => (
                     <option key={gd.id} value={gd.id}>
@@ -869,10 +835,10 @@ function CompanyProductPanel({
             </div>
 
             <div className="flex justify-end">
-              <div className="w-56">
-                <PrimaryButton type="submit" disabled={busy}>
-                  Save Brand & Classification
-                </PrimaryButton>
+              <div className="w-48">
+                <button type="submit" className={buttonClass} disabled={busy}>
+                  Save classification
+                </button>
               </div>
             </div>
           </form>
@@ -880,69 +846,60 @@ function CompanyProductPanel({
           {/* Section 2: Iraq Market Presentation & Registration */}
           <form
             onSubmit={handleSaveMarket}
-            className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-4"
+            className="border-t border-[#304451] pt-6 space-y-4"
           >
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-                2. Iraq Market & Registration Details
-              </h3>
-              <span className="text-[11px] font-mono text-[#94A3B8]">
-                upsert_product_market
-              </span>
-            </div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+              Market & Registration Details
+            </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Strength *">
+              <Field label="Strength">
                 <input
                   type="text"
                   required
                   value={strength}
                   onChange={(e) => setStrength(e.target.value)}
-                  placeholder="e.g. 500 mg"
-                  className={INPUT_CLASS}
+                  className={inputClass}
                 />
               </Field>
 
-              <Field label="Dosage Form *">
+              <Field label="Dosage Form">
                 <input
                   type="text"
                   required
                   value={dosageForm}
                   onChange={(e) => setDosageForm(e.target.value)}
-                  placeholder="e.g. Film-coated tablet"
-                  className={INPUT_CLASS}
+                  className={inputClass}
                 />
               </Field>
 
-              <Field label="Route of Administration *">
+              <Field label="Route">
                 <input
                   type="text"
                   required
                   value={route}
                   onChange={(e) => setRoute(e.target.value)}
-                  placeholder="e.g. Oral"
-                  className={INPUT_CLASS}
+                  className={inputClass}
                 />
               </Field>
 
-              <Field label="Pack Size *">
+              <Field label="Pack Size">
                 <input
                   type="text"
                   required
                   value={packSize}
                   onChange={(e) => setPackSize(e.target.value)}
-                  placeholder="e.g. 20 tablets"
-                  className={INPUT_CLASS}
+                  className={inputClass}
                 />
               </Field>
 
-              <Field label="Iraq Market Status *">
+              <Field label="Market Status">
                 <select
                   value={marketStatus}
                   onChange={(e) =>
                     setMarketStatus(e.target.value as IraqMarketStatus)
                   }
-                  className={SELECT_CLASS}
+                  className={inputClass}
                 >
                   {(
                     Object.keys(MARKET_STATUS_LABELS) as IraqMarketStatus[]
@@ -954,7 +911,7 @@ function CompanyProductPanel({
                 </select>
               </Field>
 
-              <Field label="Registration Status *">
+              <Field label="Registration Status">
                 <select
                   value={registrationStatus}
                   onChange={(e) =>
@@ -962,7 +919,7 @@ function CompanyProductPanel({
                       e.target.value as ProductRegistrationStatus
                     )
                   }
-                  className={SELECT_CLASS}
+                  className={inputClass}
                 >
                   {(
                     Object.keys(
@@ -978,41 +935,33 @@ function CompanyProductPanel({
 
               {registrationStatus !== 'not_recorded' && (
                 <>
-                  <Field label="Registration Number *">
+                  <Field label="Registration Number">
                     <input
                       type="text"
                       required
                       value={registrationNumber}
                       onChange={(e) => setRegistrationNumber(e.target.value)}
-                      placeholder="e.g. IQ-MOH-2026-104"
-                      className={INPUT_CLASS}
+                      className={inputClass}
                     />
                   </Field>
 
-                  <Field label="Registration Authority *">
+                  <Field label="Registration Authority">
                     <input
                       type="text"
                       required
                       value={registrationAuthority}
                       onChange={(e) => setRegistrationAuthority(e.target.value)}
-                      placeholder="e.g. Iraq Ministry of Health"
-                      className={INPUT_CLASS}
+                      className={inputClass}
                     />
                   </Field>
 
-                  <Field
-                    label={
-                      registrationStatus === 'expired'
-                        ? 'Registration Expiry Date *'
-                        : 'Registration Expiry Date'
-                    }
-                  >
+                  <Field label="Registration Expiry Date">
                     <input
                       type="date"
                       required={registrationStatus === 'expired'}
                       value={registrationExpiresOn}
                       onChange={(e) => setRegistrationExpiresOn(e.target.value)}
-                      className={INPUT_CLASS}
+                      className={inputClass}
                     />
                   </Field>
                 </>
@@ -1020,27 +969,92 @@ function CompanyProductPanel({
             </div>
 
             <div className="flex justify-end">
-              <div className="w-56">
-                <PrimaryButton type="submit" disabled={busy}>
-                  Save Market Details
-                </PrimaryButton>
+              <div className="w-48">
+                <button type="submit" className={buttonClass} disabled={busy}>
+                  Save market details
+                </button>
               </div>
             </div>
           </form>
 
-          {/* Section 3: Specialties */}
-          <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-                3. Medical Specialties
-              </h3>
-              <span className="text-[11px] font-mono text-[#94A3B8]">
-                set_product_specialties
-              </span>
+          {/* Section 3: Clinical Prescribing Information */}
+          <form
+            onSubmit={handleSaveClinicalContent}
+            className="border-t border-[#304451] pt-6 space-y-4"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+              Clinical Monograph Information
+            </h3>
+
+            <div className="space-y-3">
+              <Field label="Approved Indications">
+                <textarea
+                  rows={2}
+                  required
+                  value={approvedIndications}
+                  onChange={(e) => setApprovedIndications(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+
+              <Field label="Usual Adult Dose">
+                <textarea
+                  rows={2}
+                  required
+                  value={usualAdultDose}
+                  onChange={(e) => setUsualAdultDose(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+
+              <Field label="Contraindications">
+                <textarea
+                  rows={2}
+                  required
+                  value={contraindications}
+                  onChange={(e) => setContraindications(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+
+              <Field label="Common Adverse Effects">
+                <textarea
+                  rows={2}
+                  required
+                  value={commonAdverseEffects}
+                  onChange={(e) => setCommonAdverseEffects(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+
+              <Field label="Storage Conditions">
+                <input
+                  type="text"
+                  required
+                  value={storageConditions}
+                  onChange={(e) => setStorageConditions(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
             </div>
 
+            <div className="flex justify-end">
+              <div className="w-48">
+                <button type="submit" className={buttonClass} disabled={busy}>
+                  Save clinical info
+                </button>
+              </div>
+            </div>
+          </form>
+
+          {/* Section 4: Specialties */}
+          <div className="border-t border-[#304451] pt-6 space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+              Specialties
+            </h3>
+
             {bundle.specialties.length === 0 ? (
-              <p className="text-xs text-[#94A3B8]">
+              <p className="text-xs text-[#B8C3CC]">
                 No active specialties available.
               </p>
             ) : (
@@ -1052,8 +1066,8 @@ function CompanyProductPanel({
                       key={spec.id}
                       className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs cursor-pointer transition-colors ${
                         checked
-                          ? 'bg-[#263744] border-[#5DB4F2] text-[#F1F5F9]'
-                          : 'bg-[#263744]/40 border-[#304451] text-[#CBD5E1]'
+                          ? 'bg-[#1F2D38] border-[#5DB4F2] text-[#F2F5F8]'
+                          : 'bg-[#1F2D38]/40 border-[#304451] text-[#B8C3CC]'
                       }`}
                     >
                       <input
@@ -1070,22 +1084,22 @@ function CompanyProductPanel({
             )}
 
             <div className="flex justify-end">
-              <div className="w-56">
-                <PrimaryButton
+              <div className="w-48">
+                <button
                   type="button"
+                  className={buttonClass}
                   disabled={busy}
                   onClick={() => void handleSaveSpecialties()}
                 >
-                  Save Specialties
-                </PrimaryButton>
+                  Save specialties
+                </button>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        /* Read-Only Product Details (for non-draft status or read-only company members) */
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
             <ReadOnlyItem
               label="Category"
               value={CATEGORY_LABELS[product.category]}
@@ -1093,14 +1107,14 @@ function CompanyProductPanel({
             <ReadOnlyItem label="Drug Class" value={product.drugClassNameEn} />
             <ReadOnlyItem
               label="Generic Drug"
-              value={product.genericNameEn ?? 'Not applicable'}
+              value={product.genericNameEn ?? '—'}
             />
             <ReadOnlyItem
               label="Specialties"
               value={
                 product.specialtyNamesEn.length > 0
                   ? product.specialtyNamesEn.join(', ')
-                  : 'None assigned'
+                  : '—'
               }
             />
             {product.market && (
@@ -1114,7 +1128,7 @@ function CompanyProductPanel({
                   value={`${product.market.route} · ${product.market.packSize}`}
                 />
                 <ReadOnlyItem
-                  label="Iraq Market Status"
+                  label="Market Status"
                   value={MARKET_STATUS_LABELS[product.market.marketStatus]}
                 />
                 <ReadOnlyItem
@@ -1127,9 +1141,65 @@ function CompanyProductPanel({
                       : ''
                   }`}
                 />
+                <ReadOnlyItem
+                  label="Registration Authority"
+                  value={product.market.registrationAuthority ?? '—'}
+                />
+                <ReadOnlyItem
+                  label="Registration Expiry"
+                  value={product.market.registrationExpiresOn ?? '—'}
+                />
               </>
             )}
           </div>
+
+          {enClinical && (
+            <div className="border-t border-[#304451] pt-5 space-y-3 text-sm">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                Clinical Information
+              </h4>
+              <div>
+                <span className="text-xs text-[#B8C3CC] block">
+                  Approved Indications
+                </span>
+                <p className="text-[#F2F5F8] mt-0.5">
+                  {enClinical.approvedIndications}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-[#B8C3CC] block">
+                  Usual Adult Dose
+                </span>
+                <p className="text-[#F2F5F8] mt-0.5">
+                  {enClinical.usualAdultDose}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-[#B8C3CC] block">
+                  Contraindications
+                </span>
+                <p className="text-[#F2F5F8] mt-0.5">
+                  {enClinical.contraindications}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-[#B8C3CC] block">
+                  Common Adverse Effects
+                </span>
+                <p className="text-[#F2F5F8] mt-0.5">
+                  {enClinical.commonAdverseEffects}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-[#B8C3CC] block">
+                  Storage Conditions
+                </span>
+                <p className="text-[#F2F5F8] mt-0.5">
+                  {enClinical.storageConditions}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1138,9 +1208,9 @@ function CompanyProductPanel({
 
 function ReadOnlyItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3.5 py-2.5">
-      <div className="text-[11px] text-[#94A3B8]">{label}</div>
-      <div className="text-sm font-medium text-[#F1F5F9] mt-0.5">{value}</div>
+    <div className="border-b border-[#304451]/60 pb-3">
+      <div className="text-xs text-[#B8C3CC]">{label}</div>
+      <div className="text-sm font-medium text-[#F2F5F8] mt-1">{value}</div>
     </div>
   );
 }

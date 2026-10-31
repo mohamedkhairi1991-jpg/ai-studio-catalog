@@ -8,30 +8,27 @@ import {
   STATUS_LABELS,
   filterProductsByStatus,
   loadCatalogBundle,
+  publishProduct,
   rpcAdminArchiveProduct,
+  rpcAdminCreateCompany,
   rpcAdminHideProduct,
-  rpcAdminPublishProduct,
   rpcAdminRequestProductChanges,
   rpcAdminRestoreProduct,
+  rpcAdminUpdateCompany,
+  saveAndPublishCompleteProduct,
   type CatalogBundle,
   type CatalogProduct,
+  type CompanySummary,
+  type IraqMarketStatus,
+  type ProductCategory,
+  type ProductRegistrationStatus,
   type ProductStatus,
 } from '../lib/catalog';
+import { listCities, listCountries, type Option } from '../lib/onboarding';
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
 import { Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
-
-const INPUT_CLASS = inputClass;
-const SELECT_CLASS = inputClass;
-
-function GhostButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button {...props} className={secondaryButtonClass} />;
-}
-
-function PrimaryButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button {...props} className={buttonClass} />;
-}
 
 interface Props {
   client: SupabaseClient;
@@ -40,23 +37,68 @@ interface Props {
 }
 
 export function AdminCatalogReview({ client, access, onSignOut }: Props) {
-  const [adminView, setAdminView] = useState<'catalog' | 'approvals'>('catalog');
+  const [adminView, setAdminView] = useState<
+    'catalog' | 'companies' | 'approvals'
+  >('catalog');
   const [bundle, setBundle] = useState<CatalogBundle | null>(null);
+  const [cities, setCities] = useState<Option[]>([]);
+  const [defaultCountryId, setDefaultCountryId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorReasons, setErrorReasons] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const [statusFilter, setStatusFilter] = useState<ProductStatus | 'all'>(
-    'submitted'
-  );
+  const [statusFilter, setStatusFilter] = useState<ProductStatus | 'all'>('all');
+  const [companyFilterId, setCompanyFilterId] = useState<string>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const [creatingProduct, setCreatingProduct] = useState(false);
+  const [creatingCompany, setCreatingCompany] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<CompanySummary | null>(
+    null
+  );
+  const [batchPublishing, setBatchPublishing] = useState(false);
+
+  // Company Add / Edit form state
+  const [compName, setCompName] = useState('');
+  const [compLegalName, setCompLegalName] = useState('');
+  const [compCityId, setCompCityId] = useState('');
+  const [compWebsite, setCompWebsite] = useState('');
+  const [compEmail, setCompEmail] = useState('');
+  const [compPhone, setCompPhone] = useState('');
+  const [compDescription, setCompDescription] = useState('');
+  const [compBusy, setCompBusy] = useState(false);
+
+  const clearFeedback = () => {
+    setError(null);
+    setErrorReasons([]);
+    setNotice(null);
+  };
+
+  const setFailure = (message: string, reasons?: string[]) => {
+    setNotice(null);
+    setError(message);
+    setErrorReasons(reasons ?? []);
+  };
 
   const refresh = useCallback(
     async (preferProductId?: string) => {
       setLoading(true);
-      const res = await loadCatalogBundle(client);
+      const [res, countriesList] = await Promise.all([
+        loadCatalogBundle(client),
+        listCountries(client),
+      ]);
+
+      const iraqCountry = countriesList[0]?.id ?? '';
+      setDefaultCountryId(iraqCountry);
+      if (iraqCountry) {
+        const citiesList = await listCities(client, iraqCountry);
+        setCities(citiesList);
+      }
+
       if (!res.ok) {
         setError(res.message);
+        setErrorReasons(res.reasons ?? []);
         setBundle(null);
       } else {
         setBundle(res.data);
@@ -81,8 +123,129 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
 
   const filteredProducts = useMemo(() => {
     if (!bundle) return [];
-    return filterProductsByStatus(bundle.products, statusFilter);
-  }, [bundle, statusFilter]);
+    const byStatus = filterProductsByStatus(bundle.products, statusFilter);
+    if (companyFilterId === 'all') return byStatus;
+    return byStatus.filter((p) => p.companyId === companyFilterId);
+  }, [bundle, statusFilter, companyFilterId]);
+
+  const pendingProducts = useMemo(() => {
+    if (!bundle) return [];
+    return bundle.products.filter(
+      (p) =>
+        p.status === 'submitted' ||
+        p.status === 'draft' ||
+        p.status === 'changes_requested'
+    );
+  }, [bundle]);
+
+  const openAddCompanyForm = () => {
+    setEditingCompany(null);
+    setCompName('');
+    setCompLegalName('');
+    setCompCityId('');
+    setCompWebsite('');
+    setCompEmail('');
+    setCompPhone('');
+    setCompDescription('');
+    setCreatingCompany(true);
+    clearFeedback();
+  };
+
+  const openEditCompanyForm = (comp: CompanySummary) => {
+    setEditingCompany(comp);
+    setCompName(comp.companyName);
+    setCompLegalName(comp.legalName ?? comp.companyName);
+    setCompCityId(comp.cityId ?? '');
+    setCompWebsite(comp.websiteUrl ?? '');
+    setCompEmail(comp.contactEmail ?? '');
+    setCompPhone(comp.contactPhone ?? '');
+    setCompDescription(comp.description ?? '');
+    setCreatingCompany(true);
+    clearFeedback();
+  };
+
+  const closeCompanyForm = () => {
+    setCreatingCompany(false);
+    setEditingCompany(null);
+  };
+
+  const handleSaveCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!compName.trim() || !compLegalName.trim()) {
+      setFailure('Company name and legal name are required.');
+      return;
+    }
+    setCompBusy(true);
+    clearFeedback();
+
+    const payload = {
+      countryId: editingCompany?.countryId ?? defaultCountryId,
+      cityId: compCityId || null,
+      companyName: compName,
+      legalName: compLegalName,
+      websiteUrl: compWebsite,
+      contactEmail: compEmail,
+      contactPhone: compPhone,
+      description: compDescription,
+    };
+
+    const res = editingCompany
+      ? await rpcAdminUpdateCompany(client, editingCompany.id, payload)
+      : await rpcAdminCreateCompany(client, payload);
+
+    setCompBusy(false);
+    if (!res.ok) {
+      setFailure(res.message, res.reasons);
+      return;
+    }
+
+    const wasEditing = Boolean(editingCompany);
+    closeCompanyForm();
+    setCompanyFilterId(res.data.id);
+    setNotice(
+      wasEditing
+        ? `Updated company "${res.data.companyName}".`
+        : `Added company "${res.data.companyName}" (${res.data.status}).`
+    );
+    await refresh();
+  };
+
+  const handlePublishAllPending = async () => {
+    if (pendingProducts.length === 0) return;
+    setBatchPublishing(true);
+    clearFeedback();
+    let publishedCount = 0;
+    const errors: string[] = [];
+    const collectedReasons: string[] = [];
+
+    for (const item of pendingProducts) {
+      const res = await publishProduct(client, item);
+      if (res.ok) {
+        publishedCount += 1;
+      } else {
+        errors.push(`${item.brandNameEn}: ${res.message}`);
+        for (const r of res.reasons ?? []) {
+          const labeled = `${item.brandNameEn}: ${r}`;
+          if (!collectedReasons.includes(labeled)) {
+            collectedReasons.push(labeled);
+          }
+        }
+      }
+    }
+
+    setBatchPublishing(false);
+    if (errors.length > 0) {
+      setFailure(errors.join(' | '), collectedReasons);
+    }
+    if (publishedCount > 0) {
+      setNotice(
+        `Published ${publishedCount} product${
+          publishedCount === 1 ? '' : 's'
+        } to the Official Doctor Catalog.`
+      );
+    }
+    await refresh();
+  };
 
   const selectedProduct = useMemo(() => {
     if (filteredProducts.length === 0) return null;
@@ -93,62 +256,77 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     return filteredProducts[0] ?? null;
   }, [filteredProducts, selectedId]);
 
-  return (
-    <div className="min-h-screen bg-[#1F2D38] text-[#F1F5F9] flex flex-col">
-      {/* Admin Navigation Header */}
-      <header className="border-b border-[#304451] bg-[#263744] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono uppercase tracking-wider text-[#5DB4F2]">
-                Pharamty · Administration
-              </span>
-              <span className="text-xs text-[#94A3B8]">
-                {adminView === 'catalog' ? '/catalog/review' : '/admin/approvals'}
-              </span>
-            </div>
-            <h1 className="text-xl font-semibold tracking-tight mt-0.5">
-              {adminView === 'catalog'
-                ? 'Official Catalog Review & Governance'
-                : 'Physician & Company Approvals'}
-            </h1>
-          </div>
+  const cityById = useMemo(
+    () => new Map(cities.map((c) => [c.id, c.label])),
+    [cities]
+  );
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Switcher to keep AdminApprovals reachable */}
-            <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-1">
+  return (
+    <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
+      {/* Header */}
+      <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-semibold tracking-tight text-[#F2F5F8]">
+              Pharamty
+            </span>
+            <span className="h-4 w-px bg-[#304451]" />
+            <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5">
               <button
                 type="button"
                 onClick={() => setAdminView('catalog')}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                   adminView === 'catalog'
                     ? 'bg-[#1769AA] text-white'
-                    : 'text-[#CBD5E1] hover:text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
                 }`}
               >
-                Catalog Review Queue
+                Catalog & Products ({bundle?.products.length ?? 0})
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdminView('companies')}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                  adminView === 'companies'
+                    ? 'bg-[#1769AA] text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
+                }`}
+              >
+                Companies ({bundle?.companies.length ?? 0})
               </button>
               <button
                 type="button"
                 onClick={() => setAdminView('approvals')}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                   adminView === 'approvals'
                     ? 'bg-[#1769AA] text-white'
-                    : 'text-[#CBD5E1] hover:text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
                 }`}
               >
-                Physician & Company Approvals
+                Doctor Approvals
               </button>
             </div>
+          </div>
 
-            {adminView === 'catalog' && (
-              <>
-                <GhostButton onClick={() => void refresh()} disabled={loading}>
-                  Refresh
-                </GhostButton>
-                <GhostButton onClick={onSignOut}>Sign out</GhostButton>
-              </>
-            )}
+          <div className="flex items-center gap-2.5">
+            <span className="text-xs text-[#B8C3CC] hidden md:inline">
+              {access.email}
+            </span>
+            <button
+              type="button"
+              className={secondaryButtonClass}
+              onClick={() => void refresh()}
+              disabled={loading || batchPublishing}
+            >
+              Refresh
+            </button>
+            <button
+              type="button"
+              className={secondaryButtonClass}
+              onClick={onSignOut}
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </header>
@@ -161,166 +339,423 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
         />
       ) : (
         <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6 flex flex-col gap-6">
-          {error && <Banner tone="error">{error}</Banner>}
-          {notice && <Banner tone="success">{notice}</Banner>}
-
-          {/* Status Queue Tabs */}
-          <section className="rounded-xl bg-[#263744] border border-[#304451] p-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {(
-                [
-                  'submitted',
-                  'published',
-                  'changes_requested',
-                  'hidden',
-                  'archived',
-                  'draft',
-                  'all',
-                ] as const
-              ).map((st) => {
-                const active = statusFilter === st;
-                const count =
-                  st === 'all'
-                    ? bundle?.products.length ?? 0
-                    : (bundle?.products ?? []).filter((p) => p.status === st)
-                        .length;
-                return (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => {
-                      setStatusFilter(st);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                      active
-                        ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
-                        : 'bg-[#1F2D38] border-[#304451] text-[#CBD5E1] hover:border-[#475569]'
-                    }`}
-                  >
-                    {st === 'all' ? 'All Records' : STATUS_LABELS[st]}{' '}
-                    <span className="font-mono tabular-nums opacity-80">
-                      ({count})
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="text-xs text-[#94A3B8]">
-              Signed in as <span className="text-[#E2E8F0]">{access.email}</span>
-            </div>
-          </section>
-
-          {/* Queue & Product Inspection Split */}
-          {loading ? (
-            <div className="rounded-xl bg-[#263744] border border-[#304451] p-10 text-center text-sm text-[#94A3B8]">
-              Loading catalog review queue from Supabase…
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="rounded-xl bg-[#263744] border border-[#304451] p-10 text-center">
-              <h2 className="text-base font-semibold text-[#F1F5F9]">
-                No products in{' '}
-                {statusFilter === 'all'
-                  ? 'the catalog'
-                  : `"${STATUS_LABELS[statusFilter]}"`}{' '}
-                queue
-              </h2>
-              <p className="text-xs text-[#94A3B8] mt-1.5 max-w-md mx-auto">
-                Switch status tabs above to inspect products in other lifecycle states.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column: Queue List */}
-              <div className="lg:col-span-5 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
-                <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-                    {statusFilter === 'all'
-                      ? 'All Catalog Records'
-                      : `${STATUS_LABELS[statusFilter]} Queue`}
-                  </span>
-                  <span className="text-xs font-mono tabular-nums text-[#94A3B8]">
-                    {filteredProducts.length}
-                  </span>
-                </div>
-
-                <div className="divide-y divide-[#304451] max-h-[700px] overflow-y-auto">
-                  {filteredProducts.map((product) => {
-                    const isSelected = selectedProduct?.id === product.id;
-                    return (
-                      <button
-                        key={product.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedId(product.id);
-                          setError(null);
-                          setNotice(null);
-                        }}
-                        className={`w-full text-left px-4 py-3.5 transition-colors ${
-                          isSelected
-                            ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
-                            : 'hover:bg-[#1F2D38]/60'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-sm text-[#F1F5F9]">
-                            {product.brandNameEn}
-                          </span>
-                          <StatusText status={product.status} />
-                        </div>
-
-                        {product.brandNameAr && (
-                          <div
-                            dir="rtl"
-                            className="text-xs text-[#CBD5E1] mt-0.5"
-                          >
-                            {product.brandNameAr}
-                          </div>
-                        )}
-
-                        <div className="text-xs text-[#5DB4F2] mt-1">
-                          {product.companyName}
-                        </div>
-
-                        <div className="text-[11px] text-[#94A3B8] mt-1 flex items-center justify-between">
-                          <span>
-                            {product.genericNameEn ?? 'No Generic'} ·{' '}
-                            {product.drugClassNameEn}
-                          </span>
-                          {product.submittedAt && (
-                            <span className="font-mono tabular-nums">
-                              {new Date(product.submittedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Right Column: Full Product Inspection & Governance Actions */}
-              <div className="lg:col-span-7">
-                {selectedProduct && (
-                  <AdminProductInspector
-                    key={selectedProduct.id + ':' + selectedProduct.updatedAt}
-                    client={client}
-                    product={selectedProduct}
-                    onError={(msg) => {
-                      setNotice(null);
-                      setError(msg);
-                    }}
-                    onSuccess={async (msg) => {
-                      setError(null);
-                      setNotice(msg);
-                      await refresh(selectedProduct.id);
-                    }}
-                  />
+          {error && (
+            <Banner tone="error">
+              <div className="space-y-2">
+                <div>{error}</div>
+                {errorReasons.length > 0 && (
+                  <ul className="list-disc list-inside space-y-1 text-xs text-[#F2F5F8]">
+                    {errorReasons.map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
                 )}
               </div>
-            </div>
+            </Banner>
+          )}
+          {notice && <Banner tone="success">{notice}</Banner>}
+
+          {adminView === 'companies' ? (
+            <section className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#F2F5F8]">
+                    Companies in Iraq
+                  </h2>
+                  <p className="text-xs text-[#B8C3CC] mt-0.5">
+                    Add and edit pharmaceutical companies operating in Iraq.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (creatingCompany) {
+                      closeCompanyForm();
+                    } else {
+                      openAddCompanyForm();
+                    }
+                  }}
+                  className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-4 py-2 transition-colors"
+                >
+                  {creatingCompany ? 'Cancel' : '+ Add Company'}
+                </button>
+              </div>
+
+              {creatingCompany && (
+                <CompanyEditorForm
+                  editingCompany={editingCompany}
+                  cities={cities}
+                  compName={compName}
+                  setCompName={setCompName}
+                  compLegalName={compLegalName}
+                  setCompLegalName={setCompLegalName}
+                  compCityId={compCityId}
+                  setCompCityId={setCompCityId}
+                  compWebsite={compWebsite}
+                  setCompWebsite={setCompWebsite}
+                  compEmail={compEmail}
+                  setCompEmail={setCompEmail}
+                  compPhone={compPhone}
+                  setCompPhone={setCompPhone}
+                  compDescription={compDescription}
+                  setCompDescription={setCompDescription}
+                  compBusy={compBusy}
+                  onCancel={closeCompanyForm}
+                  onSubmit={handleSaveCompany}
+                />
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(bundle?.companies ?? []).map((comp) => {
+                  const compProducts = (bundle?.products ?? []).filter(
+                    (p) => p.companyId === comp.id
+                  );
+                  const publishedCount = compProducts.filter(
+                    (p) => p.status === 'published'
+                  ).length;
+                  const cityName = comp.cityId
+                    ? cityById.get(comp.cityId)
+                    : null;
+
+                  return (
+                    <div
+                      key={comp.id}
+                      className="rounded-xl bg-[#263744] border border-[#304451] p-5 flex flex-col justify-between gap-4"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-base font-semibold text-[#F2F5F8]">
+                            {comp.companyName}
+                          </h3>
+                          <span
+                            className={`text-xs font-medium ${
+                              comp.status === 'verified'
+                                ? 'text-[#38C976]'
+                                : comp.status === 'archived'
+                                ? 'text-[#B8C3CC]'
+                                : 'text-[#F59E0B]'
+                            }`}
+                          >
+                            {comp.status}
+                          </span>
+                        </div>
+                        {comp.legalName && comp.legalName !== comp.companyName && (
+                          <p className="text-xs text-[#B8C3CC]">
+                            {comp.legalName}
+                          </p>
+                        )}
+                        {cityName && (
+                          <p className="text-xs text-[#B8C3CC]">
+                            City: {cityName}
+                          </p>
+                        )}
+                        {comp.description && (
+                          <p className="text-xs text-[#B8C3CC] line-clamp-2">
+                            {comp.description}
+                          </p>
+                        )}
+                        <p className="text-xs text-[#5DB4F2] pt-1">
+                          {compProducts.length} product
+                          {compProducts.length === 1 ? '' : 's'} ·{' '}
+                          {publishedCount} published
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#304451]">
+                        {comp.status !== 'archived' && (
+                          <button
+                            type="button"
+                            onClick={() => openEditCompanyForm(comp)}
+                            className={secondaryButtonClass}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCompanyFilterId(comp.id);
+                            setAdminView('catalog');
+                          }}
+                          className={secondaryButtonClass}
+                        >
+                          View Products
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCompanyFilterId(comp.id);
+                            setCreatingProduct(true);
+                            setAdminView('catalog');
+                          }}
+                          className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
+                        >
+                          + Add Product
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ) : (
+            <>
+              {/* Admin Catalog Toolbar */}
+              <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] p-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <select
+                    aria-label="Filter by company"
+                    value={companyFilterId}
+                    onChange={(e) => setCompanyFilterId(e.target.value)}
+                    className={`${inputClass} sm:w-64`}
+                  >
+                    <option value="all">
+                      All Companies ({bundle?.companies.length ?? 0})
+                    </option>
+                    {(bundle?.companies ?? []).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.companyName} ({c.status})
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (creatingCompany) {
+                        closeCompanyForm();
+                      } else {
+                        openAddCompanyForm();
+                        setCreatingProduct(false);
+                      }
+                    }}
+                    className={secondaryButtonClass}
+                  >
+                    {creatingCompany ? 'Close Company Form' : '+ Add Company'}
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {pendingProducts.length > 0 && (
+                    <button
+                      type="button"
+                      disabled={batchPublishing || loading}
+                      onClick={() => void handlePublishAllPending()}
+                      className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-3.5 py-2 transition-colors"
+                    >
+                      {batchPublishing
+                        ? 'Publishing…'
+                        : `Publish All Pending (${pendingProducts.length})`}
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreatingProduct((v) => !v);
+                      closeCompanyForm();
+                      clearFeedback();
+                    }}
+                    className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-4 py-2 transition-colors"
+                  >
+                    {creatingProduct ? 'Close Product Form' : '+ New Product'}
+                  </button>
+                </div>
+              </section>
+
+              {/* Inline Add / Edit Company Form */}
+              {creatingCompany && (
+                <CompanyEditorForm
+                  editingCompany={editingCompany}
+                  cities={cities}
+                  compName={compName}
+                  setCompName={setCompName}
+                  compLegalName={compLegalName}
+                  setCompLegalName={setCompLegalName}
+                  compCityId={compCityId}
+                  setCompCityId={setCompCityId}
+                  compWebsite={compWebsite}
+                  setCompWebsite={setCompWebsite}
+                  compEmail={compEmail}
+                  setCompEmail={setCompEmail}
+                  compPhone={compPhone}
+                  setCompPhone={setCompPhone}
+                  compDescription={compDescription}
+                  setCompDescription={setCompDescription}
+                  compBusy={compBusy}
+                  onCancel={closeCompanyForm}
+                  onSubmit={handleSaveCompany}
+                />
+              )}
+
+              {/* Inline Admin New Product Creator */}
+              {creatingProduct && bundle && (
+                <AdminProductEditorForm
+                  client={client}
+                  bundle={bundle}
+                  defaultCompanyId={
+                    companyFilterId !== 'all'
+                      ? companyFilterId
+                      : bundle.companies[0]?.id ?? ''
+                  }
+                  onCancel={() => setCreatingProduct(false)}
+                  onError={(msg, reasons) => setFailure(msg, reasons)}
+                  onSaved={async (productId, status) => {
+                    setCreatingProduct(false);
+                    clearFeedback();
+                    setNotice(
+                      status === 'published'
+                        ? 'Product created and published to the Official Doctor Catalog.'
+                        : `Product saved (${STATUS_LABELS[status]}).`
+                    );
+                    await refresh(productId);
+                  }}
+                />
+              )}
+
+              {/* Status Filter Bar */}
+              <section className="flex flex-wrap items-center gap-2">
+                {(
+                  [
+                    'all',
+                    'published',
+                    'submitted',
+                    'draft',
+                    'changes_requested',
+                    'hidden',
+                    'archived',
+                  ] as const
+                ).map((st) => {
+                  const active = statusFilter === st;
+                  const baseList =
+                    companyFilterId === 'all'
+                      ? bundle?.products ?? []
+                      : (bundle?.products ?? []).filter(
+                          (p) => p.companyId === companyFilterId
+                        );
+                  const count =
+                    st === 'all'
+                      ? baseList.length
+                      : baseList.filter((p) => p.status === st).length;
+                  return (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => {
+                        setStatusFilter(st);
+                        clearFeedback();
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                        active
+                          ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                          : 'bg-[#263744] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                      }`}
+                    >
+                      {st === 'all' ? 'All' : STATUS_LABELS[st]}{' '}
+                      <span className="font-mono tabular-nums opacity-75">
+                        ({count})
+                      </span>
+                    </button>
+                  );
+                })}
+              </section>
+
+              {/* Queue & Product Inspection Split */}
+              {loading ? (
+                <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+                  Loading catalog…
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
+                  <h2 className="text-base font-medium text-[#F2F5F8]">
+                    No products in{' '}
+                    {statusFilter === 'all'
+                      ? 'this view'
+                      : STATUS_LABELS[statusFilter].toLowerCase()}
+                  </h2>
+                  <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
+                    Use "+ New Product" to add a company product and publish it
+                    to the Official Doctor Catalog.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Left Column: Product List */}
+                  <div className="lg:col-span-4 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
+                    <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
+                      <span className="font-medium">
+                        {statusFilter === 'all'
+                          ? 'All Products'
+                          : STATUS_LABELS[statusFilter]}
+                      </span>
+                      <span className="font-mono tabular-nums">
+                        {filteredProducts.length}
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-[#304451] max-h-[700px] overflow-y-auto">
+                      {filteredProducts.map((product) => {
+                        const isSelected = selectedProduct?.id === product.id;
+                        return (
+                          <button
+                            key={product.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedId(product.id);
+                              clearFeedback();
+                            }}
+                            className={`w-full text-left px-4 py-3.5 transition-colors ${
+                              isSelected
+                                ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
+                                : 'hover:bg-[#1F2D38]/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-medium text-sm text-[#F2F5F8]">
+                                {product.brandNameEn}
+                              </span>
+                              <StatusText status={product.status} />
+                            </div>
+
+                            <div className="text-xs text-[#5DB4F2] mt-0.5">
+                              {product.companyName}
+                            </div>
+
+                            <div className="text-xs text-[#B8C3CC] mt-1 flex items-center justify-between">
+                              <span className="truncate">
+                                {product.genericNameEn ?? 'Dietary Supplement'}
+                              </span>
+                              {product.market && (
+                                <span className="font-mono tabular-nums shrink-0">
+                                  {product.market.strength}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Full Product Inspection, Direct Edit & Governance Actions */}
+                  <div className="lg:col-span-8">
+                    {selectedProduct && bundle && (
+                      <AdminProductInspector
+                        key={selectedProduct.id + ':' + selectedProduct.updatedAt}
+                        client={client}
+                        product={selectedProduct}
+                        bundle={bundle}
+                        onError={(msg, reasons) => setFailure(msg, reasons)}
+                        onSuccess={async (msg) => {
+                          clearFeedback();
+                          setNotice(msg);
+                          await refresh(selectedProduct.id);
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       )}
@@ -328,22 +763,634 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   );
 }
 
+interface CompanyFormProps {
+  editingCompany: CompanySummary | null;
+  cities: Option[];
+  compName: string;
+  setCompName: (v: string) => void;
+  compLegalName: string;
+  setCompLegalName: (v: string) => void;
+  compCityId: string;
+  setCompCityId: (v: string) => void;
+  compWebsite: string;
+  setCompWebsite: (v: string) => void;
+  compEmail: string;
+  setCompEmail: (v: string) => void;
+  compPhone: string;
+  setCompPhone: (v: string) => void;
+  compDescription: string;
+  setCompDescription: (v: string) => void;
+  compBusy: boolean;
+  onCancel: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+function CompanyEditorForm({
+  editingCompany,
+  cities,
+  compName,
+  setCompName,
+  compLegalName,
+  setCompLegalName,
+  compCityId,
+  setCompCityId,
+  compWebsite,
+  setCompWebsite,
+  compEmail,
+  setCompEmail,
+  compPhone,
+  setCompPhone,
+  compDescription,
+  setCompDescription,
+  compBusy,
+  onCancel,
+  onSubmit,
+}: CompanyFormProps) {
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-4"
+    >
+      <h3 className="text-sm font-semibold text-[#F2F5F8]">
+        {editingCompany
+          ? `Edit Company: ${editingCompany.companyName}`
+          : 'Add Company in Iraq'}
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <Field label="Company Name">
+          <input
+            type="text"
+            required
+            value={compName}
+            onChange={(e) => setCompName(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Legal Name">
+          <input
+            type="text"
+            required
+            value={compLegalName}
+            onChange={(e) => setCompLegalName(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="City (optional)">
+          <select
+            value={compCityId}
+            onChange={(e) => setCompCityId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">All / Unspecified</option>
+            {cities.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Website URL (optional, https://...)">
+          <input
+            type="url"
+            value={compWebsite}
+            onChange={(e) => setCompWebsite(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Contact Email (optional)">
+          <input
+            type="email"
+            value={compEmail}
+            onChange={(e) => setCompEmail(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Contact Phone (optional)">
+          <input
+            type="text"
+            value={compPhone}
+            onChange={(e) => setCompPhone(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <div className="sm:col-span-2 md:col-span-3">
+          <Field label="Description (optional)">
+            <input
+              type="text"
+              value={compDescription}
+              onChange={(e) => setCompDescription(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+      </div>
+      <div className="flex justify-end gap-2">
+        <button
+          type="button"
+          className={secondaryButtonClass}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <div className="w-48">
+          <button type="submit" disabled={compBusy} className={buttonClass}>
+            {compBusy
+              ? 'Saving…'
+              : editingCompany
+              ? 'Update Company'
+              : 'Save Company'}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+interface EditorFormProps {
+  client: SupabaseClient;
+  bundle: CatalogBundle;
+  defaultCompanyId: string;
+  existingProduct?: CatalogProduct | null;
+  onCancel: () => void;
+  onError: (msg: string, reasons?: string[]) => void;
+  onSaved: (productId: string, finalStatus: ProductStatus) => Promise<void>;
+}
+
+function AdminProductEditorForm({
+  client,
+  bundle,
+  defaultCompanyId,
+  existingProduct,
+  onCancel,
+  onError,
+  onSaved,
+}: EditorFormProps) {
+  const enClinical = existingProduct?.marketTranslations.en;
+
+  const [companyId, setCompanyId] = useState(
+    existingProduct?.companyId ?? defaultCompanyId
+  );
+  const [brandNameEn, setBrandNameEn] = useState(
+    existingProduct?.brandNameEn ?? ''
+  );
+  const [category, setCategory] = useState<ProductCategory>(
+    existingProduct?.category ?? 'prescription_drug'
+  );
+  const [drugClassId, setDrugClassId] = useState(
+    existingProduct?.drugClassId ?? bundle.drugClasses[0]?.id ?? ''
+  );
+  const [genericDrugId, setGenericDrugId] = useState(
+    existingProduct?.genericDrugId ?? bundle.genericDrugs[0]?.id ?? ''
+  );
+
+  const [strength, setStrength] = useState(
+    existingProduct?.market?.strength ?? ''
+  );
+  const [dosageForm, setDosageForm] = useState(
+    existingProduct?.market?.dosageForm ?? ''
+  );
+  const [route, setRoute] = useState(existingProduct?.market?.route ?? '');
+  const [packSize, setPackSize] = useState(
+    existingProduct?.market?.packSize ?? ''
+  );
+  const [marketStatus, setMarketStatus] = useState<IraqMarketStatus>(
+    existingProduct?.market?.marketStatus ?? 'marketed_in_iraq'
+  );
+  const [registrationStatus, setRegistrationStatus] =
+    useState<ProductRegistrationStatus>(
+      existingProduct?.market?.registrationStatus ?? 'not_recorded'
+    );
+  const [registrationNumber, setRegistrationNumber] = useState(
+    existingProduct?.market?.registrationNumber ?? ''
+  );
+  const [registrationAuthority, setRegistrationAuthority] = useState(
+    existingProduct?.market?.registrationAuthority ?? ''
+  );
+  const [registrationExpiresOn, setRegistrationExpiresOn] = useState(
+    existingProduct?.market?.registrationExpiresOn ?? ''
+  );
+
+  const [approvedIndications, setApprovedIndications] = useState(
+    enClinical?.approvedIndications ?? ''
+  );
+  const [usualAdultDose, setUsualAdultDose] = useState(
+    enClinical?.usualAdultDose ?? ''
+  );
+  const [contraindications, setContraindications] = useState(
+    enClinical?.contraindications ?? ''
+  );
+  const [commonAdverseEffects, setCommonAdverseEffects] = useState(
+    enClinical?.commonAdverseEffects ?? ''
+  );
+  const [storageConditions, setStorageConditions] = useState(
+    enClinical?.storageConditions ?? ''
+  );
+
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>(
+    existingProduct?.specialtyIds ?? []
+  );
+
+  const [busy, setBusy] = useState(false);
+
+  const toggleSpecialty = (id: string) => {
+    setSelectedSpecialties((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleSave = async (publishImmediately: boolean) => {
+    if (!companyId) {
+      onError('Please select a company first.');
+      return;
+    }
+    if (!brandNameEn.trim() || !drugClassId) {
+      onError('English brand name and drug class are required.');
+      return;
+    }
+
+    setBusy(true);
+    const res = await saveAndPublishCompleteProduct(client, {
+      existingProduct,
+      companyId,
+      brandNameEn,
+      category,
+      drugClassId,
+      genericDrugId:
+        category === 'dietary_supplement' && !genericDrugId
+          ? null
+          : genericDrugId,
+      strength,
+      dosageForm,
+      route,
+      packSize,
+      marketStatus,
+      registrationStatus,
+      registrationNumber,
+      registrationAuthority,
+      registrationExpiresOn,
+      approvedIndications,
+      usualAdultDose,
+      contraindications,
+      commonAdverseEffects,
+      storageConditions,
+      specialtyIds: selectedSpecialties,
+      publishImmediately,
+    });
+    setBusy(false);
+
+    if (!res.ok) {
+      onError(res.message, res.reasons);
+      return;
+    }
+
+    await onSaved(res.data.productId, res.data.finalStatus);
+  };
+
+  return (
+    <section className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-6">
+      <div className="flex items-center justify-between border-b border-[#304451] pb-4">
+        <div>
+          <h2 className="text-base font-semibold text-[#F2F5F8]">
+            {existingProduct
+              ? `Edit Product: ${existingProduct.brandNameEn}`
+              : 'Add Company Product'}
+          </h2>
+          <p className="text-xs text-[#B8C3CC] mt-0.5">
+            {existingProduct?.status === 'published'
+              ? 'Saving changes temporarily hides this product from doctors until it is republished.'
+              : 'Enter product details, clinical information, and specialties.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={secondaryButtonClass}
+        >
+          Cancel
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {!existingProduct && (
+          <Field label="Company">
+            <select
+              required
+              value={companyId}
+              onChange={(e) => setCompanyId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">Select company</option>
+              {bundle.companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.companyName}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
+
+        <Field label="Brand / Trade Name (EN)">
+          <input
+            type="text"
+            required
+            value={brandNameEn}
+            onChange={(e) => setBrandNameEn(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Category">
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as ProductCategory)}
+            className={inputClass}
+          >
+            {(Object.keys(CATEGORY_LABELS) as ProductCategory[]).map((cat) => (
+              <option key={cat} value={cat}>
+                {CATEGORY_LABELS[cat]}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Drug Class">
+          <select
+            required
+            value={drugClassId}
+            onChange={(e) => setDrugClassId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">Select drug class</option>
+            {bundle.drugClasses.map((dc) => (
+              <option key={dc.id} value={dc.id}>
+                {dc.nameEn}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field
+          label={
+            category === 'dietary_supplement'
+              ? 'Generic / Scientific Name (optional)'
+              : 'Generic / Scientific Name'
+          }
+        >
+          <select
+            required={category !== 'dietary_supplement'}
+            value={genericDrugId}
+            onChange={(e) => setGenericDrugId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">
+              {category === 'dietary_supplement'
+                ? 'None'
+                : 'Select generic drug'}
+            </option>
+            {bundle.genericDrugs.map((gd) => (
+              <option key={gd.id} value={gd.id}>
+                {gd.nameEn}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Strength">
+          <input
+            type="text"
+            required
+            value={strength}
+            onChange={(e) => setStrength(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Dosage Form">
+          <input
+            type="text"
+            required
+            value={dosageForm}
+            onChange={(e) => setDosageForm(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Route">
+          <input
+            type="text"
+            required
+            value={route}
+            onChange={(e) => setRoute(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Pack Size">
+          <input
+            type="text"
+            required
+            value={packSize}
+            onChange={(e) => setPackSize(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Iraq Market Status">
+          <select
+            value={marketStatus}
+            onChange={(e) =>
+              setMarketStatus(e.target.value as IraqMarketStatus)
+            }
+            className={inputClass}
+          >
+            {(Object.keys(MARKET_STATUS_LABELS) as IraqMarketStatus[]).map(
+              (ms) => (
+                <option key={ms} value={ms}>
+                  {MARKET_STATUS_LABELS[ms]}
+                </option>
+              )
+            )}
+          </select>
+        </Field>
+
+        <Field label="Registration Status">
+          <select
+            value={registrationStatus}
+            onChange={(e) =>
+              setRegistrationStatus(
+                e.target.value as ProductRegistrationStatus
+              )
+            }
+            className={inputClass}
+          >
+            {(
+              Object.keys(
+                REGISTRATION_STATUS_LABELS
+              ) as ProductRegistrationStatus[]
+            ).map((rs) => (
+              <option key={rs} value={rs}>
+                {REGISTRATION_STATUS_LABELS[rs]}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        {registrationStatus !== 'not_recorded' && (
+          <>
+            <Field label="Registration Number">
+              <input
+                type="text"
+                required
+                value={registrationNumber}
+                onChange={(e) => setRegistrationNumber(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Registration Authority">
+              <input
+                type="text"
+                required
+                value={registrationAuthority}
+                onChange={(e) => setRegistrationAuthority(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Registration Expiry">
+              <input
+                type="date"
+                value={registrationExpiresOn}
+                onChange={(e) => setRegistrationExpiresOn(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+          </>
+        )}
+      </div>
+
+      {/* Clinical Monograph Fields */}
+      <div className="border-t border-[#304451] pt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Field label="Approved Indications (EN)">
+          <textarea
+            rows={2}
+            value={approvedIndications}
+            onChange={(e) => setApprovedIndications(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Usual Adult Dose (EN)">
+          <textarea
+            rows={2}
+            value={usualAdultDose}
+            onChange={(e) => setUsualAdultDose(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Contraindications (EN)">
+          <textarea
+            rows={2}
+            value={contraindications}
+            onChange={(e) => setContraindications(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Common Adverse Effects (EN)">
+          <textarea
+            rows={2}
+            value={commonAdverseEffects}
+            onChange={(e) => setCommonAdverseEffects(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <div className="md:col-span-2">
+          <Field label="Storage Conditions (EN)">
+            <input
+              type="text"
+              value={storageConditions}
+              onChange={(e) => setStorageConditions(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* Specialties */}
+      <div className="border-t border-[#304451] pt-5 space-y-3">
+        <div className="text-xs font-medium text-[#B8C3CC]">
+          Medical Specialties
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          {bundle.specialties.map((spec) => {
+            const checked = selectedSpecialties.includes(spec.id);
+            return (
+              <label
+                key={spec.id}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs cursor-pointer transition-colors ${
+                  checked
+                    ? 'bg-[#1F2D38] border-[#5DB4F2] text-[#F2F5F8]'
+                    : 'bg-[#1F2D38]/40 border-[#304451] text-[#B8C3CC]'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleSpecialty(spec.id)}
+                  className="accent-[#1769AA]"
+                />
+                <span>{spec.nameEn}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#304451] pt-4">
+        <button
+          type="button"
+          className={secondaryButtonClass}
+          onClick={onCancel}
+          disabled={busy}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className={secondaryButtonClass}
+          disabled={busy}
+          onClick={() => void handleSave(false)}
+        >
+          {busy ? 'Saving…' : 'Save as Draft'}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void handleSave(true)}
+          className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2.5 transition-colors"
+        >
+          {busy ? 'Publishing…' : 'Save & Publish to Doctor Catalog'}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 interface InspectorProps {
   client: SupabaseClient;
   product: CatalogProduct;
-  onError: (msg: string) => void;
+  bundle: CatalogBundle;
+  onError: (msg: string, reasons?: string[]) => void;
   onSuccess: (msg: string) => Promise<void>;
 }
 
 function AdminProductInspector({
   client,
   product,
+  bundle,
   onError,
   onSuccess,
 }: InspectorProps) {
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
 
-  // Action input states
   const [changesReason, setChangesReason] = useState('');
   const [hideReason, setHideReason] = useState('');
   const [archiveReason, setArchiveReason] = useState('');
@@ -353,17 +1400,37 @@ function AdminProductInspector({
 
   const market = product.market;
   const enClinical = product.marketTranslations.en;
-  const arClinical = product.marketTranslations.ar;
+
+  if (editing) {
+    return (
+      <AdminProductEditorForm
+        client={client}
+        bundle={bundle}
+        defaultCompanyId={product.companyId}
+        existingProduct={product}
+        onCancel={() => setEditing(false)}
+        onError={onError}
+        onSaved={async (_id, status) => {
+          setEditing(false);
+          await onSuccess(
+            status === 'published'
+              ? 'Product updated and published to the Official Doctor Catalog.'
+              : `Product updated (${STATUS_LABELS[status]}).`
+          );
+        }}
+      />
+    );
+  }
 
   const handlePublish = async () => {
     setBusy(true);
-    const res = await rpcAdminPublishProduct(client, product.id);
+    const res = await publishProduct(client, product);
     setBusy(false);
     if (!res.ok) {
-      onError(res.message);
+      onError(res.message, res.reasons);
       return;
     }
-    await onSuccess('Product published to the official catalog.');
+    await onSuccess('Product published to the Official Doctor Catalog.');
   };
 
   const handleRequestChanges = async (e: React.FormEvent) => {
@@ -376,11 +1443,11 @@ function AdminProductInspector({
     );
     setBusy(false);
     if (!res.ok) {
-      onError(res.message);
+      onError(res.message, res.reasons);
       return;
     }
     setChangesReason('');
-    await onSuccess('Product returned to company with requested changes.');
+    await onSuccess('Product returned for changes.');
   };
 
   const handleHide = async (e: React.FormEvent) => {
@@ -389,7 +1456,7 @@ function AdminProductInspector({
     const res = await rpcAdminHideProduct(client, product.id, hideReason);
     setBusy(false);
     if (!res.ok) {
-      onError(res.message);
+      onError(res.message, res.reasons);
       return;
     }
     setHideReason('');
@@ -402,7 +1469,7 @@ function AdminProductInspector({
     const res = await rpcAdminArchiveProduct(client, product.id, archiveReason);
     setBusy(false);
     if (!res.ok) {
-      onError(res.message);
+      onError(res.message, res.reasons);
       return;
     }
     setArchiveReason('');
@@ -420,7 +1487,7 @@ function AdminProductInspector({
     );
     setBusy(false);
     if (!res.ok) {
-      onError(res.message);
+      onError(res.message, res.reasons);
       return;
     }
     setRestoreReason('');
@@ -433,202 +1500,136 @@ function AdminProductInspector({
       <div className="border-b border-[#304451] pb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <StatusText status={product.status} />
-          <h2 className="text-2xl font-semibold text-[#F1F5F9] mt-1">
+          <h2 className="text-2xl font-semibold text-[#F2F5F8] mt-1">
             {product.brandNameEn}
           </h2>
-          {product.brandNameAr && (
-            <div dir="rtl" className="text-base text-[#CBD5E1] mt-0.5">
-              {product.brandNameAr}
-            </div>
-          )}
-          <div className="text-xs text-[#94A3B8] mt-1">
-            Submitted by{' '}
-            <span className="text-[#E2E8F0] font-medium">
-              {product.companyName}
-            </span>{' '}
-            {product.companyStatus ? `(${product.companyStatus})` : ''}
+          <div className="text-xs text-[#5DB4F2] mt-1">
+            {product.companyName}
           </div>
         </div>
 
-        <div className="text-right text-xs text-[#94A3B8] font-mono tabular-nums space-y-0.5">
-          <div>ID: {product.id.slice(0, 8)}…</div>
-          {product.submittedAt && (
-            <div>
-              Submitted: {new Date(product.submittedAt).toLocaleString()}
-            </div>
-          )}
-          {product.reviewedAt && (
-            <div>Reviewed: {new Date(product.reviewedAt).toLocaleString()}</div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className={secondaryButtonClass}
+          >
+            Edit Product Details
+          </button>
+          {product.status !== 'published' && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void handlePublish()}
+              className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
+            >
+              {busy ? 'Publishing…' : 'Publish to Doctor Catalog'}
+            </button>
           )}
         </div>
       </div>
 
-      {/* Existing Review Reason if present */}
       {product.reviewReason && (
         <Banner tone="warn">
-          <span className="font-semibold">Recorded review reason:</span>{' '}
+          <span className="font-medium">Review reason:</span>{' '}
           {product.reviewReason}
         </Banner>
       )}
 
       {/* Administrator Lifecycle Actions */}
       <div className="space-y-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-          Administrator Governance Actions
-        </h3>
-
-        {/* Actions on 'submitted' products */}
         {product.status === 'submitted' && (
-          <div className="space-y-4">
-            <div className="rounded-lg bg-[#1F2D38] border border-[#38C976]/40 p-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <div className="text-xs font-semibold text-[#38C976]">
-                  Publish to Official Iraq Catalog
-                </div>
-                <div className="text-[11px] text-[#94A3B8] mt-0.5">
-                  Calls <code className="font-mono">admin_publish_product</code>.
-                  Verifies publication requirements in PostgreSQL.
-                </div>
-              </div>
+          <form
+            onSubmit={handleRequestChanges}
+            className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-3"
+          >
+            <Field label="Reason for requesting changes">
+              <input
+                type="text"
+                required
+                value={changesReason}
+                onChange={(e) => setChangesReason(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+            <div className="flex justify-end">
               <button
-                type="button"
-                disabled={busy}
-                onClick={() => void handlePublish()}
-                className="rounded-lg bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 transition-colors"
+                type="submit"
+                disabled={busy || !changesReason.trim()}
+                className={secondaryButtonClass}
               >
-                {busy ? 'Publishing…' : 'Publish Product'}
+                Request changes
               </button>
             </div>
-
-            <form
-              onSubmit={handleRequestChanges}
-              className="rounded-lg bg-[#1F2D38] border border-[#F59E0B]/40 p-4 space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#FCD34D]">
-                  Request Changes from Company
-                </span>
-                <span className="text-[11px] font-mono text-[#94A3B8]">
-                  admin_request_product_changes
-                </span>
-              </div>
-              <Field label="Reason for requesting changes *">
-                <input
-                  type="text"
-                  required
-                  value={changesReason}
-                  onChange={(e) => setChangesReason(e.target.value)}
-                  placeholder="Specify what the company needs to correct or complete…"
-                  className={INPUT_CLASS}
-                />
-              </Field>
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={busy || !changesReason.trim()}
-                  className="rounded-lg bg-[#D97706] hover:bg-[#B45309] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 transition-colors"
-                >
-                  Request Changes
-                </button>
-              </div>
-            </form>
-          </div>
+          </form>
         )}
 
-        {/* Actions on 'published' products: Hide and Archive */}
         {product.status === 'published' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <form
               onSubmit={handleHide}
-              className="rounded-lg bg-[#1F2D38] border border-[#F59E0B]/40 p-4 space-y-3"
+              className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-3"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#FCD34D]">
-                  Hide Published Product
-                </span>
-                <span className="text-[11px] font-mono text-[#94A3B8]">
-                  admin_hide_product
-                </span>
-              </div>
-              <Field label="Hiding Reason *">
+              <Field label="Reason for hiding">
                 <input
                   type="text"
                   required
                   value={hideReason}
                   onChange={(e) => setHideReason(e.target.value)}
-                  placeholder="Reason for hiding from catalog…"
-                  className={INPUT_CLASS}
+                  className={inputClass}
                 />
               </Field>
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={busy || !hideReason.trim()}
-                  className="rounded-lg bg-[#D97706] hover:bg-[#B45309] disabled:opacity-50 text-white text-xs font-semibold px-3.5 py-2"
+                  className={secondaryButtonClass}
                 >
-                  Hide Product
+                  Hide product
                 </button>
               </div>
             </form>
 
             <form
               onSubmit={handleArchive}
-              className="rounded-lg bg-[#1F2D38] border border-[#FF7272]/40 p-4 space-y-3"
+              className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-3"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#FCA5A5]">
-                  Archive Product
-                </span>
-                <span className="text-[11px] font-mono text-[#94A3B8]">
-                  admin_archive_product
-                </span>
-              </div>
-              <Field label="Archive Reason *">
+              <Field label="Reason for archiving">
                 <input
                   type="text"
                   required
                   value={archiveReason}
                   onChange={(e) => setArchiveReason(e.target.value)}
-                  placeholder="Reason for permanent archiving…"
-                  className={INPUT_CLASS}
+                  className={inputClass}
                 />
               </Field>
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={busy || !archiveReason.trim()}
-                  className="rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] disabled:opacity-50 text-white text-xs font-semibold px-3.5 py-2"
+                  className="rounded-md bg-[#B42318] hover:bg-[#991B1B] disabled:opacity-50 text-white text-xs font-medium px-3.5 py-2"
                 >
-                  Archive Product
+                  Archive product
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Actions on 'hidden' or 'archived' products: Restore (and Archive if hidden) */}
         {(product.status === 'hidden' || product.status === 'archived') && (
           <div className="space-y-4">
             <form
               onSubmit={handleRestore}
               className="rounded-lg bg-[#1F2D38] border border-[#304451] p-4 space-y-3"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#5DB4F2]">
-                  Restore Product
-                </span>
-                <span className="text-[11px] font-mono text-[#94A3B8]">
-                  admin_restore_product
-                </span>
-              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Destination Status *">
+                <Field label="Destination Status">
                   <select
                     value={restoreDestination}
                     onChange={(e) =>
                       setRestoreDestination(e.target.value as ProductStatus)
                     }
-                    className={SELECT_CLASS}
+                    className={inputClass}
                   >
                     <option value="published">Published</option>
                     <option value="changes_requested">Changes Requested</option>
@@ -636,136 +1637,62 @@ function AdminProductInspector({
                     <option value="submitted">Submitted</option>
                   </select>
                 </Field>
-                <Field label="Restore Reason *">
+                <Field label="Reason for restoring">
                   <input
                     type="text"
                     required
                     value={restoreReason}
                     onChange={(e) => setRestoreReason(e.target.value)}
-                    placeholder="Reason for restoring product…"
-                    className={INPUT_CLASS}
+                    className={inputClass}
                   />
                 </Field>
               </div>
               <div className="flex justify-end">
-                <div className="w-48">
-                  <PrimaryButton
+                <div className="w-44">
+                  <button
                     type="submit"
+                    className={buttonClass}
                     disabled={busy || !restoreReason.trim()}
                   >
-                    Restore Product
-                  </PrimaryButton>
+                    Restore product
+                  </button>
                 </div>
               </div>
             </form>
-
-            {product.status === 'hidden' && (
-              <form
-                onSubmit={handleArchive}
-                className="rounded-lg bg-[#1F2D38] border border-[#FF7272]/40 p-4 space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[#FCA5A5]">
-                    Archive Hidden Product
-                  </span>
-                  <span className="text-[11px] font-mono text-[#94A3B8]">
-                    admin_archive_product
-                  </span>
-                </div>
-                <Field label="Archive Reason *">
-                  <input
-                    type="text"
-                    required
-                    value={archiveReason}
-                    onChange={(e) => setArchiveReason(e.target.value)}
-                    placeholder="Reason for permanent archiving…"
-                    className={INPUT_CLASS}
-                  />
-                </Field>
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={busy || !archiveReason.trim()}
-                    className="rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] disabled:opacity-50 text-white text-xs font-semibold px-3.5 py-2"
-                  >
-                    Archive Product
-                  </button>
-                </div>
-              </form>
-            )}
           </div>
         )}
       </div>
 
-      {/* Complete Submitted Data Inspection */}
-      <div className="border-t border-[#304451] pt-5 space-y-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-          Submitted Product Details
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <InspectCell
-            label="English Brand Name (en)"
-            value={product.brandNameEn}
-          />
-          <InspectCell
-            label="Arabic Brand Name (ar)"
-            value={product.brandNameAr ?? 'Not provided'}
-          />
-          <InspectCell
-            label="Company"
-            value={`${product.companyName}${
-              product.companyStatus ? ` (${product.companyStatus})` : ''
-            }`}
-          />
+      {/* Product Specification Summary */}
+      <div className="border-t border-[#304451] pt-5 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+          <InspectCell label="Brand Name" value={product.brandNameEn} />
+          <InspectCell label="Company" value={product.companyName} />
           <InspectCell
             label="Category"
             value={CATEGORY_LABELS[product.category]}
           />
           <InspectCell
-            label="Generic / Scientific Drug"
-            value={
-              product.genericNameEn
-                ? `${product.genericNameEn}${
-                    product.genericNameAr ? ` (${product.genericNameAr})` : ''
-                  }`
-                : 'None (Dietary Supplement)'
-            }
+            label="Generic Drug"
+            value={product.genericNameEn ?? '—'}
           />
+          <InspectCell label="Drug Class" value={product.drugClassNameEn} />
           <InspectCell
-            label="Drug Class"
-            value={`${product.drugClassNameEn}${
-              product.drugClassNameAr ? ` (${product.drugClassNameAr})` : ''
-            }`}
-          />
-          <InspectCell
-            label="Assigned Specialties"
+            label="Specialties"
             value={
               product.specialtyNamesEn.length > 0
                 ? product.specialtyNamesEn.join(', ')
-                : 'None assigned'
+                : '—'
             }
           />
-          <InspectCell
-            label="Media & Brochures"
-            value={`${product.media.length} media file(s), ${product.brochures.length} brochure(s)`}
-            mono
-          />
-        </div>
-
-        {/* Market Presentation & Registration */}
-        <div className="pt-2">
-          <h4 className="text-xs font-semibold text-[#CBD5E1] mb-2">
-            Iraq Market Presentation & Registration (product_markets)
-          </h4>
-          {market ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          {market && (
+            <>
               <InspectCell label="Strength" value={market.strength} mono />
               <InspectCell label="Dosage Form" value={market.dosageForm} />
               <InspectCell label="Route" value={market.route} />
               <InspectCell label="Pack Size" value={market.packSize} mono />
               <InspectCell
-                label="Iraq Market Status"
+                label="Market Status"
                 value={MARKET_STATUS_LABELS[market.marketStatus]}
               />
               <InspectCell
@@ -774,85 +1701,61 @@ function AdminProductInspector({
               />
               <InspectCell
                 label="Registration Number"
-                value={market.registrationNumber ?? 'Not recorded'}
+                value={market.registrationNumber ?? '—'}
                 mono
               />
               <InspectCell
                 label="Registration Authority"
-                value={market.registrationAuthority ?? 'Not recorded'}
+                value={market.registrationAuthority ?? '—'}
               />
               <InspectCell
                 label="Registration Expiry"
-                value={market.registrationExpiresOn ?? 'Not recorded'}
+                value={market.registrationExpiresOn ?? '—'}
                 mono
               />
-            </div>
-          ) : (
-            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3 text-xs text-[#94A3B8]">
-              No Iraq market record (<code className="font-mono">product_markets</code>) entered yet.
-            </div>
+            </>
           )}
         </div>
 
-        {/* Clinical Translations if entered */}
-        {(enClinical || arClinical) && (
-          <div className="pt-2 space-y-3">
-            <h4 className="text-xs font-semibold text-[#CBD5E1]">
-              Market Clinical Content (product_market_translations)
+        {enClinical && (
+          <div className="border-t border-[#304451] pt-5 space-y-3 text-sm">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+              Clinical Information
             </h4>
-            {enClinical && (
-              <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3 text-xs space-y-1.5">
-                <div className="font-semibold text-[#5DB4F2]">English (en)</div>
-                <div>
-                  <span className="text-[#94A3B8]">Indications:</span>{' '}
-                  {enClinical.approvedIndications}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">Adult Dose:</span>{' '}
-                  {enClinical.usualAdultDose}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">Contraindications:</span>{' '}
-                  {enClinical.contraindications}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">Adverse Effects:</span>{' '}
-                  {enClinical.commonAdverseEffects}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">Storage:</span>{' '}
-                  {enClinical.storageConditions}
-                </div>
-              </div>
-            )}
-            {arClinical && (
-              <div
-                dir="rtl"
-                className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3 text-xs space-y-1.5"
-              >
-                <div className="font-semibold text-[#5DB4F2]">العربية (ar)</div>
-                <div>
-                  <span className="text-[#94A3B8]">دواعي الاستعمال:</span>{' '}
-                  {arClinical.approvedIndications}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">الجرعة:</span>{' '}
-                  {arClinical.usualAdultDose}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">موانع الاستعمال:</span>{' '}
-                  {arClinical.contraindications}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">الآثار الجانبية:</span>{' '}
-                  {arClinical.commonAdverseEffects}
-                </div>
-                <div>
-                  <span className="text-[#94A3B8]">الخزن:</span>{' '}
-                  {arClinical.storageConditions}
-                </div>
-              </div>
-            )}
+            <div>
+              <span className="text-xs text-[#B8C3CC] block">Indications</span>
+              <p className="text-[#F2F5F8] mt-0.5">
+                {enClinical.approvedIndications}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#B8C3CC] block">Adult Dose</span>
+              <p className="text-[#F2F5F8] mt-0.5">
+                {enClinical.usualAdultDose}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#B8C3CC] block">
+                Contraindications
+              </span>
+              <p className="text-[#F2F5F8] mt-0.5">
+                {enClinical.contraindications}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#B8C3CC] block">
+                Adverse Effects
+              </span>
+              <p className="text-[#F2F5F8] mt-0.5">
+                {enClinical.commonAdverseEffects}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#B8C3CC] block">Storage</span>
+              <p className="text-[#F2F5F8] mt-0.5">
+                {enClinical.storageConditions}
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -870,10 +1773,10 @@ function InspectCell({
   mono?: boolean;
 }) {
   return (
-    <div className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3.5 py-2.5">
-      <div className="text-[11px] text-[#94A3B8]">{label}</div>
+    <div className="border-b border-[#304451]/60 pb-3">
+      <div className="text-xs text-[#B8C3CC]">{label}</div>
       <div
-        className={`text-sm mt-0.5 text-[#F1F5F9] ${
+        className={`text-sm mt-1 text-[#F2F5F8] ${
           mono ? 'font-mono tabular-nums' : 'font-medium'
         }`}
       >

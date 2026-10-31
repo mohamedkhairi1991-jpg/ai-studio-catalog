@@ -4,6 +4,9 @@ import {
   filterDoctorProducts,
   filterProductsByStatus,
   formatRpcError,
+  isDemoCompanyRecord,
+  isDemoProductRecord,
+  parsePublishChecklistErrors,
   type CatalogProduct,
 } from './catalog';
 
@@ -11,18 +14,15 @@ function sampleProduct(overrides: Partial<CatalogProduct> = {}): CatalogProduct 
   return {
     id: 'prod-1',
     companyId: 'comp-1',
-    companyName: 'Al-Mansour Pharma',
+    companyName: 'National Pharma',
     companyStatus: 'verified',
     genericDrugId: 'gen-1',
     genericNameEn: 'Amoxicillin',
-    genericNameAr: 'أموكسيسيلين',
     drugClassId: 'class-1',
     drugClassNameEn: 'Penicillins',
-    drugClassNameAr: 'البنسلينات',
     category: 'prescription_drug',
     status: 'published',
-    brandNameEn: 'Amoxicare',
-    brandNameAr: 'أموكسي كير',
+    brandNameEn: 'Amoxil',
     market: null,
     marketTranslations: { en: null, ar: null },
     specialtyIds: [],
@@ -45,34 +45,29 @@ describe('filterDoctorProducts', () => {
     sampleProduct({
       id: 'prod-2',
       companyId: 'comp-2',
-      companyName: 'Tigris Therapeutics',
+      companyName: 'Baghdad Laboratories',
       genericDrugId: 'gen-2',
       genericNameEn: 'Paracetamol',
-      genericNameAr: 'باراسيتامول',
       drugClassId: 'class-2',
       drugClassNameEn: 'Analgesics',
       category: 'otc_drug',
-      brandNameEn: 'Tigridol',
-      brandNameAr: 'تيجريدول',
+      brandNameEn: 'Panadol',
     }),
   ];
 
-  it('matches English and Arabic brand names, generic names, and company names', () => {
+  it('matches brand names, generic names, and company names', () => {
     expect(
-      filterDoctorProducts(products, { query: 'amoxicare', drugClassId: '', category: '' })
+      filterDoctorProducts(products, { query: 'amoxil', drugClassId: '', category: '' })
     ).toHaveLength(1);
-    expect(
-      filterDoctorProducts(products, { query: 'تيجريدول', drugClassId: '', category: '' })[0]?.id
-    ).toBe('prod-2');
     expect(
       filterDoctorProducts(products, { query: 'Paracetamol', drugClassId: '', category: '' })[0]?.id
     ).toBe('prod-2');
     expect(
-      filterDoctorProducts(products, { query: 'Al-Mansour', drugClassId: '', category: '' })[0]?.id
+      filterDoctorProducts(products, { query: 'National', drugClassId: '', category: '' })[0]?.id
     ).toBe('prod-1');
   });
 
-  it('filters by drug class and category', () => {
+  it('filters by drug class, category, and companyId', () => {
     expect(
       filterDoctorProducts(products, {
         query: '',
@@ -84,10 +79,62 @@ describe('filterDoctorProducts', () => {
     expect(
       filterDoctorProducts(products, {
         query: '',
+        companyId: 'comp-1',
+        drugClassId: '',
+        category: '',
+      }).map((p) => p.id)
+    ).toEqual(['prod-1']);
+
+    expect(
+      filterDoctorProducts(products, {
+        query: '',
         drugClassId: 'class-1',
         category: 'otc_drug',
       })
     ).toHaveLength(0);
+  });
+});
+
+describe('demo seed filtering and publish checklist parsing', () => {
+  it('excludes demo seed companies and products', () => {
+    expect(
+      isDemoCompanyRecord({
+        id: '75000000-0000-4000-8000-000000000001',
+        companyName: 'Tigris Pharma',
+      })
+    ).toBe(true);
+
+    expect(
+      isDemoProductRecord({
+        id: '71000000-0000-4000-8000-000000000001',
+        companyId: '75000000-0000-4000-8000-000000000001',
+        brandNameEn: 'Cardiostead 5 mg',
+        registrationNumber: 'IQ-DEMO-CARDIO-001',
+      })
+    ).toBe(true);
+
+    expect(
+      isDemoProductRecord({
+        id: '8f14e45f-ceea-467a-9a38-112233445566',
+        companyId: '2a14e45f-ceea-467a-9a38-112233445566',
+        brandNameEn: 'Amoxil 500 mg',
+        registrationNumber: 'IQ-MOH-2026-001',
+      })
+    ).toBe(false);
+  });
+
+  it('maps publish validation codes in error details to readable checklist messages', () => {
+    expect(
+      parsePublishChecklistErrors({
+        code: '23514',
+        message: 'Product submission requirements are incomplete.',
+        details: 'iraq_market_missing,english_iraq_content_missing,active_specialty_missing',
+      })
+    ).toEqual([
+      'Iraq market details are missing',
+      'English clinical information is incomplete (all 5 fields)',
+      'Choose at least one specialty',
+    ]);
   });
 });
 

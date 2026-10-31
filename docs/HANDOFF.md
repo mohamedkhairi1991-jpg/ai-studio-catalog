@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-31 — Google AI Studio
+- **Admin catalog & company management (`src/lib/catalog.ts`, `src/components/AdminCatalogReview.tsx`, `src/components/CompanyCatalog.tsx`):**
+  - Switched admin company creation and editing to `admin_create_company` and `admin_update_company` (with Iraqi city support).
+  - Removed the "Admin SQL Setup" modal/SQL snippet, fake media/brochure metadata helpers (`ensureProductPublishMetadata`, `publishProductWithMetadataFallback`), and hardcoded AstraZeneca product data/auto-seeding.
+  - Updated product publishing to call `submit_product_for_review` followed by `admin_publish_product` and display readable validation checklist messages on `23514` errors.
+  - Kept the Companies tab and add/edit form, admin product form, "Publish All Pending", and the Doctor Catalog company filter; left `Onboarding.tsx` untouched.
+- **Next for Claude:** Review the synced PR from `ai-studio-catalog`; Priority 4/5 (storage file uploads and signed URLs) can follow next.
+
 ### 2026-10-30 — Claude (coordination test)
 - End-to-end test of the AI Studio → Claude direction: this entry was pushed
   to `ai-studio-catalog` the way AI Studio pushes, and should arrive in

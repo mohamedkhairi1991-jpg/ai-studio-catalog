@@ -1602,4 +1602,3 @@ export async function saveAndPublishCompleteProduct(
     data: { productId, finalStatus: 'published' },
   };
 }
-

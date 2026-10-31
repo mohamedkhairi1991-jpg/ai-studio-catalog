@@ -11,7 +11,7 @@ import {
   type CatalogProduct,
   type ProductCategory,
 } from '../lib/catalog';
-import { Field, inputClass, secondaryButtonClass } from './ui';
+import { BrandLogo, inputClass, secondaryButtonClass } from './ui';
 
 export function CatalogBanner({
   tone,
@@ -22,10 +22,10 @@ export function CatalogBanner({
 }) {
   const palette =
     tone === 'error'
-      ? 'bg-[#FF7272]/10 border-[#FF7272]/50 text-[#FF7272]'
+      ? 'bg-[#FF7272]/10 border-[#FF7272]/40 text-[#FF7272]'
       : tone === 'warn'
-      ? 'bg-[#F59E0B]/10 border-[#F59E0B]/50 text-[#F59E0B]'
-      : 'bg-[#38C976]/10 border-[#38C976]/50 text-[#38C976]';
+      ? 'bg-[#F59E0B]/10 border-[#F59E0B]/40 text-[#F59E0B]'
+      : 'bg-[#38C976]/10 border-[#38C976]/40 text-[#38C976]';
   return (
     <div className={`rounded-lg border px-4 py-3 text-xs ${palette}`}>
       {children}
@@ -45,6 +45,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState('');
+  const [companyId, setCompanyId] = useState('');
   const [drugClassId, setDrugClassId] = useState('');
   const [category, setCategory] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -79,10 +80,11 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     if (!bundle) return [];
     return filterDoctorProducts(bundle.products, {
       query,
+      companyId,
       drugClassId,
       category,
     });
-  }, [bundle, query, drugClassId, category]);
+  }, [bundle, query, companyId, drugClassId, category]);
 
   const selectedProduct: CatalogProduct | null = useMemo(() => {
     if (filteredProducts.length === 0) return null;
@@ -93,30 +95,25 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     return filteredProducts[0] ?? null;
   }, [filteredProducts, selectedId]);
 
-  const hasActiveFilters = Boolean(query.trim() || drugClassId || category);
+  const hasActiveFilters = Boolean(
+    query.trim() || companyId || drugClassId || category
+  );
 
   return (
-    <div className="min-h-screen bg-[#1F2D38] text-[#F1F5F9] flex flex-col">
-      {/* Top Clinical Header */}
-      <header className="border-b border-[#304451] bg-[#263744] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono uppercase tracking-wider text-[#5DB4F2]">
-                Pharamty · Official Iraq Catalog
-              </span>
-              <span className="text-xs text-[#94A3B8]">/catalog</span>
-            </div>
-            <h1 className="text-xl font-semibold tracking-tight mt-0.5">
-              Verified Physician Drug Reference
-            </h1>
+    <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
+      {/* Clean Modern Header */}
+      <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <BrandLogo />
+            <span className="h-4 w-px bg-[#304451]" />
+            <span className="text-sm text-[#B8C3CC]">Official Catalog</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <div className="text-xs text-[#E2E8F0]">{access.email}</div>
-              <div className="text-[11px] text-[#38C976]">Approved Physician · Read-only</div>
-            </div>
+            <span className="text-xs text-[#B8C3CC] hidden sm:inline">
+              {access.email}
+            </span>
             <button
               type="button"
               className={secondaryButtonClass}
@@ -140,109 +137,112 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6 flex flex-col gap-6">
         {error && <CatalogBanner tone="error">{error}</CatalogBanner>}
 
-        {/* Search & Filter Bar */}
-        <section className="rounded-xl bg-[#263744] border border-[#304451] p-4">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-            <div className="md:col-span-6">
-              <Field label="Search by Brand Name (English / العربية), Generic Name, or Company">
-                <input
-                  id="doctor-catalog-search"
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="e.g. Amoxicare, أموكسي, Paracetamol, Company name..."
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-
-            <div className="md:col-span-3">
-              <Field label="Drug Class">
-                <select
-                  id="doctor-catalog-class"
-                  value={drugClassId}
-                  onChange={(e) => setDrugClassId(e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">All drug classes</option>
-                  {(bundle?.drugClasses ?? []).map((dc) => (
-                    <option key={dc.id} value={dc.id}>
-                      {dc.nameEn}
-                      {dc.nameAr ? ` · ${dc.nameAr}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-
-            <div className="md:col-span-3">
-              <Field label="Category">
-                <select
-                  id="doctor-catalog-category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">All categories</option>
-                  {(Object.keys(CATEGORY_LABELS) as ProductCategory[]).map((cat) => (
-                    <option key={cat} value={cat}>
-                      {CATEGORY_LABELS[cat]}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
+        {/* Streamlined Search & Filter Toolbar */}
+        <section className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex-1">
+            <input
+              id="doctor-catalog-search"
+              type="search"
+              aria-label="Search by brand, generic name, or company"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by brand, generic name, or company"
+              className={inputClass}
+            />
           </div>
 
-          <div className="mt-3 pt-3 border-t border-[#304451] flex flex-wrap items-center justify-between gap-2 text-xs text-[#94A3B8]">
-            <div className="font-mono tabular-nums">
-              {loading
-                ? 'Loading published catalog products…'
-                : `Showing ${filteredProducts.length} of ${bundle?.products.length ?? 0} official published products`}
-            </div>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery('');
-                  setDrugClassId('');
-                  setCategory('');
-                }}
-                className="text-[#5DB4F2] hover:underline text-xs"
-              >
-                Clear search & filters
-              </button>
-            )}
+          <div className="sm:w-52">
+            <select
+              id="doctor-catalog-company"
+              aria-label="Filter by company"
+              value={companyId}
+              onChange={(e) => setCompanyId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All companies</option>
+              {(bundle?.companies ?? []).map((comp) => (
+                <option key={comp.id} value={comp.id}>
+                  {comp.companyName}
+                </option>
+              ))}
+            </select>
           </div>
+
+          <div className="sm:w-52">
+            <select
+              id="doctor-catalog-class"
+              aria-label="Filter by drug class"
+              value={drugClassId}
+              onChange={(e) => setDrugClassId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All drug classes</option>
+              {(bundle?.drugClasses ?? []).map((dc) => (
+                <option key={dc.id} value={dc.id}>
+                  {dc.nameEn}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="sm:w-48">
+            <select
+              id="doctor-catalog-category"
+              aria-label="Filter by category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All categories</option>
+              {(Object.keys(CATEGORY_LABELS) as ProductCategory[]).map((cat) => (
+                <option key={cat} value={cat}>
+                  {CATEGORY_LABELS[cat]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                setCompanyId('');
+                setDrugClassId('');
+                setCategory('');
+              }}
+              className="text-xs font-medium text-[#5DB4F2] hover:underline px-2 py-2 shrink-0"
+            >
+              Reset
+            </button>
+          )}
         </section>
 
         {/* Loading / Empty / Split Master-Detail View */}
         {loading ? (
-          <div className="rounded-xl bg-[#263744] border border-[#304451] p-10 text-center text-sm text-[#94A3B8]">
-            Loading official Iraq catalog records from Supabase…
+          <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+            Loading catalog…
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="rounded-xl bg-[#263744] border border-[#304451] p-10 text-center">
-            <h2 className="text-base font-semibold text-[#F1F5F9]">
+          <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center">
+            <h2 className="text-base font-medium text-[#F2F5F8]">
               {hasActiveFilters
-                ? 'No published products match your search criteria'
-                : 'No published products in the official catalog yet'}
+                ? 'No matching products found'
+                : 'No published products yet'}
             </h2>
-            <p className="text-xs text-[#94A3B8] mt-1.5 max-w-md mx-auto">
+            <p className="text-xs text-[#B8C3CC] mt-1.5 max-w-lg mx-auto leading-relaxed">
               {hasActiveFilters
-                ? 'Try clearing or broadening the brand, generic, company, drug class, or category filters.'
-                : 'Products appear here automatically once a verified company submits a product and an administrator publishes it for the Iraq market.'}
+                ? 'Adjust your search query or filters to view available medicines.'
+                : 'Products added by the platform administrator will appear here once published to the official Iraq catalog.'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Column: Product List */}
-            <div className="lg:col-span-5 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-                  Published Products
-                </span>
-                <span className="text-xs font-mono tabular-nums text-[#94A3B8]">
+            <div className="lg:col-span-4 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
+                <span className="font-medium">Products</span>
+                <span className="font-mono tabular-nums">
                   {filteredProducts.length}
                 </span>
               </div>
@@ -257,35 +257,24 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                       className={`w-full text-left px-4 py-3.5 transition-colors ${
                         isSelected
                           ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
-                          : 'hover:bg-[#1F2D38]/60'
+                          : 'hover:bg-[#1F2D38]/50'
                       }`}
                     >
-                      <div className="flex items-baseline justify-between gap-2">
-                        <div className="font-semibold text-sm text-[#F1F5F9]">
-                          {product.brandNameEn}
-                        </div>
-                        {product.brandNameAr && (
-                          <div
-                            dir="rtl"
-                            className="text-sm font-medium text-[#CBD5E1]"
-                          >
-                            {product.brandNameAr}
-                          </div>
+                      <div className="font-medium text-sm text-[#F2F5F8]">
+                        {product.brandNameEn}
+                      </div>
+
+                      <div className="text-xs text-[#5DB4F2] mt-0.5">
+                        {product.genericNameEn ?? 'Dietary Supplement'}
+                      </div>
+
+                      <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-[#B8C3CC]">
+                        <span className="truncate">{product.companyName}</span>
+                        {product.market && (
+                          <span className="shrink-0 font-mono tabular-nums">
+                            {product.market.strength}
+                          </span>
                         )}
-                      </div>
-
-                      <div className="text-xs text-[#5DB4F2] mt-1">
-                        {product.genericNameEn ?? 'Dietary Supplement / No Generic Assigned'}
-                        {product.genericNameAr ? ` · ${product.genericNameAr}` : ''}
-                      </div>
-
-                      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#94A3B8]">
-                        <span>{product.companyName}</span>
-                        <span>
-                          {product.market
-                            ? `${product.market.strength} · ${product.market.dosageForm}`
-                            : product.drugClassNameEn}
-                        </span>
                       </div>
                     </button>
                   );
@@ -294,8 +283,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             </div>
 
             {/* Right Column: Product Detail Panel */}
-            <div className="lg:col-span-7">
-              {selectedProduct && <DoctorProductDetail product={selectedProduct} />}
+            <div className="lg:col-span-8">
+              {selectedProduct && (
+                <DoctorProductDetail product={selectedProduct} />
+              )}
             </div>
           </div>
         )}
@@ -307,166 +298,113 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 function DoctorProductDetail({ product }: { product: CatalogProduct }) {
   const market = product.market;
   const enClinical = product.marketTranslations.en;
-  const arClinical = product.marketTranslations.ar;
 
   return (
     <div className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-6">
       {/* Header */}
-      <div className="border-b border-[#304451] pb-4 flex flex-wrap items-start justify-between gap-4">
+      <div className="border-b border-[#304451] pb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-xs font-mono uppercase tracking-wider text-[#38C976]">
-            Published Official Monograph
-          </div>
-          <h2 className="text-2xl font-semibold text-[#F1F5F9] mt-1">
+          <h2 className="text-2xl font-semibold text-[#F2F5F8]">
             {product.brandNameEn}
           </h2>
-          {product.brandNameAr && (
-            <div dir="rtl" className="text-lg font-medium text-[#CBD5E1] mt-0.5">
-              {product.brandNameAr}
-            </div>
-          )}
+          <p className="text-sm text-[#5DB4F2] mt-1">
+            {product.genericNameEn ?? 'Dietary Supplement'} ·{' '}
+            {product.drugClassNameEn}
+          </p>
         </div>
         <div className="text-right">
-          <div className="text-xs text-[#94A3B8]">Category</div>
-          <div className="text-sm font-medium text-[#E2E8F0] mt-0.5">
+          <div className="text-xs text-[#B8C3CC]">{product.companyName}</div>
+          <div className="text-xs font-medium text-[#38C976] mt-0.5">
             {CATEGORY_LABELS[product.category]}
           </div>
         </div>
       </div>
 
-      {/* Core Identification Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <DetailField
-          label="Generic / Scientific Name"
-          value={
-            product.genericNameEn
-              ? `${product.genericNameEn}${product.genericNameAr ? ` (${product.genericNameAr})` : ''}`
-              : 'Not applicable (Dietary Supplement)'
-          }
-        />
-        <DetailField
-          label="Drug Class"
-          value={`${product.drugClassNameEn}${
-            product.drugClassNameAr ? ` (${product.drugClassNameAr})` : ''
-          }`}
-        />
-        <DetailField label="Manufacturer / Company" value={product.companyName} />
-        <DetailField
-          label="Clinical Specialties"
+      {/* Specification Table */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+        <SpecItem label="Generic Name" value={product.genericNameEn ?? '—'} />
+        <SpecItem label="Drug Class" value={product.drugClassNameEn} />
+        <SpecItem label="Company" value={product.companyName} />
+        <SpecItem
+          label="Specialties"
           value={
             product.specialtyNamesEn.length > 0
               ? product.specialtyNamesEn.join(', ')
               : 'General Medicine'
           }
         />
-      </div>
-
-      {/* Presentation & Iraq Market Status */}
-      <div className="border-t border-[#304451] pt-5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1] mb-3">
-          Presentation & Iraq Market Registration
-        </h3>
-        {market ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <DetailField label="Strength" value={market.strength} mono />
-            <DetailField label="Dosage Form" value={market.dosageForm} />
-            <DetailField label="Route of Administration" value={market.route} />
-            <DetailField label="Pack Size" value={market.packSize} mono />
-            <DetailField
-              label="Iraq Market Status"
+        {market && (
+          <>
+            <SpecItem label="Strength" value={market.strength} mono />
+            <SpecItem label="Dosage Form" value={market.dosageForm} />
+            <SpecItem label="Route" value={market.route} />
+            <SpecItem label="Pack Size" value={market.packSize} mono />
+            <SpecItem
+              label="Market Status"
               value={MARKET_STATUS_LABELS[market.marketStatus]}
-              tone={market.marketStatus === 'marketed_in_iraq' ? 'success' : 'neutral'}
+              tone={
+                market.marketStatus === 'marketed_in_iraq'
+                  ? 'success'
+                  : 'neutral'
+              }
             />
-            <DetailField
+            <SpecItem
               label="Registration Status"
               value={REGISTRATION_STATUS_LABELS[market.registrationStatus]}
             />
-            <DetailField
+            <SpecItem
               label="Registration Number"
-              value={market.registrationNumber ?? 'Not recorded'}
+              value={market.registrationNumber ?? '—'}
               mono
             />
-            <DetailField
+            <SpecItem
               label="Registration Authority"
-              value={market.registrationAuthority ?? 'Not recorded'}
+              value={market.registrationAuthority ?? '—'}
             />
-            <DetailField
+            <SpecItem
               label="Registration Expiry"
-              value={market.registrationExpiresOn ?? 'Not recorded'}
+              value={market.registrationExpiresOn ?? '—'}
               mono
             />
-          </div>
-        ) : (
-          <p className="text-xs text-[#94A3B8]">
-            No market record returned for this product.
-          </p>
+          </>
         )}
       </div>
 
       {/* Clinical Monograph Content if present */}
-      {(enClinical || arClinical) && (
-        <div className="border-t border-[#304451] pt-5 space-y-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#CBD5E1]">
-            Clinical Prescribing Information
+      {enClinical && (
+        <div className="border-t border-[#304451] pt-6 space-y-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+            Clinical Information
           </h3>
-          {enClinical && (
-            <div className="space-y-3 text-xs">
-              <MonographSection
-                title="Approved Indications"
-                body={enClinical.approvedIndications}
-              />
-              <MonographSection
-                title="Usual Adult Dose"
-                body={enClinical.usualAdultDose}
-              />
-              <MonographSection
-                title="Contraindications"
-                body={enClinical.contraindications}
-              />
-              <MonographSection
-                title="Common Adverse Effects"
-                body={enClinical.commonAdverseEffects}
-              />
-              <MonographSection
-                title="Storage Conditions"
-                body={enClinical.storageConditions}
-              />
-            </div>
-          )}
-          {arClinical && (
-            <div
-              dir="rtl"
-              className="space-y-3 text-xs border-t border-[#304451] pt-4"
-            >
-              <MonographSection
-                title="دواعي الاستعمال المعتمدة"
-                body={arClinical.approvedIndications}
-              />
-              <MonographSection
-                title="الجرعة المعتادة للبالغين"
-                body={arClinical.usualAdultDose}
-              />
-              <MonographSection
-                title="موانع الاستعمال"
-                body={arClinical.contraindications}
-              />
-              <MonographSection
-                title="الآثار الجانبية الشائعة"
-                body={arClinical.commonAdverseEffects}
-              />
-              <MonographSection
-                title="ظروف الخزن"
-                body={arClinical.storageConditions}
-              />
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-4 text-sm">
+            <MonographSection
+              title="Approved Indications"
+              body={enClinical.approvedIndications}
+            />
+            <MonographSection
+              title="Usual Adult Dose"
+              body={enClinical.usualAdultDose}
+            />
+            <MonographSection
+              title="Contraindications"
+              body={enClinical.contraindications}
+            />
+            <MonographSection
+              title="Common Adverse Effects"
+              body={enClinical.commonAdverseEffects}
+            />
+            <MonographSection
+              title="Storage Conditions"
+              body={enClinical.storageConditions}
+            />
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function DetailField({
+function SpecItem({
   label,
   value,
   mono,
@@ -478,12 +416,12 @@ function DetailField({
   tone?: 'neutral' | 'success';
 }) {
   return (
-    <div className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3.5 py-2.5">
-      <div className="text-[11px] text-[#94A3B8]">{label}</div>
+    <div className="border-b border-[#304451]/60 pb-3">
+      <div className="text-xs text-[#B8C3CC]">{label}</div>
       <div
-        className={`text-sm mt-0.5 ${
+        className={`text-sm mt-1 ${
           mono ? 'font-mono tabular-nums' : 'font-medium'
-        } ${tone === 'success' ? 'text-[#38C976]' : 'text-[#F1F5F9]'}`}
+        } ${tone === 'success' ? 'text-[#38C976]' : 'text-[#F2F5F8]'}`}
       >
         {value}
       </div>
@@ -493,9 +431,9 @@ function DetailField({
 
 function MonographSection({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3">
-      <div className="text-[11px] font-semibold text-[#CBD5E1]">{title}</div>
-      <p className="text-xs text-[#E2E8F0] mt-1 whitespace-pre-line leading-relaxed">
+    <div className="space-y-1">
+      <div className="text-xs font-medium text-[#B8C3CC]">{title}</div>
+      <p className="text-sm text-[#F2F5F8] whitespace-pre-line leading-relaxed">
         {body}
       </p>
     </div>

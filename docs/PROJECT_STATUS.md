@@ -1,4 +1,4 @@
-# PharmaConnect / Pharamty Project Status
+# PharmaConnect / Pharmaty Project Status
 
 Last canonical update: Admin-managed catalog operating model (2026-10-30)
 
@@ -21,7 +21,7 @@ for Google AI Studio: `docs/AI_STUDIO_BRIEF_ADMIN_CATALOG.md`.
 
 | Item | Current state |
 |---|---|
-| Public brand | Pharamty |
+| Public brand | Pharmaty |
 | Technical/internal name | PharmaConnect |
 | Backend demo project | PharmaConnect Demo |
 | Supabase project reference | `oymnmcqzxmnshsknrgam` |
@@ -73,18 +73,21 @@ The next planned feature phase will be selected after Phase 6D.3A6 closes.
 | Mobile and admin web scaffolds | Verified |
 | Phase 6D.3A2 design foundation implementation | Verified |
 | Phase 6D.3A2 GitHub Actions validation | Verified |
-| Pharamty authentication and shared states | Verified |
+| Pharmaty authentication and shared states | Verified |
 | Phase 6D.3A3 GitHub Actions validation | Verified |
-| Pharamty doctor catalog UI | Verified |
+| Pharmaty doctor catalog UI | Verified |
 | Phase 6D.3A4 GitHub Actions validation | Verified |
-| Pharamty company catalog UI | Verified |
+| Pharmaty company catalog UI | Verified |
 | Phase 6D.3A5 GitHub Actions validation | Verified |
-| Pharamty admin catalog review UI | Verified |
+| Pharmaty admin catalog review UI | Verified |
 | Phase 6D.3A6 GitHub Actions validation | Verified |
 | End-to-end official catalog lifecycle | Verified |
 | Secure catalog storage foundation | Verified |
-| Admin-managed catalog backend (PR #19) | In progress |
-| Admin company/product entry, media upload, doctor media UI | Not started |
+| Admin-managed catalog backend (PR #19) | Verified |
+| AI product drafting backend (PR #23) | Verified |
+| Admin company/product entry and AI draft button (PR #24) | In progress |
+| Media upload and doctor media UI | Not started |
+| Flutter apps brand spelling "Pharmaty" | Not started |
 | Scoped local Flutter validation | Verified |
 | Pull Request merge | Blocked — user approval required |
 

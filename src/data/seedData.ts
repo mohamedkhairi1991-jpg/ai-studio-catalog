@@ -31,7 +31,7 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: '70000000-0000-4000-8000-000000000003',
     email: 'admin.demo@pharmaconnect.local',
-    fullName: 'Pharamty Official Catalog Admin',
+    fullName: 'Pharmaty Official Catalog Admin',
     role: 'admin',
     status: 'active',
     countryIso: 'IQ',
@@ -392,7 +392,7 @@ export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
   {
     id: 'audit-001',
     timestamp: '2026-06-29T09:00:00Z',
-    actorName: 'Pharamty Official Catalog Admin',
+    actorName: 'Pharmaty Official Catalog Admin',
     actorRole: 'admin',
     productId: '71000000-0000-4000-8000-000000000001',
     productName: 'Cardiostead 5 mg',
@@ -412,7 +412,7 @@ export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
   {
     id: 'audit-003',
     timestamp: '2026-07-06T15:00:00Z',
-    actorName: 'Pharamty Official Catalog Admin',
+    actorName: 'Pharmaty Official Catalog Admin',
     actorRole: 'admin',
     productId: '71000000-0000-4000-8000-000000000003',
     productName: 'Cefaxil 400 mg',

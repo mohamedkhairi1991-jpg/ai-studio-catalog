@@ -64,7 +64,7 @@ export interface TranslationStrings {
 
 export const translations: Record<SupportedLocale, TranslationStrings> = {
   en: {
-    appName: 'Pharamty',
+    appName: 'Pharmaty',
     adminPortalLabel: 'Administration portal',
     officialCatalogTitle: 'Official Catalog',
     officialCatalogSubtitle: 'Authoritative pharmaceutical information for approved healthcare professionals in Iraq.',
@@ -125,7 +125,7 @@ export const translations: Record<SupportedLocale, TranslationStrings> = {
     roleAdmin: 'Platform Admin',
   },
   ar: {
-    appName: 'Pharamty',
+    appName: 'Pharmaty',
     adminPortalLabel: 'بوابة الإدارة',
     officialCatalogTitle: 'الدليل الدوائي الرسمي',
     officialCatalogSubtitle: 'المعلومات الصيدلانية المعتمدة للأطباء والمهنيين الصحيين المرخصين في العراق.',

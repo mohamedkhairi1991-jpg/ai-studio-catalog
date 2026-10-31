@@ -249,42 +249,21 @@ export const REGISTRATION_STATUS_LABELS: Record<ProductRegistrationStatus, strin
   withdrawn: 'Withdrawn',
 };
 
-const DEMO_SEED_COMPANY_PREFIX = '75000000-0000-4000-8000-';
-const DEMO_SEED_PRODUCT_PREFIX = '71000000-0000-4000-8000-';
-
-export function isDemoCompanyRecord(company: {
-  id: string;
-  companyName: string;
-}): boolean {
-  if (company.id.toLowerCase().startsWith(DEMO_SEED_COMPANY_PREFIX)) {
-    return true;
-  }
-  const name = company.companyName.toLowerCase();
-  return name.includes('demo') || name === 'tigris pharma';
-}
-
-export function isDemoProductRecord(product: {
-  id: string;
-  companyId: string;
-  brandNameEn: string;
-  registrationNumber?: string | null;
-}): boolean {
-  const id = product.id.toLowerCase();
-  const companyId = product.companyId.toLowerCase();
-  if (
-    id.startsWith(DEMO_SEED_PRODUCT_PREFIX) ||
-    companyId.startsWith(DEMO_SEED_COMPANY_PREFIX)
-  ) {
-    return true;
-  }
-  if (
-    product.registrationNumber &&
-    product.registrationNumber.toUpperCase().startsWith('IQ-DEMO-')
-  ) {
-    return true;
-  }
-  const brand = product.brandNameEn.toLowerCase();
-  return brand.includes('demo');
+export function findMatchingTaxonomyOption(
+  items: TaxonomyItem[],
+  rawName: string | null | undefined
+): TaxonomyItem | null {
+  const trimmed = rawName?.trim();
+  if (!trimmed) return null;
+  const lower = trimmed.toLowerCase();
+  const slug = lower.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return (
+    items.find(
+      (item) =>
+        item.nameEn.trim().toLowerCase() === lower ||
+        (slug.length > 0 && item.code.trim().toLowerCase() === slug)
+    ) ?? null
+  );
 }
 
 export function trimOrNull(value: string | null | undefined): string | null {
@@ -617,7 +596,6 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
       websiteUrl: c.website_url ?? null,
       description: c.description ?? null,
     }))
-    .filter((c) => !isDemoCompanyRecord(c))
     .sort((a, b) => a.companyName.localeCompare(b.companyName));
 }
 
@@ -835,16 +813,7 @@ export async function loadCatalogBundle(
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
-    })
-    .filter(
-      (p) =>
-        !isDemoProductRecord({
-          id: p.id,
-          companyId: p.companyId,
-          brandNameEn: p.brandNameEn,
-          registrationNumber: p.market?.registrationNumber,
-        })
-    );
+    });
 
   return {
     ok: true,
@@ -1273,10 +1242,194 @@ export async function rpcAdminUpdateCompany(
   };
 }
 
+export interface AiDraftSource {
+  title: string;
+  url: string;
+}
+
+export interface AiProductDraft {
+  found: boolean;
+  brandName: string;
+  brandNameAr: string | null;
+  category: ProductCategory | null;
+  genericName: string | null;
+  activeIngredients: string[];
+  drugClass: string | null;
+  strength: string;
+  dosageForm: string;
+  route: string;
+  packSize: string;
+  clinical: {
+    approvedIndications: string;
+    usualAdultDose: string;
+    contraindications: string;
+    commonAdverseEffects: string;
+    storageConditions: string;
+  };
+  specialties: string[];
+  sources: AiDraftSource[];
+  notes: string | null;
+}
+
+export interface AiDraftProductResponse {
+  draft: AiProductDraft;
+  warnings: string[];
+  groundingSources: AiDraftSource[];
+  searchSuggestionsHtml: string | null;
+  model: string;
+}
+
+export interface InvokeAiDraftInput {
+  productName: string;
+  companyName: string;
+  extraContext?: string;
+}
+
+export async function invokeAiDraftProduct(
+  client: SupabaseClient,
+  input: InvokeAiDraftInput
+): Promise<RpcResult<AiDraftProductResponse>> {
+  const productName = input.productName.trim();
+  const companyName = input.companyName.trim();
+  const extraContext = input.extraContext?.trim();
+
+  if (!productName) {
+    return { ok: false, message: 'Product name is required.' };
+  }
+  if (!companyName) {
+    return { ok: false, message: 'Please select a company first.' };
+  }
+
+  const { data, error } = await client.functions.invoke('ai-draft-product', {
+    body: {
+      productName,
+      companyName,
+      ...(extraContext ? { extraContext } : {}),
+    },
+  });
+
+  if (error) {
+    const body = await (error as { context?: Response }).context
+      ?.json?.()
+      .catch(() => null);
+    const bodyError =
+      body &&
+      typeof body === 'object' &&
+      typeof (body as { error?: unknown }).error === 'string'
+        ? (body as { error: string }).error
+        : null;
+    return {
+      ok: false,
+      message: bodyError ?? 'AI draft failed. Try again.',
+    };
+  }
+
+  if (!data || typeof data !== 'object' || !('draft' in data)) {
+    return { ok: false, message: 'AI draft failed. Try again.' };
+  }
+
+  return { ok: true, data: data as AiDraftProductResponse };
+}
+
+export interface EnsureGenericDrugInput {
+  drugClassName: string;
+  genericName: string | null;
+  ingredientNames: string[] | null;
+}
+
+export interface EnsureGenericDrugResult {
+  drugClassId: string;
+  genericDrugId: string | null;
+  created: string[];
+}
+
+export async function rpcAdminEnsureGenericDrug(
+  client: SupabaseClient,
+  input: EnsureGenericDrugInput
+): Promise<RpcResult<EnsureGenericDrugResult>> {
+  const { data, error } = await client
+    .rpc('admin_ensure_generic_drug', {
+      p_drug_class_name: input.drugClassName.trim(),
+      p_generic_name: trimOrNull(input.genericName),
+      p_ingredient_names:
+        input.ingredientNames && input.ingredientNames.length > 0
+          ? input.ingredientNames
+          : null,
+    })
+    .single();
+
+  if (error) {
+    return { ok: false, message: error.message || formatRpcError(error) };
+  }
+
+  const rawRow = Array.isArray(data) ? data[0] : data;
+  const row = rawRow as {
+    drug_class_id?: string;
+    generic_drug_id?: string | null;
+    created?: string[] | null;
+  } | null;
+
+  if (!row?.drug_class_id) {
+    return {
+      ok: false,
+      message: 'Failed to resolve drug class from taxonomy helper.',
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      drugClassId: row.drug_class_id,
+      genericDrugId: row.generic_drug_id ?? null,
+      created: row.created ?? [],
+    },
+  };
+}
+
+export interface EnsuredSpecialtyRow {
+  specialtyId: string;
+  name: string;
+  created: boolean;
+}
+
+export async function rpcAdminEnsureSpecialties(
+  client: SupabaseClient,
+  names: string[]
+): Promise<RpcResult<EnsuredSpecialtyRow[]>> {
+  const cleaned = names.map((n) => n.trim()).filter(Boolean);
+  if (cleaned.length === 0) {
+    return { ok: true, data: [] };
+  }
+
+  const { data, error } = await client.rpc('admin_ensure_specialties', {
+    p_names: cleaned,
+  });
+
+  if (error) {
+    return { ok: false, message: error.message || formatRpcError(error) };
+  }
+
+  const rows = (data ?? []) as Array<{
+    specialty_id: string;
+    name: string;
+    created: boolean;
+  }>;
+
+  return {
+    ok: true,
+    data: rows.map((r) => ({
+      specialtyId: r.specialty_id,
+      name: r.name,
+      created: Boolean(r.created),
+    })),
+  };
+}
+
 export interface FullProductSaveInput {
   existingProduct?: CatalogProduct | null;
   companyId: string;
   brandNameEn: string;
+  brandNameAr?: string | null;
   category: ProductCategory;
   drugClassId: string;
   genericDrugId: string | null;
@@ -1374,6 +1527,17 @@ export async function saveAndPublishCompleteProduct(
     });
     if (!createRes.ok) return { ok: false, message: createRes.message };
     productId = createRes.data.id;
+  }
+
+  const brandNameAr = trimOrNull(input.brandNameAr);
+  if (brandNameAr) {
+    const arTr = await rpcUpsertProductTranslation(
+      client,
+      productId,
+      'ar',
+      brandNameAr
+    );
+    if (!arTr.ok) return { ok: false, message: arTr.message };
   }
 
   const mkt = await rpcUpsertProductMarket(client, {

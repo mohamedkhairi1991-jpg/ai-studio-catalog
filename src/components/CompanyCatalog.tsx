@@ -25,7 +25,7 @@ import {
   type ProductStatus,
 } from '../lib/catalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
-import { Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
+import { BrandLogo, Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
   client: SupabaseClient;
@@ -161,9 +161,7 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
       <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold tracking-tight text-[#F2F5F8]">
-              Pharamty
-            </span>
+            <BrandLogo />
             <span className="h-4 w-px bg-[#304451]" />
             <span className="text-sm text-[#B8C3CC]">
               {access.companyName ??

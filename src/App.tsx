@@ -756,7 +756,7 @@ export default function App() {
       tone: newDoctor.verificationStatus === 'approved' ? 'success' : 'warning',
       message:
         newDoctor.verificationStatus === 'approved'
-          ? `Physician account created and verified for ${newDoctor.fullName} (${newDoctor.email}). Welcome to Pharamty.`
+          ? `Physician account created and verified for ${newDoctor.fullName} (${newDoctor.email}). Welcome to Pharmaty.`
           : `Registration submitted for ${newDoctor.fullName} (${newDoctor.email}). Your physician credential is now in the Admin Verification Queue.`,
     });
   };
@@ -2223,7 +2223,7 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-[14px] tracking-tight text-[#F2F5F8]">
-                  Pharamty
+                  Pharmaty
                 </span>
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#253F51] border border-[#46718F] text-[#5DB4F2]">
                   Iraq Clinical Catalog
@@ -7236,11 +7236,11 @@ export default function App() {
                   <Stethoscope className="w-6 h-6 text-[#F2F5F8]" />
                 </div>
                 <div className="text-[11px] font-bold text-[#5DB4F2] uppercase tracking-wider">
-                  PHARAMTY IRAQ CLINICAL GATEWAY
+                  PHARMATY IRAQ CLINICAL GATEWAY
                 </div>
                 <h1 className="text-[24px] sm:text-[26px] font-extrabold text-[#F2F5F8]">
                   {authMode === 'signin'
-                    ? 'Sign In to Pharamty'
+                    ? 'Sign In to Pharmaty'
                     : 'Physician Registration (Sign Up)'}
                 </h1>
                 <p className="text-[13px] text-[#B8C3CC] max-w-md mx-auto leading-relaxed">
@@ -7588,7 +7588,7 @@ export default function App() {
                     ARCHITECTURE CLOSURE & RELEASE AUDIT
                   </div>
                   <h1 className="text-[24px] sm:text-[26px] font-extrabold text-[#F2F5F8] tracking-tight mt-1">
-                    Where Pharamty Stands Right Now — Publication Readiness
+                    Where Pharmaty Stands Right Now — Publication Readiness
                   </h1>
                   <p className="text-[14px] text-[#B8C3CC] leading-relaxed mt-1.5">
                     Live diagnostic of the platform against{' '}

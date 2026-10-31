@@ -11,7 +11,7 @@ import {
   type CatalogProduct,
   type ProductCategory,
 } from '../lib/catalog';
-import { inputClass, secondaryButtonClass } from './ui';
+import { BrandLogo, inputClass, secondaryButtonClass } from './ui';
 
 export function CatalogBanner({
   tone,
@@ -105,9 +105,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold tracking-tight text-[#F2F5F8]">
-              Pharamty
-            </span>
+            <BrandLogo />
             <span className="h-4 w-px bg-[#304451]" />
             <span className="text-sm text-[#B8C3CC]">Official Catalog</span>
           </div>

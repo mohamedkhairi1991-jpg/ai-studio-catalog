@@ -44,7 +44,7 @@ export const AuditTrailView: React.FC = () => {
               <span className="text-xs text-[#B8C3CC]">Immutable System Logs</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#F2F5F8] tracking-tight">
-              Pharamty Audit Trail & Identity Sessions
+              Pharmaty Audit Trail & Identity Sessions
             </h1>
             <p className="text-sm text-[#B8C3CC] max-w-3xl">
               Inspect historical catalog governance records and verify role-based authentication flows.
@@ -287,7 +287,7 @@ export const AuditTrailView: React.FC = () => {
             </form>
 
             <div className="bg-[#1F2D38] border border-[#51616D] rounded-lg p-3 text-[11px] text-[#B8C3CC] space-y-1">
-              <span className="font-bold text-[#F2F5F8] block">Pharamty Access Guard Policy:</span>
+              <span className="font-bold text-[#F2F5F8] block">Pharmaty Access Guard Policy:</span>
               <p>
                 Approved physicians receive the official catalog. Company regulatory users receive their private catalog workspace. Anonymous users cannot access published pharmaceuticals.
               </p>

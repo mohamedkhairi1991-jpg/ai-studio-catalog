@@ -7,15 +7,20 @@ import {
   REGISTRATION_STATUS_LABELS,
   STATUS_LABELS,
   filterProductsByStatus,
+  findMatchingTaxonomyOption,
+  invokeAiDraftProduct,
   loadCatalogBundle,
   publishProduct,
   rpcAdminArchiveProduct,
   rpcAdminCreateCompany,
+  rpcAdminEnsureGenericDrug,
+  rpcAdminEnsureSpecialties,
   rpcAdminHideProduct,
   rpcAdminRequestProductChanges,
   rpcAdminRestoreProduct,
   rpcAdminUpdateCompany,
   saveAndPublishCompleteProduct,
+  type AiDraftProductResponse,
   type CatalogBundle,
   type CatalogProduct,
   type CompanySummary,
@@ -28,7 +33,7 @@ import { listCities, listCountries, type Option } from '../lib/onboarding';
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
-import { Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
+import { BrandLogo, Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
   client: SupabaseClient;
@@ -267,9 +272,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
       <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold tracking-tight text-[#F2F5F8]">
-              Pharamty
-            </span>
+            <BrandLogo />
             <span className="h-4 w-px bg-[#304451]" />
             <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5">
               <button
@@ -599,13 +602,17 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   }
                   onCancel={() => setCreatingProduct(false)}
                   onError={(msg, reasons) => setFailure(msg, reasons)}
-                  onSaved={async (productId, status) => {
+                  onSaved={async (productId, status, createdTaxonomy) => {
                     setCreatingProduct(false);
                     clearFeedback();
+                    const addedMsg =
+                      createdTaxonomy && createdTaxonomy.length > 0
+                        ? ` Added to the catalog: ${createdTaxonomy.join(', ')}.`
+                        : '';
                     setNotice(
-                      status === 'published'
+                      (status === 'published'
                         ? 'Product created and published to the Official Doctor Catalog.'
-                        : `Product saved (${STATUS_LABELS[status]}).`
+                        : `Product saved (${STATUS_LABELS[status]}).`) + addedMsg
                     );
                     await refresh(productId);
                   }}
@@ -913,7 +920,11 @@ interface EditorFormProps {
   existingProduct?: CatalogProduct | null;
   onCancel: () => void;
   onError: (msg: string, reasons?: string[]) => void;
-  onSaved: (productId: string, finalStatus: ProductStatus) => Promise<void>;
+  onSaved: (
+    productId: string,
+    finalStatus: ProductStatus,
+    createdTaxonomy?: string[]
+  ) => Promise<void>;
 }
 
 function AdminProductEditorForm({
@@ -933,6 +944,7 @@ function AdminProductEditorForm({
   const [brandNameEn, setBrandNameEn] = useState(
     existingProduct?.brandNameEn ?? ''
   );
+  const [brandNameAr, setBrandNameAr] = useState<string | null>(null);
   const [category, setCategory] = useState<ProductCategory>(
     existingProduct?.category ?? 'prescription_drug'
   );
@@ -942,6 +954,19 @@ function AdminProductEditorForm({
   const [genericDrugId, setGenericDrugId] = useState(
     existingProduct?.genericDrugId ?? bundle.genericDrugs[0]?.id ?? ''
   );
+
+  // AI Draft state
+  const [aiProductName, setAiProductName] = useState(
+    existingProduct?.brandNameEn ?? ''
+  );
+  const [aiExtraContext, setAiExtraContext] = useState('');
+  const [aiDrafting, setAiDrafting] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<AiDraftProductResponse | null>(null);
+  const [activeIngredients, setActiveIngredients] = useState<string[]>([]);
+  const [newDrugClassName, setNewDrugClassName] = useState<string | null>(null);
+  const [newGenericName, setNewGenericName] = useState<string | null>(null);
+  const [newSpecialtyNames, setNewSpecialtyNames] = useState<string[]>([]);
 
   const [strength, setStrength] = useState(
     existingProduct?.market?.strength ?? ''
@@ -992,10 +1017,157 @@ function AdminProductEditorForm({
 
   const [busy, setBusy] = useState(false);
 
+  const selectedCompany = useMemo(
+    () => bundle.companies.find((c) => c.id === companyId) ?? null,
+    [bundle.companies, companyId]
+  );
+
+  const combinedSources = useMemo(() => {
+    if (!aiResult) return [];
+    const seen = new Set<string>();
+    const list: Array<{ title: string; url: string }> = [];
+    for (const s of [
+      ...(aiResult.draft.sources ?? []),
+      ...(aiResult.groundingSources ?? []),
+    ]) {
+      const url = s?.url?.trim();
+      if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
+      seen.add(url);
+      list.push({ title: s.title?.trim() || url, url });
+    }
+    return list;
+  }, [aiResult]);
+
   const toggleSpecialty = (id: string) => {
     setSelectedSpecialties((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  };
+
+  const handleAiDraft = async () => {
+    if (!selectedCompany) {
+      const msg = 'Please select a company first.';
+      setAiError(msg);
+      onError(msg);
+      return;
+    }
+    const queryName = aiProductName.trim() || brandNameEn.trim();
+    if (!queryName) {
+      const msg = 'Product name is required (e.g. "Forxiga 10 mg tablets").';
+      setAiError(msg);
+      onError(msg);
+      return;
+    }
+
+    setAiDrafting(true);
+    setAiError(null);
+    setAiResult(null);
+
+    const res = await invokeAiDraftProduct(client, {
+      productName: queryName,
+      companyName: selectedCompany.companyName,
+      extraContext: aiExtraContext,
+    });
+
+    setAiDrafting(false);
+
+    if (!res.ok) {
+      setAiError(res.message);
+      onError(res.message);
+      return;
+    }
+
+    const data = res.data;
+    setAiResult(data);
+    const { draft } = data;
+
+    if (!draft.found) {
+      return;
+    }
+
+    // Fill form fields from draft (do NOT save, do NOT touch registration or marketStatus)
+    setBrandNameEn(draft.brandName ?? '');
+    setBrandNameAr(draft.brandNameAr?.trim() ? draft.brandNameAr.trim() : null);
+
+    const nextCategory: ProductCategory =
+      draft.category === 'prescription_drug' ||
+      draft.category === 'otc_drug' ||
+      draft.category === 'dietary_supplement'
+        ? draft.category
+        : category;
+    setCategory(nextCategory);
+
+    setStrength(draft.strength ?? '');
+    setDosageForm(draft.dosageForm ?? '');
+    setRoute(draft.route ?? '');
+    setPackSize(draft.packSize ?? '');
+
+    setApprovedIndications(draft.clinical?.approvedIndications ?? '');
+    setUsualAdultDose(draft.clinical?.usualAdultDose ?? '');
+    setContraindications(draft.clinical?.contraindications ?? '');
+    setCommonAdverseEffects(draft.clinical?.commonAdverseEffects ?? '');
+    setStorageConditions(draft.clinical?.storageConditions ?? '');
+
+    setActiveIngredients(
+      Array.isArray(draft.activeIngredients)
+        ? draft.activeIngredients.map((s) => s.trim()).filter(Boolean)
+        : []
+    );
+
+    if (draft.drugClass && draft.drugClass.trim()) {
+      const matchedClass = findMatchingTaxonomyOption(
+        bundle.drugClasses,
+        draft.drugClass
+      );
+      if (matchedClass) {
+        setDrugClassId(matchedClass.id);
+        setNewDrugClassName(null);
+      } else {
+        setNewDrugClassName(draft.drugClass.trim());
+      }
+    } else {
+      setNewDrugClassName(null);
+    }
+
+    if (nextCategory === 'dietary_supplement' && !draft.genericName?.trim()) {
+      setGenericDrugId('');
+      setNewGenericName(null);
+    } else if (draft.genericName && draft.genericName.trim()) {
+      const matchedGeneric = findMatchingTaxonomyOption(
+        bundle.genericDrugs,
+        draft.genericName
+      );
+      if (matchedGeneric) {
+        setGenericDrugId(matchedGeneric.id);
+        setNewGenericName(null);
+      } else {
+        setNewGenericName(draft.genericName.trim());
+      }
+    } else {
+      setNewGenericName(null);
+    }
+
+    const matchedSpecIds: string[] = [];
+    const unmatchedSpecs: string[] = [];
+    for (const rawSpec of draft.specialties ?? []) {
+      const trimmed = rawSpec?.trim();
+      if (!trimmed) continue;
+      const matchedSpec = findMatchingTaxonomyOption(
+        bundle.specialties,
+        trimmed
+      );
+      if (matchedSpec) {
+        if (!matchedSpecIds.includes(matchedSpec.id)) {
+          matchedSpecIds.push(matchedSpec.id);
+        }
+      } else if (
+        !unmatchedSpecs.some((s) => s.toLowerCase() === trimmed.toLowerCase())
+      ) {
+        unmatchedSpecs.push(trimmed);
+      }
+    }
+    setSelectedSpecialties(matchedSpecIds);
+    setNewSpecialtyNames(unmatchedSpecs);
   };
 
   const handleSave = async (publishImmediately: boolean) => {
@@ -1003,22 +1175,87 @@ function AdminProductEditorForm({
       onError('Please select a company first.');
       return;
     }
-    if (!brandNameEn.trim() || !drugClassId) {
+    const hasDrugClass = Boolean(newDrugClassName?.trim() || drugClassId);
+    if (!brandNameEn.trim() || !hasDrugClass) {
       onError('English brand name and drug class are required.');
       return;
     }
 
     setBusy(true);
+
+    let resolvedDrugClassId = drugClassId;
+    let resolvedGenericDrugId: string | null =
+      category === 'dietary_supplement' && !genericDrugId
+        ? null
+        : genericDrugId;
+    const createdTaxonomy: string[] = [];
+
+    const needsEnsureGenericOrClass =
+      Boolean(newDrugClassName?.trim()) ||
+      (category !== 'dietary_supplement' && Boolean(newGenericName?.trim()));
+
+    if (needsEnsureGenericOrClass) {
+      const drugClassNameForRpc =
+        newDrugClassName?.trim() ||
+        bundle.drugClasses.find((dc) => dc.id === drugClassId)?.nameEn ||
+        '';
+      const genericNameForRpc =
+        category === 'dietary_supplement'
+          ? null
+          : newGenericName?.trim() ||
+            bundle.genericDrugs.find((gd) => gd.id === genericDrugId)?.nameEn ||
+            null;
+
+      const taxRes = await rpcAdminEnsureGenericDrug(client, {
+        drugClassName: drugClassNameForRpc,
+        genericName: genericNameForRpc,
+        ingredientNames:
+          activeIngredients.length > 0 ? activeIngredients : null,
+      });
+
+      if (!taxRes.ok) {
+        setBusy(false);
+        onError(taxRes.message);
+        return;
+      }
+
+      resolvedDrugClassId = taxRes.data.drugClassId;
+      resolvedGenericDrugId =
+        category === 'dietary_supplement'
+          ? null
+          : taxRes.data.genericDrugId ?? resolvedGenericDrugId;
+      createdTaxonomy.push(...taxRes.data.created);
+    }
+
+    let resolvedSpecialtyIds = [...selectedSpecialties];
+    if (newSpecialtyNames.length > 0) {
+      const specRes = await rpcAdminEnsureSpecialties(
+        client,
+        newSpecialtyNames
+      );
+      if (!specRes.ok) {
+        setBusy(false);
+        onError(specRes.message);
+        return;
+      }
+      for (const s of specRes.data) {
+        if (!resolvedSpecialtyIds.includes(s.specialtyId)) {
+          resolvedSpecialtyIds.push(s.specialtyId);
+        }
+        if (s.created) {
+          createdTaxonomy.push(`specialty: ${s.name}`);
+        }
+      }
+    }
+
     const res = await saveAndPublishCompleteProduct(client, {
       existingProduct,
       companyId,
       brandNameEn,
+      brandNameAr,
       category,
-      drugClassId,
-      genericDrugId:
-        category === 'dietary_supplement' && !genericDrugId
-          ? null
-          : genericDrugId,
+      drugClassId: resolvedDrugClassId,
+      genericDrugId: resolvedGenericDrugId,
       strength,
       dosageForm,
       route,
@@ -1033,7 +1270,7 @@ function AdminProductEditorForm({
       contraindications,
       commonAdverseEffects,
       storageConditions,
-      specialtyIds: selectedSpecialties,
+      specialtyIds: resolvedSpecialtyIds,
       publishImmediately,
     });
     setBusy(false);
@@ -1043,7 +1280,7 @@ function AdminProductEditorForm({
       return;
     }
 
-    await onSaved(res.data.productId, res.data.finalStatus);
+    await onSaved(res.data.productId, res.data.finalStatus, createdTaxonomy);
   };
 
   return (
@@ -1068,6 +1305,139 @@ function AdminProductEditorForm({
         >
           Cancel
         </button>
+      </div>
+
+      {/* 1. AI Draft Box */}
+      <div className="rounded-xl bg-[#1F2D38] border border-[#304451] p-4 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#5DB4F2]">
+              AI Draft from Official Sources
+            </h3>
+            <p className="text-xs text-[#B8C3CC] mt-0.5">
+              Company:{' '}
+              <span className="text-[#F2F5F8] font-medium">
+                {selectedCompany?.companyName ?? 'Select a company below'}
+              </span>{' '}
+              — AI drafts the fields; check and save when ready.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={aiDrafting || busy || !aiProductName.trim() || !companyId}
+            onClick={() => void handleAiDraft()}
+            className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 transition-colors"
+          >
+            {aiDrafting ? 'Drafting…' : 'AI draft'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="Product name">
+            <input
+              type="text"
+              placeholder="e.g. Forxiga 10 mg tablets"
+              value={aiProductName}
+              onChange={(e) => setAiProductName(e.target.value)}
+              disabled={aiDrafting}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Paste leaflet text (optional)">
+            <textarea
+              rows={2}
+              placeholder="Optional excerpt from official package leaflet or SmPC…"
+              value={aiExtraContext}
+              onChange={(e) => setAiExtraContext(e.target.value)}
+              disabled={aiDrafting}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+
+        {aiDrafting && (
+          <p className="text-xs text-[#F59E0B] font-medium">
+            Researching official sources… this can take up to 2 minutes
+          </p>
+        )}
+
+        {aiError && <Banner tone="error">{aiError}</Banner>}
+
+        {aiResult && !aiResult.draft.found && (
+          <Banner tone="warn">
+            <div className="space-y-2">
+              <div className="font-semibold text-[#F2F5F8]">
+                Official product labeling was not found
+              </div>
+              {aiResult.draft.notes && (
+                <p className="text-xs text-[#F2F5F8]">{aiResult.draft.notes}</p>
+              )}
+              {aiResult.warnings.length > 0 && (
+                <ul className="list-disc list-inside space-y-1 text-xs text-[#B8C3CC]">
+                  {aiResult.warnings.map((w) => (
+                    <li key={w}>{w}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Banner>
+        )}
+
+        {aiResult && aiResult.draft.found && (
+          <div className="rounded-lg border border-[#F59E0B]/60 bg-[#F59E0B]/10 p-4 space-y-3 text-xs">
+            <div className="font-semibold text-[#F59E0B]">
+              AI draft — check every field against the sources before publishing
+            </div>
+
+            {aiResult.draft.notes && (
+              <p className="text-[#F2F5F8]">{aiResult.draft.notes}</p>
+            )}
+
+            {aiResult.warnings.length > 0 && (
+              <div className="space-y-1">
+                <div className="font-medium text-[#F2F5F8]">
+                  Checklist before publishing:
+                </div>
+                <ul className="list-disc list-inside space-y-1 text-[#B8C3CC]">
+                  {aiResult.warnings.map((w) => (
+                    <li key={w}>{w}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {combinedSources.length > 0 && (
+              <div className="space-y-1">
+                <div className="font-medium text-[#F2F5F8]">Sources:</div>
+                <ul className="list-disc list-inside space-y-1">
+                  {combinedSources.map((src) => (
+                    <li key={src.url}>
+                      <a
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#5DB4F2] hover:underline break-all"
+                      >
+                        {src.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {aiResult.searchSuggestionsHtml && (
+              <div className="pt-1">
+                <iframe
+                  title="Google Search suggestions"
+                  sandbox="allow-popups allow-popups-to-escape-sandbox"
+                  srcDoc={aiResult.searchSuggestionsHtml}
+                  className="w-full h-14 rounded border border-[#304451] bg-[#1F2D38]"
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -1113,47 +1483,83 @@ function AdminProductEditorForm({
           </select>
         </Field>
 
-        <Field label="Drug Class">
-          <select
-            required
-            value={drugClassId}
-            onChange={(e) => setDrugClassId(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Select drug class</option>
-            {bundle.drugClasses.map((dc) => (
-              <option key={dc.id} value={dc.id}>
-                {dc.nameEn}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <div>
+          <Field label="Drug Class">
+            <select
+              required={!newDrugClassName}
+              value={drugClassId}
+              onChange={(e) => {
+                setDrugClassId(e.target.value);
+                setNewDrugClassName(null);
+              }}
+              className={inputClass}
+            >
+              <option value="">Select drug class</option>
+              {bundle.drugClasses.map((dc) => (
+                <option key={dc.id} value={dc.id}>
+                  {dc.nameEn}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {newDrugClassName && (
+            <div className="mt-1.5 flex items-center justify-between gap-2 rounded-md bg-[#1F2D38] border border-[#5DB4F2]/50 px-2.5 py-1.5 text-xs text-[#F2F5F8]">
+              <span>New: {newDrugClassName} (added when you save)</span>
+              <button
+                type="button"
+                onClick={() => setNewDrugClassName(null)}
+                aria-label={`Remove new drug class ${newDrugClassName}`}
+                className="text-[#B8C3CC] hover:text-white font-semibold px-1"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
 
-        <Field
-          label={
-            category === 'dietary_supplement'
-              ? 'Generic / Scientific Name (optional)'
-              : 'Generic / Scientific Name'
-          }
-        >
-          <select
-            required={category !== 'dietary_supplement'}
-            value={genericDrugId}
-            onChange={(e) => setGenericDrugId(e.target.value)}
-            className={inputClass}
+        <div>
+          <Field
+            label={
+              category === 'dietary_supplement'
+                ? 'Generic / Scientific Name (optional)'
+                : 'Generic / Scientific Name'
+            }
           >
-            <option value="">
-              {category === 'dietary_supplement'
-                ? 'None'
-                : 'Select generic drug'}
-            </option>
-            {bundle.genericDrugs.map((gd) => (
-              <option key={gd.id} value={gd.id}>
-                {gd.nameEn}
+            <select
+              required={category !== 'dietary_supplement' && !newGenericName}
+              value={genericDrugId}
+              onChange={(e) => {
+                setGenericDrugId(e.target.value);
+                setNewGenericName(null);
+              }}
+              className={inputClass}
+            >
+              <option value="">
+                {category === 'dietary_supplement'
+                  ? 'None'
+                  : 'Select generic drug'}
               </option>
-            ))}
-          </select>
-        </Field>
+              {bundle.genericDrugs.map((gd) => (
+                <option key={gd.id} value={gd.id}>
+                  {gd.nameEn}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {newGenericName && (
+            <div className="mt-1.5 flex items-center justify-between gap-2 rounded-md bg-[#1F2D38] border border-[#5DB4F2]/50 px-2.5 py-1.5 text-xs text-[#F2F5F8]">
+              <span>New: {newGenericName} (added when you save)</span>
+              <button
+                type="button"
+                onClick={() => setNewGenericName(null)}
+                aria-label={`Remove new generic drug ${newGenericName}`}
+                className="text-[#B8C3CC] hover:text-white font-semibold px-1"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
 
         <Field label="Strength">
           <input
@@ -1318,6 +1724,30 @@ function AdminProductEditorForm({
         <div className="text-xs font-medium text-[#B8C3CC]">
           Medical Specialties
         </div>
+        {newSpecialtyNames.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {newSpecialtyNames.map((specName) => (
+              <span
+                key={specName}
+                className="inline-flex items-center gap-2 rounded-md bg-[#1F2D38] border border-[#5DB4F2]/50 px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+              >
+                <span>New: {specName} (added when you save)</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNewSpecialtyNames((prev) =>
+                      prev.filter((n) => n !== specName)
+                    )
+                  }
+                  aria-label={`Remove new specialty ${specName}`}
+                  className="text-[#B8C3CC] hover:text-white font-semibold px-1"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
           {bundle.specialties.map((spec) => {
             const checked = selectedSpecialties.includes(spec.id);
@@ -1410,12 +1840,16 @@ function AdminProductInspector({
         existingProduct={product}
         onCancel={() => setEditing(false)}
         onError={onError}
-        onSaved={async (_id, status) => {
+        onSaved={async (_id, status, createdTaxonomy) => {
           setEditing(false);
+          const addedMsg =
+            createdTaxonomy && createdTaxonomy.length > 0
+              ? ` Added to the catalog: ${createdTaxonomy.join(', ')}.`
+              : '';
           await onSuccess(
-            status === 'published'
+            (status === 'published'
               ? 'Product updated and published to the Official Doctor Catalog.'
-              : `Product updated (${STATUS_LABELS[status]}).`
+              : `Product updated (${STATUS_LABELS[status]}).`) + addedMsg
           );
         }}
       />

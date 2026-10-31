@@ -2,7 +2,7 @@
 
 ## Product identity
 
-- Public brand: **Pharamty**
+- Public brand: **Pharmaty** (spelling confirmed by the owner on 2026-10-31; previously "Pharamty")
 - Technical/internal name: **PharmaConnect**
 - Keep repository names, folders, Dart packages, imports, class names, bundle
   identifiers, URL schemes, Supabase names, and other technical identifiers
@@ -14,7 +14,7 @@
 
 ## Product purpose
 
-Pharamty is an Iraq-focused professional pharmaceutical information platform.
+Pharmaty is an Iraq-focused professional pharmaceutical information platform.
 Its official catalog allows approved healthcare professionals to search
 official published products by:
 

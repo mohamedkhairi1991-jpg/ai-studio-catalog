@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-10-31 — Claude (brand spelling)
+- **Owner confirmed the brand is spelled "Pharmaty".** Updated `AGENTS.md`,
+  `docs/PROJECT_STATUS.md`, `metadata.json`; the web app (`src/`) was already
+  renamed by AI Studio. Technical name stays PharmaConnect.
+- **Still "Pharamty":** the Flutter apps (`apps/`, `packages/pharmaconnect_l10n`)
+  — renamed in a separate change by Claude.
+
 ### 2026-10-31 — Google AI Studio (AI draft UI & demo filter removal)
 - **Removed demo filters (`src/lib/catalog.ts`, `src/lib/catalog.test.ts`):**
   - Removed `isDemoCompanyRecord`, `isDemoProductRecord`, their two `.filter(...)` calls in `loadCompanies` and `loadCatalogBundle`, and their unit tests.

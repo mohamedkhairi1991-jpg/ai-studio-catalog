@@ -55,13 +55,39 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
-### 2026-10-31 — Google AI Studio (Catalog Builder UI & cleanup)
-- **Removed automatic clear & Clear All button (`src/lib/catalog.ts`, `src/components/AdminCatalogReview.tsx`):**
-  - Removed the automatic on-load company/product archiving (`CLEAN_SLATE_RESET_KEY`), the `"Clear All"` buttons, `rpcAdminClearAllCompaniesAndProducts`, and all client-side hardcoded drug/brand fallbacks.
-  - Kept filtering out `status === 'archived'` companies and products in `loadCompanies` and `loadCatalogBundle`, and added an inline confirmation (`Confirm Remove` / `Cancel`) to the per-company **Remove** action.
-- **Built `docs/AI_STUDIO_BRIEF_CATALOG_BUILDER.md` (`src/components/CatalogBuilder.tsx`, `src/components/AdminCatalogReview.tsx`, `src/lib/catalog.ts`, `src/lib/catalog.test.ts`):**
-  - Added the **Catalog Builder** tab with three simple steps: **1. Suggest companies** (`mode: 'companies'`, pre-ticked `confirmed` and `likely`, editable names, evidence badge, source link, grounding sources, sandboxed `searchSuggestionsHtml` iframe, and **Add selected** via `admin_create_company` skipping duplicates), **2. Find products** (`mode: 'company_products'`, optional therapeutic area, evidence badge, sources), and **3. Draft all** (one-by-one queue calling `ai-draft-product` + `admin_save_ai_product_draft` with **Pause** / **Resume**, `"Keep this page open while drafting."`, quota stop handling, live outcome list, and **Review drafts**).
-  - Updated the product list and `AdminProductEditorForm` to display the **AI draft — check** badge for `draft` / `changes_requested` products in `product_ai_drafts`, load stored AI sources and notes from `product_ai_drafts`, and pre-fill empty clinical/presentation fields on open. Never publishes automatically.
+### 2026-11-01 — Google AI Studio (Multinational Company #2: Sanofi Iraq Catalog — 55 Brand Products)
+- **Owner request:** Proceed with the 2nd multinational company (`Sanofi`) in the step-by-step Iraq catalog curation workflow, keeping the single-button company drill-down UI.
+- **Changes (`src/lib/sanofiCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/sanofiCatalogData.ts` containing **55 official Sanofi (`Sanofi S.A.`) Iraq-marketed brand drug presentations** across 5 therapeutic portfolios:
+    1. **Cardiovascular, Thrombosis & Anticoagulants (15 presentations):** Plavix 75 mg & 300 mg, CoPlavix 75 mg/100 mg, Clexane 20 mg/0.2 mL, 40 mg/0.4 mL, 60 mg/0.6 mL & 80 mg/0.8 mL, Aprovel 150 mg & 300 mg, CoAprovel 150 mg/12.5 mg, 300 mg/12.5 mg & 300 mg/25 mg, Cordarone 200 mg tablets & 150 mg/3 mL IV, Lasix 40 mg tablets & 20 mg/2 mL IV, Tritace 2.5 mg, 5 mg & 10 mg, Multaq 400 mg, Praluent 75 mg/mL & 150 mg/mL.
+    2. **Diabetes & Endocrinology — Insulins & Oral Antidiabetics (9 presentations):** Lantus SoloStar 100 U/mL, Toujeo SoloStar 300 U/mL, Apidra SoloStar 100 U/mL, Soliqua 100/33 & 100/50 SoloStar, Amaryl 1 mg, 2 mg, 3 mg & 4 mg, Amaryl M 2 mg/500 mg.
+    3. **Neurology, Epilepsy & Psychiatry (9 presentations):** Depakine Chrono 300 mg & 500 mg, Depakine 200 mg/mL Oral Solution, Depakine 57.64 mg/mL Syrup, Depakine 400 mg IV, Dogmatil 50 mg capsules & 200 mg tablets, Stilnox 10 mg, Aubagio 14 mg.
+    4. **Allergy, Gastroenterology, Spasmolytics & Pain (10 presentations):** Telfast 120 mg & 180 mg, Telfast 30 mg/5 mL Oral Suspension, Enterogermina 2 Billion/5 mL & 4 Billion/5 mL Oral Suspension, No-Spa 40 mg tablets & 40 mg/2 mL ampoules, Essentiale Forte N 300 mg, Maalox Plus Oral Suspension, Profenid 100 mg.
+    5. **Anti-Infectives, Immunology, Oncology & Urology (12 presentations):** Targocid 200 mg & 400 mg IV/IM, Claforan 1 g IV/IM, Rovamycine 1.5 MIU & 3 MIU, Flagyl 500 mg tablets & 500 mg/100 mL IV, Rodogyl 750,000 IU/125 mg, Xatral XL 10 mg, Dupixent 300 mg/2 mL & 200 mg/1.14 mL, Taxotere 80 mg/4 mL, Eloxatin 100 mg/20 mL, Jevtana 60 mg/1.5 mL.
+  - Registered `Sanofi` (`Sanofi S.A.`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts` so opening the Admin Catalog view auto-syncs Sanofi as the second single company button (`Sanofi`) alongside `AstraZeneca`, with all products saved as `draft` (`not_recorded`).
+- **Validation:** `npm test -- --run`, `npm run lint`, and `npm run build` passed cleanly.
+- **Next for Claude:** No database schema or Edge Function changes needed.
+
+### 2026-11-01 — Google AI Studio (Full AstraZeneca Iraq Catalog & Single-Button Company Drill-Down UI)
+- **Owner request:** Do not expose full product details or all drug choices on the main Admin page—place all drug choices under a single company button (`AstraZeneca`) that opens the company's drugs page when pressed, and only open a drug's details when pressing that drug's name—and add all AstraZeneca products marketed in Iraq.
+- **Changes (`src/lib/chatCatalogData.ts`, `src/lib/catalog.ts`, `src/components/AdminCatalogReview.tsx`):**
+  - Updated `AdminCatalogReview.tsx` so the main Admin Catalog view shows a single button per company (`AstraZeneca`). Pressing `AstraZeneca` opens the company's page of drug subclasses and compact clickable drug-name buttons, and pressing any drug name opens its full clinical details (`AdminProductInspector`) with `← Back` navigation at every step.
+  - Expanded **AstraZeneca (`AstraZeneca PLC`)** in `src/lib/chatCatalogData.ts` to **52 official Iraq-marketed brand drug presentations** across all 7 therapeutic franchises:
+    1. **Gastroenterology (PPIs):** `Nexium 20 mg`, `Nexium 40 mg`, `Nexium 10 mg Sachets`, `Nexium IV 40 mg`, `Losec MUPS 20 mg`, `Losec MUPS 40 mg`
+    2. **Lipid-Lowering (Statins):** `Crestor 5 mg`, `Crestor 10 mg`, `Crestor 20 mg`, `Crestor 40 mg`
+    3. **Diabetes, Heart Failure & CKD (SGLT2 & DPP-4):** `Forxiga 5 mg`, `Forxiga 10 mg`, `Xigduo XR 5 mg / 1000 mg`, `Xigduo XR 10 mg / 1000 mg`, `Qtern 5 mg / 10 mg`, `Onglyza 5 mg`, `Kombiglyze XR 5 mg / 1000 mg`
+    4. **Cardiovascular, Hypertension & Renal:** `Brilinta 90 mg`, `Brilinta 60 mg`, `Betaloc ZOK 25 mg`, `Betaloc ZOK 50 mg`, `Betaloc ZOK 100 mg`, `Betaloc ZOK 200 mg`, `Tenormin 50 mg`, `Tenormin 100 mg`, `Atacand 8 mg`, `Atacand 16 mg`, `Atacand 32 mg`, `Atacand Plus 16 mg / 12.5 mg`, `Plendil 5 mg`, `Plendil 10 mg`, `Zestril 10 mg`, `Zestril 20 mg`, `Zestoretic 20 mg / 12.5 mg`, `Lokelma 5 g`
+    5. **Respiratory & Immunology:** `Symbicort Turbuhaler 80/4.5 mcg`, `Symbicort Turbuhaler 160/4.5 mcg`, `Symbicort Turbuhaler 320/9 mcg`, `Pulmicort Respules 0.5 mg/2 mL`, `Pulmicort Respules 1 mg/2 mL`, `Pulmicort Turbuhaler 200 mcg`, `Bricanyl Turbuhaler 0.5 mg`, `Rhinocort Aqua 64 mcg`, `Fasenra 30 mg`
+    6. **Oncology & Endocrine Oncology:** `Tagrisso 80 mg`, `Lynparza 150 mg`, `Calquence 100 mg`, `Imfinzi 500 mg/10 mL`, `Iressa 250 mg`, `Faslodex 250 mg/5 mL`, `Zoladex 3.6 mg`, `Zoladex LA 10.8 mg`, `Arimidex 1 mg`, `Casodex 50 mg`, `Nolvadex 10 mg`, `Nolvadex-D 20 mg`
+    7. **CNS, Anesthesia & Hospital Anti-Infectives:** `Seroquel 25 mg`, `Seroquel 100 mg`, `Seroquel 200 mg`, `Seroquel XR 300 mg`, `Zomig 2.5 mg`, `Xylocaine 2% Jelly`, `Xylocaine 10% Pump Spray`, `Xylocaine 2% Injection`, `Marcaine 0.5% Spinal Heavy`, `Naropin 0.2% (2 mg/mL)`, `Diprivan 1% (10 mg/mL)`, `Meronem 1 g IV`
+- **Next for Claude:** Review and merge the synced changes from `ai-studio-catalog`.
+
+### 2026-11-01 — Google AI Studio (Removed in-app Catalog Builder & browser/Express AI layer)
+- **Owner decision:** Remove the last two steps (the `@google/genai` / `server.ts` AI layer and the in-app `CatalogBuilder` tab); companies and products will be added through chat workflow rather than an in-app AI Catalog Builder page.
+- **Changes (`package.json`, `vite.config.ts`, `src/vite-env.d.ts`, `src/components/AdminCatalogReview.tsx`, `src/lib/catalog.ts`, `src/lib/catalog.test.ts`):**
+  - Deleted `server.ts` and `src/components/CatalogBuilder.tsx`, and restored `package.json` to the standard Vite SPA setup.
+  - Removed the **Catalog Builder** tab from `AdminCatalogReview.tsx`.
+  - Kept the clean Admin Catalog (`Catalog`, `Companies`, and `Doctor Approvals` tabs), hiding of `archived` records, and per-company **Remove** with inline confirmation (`Confirm Remove` / `Cancel`).
 - **Next for Claude:** Review and merge the synced changes from `ai-studio-catalog`.
 
 ### 2026-10-31 — Claude (Catalog Builder backend)

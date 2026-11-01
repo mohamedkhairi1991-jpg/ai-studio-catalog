@@ -1141,16 +1141,45 @@ export async function rpcAdminCreateCompany(
     };
   }
 
-  const { data, error } = await client.rpc('admin_create_company', {
+  const baseLegalName = input.legalName.trim() || input.companyName.trim();
+  let { data, error } = await client.rpc('admin_create_company', {
     p_country_id: countryId,
     p_city_id: trimOrNull(input.cityId),
     p_company_name: input.companyName.trim(),
-    p_legal_name: input.legalName.trim() || input.companyName.trim(),
+    p_legal_name: baseLegalName,
     p_description: trimOrNull(input.description),
     p_website_url: trimOrNull(input.websiteUrl),
     p_contact_email: trimOrNull(input.contactEmail),
     p_contact_phone: trimOrNull(input.contactPhone),
   });
+
+  if (
+    error &&
+    (error.code === '23505' ||
+      (error.message ?? '').includes('companies_legal_name_unique_ci') ||
+      (error.details ?? '').includes('companies_legal_name_unique_ci'))
+  ) {
+    const fallbackLegalNames = [
+      `${baseLegalName} (Iraq Catalog)`,
+      `${baseLegalName} (Iraq Official Catalog)`,
+      `${baseLegalName} (${new Date().toISOString().slice(0, 10)})`,
+    ];
+    for (const candidateLegalName of fallbackLegalNames) {
+      const retry = await client.rpc('admin_create_company', {
+        p_country_id: countryId,
+        p_city_id: trimOrNull(input.cityId),
+        p_company_name: input.companyName.trim(),
+        p_legal_name: candidateLegalName,
+        p_description: trimOrNull(input.description),
+        p_website_url: trimOrNull(input.websiteUrl),
+        p_contact_email: trimOrNull(input.contactEmail),
+        p_contact_phone: trimOrNull(input.contactPhone),
+      });
+      data = retry.data;
+      error = retry.error;
+      if (!error) break;
+    }
+  }
 
   if (error) {
     return { ok: false, message: formatRpcError(error) };

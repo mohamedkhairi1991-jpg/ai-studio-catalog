@@ -10,6 +10,7 @@ import { SANOFI_PRODUCTS } from './sanofiCatalogData';
 import { NOVARTIS_PRODUCTS } from './novartisCatalogData';
 import { PFIZER_PRODUCTS } from './pfizerCatalogData';
 import { GSK_PRODUCTS } from './gskCatalogData';
+import { MSD_PRODUCTS } from './msdCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1735,6 +1736,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'British multinational pharmaceutical and biotechnology company (London, UK) of originator respiratory, anti-infective, antiviral, neurology, urology, dermatology, immunology, and oncology medicines.',
     products: GSK_PRODUCTS,
+  },
+  {
+    key: 'msd',
+    companyName: 'MSD',
+    legalName: 'Merck Sharp & Dohme LLC',
+    websiteUrl: 'https://www.msd.com',
+    description:
+      'American multinational pharmaceutical corporation (Rahway, New Jersey, USA) of originator diabetes/metabolic, hospital antibacterial, antifungal, antiviral, anesthesia/critical care, cardiovascular, and oncology medicines.',
+    products: MSD_PRODUCTS,
   },
 ];
 

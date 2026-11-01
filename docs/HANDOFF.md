@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #6: MSD — 50 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #6 (`MSD`, `Merck Sharp & Dohme LLC`) starting with `Januvia`, `Janumet`, `Janumet XR`, and main presentations of current MSD Rx brands (`Keytruda`, `Isentress`, `Invanz`, `Cancidas`, `Noxafil`, `Bridion`, `Prevymis`, etc.; strictly excluding Organon 2021 spin-off brands such as Singulair, Cozaar, Hyzaar, Zocor, Fosamax, Ezetrol, Proscar, Nasonex, Aerius; excluding Merck KGaA Germany; excluding Lenvima and vaccines).
+- **Changes (`src/lib/msdCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/msdCatalogData.ts` with **50 official Merck Sharp & Dohme LLC Rx brand presentations** across 4 therapeutic portfolios (`Januvia`, `Janumet`, `Janumet XR`, `Steglatro`, `Segluromet`, `Steglujan`, `Invanz`, `Tienam`, `Zerbaxa`, `Recarbrio`, `Sivextro`, `Cubicin`, `Dificlir`, `Zinplava`, `Cancidas`, `Noxafil`, `Prevymis`, `Isentress`, `Pifeltro`, `Delstrigo`, `Zepatier`, `Bridion`, `Verquvo`, `Winrevair`, `Keytruda`, `Welireg`, `Temodal`, `Emend`, `Ivemend`), following all 9 strict catalog rules.
+  - Registered `MSD` (`Merck Sharp & Dohme LLC`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #5: GSK — 53 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #5 (`GSK`, `GlaxoSmithKline plc`) starting with `Augmentin`, `Seretide`, `Ventolin`, `Flixotide`, `Avamys`, `Lamictal`, `Valtrex`, and main presentations of current GSK Rx brands (strictly excluding Haleon consumer brands, Zinnat/Zinacef/Fortum sold to Sandoz, and vaccines).
 - **Changes (`src/lib/gskCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

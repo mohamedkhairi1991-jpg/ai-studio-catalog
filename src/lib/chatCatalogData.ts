@@ -9,6 +9,7 @@ import {
 import { SANOFI_PRODUCTS } from './sanofiCatalogData';
 import { NOVARTIS_PRODUCTS } from './novartisCatalogData';
 import { PFIZER_PRODUCTS } from './pfizerCatalogData';
+import { GSK_PRODUCTS } from './gskCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1725,6 +1726,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'American multinational pharmaceutical and biotechnology corporation (New York, USA) of originator thrombosis, hospital anti-infective, inflammation/immunology, endocrine, and oncology medicines.',
     products: PFIZER_PRODUCTS,
+  },
+  {
+    key: 'gsk',
+    companyName: 'GSK',
+    legalName: 'GlaxoSmithKline plc',
+    websiteUrl: 'https://www.gsk.com',
+    description:
+      'British multinational pharmaceutical and biotechnology company (London, UK) of originator respiratory, anti-infective, antiviral, neurology, urology, dermatology, immunology, and oncology medicines.',
+    products: GSK_PRODUCTS,
   },
 ];
 

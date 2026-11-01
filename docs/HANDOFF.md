@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #5: GSK — 53 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #5 (`GSK`, `GlaxoSmithKline plc`) starting with `Augmentin`, `Seretide`, `Ventolin`, `Flixotide`, `Avamys`, `Lamictal`, `Valtrex`, and main presentations of current GSK Rx brands (strictly excluding Haleon consumer brands, Zinnat/Zinacef/Fortum sold to Sandoz, and vaccines).
+- **Changes (`src/lib/gskCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/gskCatalogData.ts` with **53 official GlaxoSmithKline plc Rx brand presentations** across 4 therapeutic portfolios (`Augmentin`, `Valtrex`, `Zeffix`, `Tivicay`, `Triumeq`, `Dovato`, `Ventolin`, `Seretide Diskus`, `Seretide Evohaler`, `Flixotide Evohaler`, `Serevent Evohaler`, `Relvar Ellipta`, `Trelegy Ellipta`, `Anoro Ellipta`, `Incruse Ellipta`, `Avamys`, `Flixonase`, `Nucala`, `Lamictal`, `Imigran`, `Requip XL`, `Seroxat`, `Avodart`, `Combodart`, `Dermovate`, `Betnovate`, `Bactroban`, `Benlysta`, `Zejula`, `Jemperli`), following all 9 strict catalog rules.
+  - Registered `GSK` (`GlaxoSmithKline plc`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #4: Pfizer — 52 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #4 (`Pfizer`, `Pfizer Inc.`) starting with `Eliquis`, `Zithromax`, `Xeljanz`, and main presentations of current Pfizer Rx brands (anti-infectives, oncology, inflammation, hospital products; excluding vaccines and excluding Viatris/Upjohn brands such as Lipitor, Norvasc, Celebrex, Lyrica, Viagra, Xanax, Zoloft).
 - **Changes (`src/lib/pfizerCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

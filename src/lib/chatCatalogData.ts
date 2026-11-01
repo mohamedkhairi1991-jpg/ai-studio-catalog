@@ -13,6 +13,7 @@ import { GSK_PRODUCTS } from './gskCatalogData';
 import { MSD_PRODUCTS } from './msdCatalogData';
 import { MERCK_KGAA_PRODUCTS } from './merckKgaaCatalogData';
 import { NOVO_NORDISK_PRODUCTS } from './novoNordiskCatalogData';
+import { ELI_LILLY_PRODUCTS } from './eliLillyCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1765,6 +1766,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Danish multinational pharmaceutical company (Bagsværd, Denmark) of originator insulins, GLP-1 receptor agonists for diabetes and chronic weight management, growth hormone therapies, haemophilia coagulation factors, and hormone replacement medicines.',
     products: NOVO_NORDISK_PRODUCTS,
+  },
+  {
+    key: 'eli_lilly',
+    companyName: 'Eli Lilly',
+    legalName: 'Eli Lilly and Company',
+    websiteUrl: 'https://www.lilly.com',
+    description:
+      'American multinational pharmaceutical corporation (Indianapolis, Indiana, USA) of originator insulins, GLP-1 and dual GIP/GLP-1 receptor agonists, urology, neuroscience, immunology, bone health, and oncology medicines.',
+    products: ELI_LILLY_PRODUCTS,
   },
 ];
 

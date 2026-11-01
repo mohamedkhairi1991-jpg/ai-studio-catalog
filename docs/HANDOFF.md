@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #9: Eli Lilly — 45 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #9 (`Eli Lilly`, `Eli Lilly and Company`, USA) starting with `Humalog`, `Humalog Mix`, `Humulin`, `Trulicity`, `Mounjaro`, `Cialis`, and main presentations of current Eli Lilly Rx brands (`Lyumjev`, `Abasaglar`, `Cymbalta`, `Emgality`, `Olumiant`, `Taltz`, `Forsteo`, `Verzenios`, `Alimta`, `Cyramza`, `Retsevmo`; strictly excluding Boehringer Ingelheim licences `Jardiance` and `Synjardy`).
+- **Changes (`src/lib/eliLillyCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/eliLillyCatalogData.ts` with **45 official Eli Lilly and Company Rx brand presentations** across 4 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `Eli Lilly` (`Eli Lilly and Company`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #8: Novo Nordisk — 51 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #8 (`Novo Nordisk`, `Novo Nordisk A/S`, Denmark) starting with `NovoRapid`, `NovoMix 30`, `Levemir`, `Tresiba`, `Ozempic`, `Victoza`, `Rybelsus`, and main presentations of current Novo Nordisk Rx brands (`Fiasp`, `NovoMix 50`, `NovoMix 70`, `Ryzodeg`, `Xultophy`, `Actrapid`, `Insulatard`, `Mixtard 30`, `Saxenda`, `Wegovy`, `NovoNorm`, `GlucaGen HypoKit`, `Norditropin FlexPro`, `NovoSeven`, `NovoEight`, `Vagifem`), giving real pen/cartridge/vial forms and strengths as separate products only where they officially exist.
 - **Changes (`src/lib/novoNordiskCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

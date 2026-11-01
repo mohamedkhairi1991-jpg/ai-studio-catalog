@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #8: Novo Nordisk — 51 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #8 (`Novo Nordisk`, `Novo Nordisk A/S`, Denmark) starting with `NovoRapid`, `NovoMix 30`, `Levemir`, `Tresiba`, `Ozempic`, `Victoza`, `Rybelsus`, and main presentations of current Novo Nordisk Rx brands (`Fiasp`, `NovoMix 50`, `NovoMix 70`, `Ryzodeg`, `Xultophy`, `Actrapid`, `Insulatard`, `Mixtard 30`, `Saxenda`, `Wegovy`, `NovoNorm`, `GlucaGen HypoKit`, `Norditropin FlexPro`, `NovoSeven`, `NovoEight`, `Vagifem`), giving real pen/cartridge/vial forms and strengths as separate products only where they officially exist.
+- **Changes (`src/lib/novoNordiskCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/novoNordiskCatalogData.ts` with **51 official Novo Nordisk A/S Rx brand presentations** across 4 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `Novo Nordisk` (`Novo Nordisk A/S`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #7: Merck KGaA — 47 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #7 (`Merck KGaA`, `Merck KGaA`, Darmstadt, Germany) starting with `Concor`, `Concor Cor`, `Glucophage`, `Glucophage XR`, `Euthyrox`, and main presentations of current Merck KGaA Rx brands (`Concor AM`, `Concor Plus`, `Glucovance`, `Gonal-f`, `Pergoveris`, `Luveris`, `Cetrotide`, `Ovitrelle`, `Crinone`, `Saizen`, `Rebif`, `Mavenclad`, `Erbitux`, `Bavencio`, `Tepmetko`; strictly excluding consumer health brands sold to Procter & Gamble in 2018 such as Neurobion and Seven Seas).
 - **Changes (`src/lib/merckKgaaCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

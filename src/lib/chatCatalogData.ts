@@ -12,6 +12,7 @@ import { PFIZER_PRODUCTS } from './pfizerCatalogData';
 import { GSK_PRODUCTS } from './gskCatalogData';
 import { MSD_PRODUCTS } from './msdCatalogData';
 import { MERCK_KGAA_PRODUCTS } from './merckKgaaCatalogData';
+import { NOVO_NORDISK_PRODUCTS } from './novoNordiskCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1755,6 +1756,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'German multinational science and pharmaceutical company (Darmstadt, Germany) of originator cardiovascular, diabetes, thyroid/endocrine, reproductive fertility, neurology, and oncology medicines.',
     products: MERCK_KGAA_PRODUCTS,
+  },
+  {
+    key: 'novo_nordisk',
+    companyName: 'Novo Nordisk',
+    legalName: 'Novo Nordisk A/S',
+    websiteUrl: 'https://www.novonordisk.com',
+    description:
+      'Danish multinational pharmaceutical company (Bagsværd, Denmark) of originator insulins, GLP-1 receptor agonists for diabetes and chronic weight management, growth hormone therapies, haemophilia coagulation factors, and hormone replacement medicines.',
+    products: NOVO_NORDISK_PRODUCTS,
   },
 ];
 

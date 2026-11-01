@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #10: Boehringer Ingelheim — 45 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #10 (`Boehringer Ingelheim`, `Boehringer Ingelheim International GmbH`, Germany) starting with `Jardiance`, `Synjardy`, `Glyxambi`, `Trajenta`, `Jentadueto`, `Micardis`, `MicardisPlus`, `Twynsta`, `Spiriva` (HandiHaler and Respimat), `Spiolto`, `Pradaxa`, `Ofev`, and main presentations of current Boehringer Ingelheim Rx brands (`Praxbind`, `Actilyse`, `Metalyse`, `Atrovent`, `Berodual`, `Giotrif`, `Vargatef`, `Spevigo`, `Sifrol`; strictly excluding consumer health brands moved to Sanofi/Opella in 2017 such as Mucosolvan, Buscopan, Dulcolax, Pharmaton).
+- **Changes (`src/lib/boehringerCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/boehringerCatalogData.ts` with **45 official Boehringer Ingelheim International GmbH Rx brand presentations** across 4 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `Boehringer Ingelheim` (`Boehringer Ingelheim International GmbH`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #9: Eli Lilly — 45 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #9 (`Eli Lilly`, `Eli Lilly and Company`, USA) starting with `Humalog`, `Humalog Mix`, `Humulin`, `Trulicity`, `Mounjaro`, `Cialis`, and main presentations of current Eli Lilly Rx brands (`Lyumjev`, `Abasaglar`, `Cymbalta`, `Emgality`, `Olumiant`, `Taltz`, `Forsteo`, `Verzenios`, `Alimta`, `Cyramza`, `Retsevmo`; strictly excluding Boehringer Ingelheim licences `Jardiance` and `Synjardy`).
 - **Changes (`src/lib/eliLillyCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

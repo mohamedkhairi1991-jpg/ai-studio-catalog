@@ -14,6 +14,7 @@ import { MSD_PRODUCTS } from './msdCatalogData';
 import { MERCK_KGAA_PRODUCTS } from './merckKgaaCatalogData';
 import { NOVO_NORDISK_PRODUCTS } from './novoNordiskCatalogData';
 import { ELI_LILLY_PRODUCTS } from './eliLillyCatalogData';
+import { BOEHRINGER_PRODUCTS } from './boehringerCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1775,6 +1776,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'American multinational pharmaceutical corporation (Indianapolis, Indiana, USA) of originator insulins, GLP-1 and dual GIP/GLP-1 receptor agonists, urology, neuroscience, immunology, bone health, and oncology medicines.',
     products: ELI_LILLY_PRODUCTS,
+  },
+  {
+    key: 'boehringer_ingelheim',
+    companyName: 'Boehringer Ingelheim',
+    legalName: 'Boehringer Ingelheim International GmbH',
+    websiteUrl: 'https://www.boehringer-ingelheim.com',
+    description:
+      'German multinational research-driven pharmaceutical company (Ingelheim am Rhein, Germany) of originator cardiometabolic, anticoagulation, emergency thrombolytic, respiratory, pulmonary fibrosis, dermatology, neurology, and oncology medicines.',
+    products: BOEHRINGER_PRODUCTS,
   },
 ];
 

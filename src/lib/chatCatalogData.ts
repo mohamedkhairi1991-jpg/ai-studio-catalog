@@ -15,6 +15,7 @@ import { MERCK_KGAA_PRODUCTS } from './merckKgaaCatalogData';
 import { NOVO_NORDISK_PRODUCTS } from './novoNordiskCatalogData';
 import { ELI_LILLY_PRODUCTS } from './eliLillyCatalogData';
 import { BOEHRINGER_PRODUCTS } from './boehringerCatalogData';
+import { BAYER_PRODUCTS } from './bayerCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1785,6 +1786,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'German multinational research-driven pharmaceutical company (Ingelheim am Rhein, Germany) of originator cardiometabolic, anticoagulation, emergency thrombolytic, respiratory, pulmonary fibrosis, dermatology, neurology, and oncology medicines.',
     products: BOEHRINGER_PRODUCTS,
+  },
+  {
+    key: 'bayer',
+    companyName: 'Bayer',
+    legalName: 'Bayer AG',
+    websiteUrl: 'https://www.bayer.com',
+    description:
+      'German multinational pharmaceutical and life sciences company (Leverkusen, Germany) of originator thrombosis, cardiovascular, chronic kidney disease, anti-infective, women’s healthcare, ophthalmology, neurology, oncology, and consumer health medicines.',
+    products: BAYER_PRODUCTS,
   },
 ];
 

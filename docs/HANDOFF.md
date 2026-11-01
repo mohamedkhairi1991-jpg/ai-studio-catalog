@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #11: Bayer — 37 Current Brand Drafts)
+- **Owner request:** Add Multinational Company #11 (`Bayer`, `Bayer AG`, Germany) starting with `Xarelto`, `Adalat LA`, `Ciprobay`, `Yasmin`, `Yaz`, `Diane-35`, `Aspirin Protect`, and main presentations of current Bayer brands (`Kerendia`, `Verquvo`, `Adempas`, `Glucobay`, `Avelox`, `Visanne`, `Mirena`, `Progynova`, `Primolut N`, `Nexavar`, `Stivarga`, `Nubeqa`, `Eylea`, `Betaferon`, `Canesten`; excluding contrast media, vaccines, and dermatology brands divested to LEO Pharma).
+- **Changes (`src/lib/bayerCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/bayerCatalogData.ts` with **37 official Bayer AG brand presentations** across 4 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `Bayer` (`Bayer AG`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #10: Boehringer Ingelheim — 45 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #10 (`Boehringer Ingelheim`, `Boehringer Ingelheim International GmbH`, Germany) starting with `Jardiance`, `Synjardy`, `Glyxambi`, `Trajenta`, `Jentadueto`, `Micardis`, `MicardisPlus`, `Twynsta`, `Spiriva` (HandiHaler and Respimat), `Spiolto`, `Pradaxa`, `Ofev`, and main presentations of current Boehringer Ingelheim Rx brands (`Praxbind`, `Actilyse`, `Metalyse`, `Atrovent`, `Berodual`, `Giotrif`, `Vargatef`, `Spevigo`, `Sifrol`; strictly excluding consumer health brands moved to Sanofi/Opella in 2017 such as Mucosolvan, Buscopan, Dulcolax, Pharmaton).
 - **Changes (`src/lib/boehringerCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

@@ -11,6 +11,7 @@ import { NOVARTIS_PRODUCTS } from './novartisCatalogData';
 import { PFIZER_PRODUCTS } from './pfizerCatalogData';
 import { GSK_PRODUCTS } from './gskCatalogData';
 import { MSD_PRODUCTS } from './msdCatalogData';
+import { MERCK_KGAA_PRODUCTS } from './merckKgaaCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1745,6 +1746,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'American multinational pharmaceutical corporation (Rahway, New Jersey, USA) of originator diabetes/metabolic, hospital antibacterial, antifungal, antiviral, anesthesia/critical care, cardiovascular, and oncology medicines.',
     products: MSD_PRODUCTS,
+  },
+  {
+    key: 'merck_kgaa',
+    companyName: 'Merck KGaA',
+    legalName: 'Merck KGaA',
+    websiteUrl: 'https://www.merckgroup.com',
+    description:
+      'German multinational science and pharmaceutical company (Darmstadt, Germany) of originator cardiovascular, diabetes, thyroid/endocrine, reproductive fertility, neurology, and oncology medicines.',
+    products: MERCK_KGAA_PRODUCTS,
   },
 ];
 

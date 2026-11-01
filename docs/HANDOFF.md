@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #7: Merck KGaA — 47 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #7 (`Merck KGaA`, `Merck KGaA`, Darmstadt, Germany) starting with `Concor`, `Concor Cor`, `Glucophage`, `Glucophage XR`, `Euthyrox`, and main presentations of current Merck KGaA Rx brands (`Concor AM`, `Concor Plus`, `Glucovance`, `Gonal-f`, `Pergoveris`, `Luveris`, `Cetrotide`, `Ovitrelle`, `Crinone`, `Saizen`, `Rebif`, `Mavenclad`, `Erbitux`, `Bavencio`, `Tepmetko`; strictly excluding consumer health brands sold to Procter & Gamble in 2018 such as Neurobion and Seven Seas).
+- **Changes (`src/lib/merckKgaaCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/merckKgaaCatalogData.ts` with **47 official Merck KGaA Rx brand presentations** across 4 therapeutic portfolios (`Concor`, `Concor Cor`, `Concor AM`, `Concor Plus`, `Glucophage`, `Glucophage XR`, `Glucovance`, `Euthyrox`, `Gonal-f`, `Pergoveris`, `Luveris`, `Cetrotide`, `Ovitrelle`, `Crinone`, `Saizen`, `Rebif`, `Mavenclad`, `Erbitux`, `Bavencio`, `Tepmetko`), following all 9 strict catalog rules.
+  - Registered `Merck KGaA` (`Merck KGaA`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #6: MSD — 50 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #6 (`MSD`, `Merck Sharp & Dohme LLC`) starting with `Januvia`, `Janumet`, `Janumet XR`, and main presentations of current MSD Rx brands (`Keytruda`, `Isentress`, `Invanz`, `Cancidas`, `Noxafil`, `Bridion`, `Prevymis`, etc.; strictly excluding Organon 2021 spin-off brands such as Singulair, Cozaar, Hyzaar, Zocor, Fosamax, Ezetrol, Proscar, Nasonex, Aerius; excluding Merck KGaA Germany; excluding Lenvima and vaccines).
 - **Changes (`src/lib/msdCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

@@ -8,6 +8,7 @@ import {
 } from './catalog';
 import { SANOFI_PRODUCTS } from './sanofiCatalogData';
 import { NOVARTIS_PRODUCTS } from './novartisCatalogData';
+import { PFIZER_PRODUCTS } from './pfizerCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1715,6 +1716,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Swiss multinational pharmaceutical manufacturer (Basel, Switzerland) of originator cardiovascular, metabolic, neuroscience, immunology, transplantation, hematology, oncology, and ophthalmology medicines.',
     products: NOVARTIS_PRODUCTS,
+  },
+  {
+    key: 'pfizer',
+    companyName: 'Pfizer',
+    legalName: 'Pfizer Inc.',
+    websiteUrl: 'https://www.pfizer.com',
+    description:
+      'American multinational pharmaceutical and biotechnology corporation (New York, USA) of originator thrombosis, hospital anti-infective, inflammation/immunology, endocrine, and oncology medicines.',
+    products: PFIZER_PRODUCTS,
   },
 ];
 

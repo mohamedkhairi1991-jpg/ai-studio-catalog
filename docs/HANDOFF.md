@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #4: Pfizer — 52 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #4 (`Pfizer`, `Pfizer Inc.`) starting with `Eliquis`, `Zithromax`, `Xeljanz`, and main presentations of current Pfizer Rx brands (anti-infectives, oncology, inflammation, hospital products; excluding vaccines and excluding Viatris/Upjohn brands such as Lipitor, Norvasc, Celebrex, Lyrica, Viagra, Xanax, Zoloft).
+- **Changes (`src/lib/pfizerCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/pfizerCatalogData.ts` with **52 official Pfizer Inc. Rx brand presentations** across 5 therapeutic portfolios (`Eliquis`, `Fragmin`, `Aldactone`, `Vyndaqel`, `Zithromax`, `Unasyn`, `Tygacil`, `Zavicefta`, `Zinforo`, `Zyvox`, `Vfend`, `Diflucan`, `Ecalta`, `Cresemba`, `Dalacin C`, `Xeljanz`, `Enbrel`, `Cibinqo`, `Litfulo`, `Vydura`, `Medrol`, `Solu-Medrol`, `Depo-Medrol`, `Dostinex`, `Genotropin`, `Ibrance`, `Sutent`, `Inlyta`, `Xalkori`, `Lorviqua`, `Bosulif`, `Talzenna`, `Aromasin`, `Camptosar`), following all 9 strict catalog rules.
+  - Registered `Pfizer` (`Pfizer Inc.`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #3: Novartis — 59 Brand Drug Drafts)
 - **Owner request:** Add Multinational Company #3 (`Novartis`, `Novartis Pharma AG`) following all 9 strict catalog rules (official label data only, exact brand-matching source URLs, INN base generic names without salts/hydrates, all clinical and presentation fields filled, `brandNameAr` = brand + strength only, no prices or Iraqi registration numbers, drafts only, no unverified "marketed in Iraq" notes, current licence holder only excluding Haleon OTC brands, no trailing blank lines).
 - **Changes (`src/lib/novartisCatalogData.ts`, `src/lib/chatCatalogData.ts`, `src/lib/sanofiCatalogData.ts`):**

@@ -20,6 +20,7 @@ import { SERVIER_PRODUCTS } from './servierCatalogData';
 import { ROCHE_PRODUCTS } from './rocheCatalogData';
 import { ABBOTT_PRODUCTS } from './abbottCatalogData';
 import { ABBVIE_PRODUCTS } from './abbvieCatalogData';
+import { JANSSEN_PRODUCTS } from './janssenCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1835,6 +1836,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'American multinational biopharmaceutical corporation (North Chicago, Illinois, USA; including Allergan therapeutics) of originator immunology, rheumatology, dermatology, inflammatory bowel disease, hematologic oncology, neuroscience, migraine, general anesthesia, hepatitis C virology, and ophthalmology medicines.',
     products: ABBVIE_PRODUCTS,
+  },
+  {
+    key: 'janssen',
+    companyName: 'Janssen',
+    legalName: 'Janssen Pharmaceutica NV',
+    websiteUrl: 'https://www.janssen.com',
+    description:
+      'Pharmaceutical companies of Johnson & Johnson (Janssen Pharmaceutica NV, Beerse, Belgium / Johnson & Johnson Innovative Medicine) of originator neuroscience, psychiatry, epilepsy, severe pain, immunology, hematologic oncology, prostate cancer, infectious diseases, systemic antifungal, and pulmonary arterial hypertension medicines.',
+    products: JANSSEN_PRODUCTS,
   },
 ];
 

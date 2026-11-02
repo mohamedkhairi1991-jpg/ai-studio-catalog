@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #13: Roche — 49 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #13 (`Roche`, `F. Hoffmann-La Roche Ltd`, Switzerland) starting with `Rocephin`, `Rivotril`, `CellCept`, `Actemra`, `Herceptin`, `Avastin`, and main presentations of current Roche Rx brands (`MabThera`, `Perjeta`, `Phesgo`, `Kadcyla`, `Tecentriq`, `Alecensa`, `Gazyvaro`, `Polivy`, `Xeloda`, `Madopar`, `Ocrevus`, `Evrysdi`, `Enspryng`, `Hemlibra`, `Tamiflu`, `Xofluza`, `Mircera`, `NeoRecormon`, `Pulmozyme`, `Vabysmo`; strictly excluding brands divested to Cheplapharm/Pharma& such as Xenical, Valcyte, Pegasys, and Lexotanil, and excluding diagnostics).
+- **Changes (`src/lib/rocheCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/rocheCatalogData.ts` with **49 official F. Hoffmann-La Roche Ltd Rx brand presentations** across 4 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `Roche` (`F. Hoffmann-La Roche Ltd`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #12: Servier — 29 Current Brand Drafts)
 - **Owner request:** Add Multinational Company #12 (`Servier`, `Les Laboratoires Servier`, France) starting with `Coversyl`, `Coveram`, `Preductal MR`, `Daflon 500 mg`, `Diamicron MR`, `Natrilix SR`, and main presentations of current Servier brands (`Coversyl Plus`, `Bi-Preterax`, `Triplixam`, `Viacoram`, `Procoralan`, `Daflon 1000 mg`, `Valdoxan`, `Lonsurf`, `Onivyde pegylated liposomal`, `Tibsovo`).
 - **Changes (`src/lib/servierCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

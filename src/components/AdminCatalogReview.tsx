@@ -33,12 +33,6 @@ import {
   type StoredProductAiDraft,
 } from '../lib/catalog';
 import { listCities, listCountries, type Option } from '../lib/onboarding';
-import {
-  clearChatCompanyRemovedFlags,
-  getMissingChatCatalogSummary,
-  markChatCompanyRemoved,
-  syncChatApprovedCatalog,
-} from '../lib/chatCatalogData';
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
@@ -59,8 +53,9 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [defaultCountryId, setDefaultCountryId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [syncingChatCatalog, setSyncingChatCatalog] = useState(false);
+  const [confirmingSyncChatCatalog, setConfirmingSyncChatCatalog] =
+    useState(false);
   const [syncProgressText, setSyncProgressText] = useState<string | null>(null);
-  const autoSyncAttemptedRef = React.useRef(false);
   const [confirmingRemoveCompanyId, setConfirmingRemoveCompanyId] = useState<
     string | null
   >(null);
@@ -124,40 +119,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
         setErrorReasons(res.reasons ?? []);
         setBundle(null);
       } else {
-        let finalBundle = res.data;
-
-        if (!autoSyncAttemptedRef.current) {
-          autoSyncAttemptedRef.current = true;
-          const missing = getMissingChatCatalogSummary(finalBundle);
-          if (missing.missingCompanyCount > 0 || missing.missingProductCount > 0) {
-            setSyncingChatCatalog(true);
-            const syncRes = await syncChatApprovedCatalog(client, finalBundle, {
-              forceIncludeRemoved: false,
-              onProgress: (text) => setSyncProgressText(text),
-            });
-            setSyncProgressText(null);
-            setSyncingChatCatalog(false);
-
-            if (syncRes.companiesAdded > 0 || syncRes.productsAdded > 0) {
-              const reloaded = await loadCatalogBundle(client);
-              if (reloaded.ok) {
-                finalBundle = reloaded.data;
-              }
-              setNotice(
-                `Added ${
-                  syncRes.companiesAdded > 0
-                    ? `${syncRes.companiesAdded} company and `
-                    : ''
-                }${syncRes.productsAdded} Iraq-marketed product draft${
-                  syncRes.productsAdded === 1 ? '' : 's'
-                } to the catalog.`
-              );
-            }
-            if (syncRes.errors.length > 0) {
-              setFailure(syncRes.errors.join(' | '));
-            }
-          }
-        }
+        const finalBundle = res.data;
 
         setBundle(finalBundle);
         if (
@@ -183,39 +145,54 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
 
   const handleManualSyncChatCatalog = async () => {
     if (!bundle || syncingChatCatalog) return;
+    setConfirmingSyncChatCatalog(false);
     clearFeedback();
-    clearChatCompanyRemovedFlags();
     setSyncingChatCatalog(true);
-    const syncRes = await syncChatApprovedCatalog(client, bundle, {
-      forceIncludeRemoved: true,
-      onProgress: (text) => setSyncProgressText(text),
-    });
-    setSyncProgressText(null);
-    setSyncingChatCatalog(false);
+    setSyncProgressText('Loading catalog data…');
+    try {
+      const { clearChatCompanyRemovedFlags, syncChatApprovedCatalog } =
+        await import('../lib/chatCatalogData');
+      clearChatCompanyRemovedFlags();
+      const syncRes = await syncChatApprovedCatalog(client, bundle, {
+        forceIncludeRemoved: true,
+        onProgress: (text) => setSyncProgressText(text),
+      });
+      setSyncProgressText(null);
+      setSyncingChatCatalog(false);
 
-    if (syncRes.errors.length > 0) {
-      setFailure(syncRes.errors.join(' | '));
-    }
-    if (syncRes.companiesAdded > 0 || syncRes.productsAdded > 0) {
-      setNotice(
-        `Synced ${
-          syncRes.companiesAdded > 0
-            ? `${syncRes.companiesAdded} company and `
-            : ''
-        }${syncRes.productsAdded} product draft${
-          syncRes.productsAdded === 1 ? '' : 's'
-        } into the catalog.`
+      if (syncRes.errors.length > 0) {
+        setFailure(syncRes.errors.join(' | '));
+      }
+      if (syncRes.companiesAdded > 0 || syncRes.productsAdded > 0) {
+        setNotice(
+          `Synced ${
+            syncRes.companiesAdded > 0
+              ? `${syncRes.companiesAdded} company and `
+              : ''
+          }${syncRes.productsAdded} product draft${
+            syncRes.productsAdded === 1 ? '' : 's'
+          } into the catalog.`
+        );
+      } else if (syncRes.errors.length === 0) {
+        setNotice(
+          'All chat-approved companies and products are already in the catalog.'
+        );
+      }
+      await refresh();
+    } catch (err) {
+      setSyncProgressText(null);
+      setSyncingChatCatalog(false);
+      setFailure(
+        err instanceof Error
+          ? err.message
+          : 'Failed to load chat catalog data.'
       );
-    } else if (syncRes.errors.length === 0) {
-      setNotice('All chat-approved companies and products are already in the catalog.');
     }
-    await refresh();
   };
 
   const handleRemoveCompany = async (comp: CompanySummary) => {
     setRemovingCompanyId(comp.id);
     clearFeedback();
-    markChatCompanyRemoved(comp.companyName);
 
     const companyProducts = (bundle?.products ?? []).filter(
       (p) => p.companyId === comp.id
@@ -506,20 +483,33 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  {getMissingChatCatalogSummary(bundle).missingProductCount >
-                    0 && (
+                  {confirmingSyncChatCatalog ? (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        disabled={syncingChatCatalog || loading}
+                        onClick={() => void handleManualSyncChatCatalog()}
+                        className="rounded-md bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-3 py-2 transition-colors"
+                      >
+                        Confirm Sync
+                      </button>
+                      <button
+                        type="button"
+                        disabled={syncingChatCatalog}
+                        onClick={() => setConfirmingSyncChatCatalog(false)}
+                        className={secondaryButtonClass}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
                     <button
                       type="button"
                       disabled={syncingChatCatalog || loading}
-                      onClick={() => void handleManualSyncChatCatalog()}
+                      onClick={() => setConfirmingSyncChatCatalog(true)}
                       className={secondaryButtonClass}
                     >
-                      {syncingChatCatalog
-                        ? 'Syncing…'
-                        : `Sync Chat Catalog (${
-                            getMissingChatCatalogSummary(bundle)
-                              .missingProductCount
-                          })`}
+                      {syncingChatCatalog ? 'Syncing…' : 'Sync Chat Catalog'}
                     </button>
                   )}
                   <button
@@ -745,20 +735,33 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5">
-                  {getMissingChatCatalogSummary(bundle).missingProductCount >
-                    0 && (
+                  {confirmingSyncChatCatalog ? (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        disabled={syncingChatCatalog || loading}
+                        onClick={() => void handleManualSyncChatCatalog()}
+                        className="rounded-md bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-3 py-2 transition-colors"
+                      >
+                        Confirm Sync
+                      </button>
+                      <button
+                        type="button"
+                        disabled={syncingChatCatalog}
+                        onClick={() => setConfirmingSyncChatCatalog(false)}
+                        className={secondaryButtonClass}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
                     <button
                       type="button"
                       disabled={syncingChatCatalog || loading}
-                      onClick={() => void handleManualSyncChatCatalog()}
+                      onClick={() => setConfirmingSyncChatCatalog(true)}
                       className={secondaryButtonClass}
                     >
-                      {syncingChatCatalog
-                        ? 'Syncing…'
-                        : `Sync Chat Catalog (${
-                            getMissingChatCatalogSummary(bundle)
-                              .missingProductCount
-                          })`}
+                      {syncingChatCatalog ? 'Syncing…' : 'Sync Chat Catalog'}
                     </button>
                   )}
 

@@ -8382,4 +8382,3 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
     </>
   );
 }
-

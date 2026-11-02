@@ -18,6 +18,7 @@ import { BOEHRINGER_PRODUCTS } from './boehringerCatalogData';
 import { BAYER_PRODUCTS } from './bayerCatalogData';
 import { SERVIER_PRODUCTS } from './servierCatalogData';
 import { ROCHE_PRODUCTS } from './rocheCatalogData';
+import { ABBOTT_PRODUCTS } from './abbottCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1815,6 +1816,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Swiss multinational healthcare and biotechnology corporation (Basel, Switzerland) of originator oncology, malignant hematology, immunology, transplantation, anti-infective, neuroscience, hemophilia, nephrology, respiratory, and ophthalmology medicines.',
     products: ROCHE_PRODUCTS,
+  },
+  {
+    key: 'abbott',
+    companyName: 'Abbott',
+    legalName: 'Abbott Laboratories',
+    websiteUrl: 'https://www.abbott.com',
+    description:
+      'American multinational healthcare and pharmaceutical company (Abbott Park, Illinois, USA; Established Pharmaceuticals Division) of women’s health, gastroenterology, pancreatic enzyme replacement, hepatology, macrolide anti-infective, anti-inflammatory, vertigo/neurology, and cardiometabolic medicines.',
+    products: ABBOTT_PRODUCTS,
   },
 ];
 

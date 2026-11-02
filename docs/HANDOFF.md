@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #14: Abbott — 43 Current Brand Drafts)
+- **Owner request:** Add Multinational Company #14 (`Abbott`, `Abbott Laboratories`, USA — Established Pharmaceuticals Division) starting with `Duphaston`, `Creon`, `Brufen`, `Klaricid`, `Dicetel`, and main presentations of current Abbott brands (`Femoston`, `Femoston Conti`, `Duspatalin`, `Duspatalin Retard`, `Ganaton`, `Duphalac`, `Heptral`, `Betaserc`, `Luvox`, `Physiotens`, `Lipanthyl`, `Isoptin`, `Rytmonorm`, `Tarka`, `Omacor`; excluding vaccines such as Influvac, nutrition products, devices, and brands not held by Abbott in the region).
+- **Changes (`src/lib/abbottCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/abbottCatalogData.ts` with **43 official Abbott Laboratories brand presentations** across 4 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `Abbott` (`Abbott Laboratories`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #13: Roche — 49 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #13 (`Roche`, `F. Hoffmann-La Roche Ltd`, Switzerland) starting with `Rocephin`, `Rivotril`, `CellCept`, `Actemra`, `Herceptin`, `Avastin`, and main presentations of current Roche Rx brands (`MabThera`, `Perjeta`, `Phesgo`, `Kadcyla`, `Tecentriq`, `Alecensa`, `Gazyvaro`, `Polivy`, `Xeloda`, `Madopar`, `Ocrevus`, `Evrysdi`, `Enspryng`, `Hemlibra`, `Tamiflu`, `Xofluza`, `Mircera`, `NeoRecormon`, `Pulmozyme`, `Vabysmo`; strictly excluding brands divested to Cheplapharm/Pharma& such as Xenical, Valcyte, Pegasys, and Lexotanil, and excluding diagnostics).
 - **Changes (`src/lib/rocheCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

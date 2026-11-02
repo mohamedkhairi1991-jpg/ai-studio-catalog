@@ -23,6 +23,7 @@ import { ABBVIE_PRODUCTS } from './abbvieCatalogData';
 import { JANSSEN_PRODUCTS } from './janssenCatalogData';
 import { TAKEDA_PRODUCTS } from './takedaCatalogData';
 import { ASTELLAS_PRODUCTS } from './astellasCatalogData';
+import { MENARINI_PRODUCTS } from './menariniCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1865,6 +1866,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Japanese multinational pharmaceutical company (Tokyo, Japan) of originator urology (overactive bladder and benign prostatic hyperplasia), solid-organ transplant immunosuppression, prostate and urothelial oncology, hematologic oncology (FLT3-mutated acute myeloid leukaemia), and systemic echinocandin antifungal medicines.',
     products: ASTELLAS_PRODUCTS,
+  },
+  {
+    key: 'menarini',
+    companyName: 'Menarini',
+    legalName: 'A. Menarini Industrie Farmaceutiche Riunite S.r.l.',
+    websiteUrl: 'https://www.menarini.com',
+    description:
+      'Italian multinational pharmaceutical company (Florence, Italy; including Menarini International Operations Luxembourg S.A., Laboratorios Menarini S.A., and Berlin-Chemie AG) of originator cardiovascular, antihypertensive, antianginal, hyperuricaemia/gout, acute and rheumatic pain, allergy, and urology medicines.',
+    products: MENARINI_PRODUCTS,
   },
 ];
 

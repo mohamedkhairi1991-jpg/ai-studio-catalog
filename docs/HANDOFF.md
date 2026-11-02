@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Multinational Company #19: Menarini — 18 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #19: Menarini (`A. Menarini Industrie Farmaceutiche Riunite S.r.l.`, Italy) starting with `Nebilet`, `Adenuric`, `Fastum Gel`, `Enantyum`, and other current Menarini brands where Menarini or its regional/group company is the licence holder (`Nebilet Plus`, `Ranexa`, `Zofenil`, `Zofenil Plus`, `Bilaxten`, `Priligy`; strictly excluding `Elevit`, uncertain third-party licensed brands, and duplicate country names).
+- **Changes (`src/lib/menariniCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Added `MENARINI_PRODUCTS` (18 official-label Rx presentations across 10 Menarini brands using Middle East brand names and INN base generic names: `Nebivolol`, `Nebivolol + Hydrochlorothiazide`, `Febuxostat`, `Ketoprofen`, `Dexketoprofen`, `Ranolazine`, `Zofenopril`, `Zofenopril + Hydrochlorothiazide`, `Bilastine`, `Dapoxetine`) with complete clinical/presentation fields and official EMA/UK EMC/Menarini sources.
+  - Registered `Menarini` (`A. Menarini Industrie Farmaceutiche Riunite S.r.l.`) in `CHAT_CURATED_COMPANIES`.
+- **Next for Claude / Owner:** Review and push to sync Menarini catalog drafts.
+
 ### 2026-11-02 — Google AI Studio (Multinational Company #18: Astellas — 22 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #18: Astellas (`Astellas Pharma Inc.`, Japan) starting with `Omnic Ocas`, `Betmiga`, `Vesicare`, `Prograf`, and other current Astellas Rx brands marketed in the Middle East (`Omnic`, `Vesomni`, `Advagraf`, `Xtandi`, `Xospata`, `Padcev`, `Mycamine`; strictly excluding `Suprax` and duplicate country names).
 - **Changes (`src/lib/astellasCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

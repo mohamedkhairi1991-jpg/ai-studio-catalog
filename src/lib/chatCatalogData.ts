@@ -28,6 +28,35 @@ import { LEO_PHARMA_PRODUCTS } from './leoPharmaCatalogData';
 import { FERRING_PRODUCTS } from './ferringCatalogData';
 import { SANDOZ_PRODUCTS } from './sandozCatalogData';
 import { KRKA_PRODUCTS } from './krkaCatalogData';
+import { GEDEON_RICHTER_PRODUCTS } from './gedeonRichterCatalogData';
+import { ZENTIVA_PRODUCTS } from './zentivaCatalogData';
+import { DENK_PHARMA_PRODUCTS } from './denkPharmaCatalogData';
+import { MEDOCHEMIE_PRODUCTS } from './medochemieCatalogData';
+import { TEVA_PRODUCTS } from './tevaCatalogData';
+import { RECORDATI_PRODUCTS } from './recordatiCatalogData';
+import { CHIESI_PRODUCTS } from './chiesiCatalogData';
+import { HIKMA_PRODUCTS } from './hikmaCatalogData';
+import { DAR_AL_DAWA_PRODUCTS } from './darAlDawaCatalogData';
+import { JULPHAR_PRODUCTS } from './julpharCatalogData';
+import { TABUK_PRODUCTS } from './tabukCatalogData';
+import { SPIMACO_PRODUCTS } from './spimacoCatalogData';
+import { JAMJOOM_PRODUCTS } from './jamjoomCatalogData';
+import { RIYADH_PHARMA_PRODUCTS } from './riyadhPharmaCatalogData';
+import { JOSWE_PRODUCTS } from './josweCatalogData';
+import { UNITED_PHARMA_PRODUCTS } from './unitedPharmaCatalogData';
+import { HAYAT_PHARMA_PRODUCTS } from './hayatPharmaCatalogData';
+import { EVA_PHARMA_PRODUCTS } from './evaPharmaCatalogData';
+import { EIPICO_PRODUCTS } from './eipicoCatalogData';
+import { PHARCO_PRODUCTS } from './pharcoCatalogData';
+import { ABDI_IBRAHIM_PRODUCTS } from './abdiIbrahimCatalogData';
+import { BILIM_ILAC_PRODUCTS } from './bilimIlacCatalogData';
+import { DEVA_HOLDING_PRODUCTS } from './devaHoldingCatalogData';
+import { NOBEL_ILAC_PRODUCTS } from './nobelIlacCatalogData';
+import { SDI_SAMARRA_PRODUCTS } from './sdiSamarraCatalogData';
+import { PIONEER_PRODUCTS } from './pioneerCatalogData';
+import { AWAMEDICA_PRODUCTS } from './awamedicaCatalogData';
+import { AL_KINDI_PRODUCTS } from './alKindiCatalogData';
+import { NDI_PRODUCTS } from './ndiCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1915,6 +1944,267 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Slovenian multinational pharmaceutical manufacturer (Novo mesto, Slovenia) of cardiovascular, lipid-lowering, gastrointestinal, and anti-infective branded generics (Atoris, Roswera, Lorista, Lorista H, Enap, Enap-H, Prenessa, Co-Prenessa, Valsacor, Tolura, Nolpaza, Fromilid).',
     products: KRKA_PRODUCTS,
+  },
+  {
+    key: 'gedeon_richter',
+    companyName: 'Gedeon Richter',
+    legalName: 'Gedeon Richter Plc.',
+    websiteUrl: 'https://www.gedeonrichter.com',
+    description:
+      'Hungarian multinational pharmaceutical and biotechnology company (Budapest, Hungary) specializing in central nervous system, women’s healthcare, cardiovascular, and biosimilar medicines (Cavinton, Mydocalm, Reagila, Escapelle, Postinor-2, Ryeqo, Verospiron, Terrosa).',
+    products: GEDEON_RICHTER_PRODUCTS,
+  },
+  {
+    key: 'zentiva',
+    companyName: 'Zentiva',
+    legalName: 'Zentiva, k.s.',
+    websiteUrl: 'https://www.zentiva.com',
+    description:
+      'Czech-headquartered pan-European pharmaceutical manufacturer (Prague, Czech Republic) of gastroenterology, cardiovascular, antiplatelet, and allergy branded generics (Helicid, Agen, Torvacard, Lozap, Lozap H, Zodac, Clopidogrel Zentiva).',
+    products: ZENTIVA_PRODUCTS,
+  },
+  {
+    key: 'denk_pharma',
+    companyName: 'Denk Pharma',
+    legalName: 'Denk Pharma GmbH & Co. KG',
+    websiteUrl: 'https://www.denkpharma.com',
+    description:
+      'German pharmaceutical manufacturer (Munich, Germany) of anti-infectives, gastroenterology, cardiovascular, and antidiabetic branded generics (Amoxi-Denk, Panto-Denk, Azithro-Denk, Captopril Denk, Amlo-Denk, Losar-Denk, Cipro-Denk, Metformin Denk).',
+    products: DENK_PHARMA_PRODUCTS,
+  },
+  {
+    key: 'medochemie',
+    companyName: 'Medochemie',
+    legalName: 'Medochemie Ltd',
+    websiteUrl: 'https://www.medochemie.com',
+    description:
+      'Cypriot multinational pharmaceutical manufacturer (Limassol, Cyprus) of oral and parenteral anti-infectives, antifungals, and gastroenterology branded generics (Medoclav, Medoflucon, Medoprazole, Medociprin, Axetine, Medopenem).',
+    products: MEDOCHEMIE_PRODUCTS,
+  },
+  {
+    key: 'teva',
+    companyName: 'Teva / Actavis',
+    legalName: 'Teva Pharmaceutical Industries Ltd.',
+    websiteUrl: 'https://www.tevapharm.com',
+    description:
+      'Global generic and specialty biopharmaceutical company (Tel Aviv, Israel / Ulm, Germany; including Pliva and Actavis) of anti-infectives, neurology, oncology supportive care, and respiratory medicines (Sumamed, Copaxone, Ajovy, Azilect, Lonquex, DuoResp Spiromax).',
+    products: TEVA_PRODUCTS,
+  },
+  {
+    key: 'recordati',
+    companyName: 'Recordati',
+    legalName: 'Recordati Industria Chimica e Farmaceutica S.p.A.',
+    websiteUrl: 'https://www.recordati.com',
+    description:
+      'Italian international specialty pharmaceutical group (Milan, Italy) of cardiovascular, lipid-lowering, urology, and gynaecology/dermatology medicines (Zanidip, Zanipress, Urorec, Lomexin, Livazo, Urispas).',
+    products: RECORDATI_PRODUCTS,
+  },
+  {
+    key: 'chiesi',
+    companyName: 'Chiesi',
+    legalName: 'Chiesi Farmaceutici S.p.A.',
+    websiteUrl: 'https://www.chiesi.com',
+    description:
+      'Italian research-focused international biopharmaceutical group (Parma, Italy) specializing in respiratory therapeutics (extrafine ICS, ICS/LABA, and ICS/LABA/LAMA inhalers) and neonatology critical care medicines (Foster, Foster NEXThaler, Clenil Modulite, Trimbow, Curosurf, Peyona).',
+    products: CHIESI_PRODUCTS,
+  },
+  {
+    key: 'hikma',
+    companyName: 'Hikma',
+    legalName: 'Hikma Pharmaceuticals PLC',
+    websiteUrl: 'https://www.hikma.com',
+    description:
+      'Jordanian-founded multinational pharmaceutical group (Amman, Jordan / London, UK) and leading MENA branded-generic and anti-infective manufacturer (Amoclan, Suprax, Omnicef, Zomax, Rofenac).',
+    products: HIKMA_PRODUCTS,
+  },
+  {
+    key: 'dar_al_dawa',
+    companyName: 'Dar Al Dawa',
+    legalName: 'Dar Al Dawa Development & Investment Co.',
+    websiteUrl: 'https://www.dadgroup.com',
+    description:
+      'Jordanian pharmaceutical manufacturer (Na’ur, Amman, Jordan) of anti-infectives, gastroenterology, cardiovascular, and anti-inflammatory branded generics (Ciprodar, Claridar, Hyposec, Lansodar, Amlodar, Diclogesic).',
+    products: DAR_AL_DAWA_PRODUCTS,
+  },
+  {
+    key: 'julphar',
+    companyName: 'Julphar',
+    legalName: 'Gulf Pharmaceutical Industries (Julphar)',
+    websiteUrl: 'https://www.julphar.net',
+    description:
+      'United Arab Emirates multinational pharmaceutical manufacturer (Ras Al Khaimah, UAE) of anti-infectives, analgesics/NSAIDs, cardiovascular, and burn/wound care medicines (Julmentin, Julphamox, Profinal, Jusprin, Mebo).',
+    products: JULPHAR_PRODUCTS,
+  },
+  {
+    key: 'tabuk',
+    companyName: 'Tabuk',
+    legalName: 'Tabuk Pharmaceutical Manufacturing Co.',
+    websiteUrl: 'https://www.tabukpharmaceuticals.com',
+    description:
+      'Saudi Arabian pharmaceutical manufacturer (Tabuk / Riyadh, Saudi Arabia) of cardiovascular, gastroenterology, and anti-inflammatory branded generics (Tabuvan, Co-Tabuvan, Toprazole, Divido).',
+    products: TABUK_PRODUCTS,
+  },
+  {
+    key: 'spimaco',
+    companyName: 'SPIMACO',
+    legalName: 'Saudi Pharmaceutical Industries & Medical Appliances Corporation (SPIMACO Addwaeih)',
+    websiteUrl: 'https://www.spimaco.com.sa',
+    description:
+      'Saudi Arabian pharmaceutical manufacturer (Qassim / Riyadh, Saudi Arabia) of anti-infectives and anti-inflammatory branded generics (Klavox, Zimax, Cipromax, Sapofen).',
+    products: SPIMACO_PRODUCTS,
+  },
+  {
+    key: 'jamjoom',
+    companyName: 'Jamjoom',
+    legalName: 'Jamjoom Pharmaceuticals Factory Co. (Jamjoom Pharma)',
+    websiteUrl: 'https://www.jamjoompharma.com',
+    description:
+      'Saudi Arabian pharmaceutical manufacturer (Jeddah, Saudi Arabia) specializing in ophthalmology, dermatology, and gastrointestinal medicines (Acretin, Hyfresh, Optiflox, Optidex-T, Xolamol, Dompy).',
+    products: JAMJOOM_PRODUCTS,
+  },
+  {
+    key: 'riyadh_pharma',
+    companyName: 'Riyadh Pharma',
+    legalName: 'Medical and Cosmetic Products Company Ltd. (Riyadh Pharma)',
+    websiteUrl: 'https://www.riyadhpharma.com',
+    description:
+      'Saudi Arabian pharmaceutical manufacturer (Riyadh, Saudi Arabia) of gastroenterology, cardiovascular/lipid-modifying, and allergy branded generics (Gastrozole, Riapanta, Simvagen Plus, Lorahist).',
+    products: RIYADH_PHARMA_PRODUCTS,
+  },
+  {
+    key: 'joswe',
+    companyName: 'JOSWE',
+    legalName: 'Jordan Sweden Medical and Sterilization Co. (JOSWE Medical)',
+    websiteUrl: 'https://joswe.com',
+    description:
+      'Jordanian pharmaceutical manufacturer (Na’ur, Amman, Jordan) of cardiovascular, lipid-lowering, antiplatelet, and anti-infective branded generics (Arbiten, Corteza, B-Cor, Clovex, Evox).',
+    products: JOSWE_PRODUCTS,
+  },
+  {
+    key: 'united_pharmaceuticals',
+    companyName: 'United Pharmaceuticals',
+    legalName: 'The United Pharmaceutical Manufacturing Co. Ltd.',
+    websiteUrl: 'https://mspharma.com',
+    description:
+      'Jordanian pharmaceutical manufacturer (Amman, Jordan; MS Pharma group) of respiratory/allergy, anti-inflammatory, and anti-infective branded generics (Unicast, Unicam, Unifed, Unidox).',
+    products: UNITED_PHARMA_PRODUCTS,
+  },
+  {
+    key: 'hayat_pharmaceuticals',
+    companyName: 'Hayat Pharmaceuticals',
+    legalName: 'Hayat Pharmaceutical Industries Co.',
+    websiteUrl: 'https://www.hayatpharma.com',
+    description:
+      'Jordanian pharmaceutical manufacturer (Amman, Jordan) of endocrinology/bone metabolism, pain/inflammation, and central nervous system medicines (Biodal, Xenodol, Alpranax).',
+    products: HAYAT_PHARMA_PRODUCTS,
+  },
+  {
+    key: 'eva_pharma',
+    companyName: 'EVA Pharma',
+    legalName: 'EVA Pharma for Pharmaceuticals and Medical Appliances S.A.E.',
+    websiteUrl: 'https://www.evapharma.com',
+    description:
+      'Egyptian multinational pharmaceutical manufacturer (Cairo, Egypt) of cardiometabolic, diabetes, neuropathy, and lipid-modifying medicines (Thiotacid, Mellitofix, Atoreza).',
+    products: EVA_PHARMA_PRODUCTS,
+  },
+  {
+    key: 'eipico',
+    companyName: 'EIPICO',
+    legalName: 'Egyptian International Pharmaceutical Industries Co. (EIPICO)',
+    websiteUrl: 'https://www.eipico.com.eg',
+    description:
+      'Egyptian pharmaceutical manufacturer (10th of Ramadan City, Egypt) of systemic antibacterials, gastrointestinal acid-suppression medicines, and sterile injectables (Flumox, Epicephin, Cefotax, Epirazole, Epigent).',
+    products: EIPICO_PRODUCTS,
+  },
+  {
+    key: 'pharco',
+    companyName: 'Pharco',
+    legalName: 'Pharco Pharmaceuticals',
+    websiteUrl: 'https://pharco.org',
+    description:
+      'Egyptian pharmaceutical corporation (Alexandria, Egypt) manufacturing systemic antibacterials, antiprotozoals, respiratory bronchodilators, and direct-acting antivirals (Amrizole, Cefaxone, Ciprofar, Farcolin, Gratisovir).',
+    products: PHARCO_PRODUCTS,
+  },
+  {
+    key: 'abdi_ibrahim',
+    companyName: 'Abdi Ibrahim',
+    legalName: 'Abdi İbrahim İlaç San. ve Tic. A.Ş.',
+    websiteUrl: 'https://www.abdiibrahim.com.tr',
+    description:
+      'Turkish pharmaceutical manufacturer (Istanbul, Turkey) of gastrointestinal, respiratory/allergy, neurology, and cardiometabolic medicines (Protonex, Onceair, Cetryn, Parkyn, Pixart).',
+    products: ABDI_IBRAHIM_PRODUCTS,
+  },
+  {
+    key: 'bilim_ilac',
+    companyName: 'Bilim Ilac',
+    legalName: 'Bilim İlaç San. ve Tic. A.Ş.',
+    websiteUrl: 'https://www.bilimilac.com',
+    description:
+      'Turkish pharmaceutical manufacturer (Istanbul, Turkey) of systemic antibacterials, respiratory leukotriene modifiers, gastrointestinal PPIs, and oral antidiabetic medicines (Klamoks BID, Zespira, Raneks, Glifix).',
+    products: BILIM_ILAC_PRODUCTS,
+  },
+  {
+    key: 'deva_holding',
+    companyName: 'Deva Holding',
+    legalName: 'Deva Holding A.Ş.',
+    websiteUrl: 'https://www.deva.com.tr',
+    description:
+      'Turkish pharmaceutical manufacturer (Istanbul, Turkey) of systemic antibacterials, antihypertensives, and anti-inflammatory medicines (Amoklavin BID, Azitro, Candexil, Dikloron).',
+    products: DEVA_HOLDING_PRODUCTS,
+  },
+  {
+    key: 'nobel_ilac',
+    companyName: 'Nobel Ilac',
+    legalName: 'Nobel İlaç San. ve Tic. A.Ş.',
+    websiteUrl: 'https://www.nobelilac.com.tr',
+    description:
+      'Turkish multinational pharmaceutical manufacturer (Istanbul, Turkey) of anti-inflammatory/rheumatology, gastrointestinal acid-suppression, and lipid-modifying medicines (Etol Fort, Pulcet, Ultrox, Lansoprol).',
+    products: NOBEL_ILAC_PRODUCTS,
+  },
+  {
+    key: 'sdi_samarra',
+    companyName: 'SDI Samarra',
+    legalName: 'State Company for Drugs Industry and Medical Appliances (SDI)',
+    websiteUrl: 'https://www.sdi.industry.gov.iq',
+    description:
+      'Iraqi state-owned pharmaceutical manufacturer (Samarra, Iraq) producing cardiovascular, central nervous system, and cardiometabolic/antidiabetic medicines (Samapril, Valiapam, Dapoxin, Linagliptin SDI).',
+    products: SDI_SAMARRA_PRODUCTS,
+  },
+  {
+    key: 'pioneer',
+    companyName: 'Pioneer',
+    legalName: 'Pioneer Co. for Pharmaceutical Industries',
+    websiteUrl: 'https://pioneerpharmaceutical.com',
+    description:
+      'Iraqi pharmaceutical manufacturer (Sulaymaniyah, Iraq) producing cephalosporin antibacterials, urology, cardiovascular, and general solid/parenteral medicines (Piocefix, Piolexine, Zinax, Omnimax).',
+    products: PIONEER_PRODUCTS,
+  },
+  {
+    key: 'awamedica',
+    companyName: 'Awamedica',
+    legalName: 'Awamedica Pharmaceutical Company',
+    websiteUrl: 'https://www.awamedica.com',
+    description:
+      'Iraqi pharmaceutical manufacturer (Erbil, Iraq) producing systemic antibacterials, cardiovascular, lipid-modifying, and anti-inflammatory medicines (AwaZitro, Atorvastatin Awa, AwaCarvedol, Mefenamic Awa).',
+    products: AWAMEDICA_PRODUCTS,
+  },
+  {
+    key: 'al_kindi',
+    companyName: 'Al-Kindi',
+    legalName: 'Al-Kindi Co. for Pharmaceutical Industry, Laboratory Equipment & Cosmetics Ltd.',
+    websiteUrl: 'https://www.alkindipharma.com',
+    description:
+      'Iraqi pharmaceutical manufacturer (Baghdad, Iraq) producing systemic antibacterials, cardiovascular, neurological, and mineral/metabolic medicines (Azithrokindin, Amlodepen, Lyrikine, Calcium-Kindi).',
+    products: AL_KINDI_PRODUCTS,
+  },
+  {
+    key: 'ndi',
+    companyName: 'Nineveh Drug Industry (NDI)',
+    legalName: 'Nineveh Drug Industry (State Company for Drug Industries and Medical Appliances — Nineveh)',
+    websiteUrl: 'https://www.sdi.industry.gov.iq',
+    description:
+      'Iraqi state-owned pharmaceutical manufacturing facility (Mosul, Nineveh Governorate, Iraq) under the Ministry of Industry and Minerals.',
+    products: NDI_PRODUCTS,
   },
 ];
 

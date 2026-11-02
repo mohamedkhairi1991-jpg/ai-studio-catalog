@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #12: Servier — 29 Current Brand Drafts)
+- **Owner request:** Add Multinational Company #12 (`Servier`, `Les Laboratoires Servier`, France) starting with `Coversyl`, `Coveram`, `Preductal MR`, `Daflon 500 mg`, `Diamicron MR`, `Natrilix SR`, and main presentations of current Servier brands (`Coversyl Plus`, `Bi-Preterax`, `Triplixam`, `Viacoram`, `Procoralan`, `Daflon 1000 mg`, `Valdoxan`, `Lonsurf`, `Onivyde pegylated liposomal`, `Tibsovo`).
+- **Changes (`src/lib/servierCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/servierCatalogData.ts` with **29 official Les Laboratoires Servier brand presentations** across 3 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `Servier` (`Les Laboratoires Servier`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #11: Bayer — 37 Current Brand Drafts)
 - **Owner request:** Add Multinational Company #11 (`Bayer`, `Bayer AG`, Germany) starting with `Xarelto`, `Adalat LA`, `Ciprobay`, `Yasmin`, `Yaz`, `Diane-35`, `Aspirin Protect`, and main presentations of current Bayer brands (`Kerendia`, `Verquvo`, `Adempas`, `Glucobay`, `Avelox`, `Visanne`, `Mirena`, `Progynova`, `Primolut N`, `Nexavar`, `Stivarga`, `Nubeqa`, `Eylea`, `Betaferon`, `Canesten`; excluding contrast media, vaccines, and dermatology brands divested to LEO Pharma).
 - **Changes (`src/lib/bayerCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

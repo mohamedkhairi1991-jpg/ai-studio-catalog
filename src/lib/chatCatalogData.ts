@@ -16,6 +16,7 @@ import { NOVO_NORDISK_PRODUCTS } from './novoNordiskCatalogData';
 import { ELI_LILLY_PRODUCTS } from './eliLillyCatalogData';
 import { BOEHRINGER_PRODUCTS } from './boehringerCatalogData';
 import { BAYER_PRODUCTS } from './bayerCatalogData';
+import { SERVIER_PRODUCTS } from './servierCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1795,6 +1796,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'German multinational pharmaceutical and life sciences company (Leverkusen, Germany) of originator thrombosis, cardiovascular, chronic kidney disease, anti-infective, women’s healthcare, ophthalmology, neurology, oncology, and consumer health medicines.',
     products: BAYER_PRODUCTS,
+  },
+  {
+    key: 'servier',
+    companyName: 'Servier',
+    legalName: 'Les Laboratoires Servier',
+    websiteUrl: 'https://www.servier.com',
+    description:
+      'French multinational independent pharmaceutical group (Suresnes, France) of originator cardiovascular, hypertension, angina, heart failure, phlebology/venous disease, type 2 diabetes, neuroscience, and oncology medicines.',
+    products: SERVIER_PRODUCTS,
   },
 ];
 

@@ -19,6 +19,7 @@ import { BAYER_PRODUCTS } from './bayerCatalogData';
 import { SERVIER_PRODUCTS } from './servierCatalogData';
 import { ROCHE_PRODUCTS } from './rocheCatalogData';
 import { ABBOTT_PRODUCTS } from './abbottCatalogData';
+import { ABBVIE_PRODUCTS } from './abbvieCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1825,6 +1826,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'American multinational healthcare and pharmaceutical company (Abbott Park, Illinois, USA; Established Pharmaceuticals Division) of women’s health, gastroenterology, pancreatic enzyme replacement, hepatology, macrolide anti-infective, anti-inflammatory, vertigo/neurology, and cardiometabolic medicines.',
     products: ABBOTT_PRODUCTS,
+  },
+  {
+    key: 'abbvie',
+    companyName: 'AbbVie',
+    legalName: 'AbbVie Inc.',
+    websiteUrl: 'https://www.abbvie.com',
+    description:
+      'American multinational biopharmaceutical corporation (North Chicago, Illinois, USA; including Allergan therapeutics) of originator immunology, rheumatology, dermatology, inflammatory bowel disease, hematologic oncology, neuroscience, migraine, general anesthesia, hepatitis C virology, and ophthalmology medicines.',
+    products: ABBVIE_PRODUCTS,
   },
 ];
 

@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-01 — Google AI Studio (Multinational Company #15: AbbVie — 34 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #15 (`AbbVie`, `AbbVie Inc.`, USA) starting with `Humira`, `Rinvoq`, `Skyrizi`, `Botox`, and main presentations of current AbbVie Rx brands (`Venclyxto`, `Tepkinly`, `Lucrin Depot`, `Duodopa`, `Aquipta`, `Sevorane`, `Maviret`, `Ozurdex`, `Ganfort`, `Lumigan`, `Combigan`, `Alphagan`; strictly excluding `Imbruvica` which is marketed by Janssen outside the US, `Synagis` which belongs to Sobi, aesthetic fillers such as `Juvederm`, and medical devices).
+- **Changes (`src/lib/abbvieCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Created `src/lib/abbvieCatalogData.ts` with **34 official AbbVie Inc. Rx brand presentations** across 4 therapeutic portfolios, following all 9 strict catalog rules.
+  - Registered `AbbVie` (`AbbVie Inc.`) in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Validation:** `npm run lint`, `npm test -- --run`, and `npm run build` passed with zero errors.
+- **Next for Claude:** Review auto-sync PR after owner pushes from AI Studio.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #14: Abbott — 43 Current Brand Drafts)
 - **Owner request:** Add Multinational Company #14 (`Abbott`, `Abbott Laboratories`, USA — Established Pharmaceuticals Division) starting with `Duphaston`, `Creon`, `Brufen`, `Klaricid`, `Dicetel`, and main presentations of current Abbott brands (`Femoston`, `Femoston Conti`, `Duspatalin`, `Duspatalin Retard`, `Ganaton`, `Duphalac`, `Heptral`, `Betaserc`, `Luvox`, `Physiotens`, `Lipanthyl`, `Isoptin`, `Rytmonorm`, `Tarka`, `Omacor`; excluding vaccines such as Influvac, nutrition products, devices, and brands not held by Abbott in the region).
 - **Changes (`src/lib/abbottCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

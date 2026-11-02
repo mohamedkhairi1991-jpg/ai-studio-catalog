@@ -55,6 +55,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Fix Catalog Child Query Chunking & 1,000-Row Pagination)
+- **Owner request:** Fix `'Untitled Product'` bug caused by PostgREST's 1,000-row response limit when loading `product_translations` (now 1,606 rows) and other child/list tables in `src/lib/catalog.ts`.
+- **Changes (`src/lib/catalog.ts`, `src/lib/catalog.test.ts`):**
+  - Added `fetchInChunksPaged` (splits ID lists into chunks of 150 IDs and pages each chunk with `.range(from, from + 999)` until fewer than 1,000 rows return) and `fetchAllPages` (pages list queries with `.range(from, from + 999)` until fewer than 1,000 rows return).
+  - Updated all `.in(...)` child queries (`product_translations`, `product_markets`, `product_specialties`, `product_media`, `product_search_keywords`, `product_ai_drafts`, `product_market_translations`, `product_brochures`, `drug_class_translations`, `generic_drug_translations`, `specialty_translations`) and all catalog/taxonomy list queries (`products`, `companies`, `drug_classes`, `generic_drugs`, `specialties`) to use the helpers.
+  - Added unit tests in `src/lib/catalog.test.ts` covering 150-ID chunking and 1,000-row range pagination.
+- **No database/CI changes:** `supabase/` and `.github/` untouched.
+
 ### 2026-11-01 — Google AI Studio (Multinational Company #16: Janssen — 52 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #16 (`Janssen`, `Janssen Pharmaceutica NV`, Belgium/USA — Johnson & Johnson Innovative Medicine) starting with `Risperdal`, `Invega`, `Topamax`, `Stelara`, `Remicade`, and main presentations of current Janssen Rx brands (`Risperdal Consta`, `Xeplion`, `Trevicta`, `Spravato`, `Concerta XL`, `Durogesic`, `Simponi`, `Tremfya`, `Darzalex`, `Imbruvica`, `Zytiga`, `Erleada`, `Velcade`, `Edurant`, `Prezista`, `Symtuza`, `Sporanox`, `Opsumit`, `Uptravi`; strictly excluding `Motilium`, `Xarelto`, and Kenvue consumer brands such as `Tylenol`, `Nizoral`, and `Daktarin`).
 - **Changes (`src/lib/janssenCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

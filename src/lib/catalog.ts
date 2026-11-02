@@ -434,34 +434,99 @@ interface RawKeywordRow {
   keyword_type: string;
 }
 
+export const CATALOG_ID_CHUNK_SIZE = 150;
+export const CATALOG_PAGE_SIZE = 1000;
+
+export async function fetchAllPages<T>(
+  buildPageQuery: (
+    from: number,
+    to: number
+  ) => PromiseLike<{ data: T[] | null; error: PostgrestError | null }>,
+  pageSize = CATALOG_PAGE_SIZE
+): Promise<{ data: T[]; error: PostgrestError | null }> {
+  const merged: T[] = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await buildPageQuery(from, from + pageSize - 1);
+    if (error) {
+      return { data: merged, error };
+    }
+    const batch = data ?? [];
+    merged.push(...batch);
+    if (batch.length < pageSize) {
+      break;
+    }
+    from += pageSize;
+  }
+
+  return { data: merged, error: null };
+}
+
+export async function fetchInChunksPaged<T>(
+  ids: readonly string[],
+  buildChunkQuery: (
+    chunkIds: string[],
+    from: number,
+    to: number
+  ) => PromiseLike<{ data: T[] | null; error: PostgrestError | null }>,
+  chunkSize = CATALOG_ID_CHUNK_SIZE,
+  pageSize = CATALOG_PAGE_SIZE
+): Promise<{ data: T[]; error: PostgrestError | null }> {
+  if (ids.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const merged: T[] = [];
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunkIds = ids.slice(i, i + chunkSize);
+    const pageRes = await fetchAllPages(
+      (from, to) => buildChunkQuery(chunkIds, from, to),
+      pageSize
+    );
+    if (pageRes.error) {
+      return { data: merged, error: pageRes.error };
+    }
+    merged.push(...pageRes.data);
+  }
+
+  return { data: merged, error: null };
+}
+
 export async function loadDrugClasses(client: SupabaseClient): Promise<TaxonomyItem[]> {
-  const { data: classesData, error: classesError } = await client
-    .from('drug_classes')
-    .select('id,code,parent_drug_class_id,is_active');
+  const { data: classesData, error: classesError } = await fetchAllPages<{
+    id: string;
+    code: string;
+    parent_drug_class_id: string | null;
+    is_active: boolean;
+  }>((from, to) =>
+    client
+      .from('drug_classes')
+      .select('id,code,parent_drug_class_id,is_active')
+      .range(from, to)
+  );
 
   if (classesError || !classesData || classesData.length === 0) {
     return [];
   }
 
-  const rows = classesData as Array<{
-    id: string;
-    code: string;
-    parent_drug_class_id: string | null;
-    is_active: boolean;
-  }>;
+  const rows = classesData;
   const ids = rows.map((r) => r.id);
 
-  const { data: transData } = await client
-    .from('drug_class_translations')
-    .select('drug_class_id,locale,name')
-    .in('drug_class_id', ids);
-
-  const byId = new Map<string, string>();
-  for (const t of (transData ?? []) as Array<{
+  const { data: transData } = await fetchInChunksPaged<{
     drug_class_id: string;
     locale: ContentLocale;
     name: string;
-  }>) {
+  }>(ids, (chunkIds, from, to) =>
+    client
+      .from('drug_class_translations')
+      .select('drug_class_id,locale,name')
+      .in('drug_class_id', chunkIds)
+      .range(from, to)
+  );
+
+  const byId = new Map<string, string>();
+  for (const t of transData) {
     if (t.locale === 'en' || !byId.has(t.drug_class_id)) {
       byId.set(t.drug_class_id, t.name);
     }
@@ -479,33 +544,39 @@ export async function loadDrugClasses(client: SupabaseClient): Promise<TaxonomyI
 }
 
 export async function loadGenericDrugs(client: SupabaseClient): Promise<TaxonomyItem[]> {
-  const { data: genericsData, error: genericsError } = await client
-    .from('generic_drugs')
-    .select('id,code,drug_class_id,is_active');
+  const { data: genericsData, error: genericsError } = await fetchAllPages<{
+    id: string;
+    code: string;
+    drug_class_id: string;
+    is_active: boolean;
+  }>((from, to) =>
+    client
+      .from('generic_drugs')
+      .select('id,code,drug_class_id,is_active')
+      .range(from, to)
+  );
 
   if (genericsError || !genericsData || genericsData.length === 0) {
     return [];
   }
 
-  const rows = genericsData as Array<{
-    id: string;
-    code: string;
-    drug_class_id: string;
-    is_active: boolean;
-  }>;
+  const rows = genericsData;
   const ids = rows.map((r) => r.id);
 
-  const { data: transData } = await client
-    .from('generic_drug_translations')
-    .select('generic_drug_id,locale,name')
-    .in('generic_drug_id', ids);
-
-  const byId = new Map<string, string>();
-  for (const t of (transData ?? []) as Array<{
+  const { data: transData } = await fetchInChunksPaged<{
     generic_drug_id: string;
     locale: ContentLocale;
     name: string;
-  }>) {
+  }>(ids, (chunkIds, from, to) =>
+    client
+      .from('generic_drug_translations')
+      .select('generic_drug_id,locale,name')
+      .in('generic_drug_id', chunkIds)
+      .range(from, to)
+  );
+
+  const byId = new Map<string, string>();
+  for (const t of transData) {
     if (t.locale === 'en' || !byId.has(t.generic_drug_id)) {
       byId.set(t.generic_drug_id, t.name);
     }
@@ -523,29 +594,39 @@ export async function loadGenericDrugs(client: SupabaseClient): Promise<Taxonomy
 }
 
 export async function loadSpecialtiesCatalog(client: SupabaseClient): Promise<TaxonomyItem[]> {
-  const { data: specData, error: specError } = await client
-    .from('specialties')
-    .select('id,code,is_active')
-    .eq('is_active', true);
+  const { data: specData, error: specError } = await fetchAllPages<{
+    id: string;
+    code: string;
+    is_active: boolean;
+  }>((from, to) =>
+    client
+      .from('specialties')
+      .select('id,code,is_active')
+      .eq('is_active', true)
+      .range(from, to)
+  );
 
   if (specError || !specData || specData.length === 0) {
     return [];
   }
 
-  const rows = specData as Array<{ id: string; code: string; is_active: boolean }>;
+  const rows = specData;
   const ids = rows.map((r) => r.id);
 
-  const { data: transData } = await client
-    .from('specialty_translations')
-    .select('specialty_id,locale,name')
-    .in('specialty_id', ids);
-
-  const byId = new Map<string, string>();
-  for (const t of (transData ?? []) as Array<{
+  const { data: transData } = await fetchInChunksPaged<{
     specialty_id: string;
     locale: ContentLocale;
     name: string;
-  }>) {
+  }>(ids, (chunkIds, from, to) =>
+    client
+      .from('specialty_translations')
+      .select('specialty_id,locale,name')
+      .in('specialty_id', chunkIds)
+      .range(from, to)
+  );
+
+  const byId = new Map<string, string>();
+  for (const t of transData) {
     if (t.locale === 'en' || !byId.has(t.specialty_id)) {
       byId.set(t.specialty_id, t.name);
     }
@@ -562,30 +643,31 @@ export async function loadSpecialtiesCatalog(client: SupabaseClient): Promise<Ta
 }
 
 export async function loadCompanies(client: SupabaseClient): Promise<CompanySummary[]> {
-  const { data, error } = await client
-    .from('companies')
-    .select(
-      'id,company_name,legal_name,status,country_id,city_id,contact_email,contact_phone,website_url,description'
-    )
-    .neq('status', 'archived')
-    .order('company_name');
+  const { data, error } = await fetchAllPages<{
+    id: string;
+    company_name: string;
+    legal_name?: string;
+    status: string;
+    country_id?: string | null;
+    city_id?: string | null;
+    contact_email?: string | null;
+    contact_phone?: string | null;
+    website_url?: string | null;
+    description?: string | null;
+  }>((from, to) =>
+    client
+      .from('companies')
+      .select(
+        'id,company_name,legal_name,status,country_id,city_id,contact_email,contact_phone,website_url,description'
+      )
+      .neq('status', 'archived')
+      .order('company_name')
+      .range(from, to)
+  );
 
   if (error || !data) return [];
 
-  return (
-    data as Array<{
-      id: string;
-      company_name: string;
-      legal_name?: string;
-      status: string;
-      country_id?: string | null;
-      city_id?: string | null;
-      contact_email?: string | null;
-      contact_phone?: string | null;
-      website_url?: string | null;
-      description?: string | null;
-    }>
-  )
+  return data
     .filter((c) => c.status !== 'archived')
     .map((c) => ({
       id: c.id,
@@ -605,13 +687,17 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
 export async function loadCatalogBundle(
   client: SupabaseClient
 ): Promise<RpcResult<CatalogBundle>> {
-  const { data: rawProducts, error: productsError } = await client
-    .from('products')
-    .select(
-      'id,company_id,generic_drug_id,drug_class_id,category,status,submitted_at,reviewed_at,review_reason,created_at,updated_at'
-    )
-    .neq('status', 'archived')
-    .order('updated_at', { ascending: false });
+  const { data: rawProducts, error: productsError } =
+    await fetchAllPages<RawProductRow>((from, to) =>
+      client
+        .from('products')
+        .select(
+          'id,company_id,generic_drug_id,drug_class_id,category,status,submitted_at,reviewed_at,review_reason,created_at,updated_at'
+        )
+        .neq('status', 'archived')
+        .order('updated_at', { ascending: false })
+        .range(from, to)
+    );
 
   if (productsError) {
     return { ok: false, message: formatRpcError(productsError) };
@@ -625,7 +711,7 @@ export async function loadCatalogBundle(
   ]);
 
   const companyById = new Map(companies.map((c) => [c.id, c]));
-  const productRows = ((rawProducts ?? []) as RawProductRow[]).filter(
+  const productRows = (rawProducts ?? []).filter(
     (p) => p.status !== 'archived' && companyById.has(p.company_id)
   );
   const productIds = productRows.map((p) => p.id);
@@ -649,50 +735,74 @@ export async function loadCatalogBundle(
   if (productIds.length > 0) {
     const [transRes, marketsRes, specRes, mediaRes, keywordsRes, aiDraftsRes] =
       await Promise.all([
-        client
-          .from('product_translations')
-          .select('product_id,locale,brand_name')
-          .in('product_id', productIds),
-        client
-          .from('product_markets')
-          .select(
-            'id,product_id,strength,dosage_form,route,pack_size,market_status,registration_status,registration_number,registration_authority,registration_expires_on'
-          )
-          .in('product_id', productIds),
-        client
-          .from('product_specialties')
-          .select('product_id,specialty_id')
-          .in('product_id', productIds),
-        client
-          .from('product_media')
-          .select(
-            'id,product_id,media_type,storage_path,mime_type,file_size_bytes,sort_order,is_primary'
-          )
-          .in('product_id', productIds),
-        client
-          .from('product_search_keywords')
-          .select('product_id,locale,keyword,keyword_type')
-          .in('product_id', productIds),
-        client
-          .from('product_ai_drafts')
-          .select('product_id')
-          .in('product_id', productIds),
+        fetchInChunksPaged<RawTranslationRow>(
+          productIds,
+          (chunkIds, from, to) =>
+            client
+              .from('product_translations')
+              .select('product_id,locale,brand_name')
+              .in('product_id', chunkIds)
+              .range(from, to)
+        ),
+        fetchInChunksPaged<RawMarketRow>(productIds, (chunkIds, from, to) =>
+          client
+            .from('product_markets')
+            .select(
+              'id,product_id,strength,dosage_form,route,pack_size,market_status,registration_status,registration_number,registration_authority,registration_expires_on'
+            )
+            .in('product_id', chunkIds)
+            .range(from, to)
+        ),
+        fetchInChunksPaged<RawProductSpecialtyRow>(
+          productIds,
+          (chunkIds, from, to) =>
+            client
+              .from('product_specialties')
+              .select('product_id,specialty_id')
+              .in('product_id', chunkIds)
+              .range(from, to)
+        ),
+        fetchInChunksPaged<RawMediaRow>(productIds, (chunkIds, from, to) =>
+          client
+            .from('product_media')
+            .select(
+              'id,product_id,media_type,storage_path,mime_type,file_size_bytes,sort_order,is_primary'
+            )
+            .in('product_id', chunkIds)
+            .range(from, to)
+        ),
+        fetchInChunksPaged<RawKeywordRow>(productIds, (chunkIds, from, to) =>
+          client
+            .from('product_search_keywords')
+            .select('product_id,locale,keyword,keyword_type')
+            .in('product_id', chunkIds)
+            .range(from, to)
+        ),
+        fetchInChunksPaged<{ product_id: string }>(
+          productIds,
+          (chunkIds, from, to) =>
+            client
+              .from('product_ai_drafts')
+              .select('product_id')
+              .in('product_id', chunkIds)
+              .range(from, to)
+        ),
       ]);
 
-    for (const row of (aiDraftsRes.data ?? []) as Array<{ product_id: string }>) {
+    for (const row of aiDraftsRes.data) {
       if (row.product_id) {
         aiDraftProductIds.add(row.product_id);
       }
     }
 
-    for (const row of (transRes.data ?? []) as RawTranslationRow[]) {
+    for (const row of transRes.data) {
       if (row.locale === 'en') {
         translationsByProduct.set(row.product_id, { en: row.brand_name });
       }
     }
 
     const marketIds: string[] = [];
-    for (const row of (marketsRes.data ?? []) as RawMarketRow[]) {
+    for (const row of marketsRes.data) {
       marketIds.push(row.id);
       marketByProduct.set(row.product_id, {
         id: row.id,
@@ -709,13 +819,13 @@ export async function loadCatalogBundle(
       });
     }
 
-    for (const row of (specRes.data ?? []) as RawProductSpecialtyRow[]) {
+    for (const row of specRes.data) {
       const list = specialtiesByProduct.get(row.product_id) ?? [];
       list.push(row.specialty_id);
       specialtiesByProduct.set(row.product_id, list);
     }
 
-    for (const row of (mediaRes.data ?? []) as RawMediaRow[]) {
+    for (const row of mediaRes.data) {
       const list = mediaByProduct.get(row.product_id) ?? [];
       list.push({
         id: row.id,
@@ -730,7 +840,7 @@ export async function loadCatalogBundle(
       mediaByProduct.set(row.product_id, list);
     }
 
-    for (const row of (keywordsRes.data ?? []) as RawKeywordRow[]) {
+    for (const row of keywordsRes.data) {
       if (row.locale === 'en' || row.locale === 'und') {
         const list = keywordsByProduct.get(row.product_id) ?? [];
         list.push(row.keyword);
@@ -740,21 +850,29 @@ export async function loadCatalogBundle(
 
     if (marketIds.length > 0) {
       const [marketTransRes, brochuresRes] = await Promise.all([
-        client
-          .from('product_market_translations')
-          .select(
-            'product_market_id,locale,storage_conditions,approved_indications,usual_adult_dose,contraindications,common_adverse_effects'
-          )
-          .in('product_market_id', marketIds),
-        client
-          .from('product_brochures')
-          .select(
-            'id,product_market_id,locale,title,storage_path,mime_type,file_size_bytes,version,is_current'
-          )
-          .in('product_market_id', marketIds),
+        fetchInChunksPaged<RawMarketTranslationRow>(
+          marketIds,
+          (chunkIds, from, to) =>
+            client
+              .from('product_market_translations')
+              .select(
+                'product_market_id,locale,storage_conditions,approved_indications,usual_adult_dose,contraindications,common_adverse_effects'
+              )
+              .in('product_market_id', chunkIds)
+              .range(from, to)
+        ),
+        fetchInChunksPaged<RawBrochureRow>(marketIds, (chunkIds, from, to) =>
+          client
+            .from('product_brochures')
+            .select(
+              'id,product_market_id,locale,title,storage_path,mime_type,file_size_bytes,version,is_current'
+            )
+            .in('product_market_id', chunkIds)
+            .range(from, to)
+        ),
       ]);
 
-      for (const row of (marketTransRes.data ?? []) as RawMarketTranslationRow[]) {
+      for (const row of marketTransRes.data) {
         const entry = marketTranslationsByMarket.get(row.product_market_id) ?? {
           en: null,
           ar: null,
@@ -771,7 +889,7 @@ export async function loadCatalogBundle(
         marketTranslationsByMarket.set(row.product_market_id, entry);
       }
 
-      for (const row of (brochuresRes.data ?? []) as RawBrochureRow[]) {
+      for (const row of brochuresRes.data) {
         const list = brochuresByMarket.get(row.product_market_id) ?? [];
         list.push({
           id: row.id,

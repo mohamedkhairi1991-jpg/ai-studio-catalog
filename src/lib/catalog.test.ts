@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  CATALOG_ID_CHUNK_SIZE,
+  CATALOG_PAGE_SIZE,
   buildUpsertMarketArgs,
+  fetchAllPages,
+  fetchInChunksPaged,
   filterDoctorProducts,
   filterProductsByStatus,
   findMatchingTaxonomyOption,
@@ -476,5 +480,112 @@ describe('formatRpcError and filterProductsByStatus', () => {
     ];
     expect(filterProductsByStatus(items, 'all')).toHaveLength(2);
     expect(filterProductsByStatus(items, 'submitted').map((i) => i.id)).toEqual(['p2']);
+  });
+});
+
+describe('fetchAllPages and fetchInChunksPaged', () => {
+  it('splits ID lists into chunks of 150 and pages each chunk with .range(from, from + 999) until fewer than 1000 rows return', async () => {
+    expect(CATALOG_ID_CHUNK_SIZE).toBe(150);
+    expect(CATALOG_PAGE_SIZE).toBe(1000);
+
+    // 320 IDs -> 3 chunks: 150, 150, 20
+    const allIds = Array.from({ length: 320 }, (_, i) => `prod-${i + 1}`);
+    const recordedCalls: Array<{
+      chunkLength: number;
+      firstId: string;
+      lastId: string;
+      from: number;
+      to: number;
+    }> = [];
+
+    // Simulate 8 rows per product in chunk 1 (150 * 8 = 1200 rows -> 1000 on page 1, 200 on page 2),
+    // 2 rows per product in chunk 2 (300 rows -> 1 page),
+    // and 2 rows per product in chunk 3 (40 rows -> 1 page).
+    const rowsByChunkIndex = [
+      Array.from({ length: 1200 }, (_, i) => ({ id: `c1-row-${i + 1}` })),
+      Array.from({ length: 300 }, (_, i) => ({ id: `c2-row-${i + 1}` })),
+      Array.from({ length: 40 }, (_, i) => ({ id: `c3-row-${i + 1}` })),
+    ];
+
+    const res = await fetchInChunksPaged<{ id: string }>(
+      allIds,
+      async (chunkIds, from, to) => {
+        recordedCalls.push({
+          chunkLength: chunkIds.length,
+          firstId: chunkIds[0] ?? '',
+          lastId: chunkIds[chunkIds.length - 1] ?? '',
+          from,
+          to,
+        });
+        const chunkIndex =
+          chunkIds[0] === 'prod-1' ? 0 : chunkIds[0] === 'prod-151' ? 1 : 2;
+        const source = rowsByChunkIndex[chunkIndex] ?? [];
+        return {
+          data: source.slice(from, to + 1),
+          error: null,
+        };
+      }
+    );
+
+    expect(res.error).toBeNull();
+    expect(res.data).toHaveLength(1540);
+    expect(res.data[0]?.id).toBe('c1-row-1');
+    expect(res.data[1199]?.id).toBe('c1-row-1200');
+    expect(res.data[1200]?.id).toBe('c2-row-1');
+    expect(res.data[1539]?.id).toBe('c3-row-40');
+
+    expect(recordedCalls).toEqual([
+      {
+        chunkLength: 150,
+        firstId: 'prod-1',
+        lastId: 'prod-150',
+        from: 0,
+        to: 999,
+      },
+      {
+        chunkLength: 150,
+        firstId: 'prod-1',
+        lastId: 'prod-150',
+        from: 1000,
+        to: 1999,
+      },
+      {
+        chunkLength: 150,
+        firstId: 'prod-151',
+        lastId: 'prod-300',
+        from: 0,
+        to: 999,
+      },
+      {
+        chunkLength: 20,
+        firstId: 'prod-301',
+        lastId: 'prod-320',
+        from: 0,
+        to: 999,
+      },
+    ]);
+  });
+
+  it('pages un-chunked list queries with .range(from, from + 999) until fewer than 1000 rows return', async () => {
+    const totalRows = Array.from({ length: 2005 }, (_, i) => ({
+      id: `item-${i + 1}`,
+    }));
+    const ranges: Array<[number, number]> = [];
+
+    const res = await fetchAllPages<{ id: string }>(async (from, to) => {
+      ranges.push([from, to]);
+      return {
+        data: totalRows.slice(from, to + 1),
+        error: null,
+      };
+    });
+
+    expect(res.error).toBeNull();
+    expect(res.data).toHaveLength(2005);
+    expect(ranges).toEqual([
+      [0, 999],
+      [1000, 1999],
+      [2000, 2999],
+    ]);
   });
 });

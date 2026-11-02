@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Stable `.order('id')` Tie-Breakers on Paged Queries & Multinational Company #17: Takeda)
+- **Owner request:** Add `.order('id')` as the last order (tie-breaker) to every query paged with `.range(from, to)` in `src/lib/catalog.ts`, then add Multinational Company #17: Takeda (`Takeda Pharmaceutical Company Limited`, Japan) with official-label Rx presentations.
+- **Changes (`src/lib/catalog.ts`, `src/lib/takedaCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Added `.order('id')` before `.range(from, to)` on all 16 paged queries in `loadDrugClasses`, `loadGenericDrugs`, `loadSpecialtiesCatalog`, `loadCompanies`, and `loadCatalogBundle` so rows cannot be skipped or repeated across pages.
+  - Added `TAKEDA_PRODUCTS` (32 official-label Rx presentations across 16 Takeda brands: `Pantoloc`, `Controloc`, `Dexilant`, `Entyvio`, `Edarbi`, `Edarbyclor`, `Ninlaro`, `Alunbrig`, `Adcetris`, `Takhzyro`, `Vpriv`, `Replagal`, `Elaprase`, `Advate`, `Adynovi`, `Feiba`; older MEA brands divested to Acino in 2020 omitted) and registered `Takeda` (`Takeda Pharmaceutical Company Limited`) in `CHAT_CURATED_COMPANIES`.
+- **Next for Claude / Owner:** Review and push to sync Takeda drafts and stable pagination tie-breakers.
+
 ### 2026-11-02 — Google AI Studio (Fix Catalog Child Query Chunking & 1,000-Row Pagination)
 - **Owner request:** Fix `'Untitled Product'` bug caused by PostgREST's 1,000-row response limit when loading `product_translations` (now 1,606 rows) and other child/list tables in `src/lib/catalog.ts`.
 - **Changes (`src/lib/catalog.ts`, `src/lib/catalog.test.ts`):**

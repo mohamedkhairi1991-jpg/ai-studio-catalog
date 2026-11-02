@@ -503,6 +503,7 @@ export async function loadDrugClasses(client: SupabaseClient): Promise<TaxonomyI
     client
       .from('drug_classes')
       .select('id,code,parent_drug_class_id,is_active')
+      .order('id')
       .range(from, to)
   );
 
@@ -522,6 +523,7 @@ export async function loadDrugClasses(client: SupabaseClient): Promise<TaxonomyI
       .from('drug_class_translations')
       .select('drug_class_id,locale,name')
       .in('drug_class_id', chunkIds)
+      .order('id')
       .range(from, to)
   );
 
@@ -553,6 +555,7 @@ export async function loadGenericDrugs(client: SupabaseClient): Promise<Taxonomy
     client
       .from('generic_drugs')
       .select('id,code,drug_class_id,is_active')
+      .order('id')
       .range(from, to)
   );
 
@@ -572,6 +575,7 @@ export async function loadGenericDrugs(client: SupabaseClient): Promise<Taxonomy
       .from('generic_drug_translations')
       .select('generic_drug_id,locale,name')
       .in('generic_drug_id', chunkIds)
+      .order('id')
       .range(from, to)
   );
 
@@ -603,6 +607,7 @@ export async function loadSpecialtiesCatalog(client: SupabaseClient): Promise<Ta
       .from('specialties')
       .select('id,code,is_active')
       .eq('is_active', true)
+      .order('id')
       .range(from, to)
   );
 
@@ -622,6 +627,7 @@ export async function loadSpecialtiesCatalog(client: SupabaseClient): Promise<Ta
       .from('specialty_translations')
       .select('specialty_id,locale,name')
       .in('specialty_id', chunkIds)
+      .order('id')
       .range(from, to)
   );
 
@@ -662,6 +668,7 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
       )
       .neq('status', 'archived')
       .order('company_name')
+      .order('id')
       .range(from, to)
   );
 
@@ -696,6 +703,7 @@ export async function loadCatalogBundle(
         )
         .neq('status', 'archived')
         .order('updated_at', { ascending: false })
+        .order('id')
         .range(from, to)
     );
 
@@ -742,6 +750,7 @@ export async function loadCatalogBundle(
               .from('product_translations')
               .select('product_id,locale,brand_name')
               .in('product_id', chunkIds)
+              .order('id')
               .range(from, to)
         ),
         fetchInChunksPaged<RawMarketRow>(productIds, (chunkIds, from, to) =>
@@ -751,6 +760,7 @@ export async function loadCatalogBundle(
               'id,product_id,strength,dosage_form,route,pack_size,market_status,registration_status,registration_number,registration_authority,registration_expires_on'
             )
             .in('product_id', chunkIds)
+            .order('id')
             .range(from, to)
         ),
         fetchInChunksPaged<RawProductSpecialtyRow>(
@@ -760,6 +770,7 @@ export async function loadCatalogBundle(
               .from('product_specialties')
               .select('product_id,specialty_id')
               .in('product_id', chunkIds)
+              .order('id')
               .range(from, to)
         ),
         fetchInChunksPaged<RawMediaRow>(productIds, (chunkIds, from, to) =>
@@ -769,6 +780,7 @@ export async function loadCatalogBundle(
               'id,product_id,media_type,storage_path,mime_type,file_size_bytes,sort_order,is_primary'
             )
             .in('product_id', chunkIds)
+            .order('id')
             .range(from, to)
         ),
         fetchInChunksPaged<RawKeywordRow>(productIds, (chunkIds, from, to) =>
@@ -776,6 +788,7 @@ export async function loadCatalogBundle(
             .from('product_search_keywords')
             .select('product_id,locale,keyword,keyword_type')
             .in('product_id', chunkIds)
+            .order('id')
             .range(from, to)
         ),
         fetchInChunksPaged<{ product_id: string }>(
@@ -785,6 +798,7 @@ export async function loadCatalogBundle(
               .from('product_ai_drafts')
               .select('product_id')
               .in('product_id', chunkIds)
+              .order('id')
               .range(from, to)
         ),
       ]);
@@ -859,6 +873,7 @@ export async function loadCatalogBundle(
                 'product_market_id,locale,storage_conditions,approved_indications,usual_adult_dose,contraindications,common_adverse_effects'
               )
               .in('product_market_id', chunkIds)
+              .order('id')
               .range(from, to)
         ),
         fetchInChunksPaged<RawBrochureRow>(marketIds, (chunkIds, from, to) =>
@@ -868,6 +883,7 @@ export async function loadCatalogBundle(
               'id,product_market_id,locale,title,storage_path,mime_type,file_size_bytes,version,is_current'
             )
             .in('product_market_id', chunkIds)
+            .order('id')
             .range(from, to)
         ),
       ]);

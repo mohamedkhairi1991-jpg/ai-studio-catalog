@@ -21,6 +21,7 @@ import { ROCHE_PRODUCTS } from './rocheCatalogData';
 import { ABBOTT_PRODUCTS } from './abbottCatalogData';
 import { ABBVIE_PRODUCTS } from './abbvieCatalogData';
 import { JANSSEN_PRODUCTS } from './janssenCatalogData';
+import { TAKEDA_PRODUCTS } from './takedaCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1845,6 +1846,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Pharmaceutical companies of Johnson & Johnson (Janssen Pharmaceutica NV, Beerse, Belgium / Johnson & Johnson Innovative Medicine) of originator neuroscience, psychiatry, epilepsy, severe pain, immunology, hematologic oncology, prostate cancer, infectious diseases, systemic antifungal, and pulmonary arterial hypertension medicines.',
     products: JANSSEN_PRODUCTS,
+  },
+  {
+    key: 'takeda',
+    companyName: 'Takeda',
+    legalName: 'Takeda Pharmaceutical Company Limited',
+    websiteUrl: 'https://www.takeda.com',
+    description:
+      'Japanese multinational biopharmaceutical company (Tokyo/Osaka, Japan; including Shire and Baxalta heritage) of originator gastroenterology, inflammatory bowel disease, cardiovascular, hematologic and solid-tumor oncology, hereditary angioedema, lysosomal storage disorder enzyme replacement, and hemophilia medicines.',
+    products: TAKEDA_PRODUCTS,
   },
 ];
 

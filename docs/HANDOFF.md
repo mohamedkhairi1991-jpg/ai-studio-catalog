@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Multinational Company #18: Astellas — 22 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #18: Astellas (`Astellas Pharma Inc.`, Japan) starting with `Omnic Ocas`, `Betmiga`, `Vesicare`, `Prograf`, and other current Astellas Rx brands marketed in the Middle East (`Omnic`, `Vesomni`, `Advagraf`, `Xtandi`, `Xospata`, `Padcev`, `Mycamine`; strictly excluding `Suprax` and duplicate country names).
+- **Changes (`src/lib/astellasCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Added `ASTELLAS_PRODUCTS` (22 official-label Rx presentations across 11 Astellas brands using Middle East brand names and INN base generic names: `Tamsulosin`, `Mirabegron`, `Solifenacin`, `Solifenacin + Tamsulosin`, `Tacrolimus`, `Enzalutamide`, `Gilteritinib`, `Enfortumab vedotin`, `Micafungin`) with complete clinical/presentation fields and official EMA/UK EMC sources.
+  - Registered `Astellas` (`Astellas Pharma Inc.`) in `CHAT_CURATED_COMPANIES`.
+- **Next for Claude / Owner:** Review and push to sync Astellas catalog drafts.
+
 ### 2026-11-02 — Google AI Studio (Stable `.order('id')` Tie-Breakers on Paged Queries & Multinational Company #17: Takeda)
 - **Owner request:** Add `.order('id')` as the last order (tie-breaker) to every query paged with `.range(from, to)` in `src/lib/catalog.ts`, then add Multinational Company #17: Takeda (`Takeda Pharmaceutical Company Limited`, Japan) with official-label Rx presentations.
 - **Changes (`src/lib/catalog.ts`, `src/lib/takedaCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

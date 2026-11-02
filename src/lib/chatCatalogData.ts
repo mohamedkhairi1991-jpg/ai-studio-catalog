@@ -22,6 +22,7 @@ import { ABBOTT_PRODUCTS } from './abbottCatalogData';
 import { ABBVIE_PRODUCTS } from './abbvieCatalogData';
 import { JANSSEN_PRODUCTS } from './janssenCatalogData';
 import { TAKEDA_PRODUCTS } from './takedaCatalogData';
+import { ASTELLAS_PRODUCTS } from './astellasCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1855,6 +1856,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Japanese multinational biopharmaceutical company (Tokyo/Osaka, Japan; including Shire and Baxalta heritage) of originator gastroenterology, inflammatory bowel disease, cardiovascular, hematologic and solid-tumor oncology, hereditary angioedema, lysosomal storage disorder enzyme replacement, and hemophilia medicines.',
     products: TAKEDA_PRODUCTS,
+  },
+  {
+    key: 'astellas',
+    companyName: 'Astellas',
+    legalName: 'Astellas Pharma Inc.',
+    websiteUrl: 'https://www.astellas.com',
+    description:
+      'Japanese multinational pharmaceutical company (Tokyo, Japan) of originator urology (overactive bladder and benign prostatic hyperplasia), solid-organ transplant immunosuppression, prostate and urothelial oncology, hematologic oncology (FLT3-mutated acute myeloid leukaemia), and systemic echinocandin antifungal medicines.',
+    products: ASTELLAS_PRODUCTS,
   },
 ];
 

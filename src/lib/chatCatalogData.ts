@@ -25,6 +25,7 @@ import { TAKEDA_PRODUCTS } from './takedaCatalogData';
 import { ASTELLAS_PRODUCTS } from './astellasCatalogData';
 import { MENARINI_PRODUCTS } from './menariniCatalogData';
 import { LEO_PHARMA_PRODUCTS } from './leoPharmaCatalogData';
+import { FERRING_PRODUCTS } from './ferringCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1885,6 +1886,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Danish multinational specialist pharmaceutical company (Ballerup, Denmark) of originator medical dermatology (psoriasis, atopic dermatitis, skin and ophthalmic fusidane antibacterial and corticosteroid combinations) and low molecular weight heparin thrombosis medicines.',
     products: LEO_PHARMA_PRODUCTS,
+  },
+  {
+    key: 'ferring',
+    companyName: 'Ferring',
+    legalName: 'Ferring Pharmaceuticals',
+    websiteUrl: 'https://www.ferring.com',
+    description:
+      'Swiss multinational research-driven biopharmaceutical company (Saint-Prex, Switzerland) of originator reproductive medicine, maternal health, obstetrics, gastroenterology (inflammatory bowel disease and hepatorenal/variceal bleeding), endocrinology, and urology/prostate oncology medicines.',
+    products: FERRING_PRODUCTS,
   },
 ];
 

@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Multinational Company #21: Ferring — 21 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #21: Ferring (`Ferring Pharmaceuticals`, Switzerland) starting with `Pentasa`, `Minirin`, and other current Ferring brands marketed in the Middle East (`Minirin Melt`, `Menopur`, `Gonapeptyl`, `Gonapeptyl Depot`, `Firmagon`, `Rekovelle`, `Propess`, `Glypressin`, `Picoprep`, `Tractocile`, `Pabal`; strictly excluding `Merional` which belongs to IBSA).
+- **Changes (`src/lib/ferringCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Added `FERRING_PRODUCTS` (21 official-label Rx presentations across 11 Ferring brands using Middle East brand names and INN base generic names: `Mesalazine`, `Desmopressin`, `Menotropin`, `Triptorelin`, `Degarelix`, `Follitropin delta`, `Dinoprostone`, `Terlipressin`, `Sodium picosulfate + Magnesium oxide + Citric acid`, `Atosiban`, `Carbetocin`) with complete clinical/presentation fields and official EMA/UK EMC sources.
+  - Registered `Ferring` (`Ferring Pharmaceuticals`) in `CHAT_CURATED_COMPANIES`.
+- **Next for Claude / Owner:** Review and push to sync Ferring catalog drafts (completing Multinational Group 1).
+
 ### 2026-11-02 — Google AI Studio (Multinational Company #20: LEO Pharma — 19 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #20: LEO Pharma (`LEO Pharma A/S`, Denmark) starting with `Fucidin`, `Fucicort`, `Daivobet`, `Innohep`, and other current LEO Pharma brands marketed in the Middle East (`Fucidin H`, `Fucithalmic`, `Enstilar`, `Xamiol`, `Daivonex`, `Adtralza`, `Protopic`; one Middle East name per product and INN base generic names including `'Fusidic acid'` for both Fucidin cream and sodium fusidate ointment/tablets).
 - **Changes (`src/lib/leoPharmaCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

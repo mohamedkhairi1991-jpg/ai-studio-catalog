@@ -27,6 +27,7 @@ import { MENARINI_PRODUCTS } from './menariniCatalogData';
 import { LEO_PHARMA_PRODUCTS } from './leoPharmaCatalogData';
 import { FERRING_PRODUCTS } from './ferringCatalogData';
 import { SANDOZ_PRODUCTS } from './sandozCatalogData';
+import { KRKA_PRODUCTS } from './krkaCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1905,6 +1906,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Swiss global leader in generic pharmaceuticals and biosimilars (Basel, Switzerland; including Sandoz GmbH Kundl and Sandoz Limited) of anti-infectives (Curam and the Zinnat, Zinacef, and Fortum cephalosporin portfolio acquired from GSK in 2021), cardiovascular branded generics, and oncology/immunology/endocrinology biosimilars (Zarzio, Binocrit, Omnitrope, Hyrimoz, Rixathon).',
     products: SANDOZ_PRODUCTS,
+  },
+  {
+    key: 'krka',
+    companyName: 'KRKA',
+    legalName: 'KRKA, d.d., Novo mesto',
+    websiteUrl: 'https://www.krka.biz',
+    description:
+      'Slovenian multinational pharmaceutical manufacturer (Novo mesto, Slovenia) of cardiovascular, lipid-lowering, gastrointestinal, and anti-infective branded generics (Atoris, Roswera, Lorista, Lorista H, Enap, Enap-H, Prenessa, Co-Prenessa, Valsacor, Tolura, Nolpaza, Fromilid).',
+    products: KRKA_PRODUCTS,
   },
 ];
 

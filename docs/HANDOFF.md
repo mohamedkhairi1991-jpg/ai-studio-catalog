@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Group 2 — Company #23: KRKA — 20 Current Rx Brand Drafts)
+- **Owner request:** Add Group 2 Company #23: KRKA (`KRKA, d.d., Novo mesto`, Slovenia) starting with `Atoris`, `Nolpaza`, `Lorista`, `Enap`, `Prenessa`, `Fromilid`, plus confirmed main KRKA brands (`Lorista H`, `Co-Prenessa`, `Valsacor`, `Roswera`, `Tolura`, `Enap-H`).
+- **Changes (`src/lib/krkaCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Added `KRKA_PRODUCTS` (20 official-label Rx presentations across 12 confirmed KRKA brands using exact pack trade names + strengths and INN base generic names: `Atorvastatin`, `Pantoprazole`, `Losartan`, `Losartan + Hydrochlorothiazide`, `Enalapril`, `Enalapril + Hydrochlorothiazide`, `Perindopril`, `Perindopril + Indapamide`, `Clarithromycin`, `Valsartan`, `Rosuvastatin`, `Telmisartan`) with complete clinical/presentation fields and official KRKA SmPC / EMA EPAR sources.
+  - Registered `KRKA` (`KRKA, d.d., Novo mesto`) in `CHAT_CURATED_COMPANIES`.
+- **Next for Claude / Owner:** Review and push to sync KRKA catalog drafts.
+
 ### 2026-11-02 — Google AI Studio (Group 2 — Company #22: Sandoz — 19 Current Rx Brand Drafts)
 - **Owner request:** Add Company #22: Sandoz (`Sandoz Group AG`, Switzerland) starting with Sandoz amoxicillin/clavulanic acid (`Curam`), Sandoz losartan (`Losartan Sandoz`), `Zarzio`, plus `Zinnat`, `Zinacef`, and `Fortum` (acquired from GSK in 2021), and current Sandoz biosimilars (`Binocrit`, `Omnitrope`, `Hyrimoz`, `Rixathon`; strictly excluding `Omez`).
 - **Changes (`src/lib/sandozCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

@@ -24,6 +24,7 @@ import { JANSSEN_PRODUCTS } from './janssenCatalogData';
 import { TAKEDA_PRODUCTS } from './takedaCatalogData';
 import { ASTELLAS_PRODUCTS } from './astellasCatalogData';
 import { MENARINI_PRODUCTS } from './menariniCatalogData';
+import { LEO_PHARMA_PRODUCTS } from './leoPharmaCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1875,6 +1876,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Italian multinational pharmaceutical company (Florence, Italy; including Menarini International Operations Luxembourg S.A., Laboratorios Menarini S.A., and Berlin-Chemie AG) of originator cardiovascular, antihypertensive, antianginal, hyperuricaemia/gout, acute and rheumatic pain, allergy, and urology medicines.',
     products: MENARINI_PRODUCTS,
+  },
+  {
+    key: 'leo_pharma',
+    companyName: 'LEO Pharma',
+    legalName: 'LEO Pharma A/S',
+    websiteUrl: 'https://www.leo-pharma.com',
+    description:
+      'Danish multinational specialist pharmaceutical company (Ballerup, Denmark) of originator medical dermatology (psoriasis, atopic dermatitis, skin and ophthalmic fusidane antibacterial and corticosteroid combinations) and low molecular weight heparin thrombosis medicines.',
+    products: LEO_PHARMA_PRODUCTS,
   },
 ];
 

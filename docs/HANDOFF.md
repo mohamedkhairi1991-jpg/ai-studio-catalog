@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Multinational Company #20: LEO Pharma — 19 Current Rx Brand Drafts)
+- **Owner request:** Add Multinational Company #20: LEO Pharma (`LEO Pharma A/S`, Denmark) starting with `Fucidin`, `Fucicort`, `Daivobet`, `Innohep`, and other current LEO Pharma brands marketed in the Middle East (`Fucidin H`, `Fucithalmic`, `Enstilar`, `Xamiol`, `Daivonex`, `Adtralza`, `Protopic`; one Middle East name per product and INN base generic names including `'Fusidic acid'` for both Fucidin cream and sodium fusidate ointment/tablets).
+- **Changes (`src/lib/leoPharmaCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Added `LEO_PHARMA_PRODUCTS` (19 official-label Rx presentations across 11 LEO Pharma brands using Middle East brand names and INN base generic names: `Fusidic acid`, `Fusidic acid + Betamethasone`, `Fusidic acid + Hydrocortisone`, `Calcipotriol + Betamethasone`, `Calcipotriol`, `Tinzaparin`, `Tralokinumab`, `Tacrolimus`) with complete clinical/presentation fields and official EMA/UK EMC/LEO Pharma sources.
+  - Registered `LEO Pharma` (`LEO Pharma A/S`) in `CHAT_CURATED_COMPANIES`.
+- **Next for Claude / Owner:** Review and push to sync LEO Pharma catalog drafts.
+
 ### 2026-11-02 — Google AI Studio (Multinational Company #19: Menarini — 18 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #19: Menarini (`A. Menarini Industrie Farmaceutiche Riunite S.r.l.`, Italy) starting with `Nebilet`, `Adenuric`, `Fastum Gel`, `Enantyum`, and other current Menarini brands where Menarini or its regional/group company is the licence holder (`Nebilet Plus`, `Ranexa`, `Zofenil`, `Zofenil Plus`, `Bilaxten`, `Priligy`; strictly excluding `Elevit`, uncertain third-party licensed brands, and duplicate country names).
 - **Changes (`src/lib/menariniCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

@@ -33,8 +33,13 @@ import {
   type StoredProductAiDraft,
 } from '../lib/catalog';
 import { listCities, listCountries, type Option } from '../lib/onboarding';
+import {
+  clearChatCompanyRemovedFlags,
+  getMissingChatCatalogSummary,
+  markChatCompanyRemoved,
+  syncChatApprovedCatalog,
+} from '../lib/chatCatalogData';
 import AdminApprovals from './AdminApprovals';
-import { CatalogBuilder } from './CatalogBuilder';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
 import { BrandLogo, Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
@@ -47,12 +52,15 @@ interface Props {
 
 export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [adminView, setAdminView] = useState<
-    'catalog' | 'builder' | 'companies' | 'approvals'
+    'catalog' | 'companies' | 'approvals'
   >('catalog');
   const [bundle, setBundle] = useState<CatalogBundle | null>(null);
   const [cities, setCities] = useState<Option[]>([]);
   const [defaultCountryId, setDefaultCountryId] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [syncingChatCatalog, setSyncingChatCatalog] = useState(false);
+  const [syncProgressText, setSyncProgressText] = useState<string | null>(null);
+  const autoSyncAttemptedRef = React.useRef(false);
   const [confirmingRemoveCompanyId, setConfirmingRemoveCompanyId] = useState<
     string | null
   >(null);
@@ -116,15 +124,52 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
         setErrorReasons(res.reasons ?? []);
         setBundle(null);
       } else {
-        setBundle(res.data);
-        const targetId = preferProductId ?? selectedId;
-        if (targetId && res.data.products.some((p) => p.id === targetId)) {
-          setSelectedId(targetId);
-        } else {
-          const submittedFirst = res.data.products.find(
-            (p) => p.status === 'submitted'
-          );
-          setSelectedId(submittedFirst?.id ?? res.data.products[0]?.id ?? null);
+        let finalBundle = res.data;
+
+        if (!autoSyncAttemptedRef.current) {
+          autoSyncAttemptedRef.current = true;
+          const missing = getMissingChatCatalogSummary(finalBundle);
+          if (missing.missingCompanyCount > 0 || missing.missingProductCount > 0) {
+            setSyncingChatCatalog(true);
+            const syncRes = await syncChatApprovedCatalog(client, finalBundle, {
+              forceIncludeRemoved: false,
+              onProgress: (text) => setSyncProgressText(text),
+            });
+            setSyncProgressText(null);
+            setSyncingChatCatalog(false);
+
+            if (syncRes.companiesAdded > 0 || syncRes.productsAdded > 0) {
+              const reloaded = await loadCatalogBundle(client);
+              if (reloaded.ok) {
+                finalBundle = reloaded.data;
+              }
+              setNotice(
+                `Added ${
+                  syncRes.companiesAdded > 0
+                    ? `${syncRes.companiesAdded} company and `
+                    : ''
+                }${syncRes.productsAdded} Iraq-marketed product draft${
+                  syncRes.productsAdded === 1 ? '' : 's'
+                } to the catalog.`
+              );
+            }
+            if (syncRes.errors.length > 0) {
+              setFailure(syncRes.errors.join(' | '));
+            }
+          }
+        }
+
+        setBundle(finalBundle);
+        if (
+          preferProductId &&
+          finalBundle.products.some((p) => p.id === preferProductId)
+        ) {
+          setSelectedId(preferProductId);
+        } else if (
+          selectedId &&
+          !finalBundle.products.some((p) => p.id === selectedId)
+        ) {
+          setSelectedId(null);
         }
       }
       setLoading(false);
@@ -136,9 +181,41 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     void refresh();
   }, [refresh]);
 
+  const handleManualSyncChatCatalog = async () => {
+    if (!bundle || syncingChatCatalog) return;
+    clearFeedback();
+    clearChatCompanyRemovedFlags();
+    setSyncingChatCatalog(true);
+    const syncRes = await syncChatApprovedCatalog(client, bundle, {
+      forceIncludeRemoved: true,
+      onProgress: (text) => setSyncProgressText(text),
+    });
+    setSyncProgressText(null);
+    setSyncingChatCatalog(false);
+
+    if (syncRes.errors.length > 0) {
+      setFailure(syncRes.errors.join(' | '));
+    }
+    if (syncRes.companiesAdded > 0 || syncRes.productsAdded > 0) {
+      setNotice(
+        `Synced ${
+          syncRes.companiesAdded > 0
+            ? `${syncRes.companiesAdded} company and `
+            : ''
+        }${syncRes.productsAdded} product draft${
+          syncRes.productsAdded === 1 ? '' : 's'
+        } into the catalog.`
+      );
+    } else if (syncRes.errors.length === 0) {
+      setNotice('All chat-approved companies and products are already in the catalog.');
+    }
+    await refresh();
+  };
+
   const handleRemoveCompany = async (comp: CompanySummary) => {
     setRemovingCompanyId(comp.id);
     clearFeedback();
+    markChatCompanyRemoved(comp.companyName);
 
     const companyProducts = (bundle?.products ?? []).filter(
       (p) => p.companyId === comp.id
@@ -298,13 +375,20 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   };
 
   const selectedProduct = useMemo(() => {
-    if (filteredProducts.length === 0) return null;
-    if (selectedId) {
-      const found = filteredProducts.find((p) => p.id === selectedId);
-      if (found) return found;
-    }
-    return filteredProducts[0] ?? null;
+    if (!selectedId || filteredProducts.length === 0) return null;
+    return filteredProducts.find((p) => p.id === selectedId) ?? null;
   }, [filteredProducts, selectedId]);
+
+  const productsByDrugClass = useMemo(() => {
+    const groups = new Map<string, CatalogProduct[]>();
+    for (const product of filteredProducts) {
+      const className = product.drugClassNameEn || 'Other';
+      const list = groups.get(className) ?? [];
+      list.push(product);
+      groups.set(className, list);
+    }
+    return Array.from(groups.entries());
+  }, [filteredProducts]);
 
   return (
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
@@ -317,7 +401,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
             <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5">
               <button
                 type="button"
-                onClick={() => setAdminView('catalog')}
+                onClick={() => {
+                  setSelectedId(null);
+                  setAdminView('catalog');
+                }}
                 className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                   adminView === 'catalog'
                     ? 'bg-[#1769AA] text-white'
@@ -328,18 +415,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
               </button>
               <button
                 type="button"
-                onClick={() => setAdminView('builder')}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                  adminView === 'builder'
-                    ? 'bg-[#1769AA] text-white'
-                    : 'text-[#B8C3CC] hover:text-white'
-                }`}
-              >
-                Catalog Builder
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdminView('companies')}
+                onClick={() => {
+                  setSelectedId(null);
+                  setAdminView('companies');
+                }}
                 className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                   adminView === 'companies'
                     ? 'bg-[#1769AA] text-white'
@@ -350,7 +429,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
               </button>
               <button
                 type="button"
-                onClick={() => setAdminView('approvals')}
+                onClick={() => {
+                  setSelectedId(null);
+                  setAdminView('approvals');
+                }}
                 className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                   adminView === 'approvals'
                     ? 'bg-[#1769AA] text-white'
@@ -393,6 +475,9 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
         />
       ) : (
         <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6 flex flex-col gap-6">
+          {syncingChatCatalog && syncProgressText && (
+            <Banner tone="warn">{syncProgressText}</Banner>
+          )}
           {error && (
             <Banner tone="error">
               <div className="space-y-2">
@@ -409,23 +494,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
           )}
           {notice && <Banner tone="success">{notice}</Banner>}
 
-          {adminView === 'builder' && bundle ? (
-            <CatalogBuilder
-              client={client}
-              bundle={bundle}
-              defaultCountryId={defaultCountryId}
-              onRefresh={refresh}
-              onOpenDraftsForReview={(companyId) => {
-                setStatusFilter('draft');
-                if (companyId) {
-                  setCompanyFilterId(companyId);
-                } else {
-                  setCompanyFilterId('all');
-                }
-                setAdminView('catalog');
-              }}
-            />
-          ) : adminView === 'companies' ? (
+          {adminView === 'companies' ? (
             <section className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
                 <div>
@@ -437,6 +506,22 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
+                  {getMissingChatCatalogSummary(bundle).missingProductCount >
+                    0 && (
+                    <button
+                      type="button"
+                      disabled={syncingChatCatalog || loading}
+                      onClick={() => void handleManualSyncChatCatalog()}
+                      className={secondaryButtonClass}
+                    >
+                      {syncingChatCatalog
+                        ? 'Syncing…'
+                        : `Sync Chat Catalog (${
+                            getMissingChatCatalogSummary(bundle)
+                              .missingProductCount
+                          })`}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
@@ -487,8 +572,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     No companies in the catalog
                   </div>
                   <p className="text-xs text-[#B8C3CC]">
-                    Click "+ Add Company" or use "Catalog Builder" to add
-                    companies.
+                    Click "+ Add Company" to add a company.
                   </p>
                 </div>
               ) : (
@@ -508,9 +592,17 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                         <div className="space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h3 className="text-base font-semibold text-[#F2F5F8]">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCompanyFilterId(comp.id);
+                                  setSelectedId(null);
+                                  setAdminView('catalog');
+                                }}
+                                className="text-left text-base font-semibold text-[#F2F5F8] hover:text-[#5DB4F2] transition-colors"
+                              >
                                 {comp.companyName}
-                              </h3>
+                              </button>
                               {comp.legalName &&
                                 comp.legalName !== comp.companyName && (
                                   <div className="text-xs text-[#B8C3CC] mt-0.5">
@@ -528,7 +620,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                             </p>
                           )}
                           <div className="text-xs text-[#B8C3CC]">
-                            Products:{' '}
+                            Drugs:{' '}
                             <span className="font-mono text-[#F2F5F8]">
                               {compProducts.length}
                             </span>
@@ -566,6 +658,17 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                             <>
                               <button
                                 type="button"
+                                onClick={() => {
+                                  setCompanyFilterId(comp.id);
+                                  setSelectedId(null);
+                                  setAdminView('catalog');
+                                }}
+                                className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
+                              >
+                                View Drugs ({compProducts.length})
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => openEditCompanyForm(comp)}
                                 className={secondaryButtonClass}
                               >
@@ -575,12 +678,13 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                                 type="button"
                                 onClick={() => {
                                   setCompanyFilterId(comp.id);
+                                  setSelectedId(null);
                                   setCreatingProduct(true);
                                   setAdminView('catalog');
                                 }}
-                                className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
+                                className={secondaryButtonClass}
                               >
-                                + Add Product
+                                + Add Drug
                               </button>
                               <button
                                 type="button"
@@ -608,7 +712,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   <select
                     aria-label="Filter by company"
                     value={companyFilterId}
-                    onChange={(e) => setCompanyFilterId(e.target.value)}
+                    onChange={(e) => {
+                      setCompanyFilterId(e.target.value);
+                      setSelectedId(null);
+                    }}
                     className={`${inputClass} sm:w-64`}
                   >
                     <option value="all">
@@ -638,6 +745,23 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5">
+                  {getMissingChatCatalogSummary(bundle).missingProductCount >
+                    0 && (
+                    <button
+                      type="button"
+                      disabled={syncingChatCatalog || loading}
+                      onClick={() => void handleManualSyncChatCatalog()}
+                      className={secondaryButtonClass}
+                    >
+                      {syncingChatCatalog
+                        ? 'Syncing…'
+                        : `Sync Chat Catalog (${
+                            getMissingChatCatalogSummary(bundle)
+                              .missingProductCount
+                          })`}
+                    </button>
+                  )}
+
                   {pendingProducts.length > 0 && (
                     <button
                       type="button"
@@ -719,141 +843,149 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 />
               )}
 
-              {/* Status Filter Bar */}
-              <section className="flex flex-wrap items-center gap-2">
-                {(
-                  [
-                    'all',
-                    'published',
-                    'submitted',
-                    'draft',
-                    'changes_requested',
-                    'hidden',
-                  ] as const
-                ).map((st) => {
-                  const active = statusFilter === st;
-                  const baseList =
-                    companyFilterId === 'all'
-                      ? bundle?.products ?? []
-                      : (bundle?.products ?? []).filter(
-                          (p) => p.companyId === companyFilterId
-                        );
-                  const count =
-                    st === 'all'
-                      ? baseList.length
-                      : baseList.filter((p) => p.status === st).length;
-                  return (
-                    <button
-                      key={st}
-                      type="button"
-                      onClick={() => {
-                        setStatusFilter(st);
-                        clearFeedback();
-                      }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                        active
-                          ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
-                          : 'bg-[#263744] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
-                      }`}
-                    >
-                      {st === 'all' ? 'All' : STATUS_LABELS[st]}{' '}
-                      <span className="font-mono tabular-nums opacity-75">
-                        ({count})
-                      </span>
-                    </button>
-                  );
-                })}
-              </section>
-
-              {/* Queue & Product Inspection Split */}
               {loading ? (
                 <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
                   Loading catalog…
                 </div>
-              ) : filteredProducts.length === 0 ? (
-                <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
-                  <h2 className="text-base font-medium text-[#F2F5F8]">
-                    No products in the catalog
-                  </h2>
-                  <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
-                    Use "Catalog Builder" or "+ New Product" to add products.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* Left Column: Product List */}
-                  <div className="lg:col-span-4 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
-                    <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
-                      <span className="font-medium">
-                        {statusFilter === 'all'
-                          ? 'All Products'
-                          : STATUS_LABELS[statusFilter]}
-                      </span>
-                      <span className="font-mono tabular-nums">
-                        {filteredProducts.length}
-                      </span>
+              ) : companyFilterId === 'all' ? (
+                /* Step 1: Single Button per Company (e.g., AstraZeneca) */
+                <div className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-4">
+                  <div className="text-xs text-[#B8C3CC]">
+                    Press a company button to open its drugs page:
+                  </div>
+                  {(bundle?.companies.length ?? 0) === 0 ? (
+                    <div className="text-sm text-[#B8C3CC] py-6 text-center">
+                      No companies in the catalog yet.
                     </div>
-
-                    <div className="divide-y divide-[#304451] max-h-[700px] overflow-y-auto">
-                      {filteredProducts.map((product) => {
-                        const isSelected = selectedProduct?.id === product.id;
-                        const showAiDraftCheck =
-                          product.hasAiDraft &&
-                          (product.status === 'draft' ||
-                            product.status === 'changes_requested');
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-3">
+                      {(bundle?.companies ?? []).map((comp) => {
+                        const compDrugCount = (bundle?.products ?? []).filter(
+                          (p) => p.companyId === comp.id
+                        ).length;
                         return (
                           <button
-                            key={product.id}
+                            key={comp.id}
                             type="button"
                             onClick={() => {
-                              setSelectedId(product.id);
+                              setCompanyFilterId(comp.id);
+                              setSelectedId(null);
                               clearFeedback();
                             }}
-                            className={`w-full text-left px-4 py-3.5 transition-colors ${
-                              isSelected
-                                ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
-                                : 'hover:bg-[#1F2D38]/50'
+                            className="inline-flex items-center gap-3 rounded-lg bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] px-5 py-3 text-sm font-semibold text-white transition-colors"
+                          >
+                            <span>{comp.companyName}</span>
+                            <span className="rounded bg-[#1F2D38]/60 px-2 py-0.5 text-xs font-mono text-[#F2F5F8]">
+                              {compDrugCount}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Company Page Header + Status Filter Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompanyFilterId('all');
+                          setSelectedId(null);
+                          clearFeedback();
+                        }}
+                        className={secondaryButtonClass}
+                      >
+                        ← Back
+                      </button>
+                      <h2 className="text-base font-semibold text-[#F2F5F8]">
+                        {bundle?.companies.find((c) => c.id === companyFilterId)
+                          ?.companyName ?? 'Company'}
+                      </h2>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(
+                        [
+                          'all',
+                          'published',
+                          'submitted',
+                          'draft',
+                          'changes_requested',
+                          'hidden',
+                        ] as const
+                      ).map((st) => {
+                        const active = statusFilter === st;
+                        const baseList = (bundle?.products ?? []).filter(
+                          (p) => p.companyId === companyFilterId
+                        );
+                        const count =
+                          st === 'all'
+                            ? baseList.length
+                            : baseList.filter((p) => p.status === st).length;
+                        return (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => {
+                              setStatusFilter(st);
+                              setSelectedId(null);
+                              clearFeedback();
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                              active
+                                ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                                : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
                             }`}
                           >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-medium text-sm text-[#F2F5F8]">
-                                {product.brandNameEn}
-                              </span>
-                              <div className="flex items-center gap-1.5">
-                                {showAiDraftCheck && (
-                                  <span className="rounded bg-[#F59E0B]/20 border border-[#F59E0B] px-1.5 py-0.5 text-xs font-medium text-[#F59E0B]">
-                                    AI draft — check
-                                  </span>
-                                )}
-                                <StatusText status={product.status} />
-                              </div>
-                            </div>
-
-                            <div className="text-xs text-[#5DB4F2] mt-0.5">
-                              {product.companyName}
-                            </div>
-
-                            <div className="text-xs text-[#B8C3CC] mt-1 flex items-center justify-between">
-                              <span className="truncate">
-                                {product.genericNameEn ?? 'Dietary Supplement'}
-                              </span>
-                              {product.market && (
-                                <span className="font-mono tabular-nums shrink-0">
-                                  {product.market.strength}
-                                </span>
-                              )}
-                            </div>
+                            {st === 'all' ? 'All' : STATUS_LABELS[st]}{' '}
+                            <span className="font-mono tabular-nums opacity-75">
+                              ({count})
+                            </span>
                           </button>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* Right Column: Full Product Inspection, Direct Edit & Governance Actions */}
-                  <div className="lg:col-span-8">
-                    {selectedProduct && bundle && (
+                  {/* Step 2: Drug Names List vs Step 3: Opened Drug Details */}
+                  {filteredProducts.length === 0 ? (
+                    <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
+                      <h2 className="text-base font-medium text-[#F2F5F8]">
+                        No drugs found for this filter
+                      </h2>
+                      <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
+                        Click "+ New Product" to add a drug.
+                      </p>
+                    </div>
+                  ) : selectedProduct && bundle ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedId(null);
+                            clearFeedback();
+                          }}
+                          className={secondaryButtonClass}
+                        >
+                          ← Back to {selectedProduct.companyName} Drugs (
+                          {filteredProducts.length})
+                        </button>
+                        <div className="text-xs text-[#B8C3CC]">
+                          <span className="text-[#5DB4F2] font-medium">
+                            {selectedProduct.companyName}
+                          </span>{' '}
+                          · {selectedProduct.drugClassNameEn}
+                        </div>
+                      </div>
+
                       <AdminProductInspector
-                        key={selectedProduct.id + ':' + selectedProduct.updatedAt}
+                        key={
+                          selectedProduct.id + ':' + selectedProduct.updatedAt
+                        }
                         client={client}
                         product={selectedProduct}
                         bundle={bundle}
@@ -864,9 +996,51 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                           await refresh(selectedProduct.id);
                         }}
                       />
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="text-xs text-[#B8C3CC] px-1">
+                        Click any drug name below to open its full clinical
+                        information and controls.
+                      </div>
+                      {productsByDrugClass.map(([className, classProducts]) => (
+                        <div
+                          key={className}
+                          className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3"
+                        >
+                          <div className="flex items-center justify-between border-b border-[#304451] pb-2">
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#5DB4F2]">
+                              {className}
+                            </h3>
+                            <span className="text-xs font-mono text-[#B8C3CC]">
+                              {classProducts.length} drug
+                              {classProducts.length === 1 ? '' : 's'}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                            {classProducts.map((product) => (
+                              <button
+                                key={product.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedId(product.id);
+                                  clearFeedback();
+                                }}
+                                className="flex items-center justify-between gap-2 rounded-lg bg-[#1F2D38] hover:bg-[#1769AA]/25 border border-[#304451] hover:border-[#5DB4F2] px-3.5 py-2.5 text-left transition-colors"
+                              >
+                                <span className="text-sm font-medium text-[#F2F5F8] truncate">
+                                  {product.brandNameEn}
+                                </span>
+                                <StatusText status={product.status} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

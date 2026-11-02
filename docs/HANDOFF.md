@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Group 2 — Company #22: Sandoz — 19 Current Rx Brand Drafts)
+- **Owner request:** Add Company #22: Sandoz (`Sandoz Group AG`, Switzerland) starting with Sandoz amoxicillin/clavulanic acid (`Curam`), Sandoz losartan (`Losartan Sandoz`), `Zarzio`, plus `Zinnat`, `Zinacef`, and `Fortum` (acquired from GSK in 2021), and current Sandoz biosimilars (`Binocrit`, `Omnitrope`, `Hyrimoz`, `Rixathon`; strictly excluding `Omez`).
+- **Changes (`src/lib/sandozCatalogData.ts`, `src/lib/chatCatalogData.ts`):**
+  - Added `SANDOZ_PRODUCTS` (19 official-label Rx presentations across 10 Sandoz brands using exact pack trade names and INN base generic names: `Amoxicillin + Clavulanic acid`, `Losartan`, `Cefuroxime`, `Ceftazidime`, `Filgrastim`, `Epoetin alfa`, `Somatropin`, `Adalimumab`, `Rituximab`) with complete clinical/presentation fields and official EMA/UK EMC/Sandoz sources.
+  - Registered `Sandoz` (`Sandoz Group AG`) in `CHAT_CURATED_COMPANIES`.
+- **Next for Claude / Owner:** Review and push to sync Sandoz catalog drafts.
+
 ### 2026-11-02 — Google AI Studio (Multinational Company #21: Ferring — 21 Current Rx Brand Drafts)
 - **Owner request:** Add Multinational Company #21: Ferring (`Ferring Pharmaceuticals`, Switzerland) starting with `Pentasa`, `Minirin`, and other current Ferring brands marketed in the Middle East (`Minirin Melt`, `Menopur`, `Gonapeptyl`, `Gonapeptyl Depot`, `Firmagon`, `Rekovelle`, `Propess`, `Glypressin`, `Picoprep`, `Tractocile`, `Pabal`; strictly excluding `Merional` which belongs to IBSA).
 - **Changes (`src/lib/ferringCatalogData.ts`, `src/lib/chatCatalogData.ts`):**

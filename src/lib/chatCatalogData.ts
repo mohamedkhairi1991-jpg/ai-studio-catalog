@@ -26,6 +26,7 @@ import { ASTELLAS_PRODUCTS } from './astellasCatalogData';
 import { MENARINI_PRODUCTS } from './menariniCatalogData';
 import { LEO_PHARMA_PRODUCTS } from './leoPharmaCatalogData';
 import { FERRING_PRODUCTS } from './ferringCatalogData';
+import { SANDOZ_PRODUCTS } from './sandozCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -1895,6 +1896,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Swiss multinational research-driven biopharmaceutical company (Saint-Prex, Switzerland) of originator reproductive medicine, maternal health, obstetrics, gastroenterology (inflammatory bowel disease and hepatorenal/variceal bleeding), endocrinology, and urology/prostate oncology medicines.',
     products: FERRING_PRODUCTS,
+  },
+  {
+    key: 'sandoz',
+    companyName: 'Sandoz',
+    legalName: 'Sandoz Group AG',
+    websiteUrl: 'https://www.sandoz.com',
+    description:
+      'Swiss global leader in generic pharmaceuticals and biosimilars (Basel, Switzerland; including Sandoz GmbH Kundl and Sandoz Limited) of anti-infectives (Curam and the Zinnat, Zinacef, and Fortum cephalosporin portfolio acquired from GSK in 2021), cardiovascular branded generics, and oncology/immunology/endocrinology biosimilars (Zarzio, Binocrit, Omnitrope, Hyrimoz, Rixathon).',
+    products: SANDOZ_PRODUCTS,
   },
 ];
 

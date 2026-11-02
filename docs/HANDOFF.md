@@ -55,6 +55,22 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Google AI Studio (Speed Fix 1: Dynamic-Import Code Splitting for `chatCatalogData.ts` & Manual Admin Sync Confirmation)
+- **Owner request:**
+  1. Remove the automatic catalog sync that runs when the admin page opens; keep only the manual `'Sync Chat Catalog'` button with a confirm step.
+  2. Load `chatCatalogData.ts` and all `*CatalogData.ts` files ONLY when the admin clicks and confirms that button, using dynamic `import()` so they become a separate chunk that doctors never download.
+  3. Ensure `DoctorCatalog` and login/onboarding screens do not import any `*CatalogData.ts` file, directly or indirectly.
+  4. Record the `npm run build` size of the main `index-*.js` file before and after in `HANDOFF.md` (target: under 1 MB).
+- **Changes (`src/components/AdminCatalogReview.tsx`):**
+  - Removed the static top-level import of `../lib/chatCatalogData` and removed the automatic `syncChatApprovedCatalog` call inside `refresh()` when the admin page opens.
+  - Added an inline confirmation step (`Confirm Sync` / `Cancel`) to the manual `'Sync Chat Catalog'` button in both the Catalog and Companies headers.
+  - Loaded `../lib/chatCatalogData` via dynamic `await import('../lib/chatCatalogData')` exclusively inside `handleManualSyncChatCatalog()`.
+  - Verified via `grep -rn "CatalogData" src/` that `DoctorCatalog`, `AuthGate`, `Onboarding`, and `CompanyCatalog` have zero direct or indirect static imports of any `*CatalogData.ts` module.
+- **Production Bundle Size (`npm run build` / `tsc -b && vite build`):**
+  - **Before (`index-*.js`):** `2,790.44 kB` minified (`gzip: 597.25 kB`; unminified compile output: `3,747,073 bytes` / `3.57 MB`) — all 52 companies' curated drug monographs were bundled into the main chunk.
+  - **After (`index-*.js`):** **`906.53 kB`** minified (`gzip: 234.47 kB`) — **under the 1 MB target** (reduced by **1.88 MB / 67.5%**).
+  - **Separate Admin On-Demand Chunk (`chatCatalogData-*.js`):** `1,883.91 kB` minified (`gzip: 362.78 kB`) — downloaded only when an administrator clicks `Sync Chat Catalog` → `Confirm Sync`.
+
 ### 2026-11-02 — Google AI Studio (Group 4 — Company #52: Nineveh Drug Industry (NDI) — 0 Products + Iraqi Companies Source URL Audit)
 - **Owner request:**
   1. Ensure `npm run lint`, `npm test`, and `npm run build` pass.

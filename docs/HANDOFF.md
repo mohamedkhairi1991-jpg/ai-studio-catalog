@@ -1,6 +1,6 @@
 # Handoff — Claude ⇄ Google AI Studio
 
-This file is how Claude and Google AI Studio stay coordinated on Pharamty.
+This file is how Claude and Google AI Studio stay coordinated on Pharmaty.
 **Both must read it before starting work and add an entry after finishing.**
 
 ## Who does what

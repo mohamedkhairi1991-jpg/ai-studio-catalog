@@ -9,7 +9,7 @@ import 'package:pharmaconnect_catalog/pharmaconnect_catalog.dart';
 import 'package:pharmaconnect_design_system/pharmaconnect_design_system.dart';
 
 void main() {
-  testWidgets('admin review queue renders Pharamty loading and empty states', (
+  testWidgets('admin review queue renders Pharmaty loading and empty states', (
     WidgetTester tester,
   ) async {
     final Completer<List<ProductSummary>> pending =
@@ -19,7 +19,7 @@ void main() {
       repository: _FakeAdminCatalogRepository(listCompleter: pending),
     );
 
-    expect(find.text('Pharamty'), findsOneWidget);
+    expect(find.text('Pharmaty'), findsOneWidget);
     expect(find.text('Loading review queue'), findsOneWidget);
 
     pending.complete(const <ProductSummary>[]);

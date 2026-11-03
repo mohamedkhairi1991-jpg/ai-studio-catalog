@@ -1,11 +1,11 @@
 {
-    "name": "Pharamty Admin",
-    "short_name": "Pharamty",
+    "name": "Pharmaty Admin",
+    "short_name": "Pharmaty",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Pharamty official catalog administration portal.",
+    "description": "Pharmaty official catalog administration portal.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

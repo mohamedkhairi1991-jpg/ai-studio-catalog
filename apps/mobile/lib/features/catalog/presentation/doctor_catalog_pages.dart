@@ -135,7 +135,7 @@ class _CatalogTopBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Pharamty',
+                'Pharmaty',
                 style: isWide
                     ? PharmaConnectTypography.featureTitle
                     : PharmaConnectTypography.cardTitle,

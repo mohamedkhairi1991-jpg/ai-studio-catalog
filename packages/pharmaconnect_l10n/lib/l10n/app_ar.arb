@@ -1,6 +1,6 @@
 {
   "@@locale": "ar",
-  "appName": "Pharamty",
+  "appName": "Pharmaty",
   "adminPortalLabel": "بوابة الإدارة",
   "signInTitle": "تسجيل الدخول",
   "signUpTitle": "إنشاء حساب",
@@ -23,7 +23,7 @@
   "pendingAccountTitle": "إعداد الحساب قيد الانتظار",
   "pendingAccountMessage": "تم توثيق حسابك، لكنه لم يُسند بعد إلى دور معتمد في المنصة.",
   "accountUnavailableTitle": "الحساب غير متاح",
-  "accountUnavailableMessage": "لا يمكن لهذا الحساب الوصول إلى Pharamty حالياً.",
+  "accountUnavailableMessage": "لا يمكن لهذا الحساب الوصول إلى Pharmaty حالياً.",
   "unauthorizedClientTitle": "استخدم التطبيق الصحيح",
   "unauthorizedClientMessage": "هذا الحساب غير مخول لاستخدام بوابة الإدارة.",
   "sessionLoadingMessage": "جارٍ استعادة جلستك…",

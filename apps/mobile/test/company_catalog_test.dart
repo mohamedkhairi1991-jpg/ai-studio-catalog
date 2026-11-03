@@ -10,7 +10,7 @@ import 'package:pharmaconnect_identity/pharmaconnect_identity.dart';
 import 'package:pharmaconnect_mobile/features/catalog/presentation/catalog_entry_pages.dart';
 
 void main() {
-  testWidgets('company catalog renders Pharamty loading and empty states', (
+  testWidgets('company catalog renders Pharmaty loading and empty states', (
     WidgetTester tester,
   ) async {
     final Completer<List<ProductSummary>> pending =
@@ -20,7 +20,7 @@ void main() {
       repository: _FakeCompanyCatalogRepository(listCompleter: pending),
     );
 
-    expect(find.text('Pharamty'), findsOneWidget);
+    expect(find.text('Pharmaty'), findsOneWidget);
     expect(find.text('Loading company catalog'), findsOneWidget);
 
     pending.complete(const <ProductSummary>[]);
@@ -259,7 +259,7 @@ Future<void> _pumpCompanyCatalog(
         const AsyncData<CatalogCompanyAccess>(
           CatalogCompanyAccess(
             companyId: 'company-id',
-            companyName: 'Pharamty Demo Company',
+            companyName: 'Pharmaty Demo Company',
             companyStatus: CompanyStatus.verified,
             membershipId: 'membership-id',
             companyRole: CompanyRole.companyAdmin,
@@ -343,8 +343,8 @@ ProductDetail _productDetail({
     id: id,
     company: const CatalogCompanySummary(
       id: 'company-id',
-      companyName: 'Pharamty Demo Company',
-      legalName: 'Pharamty Demo Company LLC',
+      companyName: 'Pharmaty Demo Company',
+      legalName: 'Pharmaty Demo Company LLC',
       countryId: 'iq',
       status: CompanyStatus.verified,
     ),

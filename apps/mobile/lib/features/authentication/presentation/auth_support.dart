@@ -131,7 +131,7 @@ class _MobileAuthBrand extends StatelessWidget {
             ),
           ),
           const SizedBox(width: PharmaConnectSpacing.medium),
-          Text('Pharamty', style: Theme.of(context).textTheme.headlineMedium),
+          Text('Pharmaty', style: Theme.of(context).textTheme.headlineMedium),
         ],
       ),
     );

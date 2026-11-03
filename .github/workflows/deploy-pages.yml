@@ -1,0 +1,47 @@
+name: Deploy web app (GitHub Pages)
+
+# Public link for doctors: https://mohamedkhairi1991-jpg.github.io/pharmaconnect/
+# Builds the web app from main on every merge.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      # Public values only. The publishable key is designed to be in the
+      # browser; the database is protected by row-level security.
+      VITE_SUPABASE_URL: https://oymnmcqzxmnshsknrgam.supabase.co
+      VITE_SUPABASE_ANON_KEY: sb_publishable_PpTNynGTjJnoTLeNx6wcPQ_9okAp0Kg
+      VITE_APP_ENVIRONMENT: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc -b && npx vite build --base=/pharmaconnect/
+      - name: Single-page app fallback
+        run: cp dist/index.html dist/404.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

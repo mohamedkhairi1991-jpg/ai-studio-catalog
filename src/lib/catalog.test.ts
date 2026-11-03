@@ -10,12 +10,16 @@ import {
   filterProductsByStatus,
   findMatchingTaxonomyOption,
   formatRpcError,
+  getCompanyProductCounts,
+  getProductSourceWarning,
   invokeAiDraftProduct,
   invokeAiFindCompanyProducts,
   invokeAiSuggestCompanies,
+  isDomainOnlySourceUrl,
   loadProductAiDraft,
   loadProductDetail,
   parsePublishChecklistErrors,
+  publishCheckedProducts,
   rpcAdminArchiveCompany,
   rpcAdminEnsureGenericDrug,
   rpcAdminEnsureSpecialties,
@@ -869,5 +873,142 @@ describe('searchCatalogProducts and loadProductDetail', () => {
         values: ['spec-gastro'],
       },
     ]);
+  });
+});
+
+describe('Admin Review Drafts helpers', () => {
+  it('detects missing and domain-only source warnings', () => {
+    expect(isDomainOnlySourceUrl('https://samarrapharma.com')).toBe(true);
+    expect(isDomainOnlySourceUrl('https://samarrapharma.com/')).toBe(true);
+    expect(isDomainOnlySourceUrl('https://www.medicines.org.uk/emc/product/1234/smpc')).toBe(false);
+    expect(isDomainOnlySourceUrl('https://example.com/?drug=amoxil')).toBe(false);
+
+    expect(getProductSourceWarning(undefined)).toBe('No source');
+    expect(getProductSourceWarning([])).toBe('No source');
+    expect(
+      getProductSourceWarning([
+        { url: 'https://samarrapharma.com/', title: 'Home' },
+        { url: 'https://pioneerpharma.iq', title: 'Pioneer' },
+      ])
+    ).toBe('Weak source: company home page only');
+    expect(
+      getProductSourceWarning([
+        { url: 'https://samarrapharma.com/', title: 'Home' },
+        { url: 'https://www.ema.europa.eu/en/medicines/human/EPAR/zarzio', title: 'EMA EPAR' },
+      ])
+    ).toBeNull();
+  });
+
+  it('computes drafts, published, and archived counts per company', () => {
+    const products = [
+      { id: '1', companyId: 'c1', status: 'draft' },
+      { id: '2', companyId: 'c1', status: 'changes_requested' },
+      { id: '3', companyId: 'c1', status: 'submitted' },
+      { id: '4', companyId: 'c1', status: 'published' },
+      { id: '5', companyId: 'c1', status: 'archived' },
+      { id: '6', companyId: 'c2', status: 'published' },
+    ] as unknown as CatalogProduct[];
+
+    expect(getCompanyProductCounts(products, 'c1')).toEqual({
+      drafts: 2,
+      published: 1,
+      archived: 1,
+    });
+    expect(getCompanyProductCounts(products, 'c2')).toEqual({
+      drafts: 0,
+      published: 1,
+      archived: 0,
+    });
+  });
+
+  it('publishCheckedProducts calls submit_product_for_review then admin_publish_product sequentially and reports progress and errors', async () => {
+    const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const progressEvents: Array<{
+      currentIndex: number;
+      total: number;
+      brandNameEn: string;
+    }> = [];
+
+    const client = {
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        rpcCalls.push({ fn, args });
+        if (fn === 'submit_product_for_review' && args.p_product_id === 'prod-2') {
+          return {
+            data: null,
+            error: {
+              message: 'Publish checklist failed',
+              details: 'missing_approved_indications_en',
+            },
+          };
+        }
+        if (fn === 'admin_publish_product' && args.p_product_id === 'prod-3') {
+          return {
+            data: null,
+            error: {
+              message: 'Publish checklist failed',
+              details: 'company_not_verified',
+            },
+          };
+        }
+        return { data: args.p_product_id, error: null };
+      },
+    } as unknown as SupabaseClient;
+
+    const summary = await publishCheckedProducts(
+      client,
+      [
+        { id: 'prod-1', brandNameEn: 'Atoris 10 mg', status: 'draft' },
+        { id: 'prod-2', brandNameEn: 'Nolpaza 20 mg', status: 'draft' },
+        { id: 'prod-3', brandNameEn: 'Lorista 50 mg', status: 'changes_requested' },
+      ],
+      {
+        onProgress: (currentIndex, total, item) => {
+          progressEvents.push({
+            currentIndex,
+            total,
+            brandNameEn: item.brandNameEn,
+          });
+        },
+      }
+    );
+
+    expect(rpcCalls).toEqual([
+      { fn: 'submit_product_for_review', args: { p_product_id: 'prod-1' } },
+      { fn: 'admin_publish_product', args: { p_product_id: 'prod-1' } },
+      { fn: 'submit_product_for_review', args: { p_product_id: 'prod-2' } },
+      { fn: 'submit_product_for_review', args: { p_product_id: 'prod-3' } },
+      { fn: 'admin_publish_product', args: { p_product_id: 'prod-3' } },
+    ]);
+
+    expect(progressEvents).toEqual([
+      { currentIndex: 1, total: 3, brandNameEn: 'Atoris 10 mg' },
+      { currentIndex: 2, total: 3, brandNameEn: 'Nolpaza 20 mg' },
+      { currentIndex: 3, total: 3, brandNameEn: 'Lorista 50 mg' },
+    ]);
+
+    expect(summary).toEqual({
+      publishedCount: 1,
+      failedCount: 2,
+      results: [
+        {
+          id: 'prod-1',
+          brandNameEn: 'Atoris 10 mg',
+          ok: true,
+        },
+        {
+          id: 'prod-2',
+          brandNameEn: 'Nolpaza 20 mg',
+          ok: false,
+          message: 'Publish checklist failed (missing_approved_indications_en)',
+        },
+        {
+          id: 'prod-3',
+          brandNameEn: 'Lorista 50 mg',
+          ok: false,
+          message: 'Publish checklist failed (company_not_verified)',
+          reasons: ['Company is not active'],
+        },
+      ],
+    });
   });
 });

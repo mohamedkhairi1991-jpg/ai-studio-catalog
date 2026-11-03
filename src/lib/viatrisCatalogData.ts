@@ -44,7 +44,7 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original blister package.',
     specialties: ['Cardiology', 'Internal Medicine', 'Endocrinology', 'General Practice / Family Medicine'],
-    sourceTitle: 'Lipitor 10 mg Film-Coated Tablets — UK eMC SmPC (Upjohn / Viatris)',
+    sourceTitle: 'Lipitor 10 mg film-coated tablets — UK eMC SmPC',
     sourceUrl: 'https://www.medicines.org.uk/emc/product/1059/smpc',
   },
   {
@@ -66,8 +66,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original package.',
     specialties: ['Cardiology', 'Internal Medicine', 'Endocrinology', 'General Practice / Family Medicine'],
-    sourceTitle: 'Lipitor 20 mg Film-Coated Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1060/smpc',
+    sourceTitle: 'Lipitor 20 mg film-coated tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/5237/smpc',
   },
   {
     brandName: 'Lipitor 40 mg',
@@ -88,8 +88,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original package.',
     specialties: ['Cardiology', 'Internal Medicine', 'Endocrinology'],
-    sourceTitle: 'Lipitor 40 mg Film-Coated Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1061/smpc',
+    sourceTitle: 'Lipitor 40 mg film-coated tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/5238/smpc',
   },
   {
     brandName: 'Lipitor 80 mg',
@@ -110,8 +110,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original package.',
     specialties: ['Cardiology', 'Internal Medicine', 'Endocrinology'],
-    sourceTitle: 'Lipitor 80 mg Film-Coated Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1480/smpc',
+    sourceTitle: 'Lipitor 80 mg film-coated tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/5239/smpc',
   },
   {
     brandName: 'Norvasc 5 mg',
@@ -132,8 +132,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 25°C in the original package to protect from light.',
     specialties: ['Cardiology', 'Internal Medicine', 'General Practice / Family Medicine'],
-    sourceTitle: 'Istin / Norvasc 5 mg Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1057/smpc',
+    sourceTitle: 'Norvasc (amlodipine) — official prescribing information',
+    sourceUrl: 'https://labeling.pfizer.com/ShowLabeling.aspx?id=1151',
   },
   {
     brandName: 'Norvasc 10 mg',
@@ -154,8 +154,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 25°C in the original package to protect from light.',
     specialties: ['Cardiology', 'Internal Medicine', 'General Practice / Family Medicine'],
-    sourceTitle: 'Istin / Norvasc 10 mg Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1058/smpc',
+    sourceTitle: 'Norvasc (amlodipine) — official prescribing information',
+    sourceUrl: 'https://labeling.pfizer.com/ShowLabeling.aspx?id=1151',
   },
   {
     brandName: 'Caduet 5 mg / 10 mg',
@@ -176,8 +176,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original blister package.',
     specialties: ['Cardiology', 'Internal Medicine', 'Endocrinology'],
-    sourceTitle: 'Caduet (Amlodipine / Atorvastatin) Prescribing Information — DailyMed (Viatris)',
-    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5e8a3c4a-9f8e-4d1c-8b3a-7f2e1d4c5b6a',
+    sourceTitle: 'Caduet — DailyMed (US NLM) label search',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Caduet',
   },
   {
     brandName: 'Caduet 10 mg / 20 mg',
@@ -198,8 +198,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original blister package.',
     specialties: ['Cardiology', 'Internal Medicine', 'Endocrinology'],
-    sourceTitle: 'Caduet (Amlodipine / Atorvastatin) Prescribing Information — FDA Label (Viatris)',
-    sourceUrl: 'https://www.accessdata.fda.gov/drugsatfda_docs/label/2021/021540s035lbl.pdf',
+    sourceTitle: 'Caduet — DailyMed (US NLM) label search',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Caduet',
   },
   {
     brandName: 'Lopid 600 mg',
@@ -220,8 +220,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 25°C in a dry place.',
     specialties: ['Cardiology', 'Endocrinology', 'Internal Medicine'],
-    sourceTitle: 'Lopid 600 mg Film-Coated Tablets — UK eMC SmPC',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1064/smpc',
+    sourceTitle: 'Lopid 600 mg film-coated tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/2261/smpc',
   },
 
   // =========================================================================
@@ -246,8 +246,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original package to protect from moisture.',
     specialties: ['Urology', 'Cardiology', 'Internal Medicine'],
-    sourceTitle: 'Cardura XL 4 mg Prolonged-Release Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1624/smpc',
+    sourceTitle: 'Cardura XL 4 mg prolonged-release tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/1310/smpc',
   },
   {
     brandName: 'Viagra 50 mg',
@@ -268,8 +268,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original package to protect from moisture.',
     specialties: ['Urology', 'Internal Medicine', 'Endocrinology'],
-    sourceTitle: 'Viagra (Sildenafil) — European Medicines Agency EPAR Product Information (Upjohn / Viatris)',
-    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/viagra',
+    sourceTitle: 'Viagra 50 mg film-coated tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/7980/smpc',
   },
   {
     brandName: 'Viagra 100 mg',
@@ -290,8 +290,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in the original package to protect from moisture.',
     specialties: ['Urology', 'Internal Medicine', 'Endocrinology'],
-    sourceTitle: 'Viagra 100 mg Film-Coated Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1074/smpc',
+    sourceTitle: 'Viagra 100 mg film-coated tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/7978/smpc',
   },
 
   // =========================================================================
@@ -316,7 +316,7 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Neurology', 'Psychiatry', 'Endocrinology', 'Orthopedics', 'Internal Medicine'],
-    sourceTitle: 'Lyrica (Pregabalin) — European Medicines Agency EPAR Product Information (Upjohn / Viatris)',
+    sourceTitle: 'Lyrica (pregabalin) — EMA EPAR',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/lyrica',
   },
   {
@@ -338,8 +338,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Neurology', 'Psychiatry', 'Endocrinology', 'Orthopedics', 'Internal Medicine'],
-    sourceTitle: 'Lyrica 150 mg Hard Capsules — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/5544/smpc',
+    sourceTitle: 'Lyrica 150 mg hard capsules — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/10306/smpc',
   },
   {
     brandName: 'Lyrica 300 mg',
@@ -360,8 +360,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Neurology', 'Psychiatry', 'Internal Medicine'],
-    sourceTitle: 'Lyrica 300 mg Hard Capsules — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/5546/smpc',
+    sourceTitle: 'Lyrica 300 mg hard capsules — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/10310/smpc',
   },
   {
     brandName: 'Dilantin 100 mg',
@@ -382,8 +382,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in a tight, light-resistant container; protect from moisture.',
     specialties: ['Neurology', 'Internal Medicine'],
-    sourceTitle: 'Dilantin (Extended Phenytoin Sodium Capsules) Prescribing Information — FDA Label (Viatris)',
-    sourceUrl: 'https://www.accessdata.fda.gov/drugsatfda_docs/label/2023/084349s092lbl.pdf',
+    sourceTitle: 'Dilantin — DailyMed (US NLM) label search',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Dilantin',
   },
 
   // =========================================================================
@@ -408,8 +408,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Psychiatry', 'Neurology', 'Internal Medicine', 'General Practice / Family Medicine'],
-    sourceTitle: 'Lustral / Zoloft 50 mg Film-Coated Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1065/smpc',
+    sourceTitle: 'Lustral (sertraline) 50 mg tablets — UK eMC SmPC (Zoloft outside the UK)',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/1070/smpc',
   },
   {
     brandName: 'Zoloft 100 mg',
@@ -430,8 +430,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Psychiatry', 'Neurology', 'Internal Medicine'],
-    sourceTitle: 'Lustral / Zoloft 100 mg Film-Coated Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1066/smpc',
+    sourceTitle: 'Lustral (sertraline) 100 mg tablets — UK eMC SmPC (Zoloft outside the UK)',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/2835/smpc',
   },
   {
     brandName: 'Xanax 0.5 mg',
@@ -452,8 +452,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 25°C; protect from light.',
     specialties: ['Psychiatry', 'Neurology'],
-    sourceTitle: 'Xanax 500 micrograms Tablets — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1627/smpc',
+    sourceTitle: 'Xanax 500 microgram tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/1656/smpc',
   },
   {
     brandName: 'Xanax XR 1 mg',
@@ -474,8 +474,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 25°C.',
     specialties: ['Psychiatry', 'Neurology'],
-    sourceTitle: 'Xanax XR (Alprazolam Extended-Release Tablets) Prescribing Information — FDA Label (Viatris)',
-    sourceUrl: 'https://www.accessdata.fda.gov/drugsatfda_docs/label/2023/021434s032lbl.pdf',
+    sourceTitle: 'Xanax XR — DailyMed (US NLM) label search',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Xanax+XR',
   },
   {
     brandName: 'Effexor XR 75 mg',
@@ -496,8 +496,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Psychiatry', 'Neurology', 'Internal Medicine'],
-    sourceTitle: 'Efexor XL 75 mg Hard Prolonged-Release Capsules — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/5473/smpc',
+    sourceTitle: 'Efexor XL 75 mg prolonged-release capsules — UK eMC SmPC (Effexor XR outside the UK)',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/5474/smpc',
   },
   {
     brandName: 'Effexor XR 150 mg',
@@ -518,8 +518,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Psychiatry', 'Neurology', 'Internal Medicine'],
-    sourceTitle: 'Efexor XL 150 mg Hard Prolonged-Release Capsules — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/5474/smpc',
+    sourceTitle: 'Efexor XL 150 mg prolonged-release capsules — UK eMC SmPC (Effexor XR outside the UK)',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/1219/smpc',
   },
 
   // =========================================================================
@@ -544,7 +544,7 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'General Practice / Family Medicine'],
-    sourceTitle: 'Celebrex 100 mg Hard Capsules — UK eMC SmPC (Upjohn / Viatris)',
+    sourceTitle: 'Celebrex 100 mg capsules — UK eMC SmPC',
     sourceUrl: 'https://www.medicines.org.uk/emc/product/5533/smpc',
   },
   {
@@ -566,8 +566,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'General Practice / Family Medicine'],
-    sourceTitle: 'Celebrex 200 mg Hard Capsules — UK eMC SmPC (Upjohn / Viatris)',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/5534/smpc',
+    sourceTitle: 'Celebrex 200 mg capsules — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/2945/smpc',
   },
   {
     brandName: 'Medrol 4 mg',
@@ -588,8 +588,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 25°C; protect from light.',
     specialties: ['Rheumatology', 'Internal Medicine', 'Pulmonology', 'Dermatology', 'Neurology', 'Endocrinology'],
-    sourceTitle: 'Medrol 4 mg Tablets — UK eMC SmPC',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1068/smpc',
+    sourceTitle: 'Medrol 4 mg / 16 mg tablets — SAHPRA approved professional information',
+    sourceUrl: 'https://pi-pil-repository.sahpra.org.za/wp-content/uploads/2024/02/Medrol-4mg_16mg-tablets-Approved-PI-26-January-2024.pdf',
   },
   {
     brandName: 'Medrol 16 mg',
@@ -610,8 +610,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 25°C; protect from light.',
     specialties: ['Rheumatology', 'Internal Medicine', 'Pulmonology', 'Neurology', 'Oncology'],
-    sourceTitle: 'Medrol 16 mg Tablets — UK eMC SmPC',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1069/smpc',
+    sourceTitle: 'Medrol 4 mg / 16 mg tablets — SAHPRA approved professional information',
+    sourceUrl: 'https://pi-pil-repository.sahpra.org.za/wp-content/uploads/2024/02/Medrol-4mg_16mg-tablets-Approved-PI-26-January-2024.pdf',
   },
   {
     brandName: 'Ponstan Forte 500 mg',
@@ -632,8 +632,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C in a dry place.',
     specialties: ['Obstetrics & Gynecology', 'Orthopedics', 'Rheumatology', 'General Practice / Family Medicine'],
-    sourceTitle: 'Ponstan Forte 500 mg Film-Coated Tablets — HPRA / SmPC',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1111/smpc',
+    sourceTitle: 'Ponstan Forte 500 mg tablets — UK eMC SmPC',
+    sourceUrl: 'https://www.medicines.org.uk/emc/product/1732/smpc',
   },
   {
     brandName: 'Feldene 20 mg',
@@ -654,8 +654,8 @@ const VIATRIS_COMPACT_PRODUCTS: CompactViatrisDrug[] = [
     storageConditions:
       'Store below 30°C.',
     specialties: ['Rheumatology', 'Orthopedics'],
-    sourceTitle: 'Feldene 20 mg Capsules — UK eMC SmPC',
-    sourceUrl: 'https://www.medicines.org.uk/emc/product/1046/smpc',
+    sourceTitle: 'Feldene (piroxicam) — UK eMC search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Feldene',
   },
 ];
 

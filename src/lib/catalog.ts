@@ -109,6 +109,7 @@ export interface CatalogProduct {
   category: ProductCategory;
   status: ProductStatus;
   brandNameEn: string;
+  brandNameAr?: string | null;
   market: ProductMarketRecord | null;
   marketTranslations: Record<ContentLocale, ProductMarketTranslationRecord | null>;
   specialtyIds: string[];
@@ -130,6 +131,29 @@ export interface CatalogBundle {
   drugClasses: TaxonomyItem[];
   genericDrugs: TaxonomyItem[];
   specialties: TaxonomyItem[];
+}
+
+export interface DoctorSearchRow {
+  productId: string;
+  brandNameEn: string;
+  brandNameAr: string | null;
+  genericNameEn: string | null;
+  companyId: string;
+  companyName: string;
+  drugClassNameEn: string | null;
+  category: ProductCategory;
+  strength: string | null;
+  dosageForm: string | null;
+  publishedAt: string | null;
+  totalCount: number;
+}
+
+export interface SearchCatalogProductsInput {
+  query?: string | null;
+  companyId?: string | null;
+  specialtyId?: string | null;
+  limit?: number;
+  offset?: number;
 }
 
 export interface CreateDraftInput {
@@ -689,6 +713,343 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
       description: c.description ?? null,
     }))
     .sort((a, b) => a.companyName.localeCompare(b.companyName));
+}
+
+export async function loadVerifiedCompanies(
+  client: SupabaseClient
+): Promise<CompanySummary[]> {
+  const { data, error } = await fetchAllPages<{
+    id: string;
+    company_name: string;
+    legal_name?: string;
+    status: string;
+  }>((from, to) =>
+    client
+      .from('companies')
+      .select('id,company_name,legal_name,status')
+      .eq('status', 'verified')
+      .order('company_name')
+      .order('id')
+      .range(from, to)
+  );
+
+  if (error || !data) return [];
+
+  return data
+    .filter((c) => c.status === 'verified')
+    .map((c) => ({
+      id: c.id,
+      companyName: c.company_name,
+      legalName: c.legal_name ?? c.company_name,
+      status: c.status,
+    }))
+    .sort((a, b) => a.companyName.localeCompare(b.companyName));
+}
+
+export async function searchCatalogProducts(
+  client: SupabaseClient,
+  input: SearchCatalogProductsInput = {}
+): Promise<RpcResult<{ rows: DoctorSearchRow[]; totalCount: number }>> {
+  const { data, error } = await client.rpc('search_catalog_products', {
+    p_query: trimOrNull(input.query),
+    p_company_id: trimOrNull(input.companyId),
+    p_specialty_id: trimOrNull(input.specialtyId),
+    p_limit: input.limit ?? 20,
+    p_offset: input.offset ?? 0,
+  });
+
+  if (error) {
+    return { ok: false, message: formatRpcError(error) };
+  }
+
+  const rawRows = (data ?? []) as Array<{
+    product_id: string;
+    brand_name_en: string | null;
+    brand_name_ar: string | null;
+    generic_name_en: string | null;
+    company_id: string;
+    company_name: string | null;
+    drug_class_name_en: string | null;
+    category: ProductCategory;
+    strength: string | null;
+    dosage_form: string | null;
+    published_at: string | null;
+    total_count: number | string | null;
+  }>;
+
+  const rows: DoctorSearchRow[] = rawRows.map((row) => ({
+    productId: row.product_id,
+    brandNameEn: row.brand_name_en ?? 'Untitled Product',
+    brandNameAr: row.brand_name_ar ?? null,
+    genericNameEn: row.generic_name_en ?? null,
+    companyId: row.company_id,
+    companyName: row.company_name ?? 'Company',
+    drugClassNameEn: row.drug_class_name_en ?? null,
+    category: row.category,
+    strength: row.strength ?? null,
+    dosageForm: row.dosage_form ?? null,
+    publishedAt: row.published_at ?? null,
+    totalCount: Number(row.total_count ?? 0),
+  }));
+
+  const totalCount = rows.length > 0 ? rows[0].totalCount : 0;
+  return { ok: true, data: { rows, totalCount } };
+}
+
+export async function loadProductDetail(
+  client: SupabaseClient,
+  productId: string
+): Promise<RpcResult<CatalogProduct>> {
+  const cleanId = trimOrNull(productId);
+  if (!cleanId) {
+    return { ok: false, message: 'Product ID is required.' };
+  }
+
+  const [
+    productRes,
+    transRes,
+    marketsRes,
+    specRes,
+    mediaRes,
+    keywordsRes,
+  ] = await Promise.all([
+    client
+      .from('products')
+      .select(
+        'id,company_id,generic_drug_id,drug_class_id,category,status,submitted_at,reviewed_at,review_reason,created_at,updated_at'
+      )
+      .eq('id', cleanId)
+      .maybeSingle(),
+    client
+      .from('product_translations')
+      .select('product_id,locale,brand_name')
+      .eq('product_id', cleanId),
+    client
+      .from('product_markets')
+      .select(
+        'id,product_id,strength,dosage_form,route,pack_size,market_status,registration_status,registration_number,registration_authority,registration_expires_on'
+      )
+      .eq('product_id', cleanId),
+    client
+      .from('product_specialties')
+      .select('product_id,specialty_id')
+      .eq('product_id', cleanId),
+    client
+      .from('product_media')
+      .select(
+        'id,product_id,media_type,storage_path,mime_type,file_size_bytes,sort_order,is_primary'
+      )
+      .eq('product_id', cleanId),
+    client
+      .from('product_search_keywords')
+      .select('product_id,locale,keyword,keyword_type')
+      .eq('product_id', cleanId),
+  ]);
+
+  if (productRes.error) {
+    return { ok: false, message: formatRpcError(productRes.error) };
+  }
+  const productRow = productRes.data as RawProductRow | null;
+  if (!productRow) {
+    return { ok: false, message: 'Product not found.' };
+  }
+
+  const transRows = (transRes.data ?? []) as RawTranslationRow[];
+  const marketRows = (marketsRes.data ?? []) as RawMarketRow[];
+  const specRows = (specRes.data ?? []) as RawProductSpecialtyRow[];
+  const mediaRows = (mediaRes.data ?? []) as RawMediaRow[];
+  const keywordRows = (keywordsRes.data ?? []) as RawKeywordRow[];
+
+  const rawMarket = marketRows[0] ?? null;
+  const specialtyIds = specRows.map((s) => s.specialty_id);
+
+  const [
+    companyRes,
+    drugClassTransRes,
+    genericTransRes,
+    marketTransRes,
+    brochuresRes,
+    specTransRes,
+  ] = await Promise.all([
+    client
+      .from('companies')
+      .select('id,company_name,status')
+      .eq('id', productRow.company_id)
+      .maybeSingle(),
+    client
+      .from('drug_class_translations')
+      .select('drug_class_id,locale,name')
+      .eq('drug_class_id', productRow.drug_class_id),
+    productRow.generic_drug_id
+      ? client
+          .from('generic_drug_translations')
+          .select('generic_drug_id,locale,name')
+          .eq('generic_drug_id', productRow.generic_drug_id)
+      : Promise.resolve({ data: [], error: null }),
+    rawMarket
+      ? client
+          .from('product_market_translations')
+          .select(
+            'product_market_id,locale,storage_conditions,approved_indications,usual_adult_dose,contraindications,common_adverse_effects'
+          )
+          .eq('product_market_id', rawMarket.id)
+      : Promise.resolve({ data: [], error: null }),
+    rawMarket
+      ? client
+          .from('product_brochures')
+          .select(
+            'id,product_market_id,locale,title,storage_path,mime_type,file_size_bytes,version,is_current'
+          )
+          .eq('product_market_id', rawMarket.id)
+      : Promise.resolve({ data: [], error: null }),
+    specialtyIds.length > 0
+      ? client
+          .from('specialty_translations')
+          .select('specialty_id,locale,name')
+          .in('specialty_id', specialtyIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const companyData = companyRes.data as {
+    id: string;
+    company_name: string;
+    status: string;
+  } | null;
+
+  let brandNameEn = 'Untitled Product';
+  let brandNameAr: string | null = null;
+  for (const t of transRows) {
+    if (t.locale === 'en') brandNameEn = t.brand_name;
+    if (t.locale === 'ar') brandNameAr = t.brand_name;
+  }
+
+  let drugClassNameEn = 'Unclassified';
+  for (const t of (drugClassTransRes.data ?? []) as Array<{
+    locale: ContentLocale;
+    name: string;
+  }>) {
+    if (t.locale === 'en' || drugClassNameEn === 'Unclassified') {
+      drugClassNameEn = t.name;
+    }
+  }
+
+  let genericNameEn: string | null = null;
+  for (const t of (genericTransRes.data ?? []) as Array<{
+    locale: ContentLocale;
+    name: string;
+  }>) {
+    if (t.locale === 'en' || !genericNameEn) {
+      genericNameEn = t.name;
+    }
+  }
+
+  const market: ProductMarketRecord | null = rawMarket
+    ? {
+        id: rawMarket.id,
+        productId: rawMarket.product_id,
+        strength: rawMarket.strength,
+        dosageForm: rawMarket.dosage_form,
+        route: rawMarket.route,
+        packSize: rawMarket.pack_size,
+        marketStatus: rawMarket.market_status,
+        registrationStatus: rawMarket.registration_status,
+        registrationNumber: rawMarket.registration_number,
+        registrationAuthority: rawMarket.registration_authority,
+        registrationExpiresOn: rawMarket.registration_expires_on,
+      }
+    : null;
+
+  const marketTranslations: Record<
+    ContentLocale,
+    ProductMarketTranslationRecord | null
+  > = {
+    en: null,
+    ar: null,
+  };
+  for (const row of (marketTransRes.data ?? []) as RawMarketTranslationRow[]) {
+    marketTranslations[row.locale] = {
+      productMarketId: row.product_market_id,
+      locale: row.locale,
+      storageConditions: row.storage_conditions,
+      approvedIndications: row.approved_indications,
+      usualAdultDose: row.usual_adult_dose,
+      contraindications: row.contraindications,
+      commonAdverseEffects: row.common_adverse_effects,
+    };
+  }
+
+  const specNameById = new Map<string, string>();
+  for (const row of (specTransRes.data ?? []) as Array<{
+    specialty_id: string;
+    locale: ContentLocale;
+    name: string;
+  }>) {
+    if (row.locale === 'en' || !specNameById.has(row.specialty_id)) {
+      specNameById.set(row.specialty_id, row.name);
+    }
+  }
+  const specialtyNamesEn = specialtyIds
+    .map((id) => specNameById.get(id))
+    .filter((n): n is string => Boolean(n));
+
+  const media: ProductMediaRecord[] = mediaRows.map((row) => ({
+    id: row.id,
+    productId: row.product_id,
+    mediaType: row.media_type,
+    storagePath: row.storage_path,
+    mimeType: row.mime_type,
+    fileSizeBytes: row.file_size_bytes,
+    sortOrder: row.sort_order,
+    isPrimary: row.is_primary,
+  }));
+
+  const brochures: ProductBrochureRecord[] = (
+    (brochuresRes.data ?? []) as RawBrochureRow[]
+  ).map((row) => ({
+    id: row.id,
+    productMarketId: row.product_market_id,
+    locale: row.locale,
+    title: row.title,
+    storagePath: row.storage_path,
+    mimeType: row.mime_type,
+    fileSizeBytes: row.file_size_bytes,
+    version: row.version,
+    isCurrent: row.is_current,
+  }));
+
+  const searchKeywords = keywordRows
+    .filter((row) => row.locale === 'en' || row.locale === 'und')
+    .map((row) => row.keyword);
+
+  return {
+    ok: true,
+    data: {
+      id: productRow.id,
+      companyId: productRow.company_id,
+      companyName: companyData?.company_name ?? 'Company',
+      companyStatus: companyData?.status ?? null,
+      genericDrugId: productRow.generic_drug_id,
+      genericNameEn,
+      drugClassId: productRow.drug_class_id,
+      drugClassNameEn,
+      category: productRow.category,
+      status: productRow.status,
+      brandNameEn,
+      brandNameAr,
+      market,
+      marketTranslations,
+      specialtyIds,
+      specialtyNamesEn,
+      media,
+      brochures,
+      searchKeywords,
+      submittedAt: productRow.submitted_at,
+      reviewedAt: productRow.reviewed_at,
+      reviewReason: productRow.review_reason,
+      createdAt: productRow.created_at,
+      updatedAt: productRow.updated_at,
+    },
+  };
 }
 
 export async function loadCatalogBundle(

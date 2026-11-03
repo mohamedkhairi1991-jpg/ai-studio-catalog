@@ -1,17 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AccessResult } from '../lib/access';
 import {
   CATEGORY_LABELS,
   MARKET_STATUS_LABELS,
-  REGISTRATION_STATUS_LABELS,
-  filterDoctorProducts,
-  loadCatalogBundle,
-  type CatalogBundle,
+  loadProductDetail,
+  loadSpecialtiesCatalog,
+  loadVerifiedCompanies,
+  searchCatalogProducts,
   type CatalogProduct,
-  type ProductCategory,
+  type CompanySummary,
+  type DoctorSearchRow,
+  type TaxonomyItem,
 } from '../lib/catalog';
 import { BrandLogo, inputClass, secondaryButtonClass } from './ui';
+
+const PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function CatalogBanner({
   tone,
@@ -40,64 +45,170 @@ interface Props {
 }
 
 export function DoctorCatalog({ client, access, onSignOut }: Props) {
-  const [bundle, setBundle] = useState<CatalogBundle | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [companies, setCompanies] = useState<CompanySummary[]>([]);
+  const [specialties, setSpecialties] = useState<TaxonomyItem[]>([]);
 
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [companyId, setCompanyId] = useState('');
-  const [drugClassId, setDrugClassId] = useState('');
-  const [category, setCategory] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [specialtyId, setSpecialtyId] = useState('');
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const res = await loadCatalogBundle(client);
-    if (!res.ok) {
-      setError(res.message);
-      setBundle(null);
-    } else {
-      setBundle(res.data);
-      if (res.data.products.length > 0) {
-        setSelectedId((prev) =>
-          prev && res.data.products.some((p) => p.id === prev)
-            ? prev
-            : res.data.products[0].id
-        );
-      } else {
-        setSelectedId(null);
-      }
-    }
-    setLoading(false);
+  const [rows, setRows] = useState<DoctorSearchRow[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(
+    null
+  );
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  const searchReqSeqRef = useRef(0);
+  const detailReqSeqRef = useRef(0);
+
+  // Load verified companies and active specialties once on mount
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      loadVerifiedCompanies(client),
+      loadSpecialtiesCatalog(client),
+    ]).then(([companyList, specialtyList]) => {
+      if (!active) return;
+      setCompanies(companyList);
+      setSpecialties(specialtyList);
+    });
+    return () => {
+      active = false;
+    };
   }, [client]);
 
+  // Debounce search query by 300 ms
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(query);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [query]);
 
-  const filteredProducts = useMemo(() => {
-    if (!bundle) return [];
-    return filterDoctorProducts(bundle.products, {
-      query,
-      companyId,
-      drugClassId,
-      category,
-    });
-  }, [bundle, query, companyId, drugClassId, category]);
+  const runSearch = useCallback(
+    async (
+      searchQuery: string,
+      filterCompanyId: string,
+      filterSpecialtyId: string
+    ) => {
+      const seq = ++searchReqSeqRef.current;
+      setLoading(true);
+      setError(null);
 
-  const selectedProduct: CatalogProduct | null = useMemo(() => {
-    if (filteredProducts.length === 0) return null;
-    if (selectedId) {
-      const match = filteredProducts.find((p) => p.id === selectedId);
-      if (match) return match;
-    }
-    return filteredProducts[0] ?? null;
-  }, [filteredProducts, selectedId]);
+      const res = await searchCatalogProducts(client, {
+        query: searchQuery,
+        companyId: filterCompanyId || null,
+        specialtyId: filterSpecialtyId || null,
+        limit: PAGE_SIZE,
+        offset: 0,
+      });
 
-  const hasActiveFilters = Boolean(
-    query.trim() || companyId || drugClassId || category
+      if (seq !== searchReqSeqRef.current) {
+        return;
+      }
+
+      if (!res.ok) {
+        setError(res.message);
+        setRows([]);
+        setTotalCount(0);
+        setSelectedId(null);
+      } else {
+        setRows(res.data.rows);
+        setTotalCount(res.data.totalCount);
+        if (res.data.rows.length > 0) {
+          setSelectedId((prev) =>
+            prev && res.data.rows.some((r) => r.productId === prev)
+              ? prev
+              : res.data.rows[0].productId
+          );
+        } else {
+          setSelectedId(null);
+        }
+      }
+      setLoading(false);
+    },
+    [client]
   );
+
+  useEffect(() => {
+    void runSearch(debouncedQuery, companyId, specialtyId);
+  }, [runSearch, debouncedQuery, companyId, specialtyId]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (loading || loadingMore || rows.length >= totalCount) return;
+    const seq = searchReqSeqRef.current;
+    setLoadingMore(true);
+    setError(null);
+
+    const res = await searchCatalogProducts(client, {
+      query: debouncedQuery,
+      companyId: companyId || null,
+      specialtyId: specialtyId || null,
+      limit: PAGE_SIZE,
+      offset: rows.length,
+    });
+
+    if (seq !== searchReqSeqRef.current) {
+      setLoadingMore(false);
+      return;
+    }
+
+    if (!res.ok) {
+      setError(res.message);
+    } else {
+      setRows((prev) => [...prev, ...res.data.rows]);
+      if (res.data.rows.length > 0) {
+        setTotalCount(res.data.totalCount);
+      }
+    }
+    setLoadingMore(false);
+  }, [
+    client,
+    companyId,
+    debouncedQuery,
+    loading,
+    loadingMore,
+    rows.length,
+    specialtyId,
+    totalCount,
+  ]);
+
+  // Load single product detail when selectedId changes
+  useEffect(() => {
+    if (!selectedId) {
+      setSelectedProduct(null);
+      setDetailError(null);
+      setDetailLoading(false);
+      return;
+    }
+
+    const seq = ++detailReqSeqRef.current;
+    setDetailLoading(true);
+    setDetailError(null);
+
+    void loadProductDetail(client, selectedId).then((res) => {
+      if (seq !== detailReqSeqRef.current) return;
+      if (!res.ok) {
+        setDetailError(res.message);
+        setSelectedProduct(null);
+      } else {
+        setSelectedProduct(res.data);
+      }
+      setDetailLoading(false);
+    });
+  }, [client, selectedId]);
+
+  const hasActiveFilters = Boolean(query.trim() || companyId || specialtyId);
 
   return (
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
@@ -117,7 +228,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             <button
               type="button"
               className={secondaryButtonClass}
-              onClick={() => void refresh()}
+              onClick={() => void runSearch(query, companyId, specialtyId)}
               disabled={loading}
             >
               Refresh
@@ -151,7 +262,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             />
           </div>
 
-          <div className="sm:w-52">
+          <div className="sm:w-56">
             <select
               id="doctor-catalog-company"
               aria-label="Filter by company"
@@ -160,7 +271,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               className={inputClass}
             >
               <option value="">All companies</option>
-              {(bundle?.companies ?? []).map((comp) => (
+              {companies.map((comp) => (
                 <option key={comp.id} value={comp.id}>
                   {comp.companyName}
                 </option>
@@ -168,35 +279,18 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             </select>
           </div>
 
-          <div className="sm:w-52">
+          <div className="sm:w-56">
             <select
-              id="doctor-catalog-class"
-              aria-label="Filter by drug class"
-              value={drugClassId}
-              onChange={(e) => setDrugClassId(e.target.value)}
+              id="doctor-catalog-specialty"
+              aria-label="Filter by specialty"
+              value={specialtyId}
+              onChange={(e) => setSpecialtyId(e.target.value)}
               className={inputClass}
             >
-              <option value="">All drug classes</option>
-              {(bundle?.drugClasses ?? []).map((dc) => (
-                <option key={dc.id} value={dc.id}>
-                  {dc.nameEn}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="sm:w-48">
-            <select
-              id="doctor-catalog-category"
-              aria-label="Filter by category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">All categories</option>
-              {(Object.keys(CATEGORY_LABELS) as ProductCategory[]).map((cat) => (
-                <option key={cat} value={cat}>
-                  {CATEGORY_LABELS[cat]}
+              <option value="">All specialties</option>
+              {specialties.map((spec) => (
+                <option key={spec.id} value={spec.id}>
+                  {spec.nameEn}
                 </option>
               ))}
             </select>
@@ -207,9 +301,9 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               type="button"
               onClick={() => {
                 setQuery('');
+                setDebouncedQuery('');
                 setCompanyId('');
-                setDrugClassId('');
-                setCategory('');
+                setSpecialtyId('');
               }}
               className="text-xs font-medium text-[#5DB4F2] hover:underline px-2 py-2 shrink-0"
             >
@@ -223,12 +317,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
             Loading catalog…
           </div>
-        ) : filteredProducts.length === 0 ? (
+        ) : rows.length === 0 ? (
           <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center">
             <h2 className="text-base font-medium text-[#F2F5F8]">
-              {hasActiveFilters
-                ? 'No matching products found'
-                : 'No published products yet'}
+              No published products match your search.
             </h2>
             <p className="text-xs text-[#B8C3CC] mt-1.5 max-w-lg mx-auto leading-relaxed">
               {hasActiveFilters
@@ -243,49 +335,85 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
                 <span className="font-medium">Products</span>
                 <span className="font-mono tabular-nums">
-                  {filteredProducts.length}
+                  Showing {rows.length} of {totalCount}
                 </span>
               </div>
               <div className="divide-y divide-[#304451] max-h-[680px] overflow-y-auto">
-                {filteredProducts.map((product) => {
-                  const isSelected = selectedProduct?.id === product.id;
+                {rows.map((row) => {
+                  const isSelected = selectedId === row.productId;
+                  const presentation = [row.strength, row.dosageForm]
+                    .filter(Boolean)
+                    .join(' · ');
                   return (
                     <button
-                      key={product.id}
+                      key={row.productId}
                       type="button"
-                      onClick={() => setSelectedId(product.id)}
+                      onClick={() => setSelectedId(row.productId)}
                       className={`w-full text-left px-4 py-3.5 transition-colors ${
                         isSelected
                           ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
                           : 'hover:bg-[#1F2D38]/50'
                       }`}
                     >
-                      <div className="font-medium text-sm text-[#F2F5F8]">
-                        {product.brandNameEn}
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="font-medium text-sm text-[#F2F5F8]">
+                          {row.brandNameEn}
+                        </span>
+                        {row.brandNameAr && (
+                          <span
+                            dir="rtl"
+                            className="text-xs text-[#B8C3CC] shrink-0"
+                          >
+                            {row.brandNameAr}
+                          </span>
+                        )}
                       </div>
 
                       <div className="text-xs text-[#5DB4F2] mt-0.5">
-                        {product.genericNameEn ?? 'Dietary Supplement'}
+                        {row.genericNameEn ?? 'Dietary Supplement'}
                       </div>
 
-                      <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-[#B8C3CC]">
-                        <span className="truncate">{product.companyName}</span>
-                        {product.market && (
-                          <span className="shrink-0 font-mono tabular-nums">
-                            {product.market.strength}
-                          </span>
-                        )}
+                      {presentation && (
+                        <div className="text-xs text-[#B8C3CC] font-mono tabular-nums mt-1">
+                          {presentation}
+                        </div>
+                      )}
+
+                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-[#B8C3CC]">
+                        <span className="truncate">{row.companyName}</span>
                       </div>
                     </button>
                   );
                 })}
               </div>
+
+              {rows.length < totalCount && (
+                <div className="p-3 border-t border-[#304451] bg-[#1F2D38]/40 text-center">
+                  <button
+                    type="button"
+                    onClick={() => void handleLoadMore()}
+                    disabled={loadingMore}
+                    className={`${secondaryButtonClass} w-full`}
+                  >
+                    {loadingMore ? 'Loading…' : 'Load more'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Right Column: Product Detail Panel */}
             <div className="lg:col-span-8">
-              {selectedProduct && (
-                <DoctorProductDetail product={selectedProduct} />
+              {detailError && (
+                <CatalogBanner tone="error">{detailError}</CatalogBanner>
+              )}
+              {detailLoading ? (
+                <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+                  Loading product details…
+                </div>
+              ) : (
+                selectedProduct && (
+                  <DoctorProductDetail product={selectedProduct} />
+                )
               )}
             </div>
           </div>
@@ -307,6 +435,11 @@ function DoctorProductDetail({ product }: { product: CatalogProduct }) {
           <h2 className="text-2xl font-semibold text-[#F2F5F8]">
             {product.brandNameEn}
           </h2>
+          {product.brandNameAr && (
+            <div dir="rtl" className="text-sm text-[#B8C3CC] mt-0.5">
+              {product.brandNameAr}
+            </div>
+          )}
           <p className="text-sm text-[#5DB4F2] mt-1">
             {product.genericNameEn ?? 'Dietary Supplement'} ·{' '}
             {product.drugClassNameEn}
@@ -347,24 +480,6 @@ function DoctorProductDetail({ product }: { product: CatalogProduct }) {
                   ? 'success'
                   : 'neutral'
               }
-            />
-            <SpecItem
-              label="Registration Status"
-              value={REGISTRATION_STATUS_LABELS[market.registrationStatus]}
-            />
-            <SpecItem
-              label="Registration Number"
-              value={market.registrationNumber ?? '—'}
-              mono
-            />
-            <SpecItem
-              label="Registration Authority"
-              value={market.registrationAuthority ?? '—'}
-            />
-            <SpecItem
-              label="Registration Expiry"
-              value={market.registrationExpiresOn ?? '—'}
-              mono
             />
           </>
         )}

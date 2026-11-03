@@ -102,7 +102,7 @@ class _AdminAuthBrand extends StatelessWidget {
             ),
           ),
           const SizedBox(height: PharmaConnectSpacing.medium),
-          Text('Pharamty', style: Theme.of(context).textTheme.displaySmall),
+          Text('Pharmaty', style: Theme.of(context).textTheme.displaySmall),
           const SizedBox(height: PharmaConnectSpacing.small),
           Text(
             AppLocalizations.of(context).adminPortalLabel,

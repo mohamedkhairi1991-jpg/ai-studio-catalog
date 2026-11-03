@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appName": "Pharamty",
+  "appName": "Pharmaty",
   "@appName": {
     "description": "Application name"
   },
@@ -26,7 +26,7 @@
   "pendingAccountTitle": "Account setup pending",
   "pendingAccountMessage": "Your account is authenticated but is not yet assigned to an approved platform role.",
   "accountUnavailableTitle": "Account unavailable",
-  "accountUnavailableMessage": "This account cannot currently access Pharamty.",
+  "accountUnavailableMessage": "This account cannot currently access Pharmaty.",
   "unauthorizedClientTitle": "Use the correct application",
   "unauthorizedClientMessage": "This account is not authorized to use the administration portal.",
   "sessionLoadingMessage": "Restoring your session…",

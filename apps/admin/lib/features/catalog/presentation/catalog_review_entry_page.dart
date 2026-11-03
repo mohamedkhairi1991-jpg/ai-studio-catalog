@@ -96,7 +96,7 @@ class _AdminReviewAppBarTitle extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Pharamty',
+                'Pharmaty',
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: PharmaConnectColors.primaryText,

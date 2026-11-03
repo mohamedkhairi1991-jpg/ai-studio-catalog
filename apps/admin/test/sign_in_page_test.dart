@@ -23,7 +23,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('This field is required.'), findsNWidgets(2));
-    expect(find.text('Pharamty'), findsOneWidget);
+    expect(find.text('Pharmaty'), findsOneWidget);
   });
 
   testWidgets('admin auth loading and access states use branded presentation', (
@@ -31,7 +31,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_testApp(const AdminSessionLoadingPage()));
 
-    expect(find.text('Pharamty'), findsOneWidget);
+    expect(find.text('Pharmaty'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     expect(find.text('Restoring your session…'), findsOneWidget);
 
@@ -46,7 +46,7 @@ void main() {
 
     expect(find.text('Account unavailable'), findsOneWidget);
     expect(
-      find.text('This account cannot currently access Pharamty.'),
+      find.text('This account cannot currently access Pharmaty.'),
       findsOneWidget,
     );
   });
@@ -62,7 +62,7 @@ void main() {
     await tester.pumpWidget(_testApp(const AdminSignInPage()));
     await tester.pump();
 
-    expect(find.text('Pharamty'), findsOneWidget);
+    expect(find.text('Pharmaty'), findsOneWidget);
     expect(find.text('Administration portal'), findsOneWidget);
     expect(find.byKey(const Key('adminSignInSubmit')), findsOneWidget);
     expect(tester.takeException(), isNull);

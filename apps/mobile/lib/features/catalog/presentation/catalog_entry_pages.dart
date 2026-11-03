@@ -159,7 +159,7 @@ class _CompanyCatalogHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Pharamty',
+                'Pharmaty',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: isWide

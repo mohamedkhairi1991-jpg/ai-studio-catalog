@@ -6,6 +6,30 @@
 -- doctor home page.
 
 -- 1. A licence number is no longer required for an approved doctor.
+--    A self-approved doctor is recorded as reviewed by their own profile.
+alter table public.healthcare_professionals
+  drop constraint healthcare_professionals_review_metadata;
+alter table public.healthcare_professionals
+  add constraint healthcare_professionals_review_metadata check (
+    (
+      verification_status = 'pending'
+      and reviewed_by is null
+      and reviewed_at is null
+      and review_reason is null
+    )
+    or (
+      verification_status = 'approved'
+      and reviewed_by is not null
+      and reviewed_at is not null
+    )
+    or (
+      verification_status in ('rejected', 'documents_requested')
+      and reviewed_by is not null
+      and reviewed_at is not null
+      and review_reason is not null
+    )
+  );
+
 create or replace function private.validate_healthcare_professional()
 returns trigger
 language plpgsql
@@ -96,15 +120,16 @@ begin
     update public.healthcare_professionals
     set specialty_id = p_specialty_id,
         verification_status = 'approved',
+        reviewed_by = coalesce(reviewed_by, v_profile_id),
         reviewed_at = coalesce(reviewed_at, now()),
         review_reason = null
     where id = v_old.id
     returning * into v_record;
   else
     insert into public.healthcare_professionals (
-      profile_id, profession_type, specialty_id, verification_status, reviewed_at
+      profile_id, profession_type, specialty_id, verification_status, reviewed_by, reviewed_at
     )
-    values (v_profile_id, 'physician', p_specialty_id, 'approved', now())
+    values (v_profile_id, 'physician', p_specialty_id, 'approved', v_profile_id, now())
     returning * into v_record;
   end if;
 

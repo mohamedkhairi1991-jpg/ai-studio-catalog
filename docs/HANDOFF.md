@@ -38,6 +38,9 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 ("Run workflow") instead of waiting.
 
 ### Known limits
+- GitHub often runs scheduled workflows late (sometimes hours). "Every 30
+  min" is the schedule, not a promise. When speed matters, Claude opens the
+  pull request and fast-forwards `ai-studio-catalog` by hand.
 - GitHub does not let these workflows copy changes to files under
   `.github/workflows`. When Claude changes a workflow, Claude syncs that once
   by hand.
@@ -54,6 +57,19 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
    changed, why, and anything the other side must know or do next.
 
 ## Log (newest first)
+
+### 2026-11-03 — Claude (English-only catalog, owner decision)
+- **Owner decision:** no Arabic anywhere in the app or the database.
+- **Database (live, migration `20261103125530_english_only_catalog`):** all
+  Arabic brand names (`product_translations` locale `ar`) and Arabic search
+  keywords deleted; `brandNameAr` stripped from stored AI drafts.
+  `admin_save_ai_product_draft` now ignores `brandNameAr`.
+  `search_catalog_products` still returns the `brand_name_ar` column, but it
+  is always null.
+- **For AI Studio — next task:** remove all Arabic from `src/` (Arabic name
+  fields in the editor and review pages, Arabic display in the doctor
+  catalog, any Arabic UI text), and delete `brandNameAr` from every
+  `*CatalogData.ts` file. Do not touch `supabase/`.
 
 ### 2026-11-03 — Google AI Studio (Admin Review Drafts page)
 - **Admin company Review Drafts view (`src/components/AdminCatalogReview.tsx`, `src/lib/catalog.ts`):**

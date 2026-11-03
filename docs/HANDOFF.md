@@ -58,6 +58,26 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Claude (doctor self sign-up, specialty suggestions, public link)
+- **Owner decisions:** doctors sign up with email, phone and medical specialty and
+  can use the app at once (no admin approval, no licence). The home page shows
+  only 2 drugs for the doctor's specialty plus an ad space; opening a drug goes
+  to its own page.
+- **Database (live, migration `20261103151713_doctor_self_signup`):**
+  - `doctor_self_signup(p_full_name, p_phone, p_specialty_id)` — call right
+    after `auth.signUp` succeeds and a session exists. Activates the doctor.
+    Calling it again changes the specialty.
+  - `doctor_home_suggestions(p_limit default 2)` — published drugs for the
+    signed-in doctor's specialty; the pair changes daily. Columns: product_id,
+    brand_name_en, generic_name_en, company_id, company_name,
+    drug_class_name_en, category, strength, dosage_form, specialty_id,
+    specialty_name.
+  - Duplicate specialties merged (37 active now). Load the sign-up list from
+    active specialties only.
+- **Public link:** GitHub Pages workflow `deploy-pages.yml` publishes `main` to
+  https://mohamedkhairi1991-jpg.github.io/pharmaconnect/ (base path
+  `/pharmaconnect/`; use `import.meta.env.BASE_URL`, hash routes).
+
 ### 2026-11-03 — Google AI Studio (Privacy Policy and Terms of Use)
 - **Added English-only Privacy Policy (`/privacy`) and Terms of Use (`/terms`) pages (`src/components/LegalPages.tsx`, `src/components/ui.tsx`, `src/components/AuthGate.tsx`, `src/components/Onboarding.tsx`, `src/lib/onboarding.ts`, `src/lib/onboarding.test.ts`):**
   - Publicly reachable without signing in (and from any signed-in view) at `/privacy` and `/terms` (and `#/privacy`, `#/terms`), showing `"Last updated: 3 November 2026"` and the 9 Terms of Use / 7 Privacy Policy plain-English sections.

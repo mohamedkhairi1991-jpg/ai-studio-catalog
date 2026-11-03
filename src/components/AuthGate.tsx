@@ -167,7 +167,7 @@ export default function AuthGate() {
         );
       } else {
         const { error } = await client.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: window.location.origin,
+          redirectTo: window.location.origin + import.meta.env.BASE_URL,
         });
         setNotice(
           error

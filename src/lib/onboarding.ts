@@ -141,6 +141,10 @@ export async function submitSignUpWithConsent(
   const { error } = await client.auth.signUp({
     email: input.email.trim().toLowerCase(),
     password: input.password,
+    options:
+      typeof window === 'undefined'
+        ? undefined
+        : { emailRedirectTo: window.location.origin + import.meta.env.BASE_URL },
   });
   return error ? fail(error.message) : { ok: true };
 }

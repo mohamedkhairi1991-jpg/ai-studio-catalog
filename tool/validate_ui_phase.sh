@@ -70,7 +70,6 @@ AUTH_UI_FILES=(
   "apps/admin/test/sign_in_page_test.dart"
   "packages/pharmaconnect_l10n/lib/src/generated/app_localizations.dart"
   "packages/pharmaconnect_l10n/lib/src/generated/app_localizations_en.dart"
-  "packages/pharmaconnect_l10n/lib/src/generated/app_localizations_ar.dart"
 )
 
 DOCTOR_CATALOG_UI_FILES=(

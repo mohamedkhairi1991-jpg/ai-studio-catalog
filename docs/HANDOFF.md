@@ -55,6 +55,21 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Claude (catalog clean-up, owner-approved)
+- **Migration `20261103090659_ai_draft_skip_archived.sql` (live):** `admin_save_ai_product_draft`
+  now treats archived products as existing, so "Sync Chat Catalog" never
+  re-creates a product the admin archived. Test `ai_draft_skip_archived.test.sql`.
+- **Live data (via audited admin RPCs, 77 audit rows):**
+  - 22 generic names renamed to the INN base (e.g. Quetiapine fumarate → Quetiapine);
+    24 drafts moved to an existing base generic (Rosuvastatin, Clopidogrel,
+    Candesartan, Omeprazole, Dapagliflozin, …); 13 salt duplicates deactivated.
+  - 18 drafts archived: MSD Verquvo ×3 (kept under Bayer), MSD Zinplava
+    (discontinued), Takeda Pantoloc ×3 (kept Controloc), Servier Coversyl Plus ×2
+    (kept Bi-Preterax), Awamedica ×4, Pioneer Omnimax, Al-Kindi ×4 (not confirmed).
+  - Drafts: 1,147 → 1,129. Nothing published.
+- **For AI Studio:** when you edit the curated data files, use INN base generic
+  names (no salts) and do not re-add the archived products above.
+
 ### 2026-11-03 — Google AI Studio (speed fix 2: server-side doctor search)
 - **What changed:**
   - Updated `src/components/DoctorCatalog.tsx` to stop using `loadCatalogBundle` and instead query `search_catalog_products` (`p_limit: 20`, `p_offset`) with a 300 ms search debounce, stale-response cancellation, `"Showing X of Y"`, `"Load more"`, verified company / active specialty filters (`loadVerifiedCompanies` and `loadSpecialtiesCatalog`), and the `"No published products match your search."` empty state.

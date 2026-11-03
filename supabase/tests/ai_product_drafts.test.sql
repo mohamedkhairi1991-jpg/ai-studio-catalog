@@ -75,8 +75,8 @@ select is(
     join public.product_market_translations mt on mt.product_market_id = m.id and mt.locale = 'en'
     where t.brand_name = 'Glucora 10 mg'
   ),
-  row('draft', 'marketed_in_iraq', 'not_recorded', '10 mg once daily.', 2, 'غلوكورا ١٠ ملغ', 1)::text,
-  'it is a draft with market, clinical text, specialties, Arabic name and stored sources'
+  row('draft', 'marketed_in_iraq', 'not_recorded', '10 mg once daily.', 2, null::text, 1)::text,
+  'it is a draft with market, clinical text, specialties and stored sources, and no Arabic name (English-only catalog)'
 );
 
 -- 2. Duplicates are skipped, other strengths are not ---------------------------

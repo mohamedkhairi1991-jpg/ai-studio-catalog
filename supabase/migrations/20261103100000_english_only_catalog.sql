@@ -176,7 +176,7 @@ begin
   end if;
 
   insert into public.product_ai_drafts (product_id, draft, sources, model, created_by)
-  values (v_product_id, p_draft, p_sources, nullif(btrim(coalesce(p_model, '')), ''), v_actor);
+  values (v_product_id, p_draft - 'brandNameAr', p_sources, nullif(btrim(coalesce(p_model, '')), ''), v_actor);
 
   return query select v_product_id, 'created'::text, v_missing;
 end;

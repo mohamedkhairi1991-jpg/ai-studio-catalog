@@ -495,7 +495,7 @@ export default function App() {
   // Private Storage Upload form state
   const [uploadMediaType, setUploadMediaType] = useState<MediaType>(MediaType.PackageImage);
   const [uploadBrochureTitle, setUploadBrochureTitle] = useState('');
-  const [uploadBrochureLocale, setUploadBrochureLocale] = useState<'en' | 'ar'>('en');
+  const [uploadBrochureLocale, setUploadBrochureLocale] = useState<'en'>('en');
   const [uploadBrochureNotes, setUploadBrochureNotes] = useState('');
 
   const getCompanyName = (companyId: string): string => {

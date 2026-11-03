@@ -43,7 +43,7 @@ function sampleProduct(overrides: Partial<CatalogProduct> = {}): CatalogProduct 
     status: 'published',
     brandNameEn: 'Amoxil',
     market: null,
-    marketTranslations: { en: null, ar: null },
+    marketTranslations: { en: null },
     specialtyIds: [],
     specialtyNamesEn: [],
     media: [],
@@ -157,7 +157,6 @@ describe('AI draft and taxonomy ensure helpers', () => {
               draft: {
                 found: true,
                 brandName: 'Forxiga',
-                brandNameAr: 'فورسيجا',
                 category: 'prescription_drug',
                 genericName: 'Dapagliflozin',
                 activeIngredients: ['Dapagliflozin'],
@@ -607,7 +606,7 @@ describe('searchCatalogProducts and loadProductDetail', () => {
             {
               product_id: 'prod-42',
               brand_name_en: 'Pentasa 500 mg',
-              brand_name_ar: 'بنتاسا 500 ملغ',
+              brand_name_ar: null,
               generic_name_en: 'Mesalazine',
               company_id: 'comp-ferring',
               company_name: 'Ferring Pharmaceuticals',
@@ -652,7 +651,6 @@ describe('searchCatalogProducts and loadProductDetail', () => {
           {
             productId: 'prod-42',
             brandNameEn: 'Pentasa 500 mg',
-            brandNameAr: 'بنتاسا 500 ملغ',
             genericNameEn: 'Mesalazine',
             companyId: 'comp-ferring',
             companyName: 'Ferring Pharmaceuticals',
@@ -716,11 +714,6 @@ describe('searchCatalogProducts and loadProductDetail', () => {
                     product_id: 'prod-42',
                     locale: 'en',
                     brand_name: 'Pentasa 500 mg',
-                  },
-                  {
-                    product_id: 'prod-42',
-                    locale: 'ar',
-                    brand_name: 'بنتاسا 500 ملغ',
                   },
                 ],
                 error: null,
@@ -839,7 +832,6 @@ describe('searchCatalogProducts and loadProductDetail', () => {
     if (res.ok) {
       expect(res.data.id).toBe('prod-42');
       expect(res.data.brandNameEn).toBe('Pentasa 500 mg');
-      expect(res.data.brandNameAr).toBe('بنتاسا 500 ملغ');
       expect(res.data.genericNameEn).toBe('Mesalazine');
       expect(res.data.drugClassNameEn).toBe('Aminosalicylates');
       expect(res.data.companyName).toBe('Ferring Pharmaceuticals');

@@ -36,7 +36,7 @@ export const AuditTrailView: React.FC = () => {
       <div className="bg-[#263744] border border-[#51616D] rounded-xl p-6 sm:p-8 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            <div className="flex items-center space-x-2">
               <span className="text-[11px] font-bold bg-[#123F68] text-[#5DB4F2] border border-[#46718F] px-2.5 py-0.5 rounded-full flex items-center space-x-1">
                 <History className="w-3 h-3" />
                 <span>Governance & Verification Console</span>
@@ -81,7 +81,7 @@ export const AuditTrailView: React.FC = () => {
         /* Audit Trail Table */
         <div className="bg-[#263744] border border-[#51616D] rounded-xl overflow-hidden shadow-sm">
           <div className="p-5 border-b border-[#51616D] flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[#F2F5F8] flex items-center space-x-2 rtl:space-x-reverse">
+            <h2 className="text-base font-semibold text-[#F2F5F8] flex items-center space-x-2">
               <Clock className="w-4 h-4 text-[#5DB4F2]" />
               <span>Catalog Lifecycle Operations & Traceability</span>
             </h2>
@@ -91,7 +91,7 @@ export const AuditTrailView: React.FC = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left rtl:text-right text-xs">
+            <table className="w-full text-left text-xs">
               <thead className="bg-[#1F2D38] text-[#84919B] border-b border-[#51616D]">
                 <tr>
                   <th className="py-3 px-4 font-semibold uppercase tracking-wider text-[11px]">Timestamp (UTC)</th>
@@ -148,7 +148,7 @@ export const AuditTrailView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Active Session Card */}
           <div className="bg-[#263744] border border-[#51616D] rounded-xl p-6 space-y-4">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-bold text-[#F2F5F8]">
+            <div className="flex items-center space-x-2 text-sm font-bold text-[#F2F5F8]">
               <UserCheck className="w-5 h-5 text-[#38C976]" />
               <span>Current Authenticated Principal</span>
             </div>
@@ -212,7 +212,7 @@ export const AuditTrailView: React.FC = () => {
                   <button
                     key={user.id}
                     onClick={() => switchUser(user)}
-                    className="w-full text-left rtl:text-right bg-[#304451] hover:bg-[#1769AA] text-[#F2F5F8] p-3 rounded-lg border border-[#51616D] transition-colors flex items-center justify-between text-xs"
+                    className="w-full text-left bg-[#304451] hover:bg-[#1769AA] text-[#F2F5F8] p-3 rounded-lg border border-[#51616D] transition-colors flex items-center justify-between text-xs"
                   >
                     <div>
                       <div className="font-bold">{user.fullName}</div>
@@ -229,13 +229,13 @@ export const AuditTrailView: React.FC = () => {
 
           {/* Sign In / Sign Up Form */}
           <div className="bg-[#263744] border border-[#51616D] rounded-xl p-6 space-y-4">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-bold text-[#F2F5F8]">
+            <div className="flex items-center space-x-2 text-sm font-bold text-[#F2F5F8]">
               <LogIn className="w-5 h-5 text-[#5DB4F2]" />
               <span>Authentication Gate Simulation</span>
             </div>
 
             {authStatusMessage && (
-              <div className="bg-[#193D2D] border border-[#2F8F5C] text-[#38C976] p-3 rounded-lg text-xs font-semibold flex items-center space-x-2 rtl:space-x-reverse">
+              <div className="bg-[#193D2D] border border-[#2F8F5C] text-[#38C976] p-3 rounded-lg text-xs font-semibold flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{authStatusMessage}</span>
               </div>

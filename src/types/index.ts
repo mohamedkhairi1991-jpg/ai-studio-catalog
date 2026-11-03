@@ -52,7 +52,6 @@ export interface DrugClass {
   id: string;
   code: string;
   nameEn: string;
-  nameAr: string;
   descriptionEn?: string;
 }
 
@@ -60,7 +59,6 @@ export interface GenericDrug {
   id: string;
   code: string;
   nameEn: string;
-  nameAr: string;
   drugClassId: string;
 }
 
@@ -68,7 +66,6 @@ export interface ProductSpecialty {
   id: string;
   code: string;
   nameEn: string;
-  nameAr: string;
 }
 
 export interface BrochureMetadata {
@@ -78,7 +75,7 @@ export interface BrochureMetadata {
   isCurrent: boolean;
   fileSizeBytes: number;
   fileName: string;
-  locale: 'en' | 'ar';
+  locale: 'en';
   uploadedAt: string;
 }
 
@@ -101,10 +98,9 @@ export interface ProductDetail {
   genericDrugId?: string;
   genericDrugName?: string;
   specialtyIds: string[];
-  
-  // Localized Brand Name
+
+  // Brand Name
   brandNameEn: string;
-  brandNameAr?: string;
 
   // Iraq Market Specs
   strength: string;
@@ -117,19 +113,12 @@ export interface ProductDetail {
   registrationAuthority?: string;
   registrationExpiresOn?: string;
 
-  // Clinical & Pharmaceutical Content (English required)
+  // Clinical & Pharmaceutical Content (English)
   indicationsEn: string;
   usualAdultDoseEn: string;
   contraindicationsEn: string;
   commonAdverseEffectsEn: string;
   storageConditionsEn: string;
-
-  // Optional Arabic translations
-  indicationsAr?: string;
-  usualAdultDoseAr?: string;
-  contraindicationsAr?: string;
-  commonAdverseEffectsAr?: string;
-  storageConditionsAr?: string;
 
   // Media
   productImages: ProductImageMetadata[];

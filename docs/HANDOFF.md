@@ -58,6 +58,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (English-only frontend)
+- **Removed all Arabic localization, fields, and RTL support in `src/`:**
+  - `src/components/Header.tsx`: removed the English/Arabic language toggle and all `rtl:` classes.
+  - `src/l10n/index.ts` & `src/context/CatalogContext.tsx`: deleted the `'ar'` locale, all Arabic strings, and locale-switching/RTL direction state.
+  - `src/components/AdminCatalogReview.tsx`, `src/components/DoctorCatalog.tsx`, `src/components/DoctorCatalogView.tsx`, `src/components/CompanyCatalogView.tsx`, `src/components/AdminCatalogReviewView.tsx`, `src/components/AuditTrailView.tsx`: removed all `brandNameAr` inputs, placeholders, displays, Arabic search matching, and `dir="rtl"` / `rtl:` classes.
+  - `src/lib/catalog.ts` & `src/lib/catalog.test.ts`: set `ContentLocale = 'en'`, removed `brandNameAr` from types and mappers (ignoring `brand_name_ar` from `search_catalog_products`), stopped reading/writing `'ar'` translations, and updated unit tests to English only.
+  - `src/types/index.ts`, `src/types/catalog.ts`, `src/data/seedData.ts`: removed `nameAr`, `brandNameAr`, and Arabic clinical fields/strings.
+  - Verified zero Arabic characters in `src/`; `npm run lint`, `npm test`, and `npm run build` all pass.
+
 ### 2026-11-03 — Claude (English-only catalog, owner decision)
 - **Owner decision:** no Arabic anywhere in the app or the database.
 - **Database (live, migration `20261103125530_english_only_catalog`):** all

@@ -44,7 +44,6 @@ export const CompanyCatalogView: React.FC = () => {
 
   // Form states for editing selected product
   const [editBrandNameEn, setEditBrandNameEn] = useState('');
-  const [editBrandNameAr, setEditBrandNameAr] = useState('');
   const [editStrength, setEditStrength] = useState('');
   const [editDosageForm, setEditDosageForm] = useState('');
   const [editRoute, setEditRoute] = useState('');
@@ -69,7 +68,6 @@ export const CompanyCatalogView: React.FC = () => {
   const openEditor = (product: ProductDetail) => {
     setSelectedProduct(product);
     setEditBrandNameEn(product.brandNameEn);
-    setEditBrandNameAr(product.brandNameAr || '');
     setEditStrength(product.strength || '');
     setEditDosageForm(product.dosageForm || '');
     setEditRoute(product.route || 'Oral');
@@ -107,7 +105,6 @@ export const CompanyCatalogView: React.FC = () => {
 
     updateProduct(selectedProduct.id, {
       brandNameEn: editBrandNameEn,
-      brandNameAr: editBrandNameAr || undefined,
       strength: editStrength,
       dosageForm: editDosageForm,
       route: editRoute,
@@ -220,7 +217,7 @@ export const CompanyCatalogView: React.FC = () => {
       <div className="bg-[#263744] border border-[#51616D] rounded-xl p-6 sm:p-8 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            <div className="flex items-center space-x-2">
               <span className="text-[11px] font-bold bg-[#123F68] text-[#5DB4F2] border border-[#46718F] px-2.5 py-0.5 rounded-full flex items-center space-x-1">
                 <Building2 className="w-3 h-3" />
                 <span>{currentUser?.companyName || 'Al-Rafidain Pharmaceuticals Ltd.'}</span>
@@ -237,7 +234,7 @@ export const CompanyCatalogView: React.FC = () => {
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 rtl:space-x-reverse transition-colors shrink-0 shadow-md"
+            className="bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shrink-0 shadow-md"
           >
             <Plus className="w-4 h-4" />
             <span>{t.createDraftAction}</span>
@@ -263,7 +260,7 @@ export const CompanyCatalogView: React.FC = () => {
 
       {feedbackMessage && (
         <div
-          className={`p-4 rounded-lg text-xs font-semibold flex items-center space-x-2 rtl:space-x-reverse ${
+          className={`p-4 rounded-lg text-xs font-semibold flex items-center space-x-2 ${
             feedbackMessage.type === 'success'
               ? 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
               : 'bg-[#4B2528] border border-[#A9474E] text-[#FF7272]'
@@ -326,11 +323,6 @@ export const CompanyCatalogView: React.FC = () => {
                   <h3 className="text-lg font-bold text-[#F2F5F8] group-hover:text-[#5DB4F2] transition-colors">
                     {product.brandNameEn}
                   </h3>
-                  {product.brandNameAr && (
-                    <div className="text-xs text-[#B8C3CC]" dir="rtl">
-                      {product.brandNameAr}
-                    </div>
-                  )}
                   <p className="text-xs text-[#B8C3CC] mt-1">
                     {product.genericDrugName || 'Generic pending'} &bull; {product.drugClassName}
                   </p>
@@ -365,7 +357,7 @@ export const CompanyCatalogView: React.FC = () => {
               {/* Card Footer */}
               <div className="mt-4 pt-3 border-t border-[#51616D] flex items-center justify-between text-xs text-[#B8C3CC]">
                 <span>Updated: {new Date(product.updatedAt).toLocaleDateString()}</span>
-                <span className="text-[#5DB4F2] font-semibold flex items-center space-x-1 rtl:space-x-reverse">
+                <span className="text-[#5DB4F2] font-semibold flex items-center space-x-1">
                   <span>Open Workspace</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </span>
@@ -462,7 +454,7 @@ export const CompanyCatalogView: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 flex justify-end space-x-2 rtl:space-x-reverse">
+              <div className="pt-3 flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
@@ -489,7 +481,7 @@ export const CompanyCatalogView: React.FC = () => {
             {/* Modal Header */}
             <div className="sticky top-0 bg-[#263744] border-b border-[#51616D] p-5 flex items-start justify-between z-10">
               <div>
-                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <div className="flex items-center space-x-2">
                   <span
                     className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                       selectedProduct.status === 'published'
@@ -524,7 +516,7 @@ export const CompanyCatalogView: React.FC = () => {
               {/* Changes Requested Warning */}
               {selectedProduct.status === 'changes_requested' && selectedProduct.reviewReason && (
                 <div className="bg-[#4B2528] border border-[#A9474E] rounded-lg p-4 space-y-1">
-                  <div className="text-xs font-bold text-[#FF7272] flex items-center space-x-2 rtl:space-x-reverse">
+                  <div className="text-xs font-bold text-[#FF7272] flex items-center space-x-2">
                     <AlertTriangle className="w-4 h-4" />
                     <span>Administrator Feedback Requiring Correction:</span>
                   </div>
@@ -546,7 +538,7 @@ export const CompanyCatalogView: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-[#F2F5F8] flex items-center space-x-1.5 rtl:space-x-reverse">
+                      <span className="font-bold text-[#F2F5F8] flex items-center space-x-1.5">
                         <CheckCircle2 className="w-4 h-4 text-[#5DB4F2]" />
                         <span>Pre-flight Official Submission Requirements</span>
                       </span>
@@ -574,35 +566,19 @@ export const CompanyCatalogView: React.FC = () => {
               {/* Section 1: Names and Classification */}
               <div className="bg-[#1F2D38] border border-[#51616D] rounded-lg p-4 space-y-4">
                 <h4 className="text-xs font-bold uppercase text-[#84919B] tracking-wider">
-                  Product Identity & Localizations
+                  Product Identity
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[#F2F5F8] font-semibold mb-1">
-                      Brand Name (English) *
-                    </label>
-                    <input
-                      type="text"
-                      disabled={selectedProduct.status === 'published'}
-                      value={editBrandNameEn}
-                      onChange={(e) => setEditBrandNameEn(e.target.value)}
-                      className="w-full bg-[#263744] border border-[#51616D] focus:border-[#5DB4F2] rounded-lg px-3 py-2 text-sm text-[#F2F5F8]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[#F2F5F8] font-semibold mb-1">
-                      Brand Name (Arabic - Optional)
-                    </label>
-                    <input
-                      type="text"
-                      dir="rtl"
-                      disabled={selectedProduct.status === 'published'}
-                      value={editBrandNameAr}
-                      onChange={(e) => setEditBrandNameAr(e.target.value)}
-                      placeholder="مثال: كارديوستيد 5 ملغ"
-                      className="w-full bg-[#263744] border border-[#51616D] focus:border-[#5DB4F2] rounded-lg px-3 py-2 text-sm text-[#F2F5F8]"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-[#F2F5F8] font-semibold mb-1">
+                    Brand Name (English) *
+                  </label>
+                  <input
+                    type="text"
+                    disabled={selectedProduct.status === 'published'}
+                    value={editBrandNameEn}
+                    onChange={(e) => setEditBrandNameEn(e.target.value)}
+                    className="w-full bg-[#263744] border border-[#51616D] focus:border-[#5DB4F2] rounded-lg px-3 py-2 text-sm text-[#F2F5F8]"
+                  />
                 </div>
               </div>
 
@@ -865,7 +841,7 @@ export const CompanyCatalogView: React.FC = () => {
 
             {/* Modal Actions Footer */}
             <div className="border-t border-[#51616D] p-5 bg-[#263744] flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+              <div className="flex items-center space-x-2">
                 {selectedProduct.status !== 'published' && selectedProduct.status !== 'archived' && (
                   <button
                     onClick={handleArchive}
@@ -877,7 +853,7 @@ export const CompanyCatalogView: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+              <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setSelectedProduct(null)}
                   className="bg-[#304451] hover:bg-[#51616D] text-[#F2F5F8] text-xs font-semibold px-4 py-2 rounded-lg transition-colors"

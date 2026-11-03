@@ -39,11 +39,11 @@ export const INITIAL_USERS: UserProfile[] = [
 ];
 
 export const INITIAL_SPECIALTIES: ProductSpecialty[] = [
-  { id: 'spec-cardiology', code: 'cardiology', nameEn: 'Cardiology', nameAr: 'أمراض القلب والشرايين' },
-  { id: 'spec-respiratory', code: 'respiratory', nameEn: 'Pulmonology & Respiratory', nameAr: 'أمراض الجهاز التنفسي' },
-  { id: 'spec-gastro', code: 'gastroenterology', nameEn: 'Gastroenterology', nameAr: 'أمراض الجهاز الهضمي والكبد' },
-  { id: 'spec-infectious', code: 'infectious_disease', nameEn: 'Infectious Diseases', nameAr: 'الأمراض الانتقالية والمعدية' },
-  { id: 'spec-internal', code: 'internal_medicine', nameEn: 'Internal Medicine', nameAr: 'الطب الباطني' },
+  { id: 'spec-cardiology', code: 'cardiology', nameEn: 'Cardiology' },
+  { id: 'spec-respiratory', code: 'respiratory', nameEn: 'Pulmonology & Respiratory' },
+  { id: 'spec-gastro', code: 'gastroenterology', nameEn: 'Gastroenterology' },
+  { id: 'spec-infectious', code: 'infectious_disease', nameEn: 'Infectious Diseases' },
+  { id: 'spec-internal', code: 'internal_medicine', nameEn: 'Internal Medicine' },
 ];
 
 export const INITIAL_DRUG_CLASSES: DrugClass[] = [
@@ -51,45 +51,40 @@ export const INITIAL_DRUG_CLASSES: DrugClass[] = [
     id: 'class-beta-blockers',
     code: 'beta_blockers',
     nameEn: 'Beta-Adrenoreceptor Blockers',
-    nameAr: 'حاصرات مستقبلات بيتا',
     descriptionEn: 'Cardiovascular agents that inhibit sympathetic beta-adrenergic receptors.',
   },
   {
     id: 'class-bronchodilators',
     code: 'bronchodilators',
     nameEn: 'Bronchodilators & Beta-2 Agonists',
-    nameAr: 'موسعات القصبات ومحفزات بيتا-2',
     descriptionEn: 'Medications that relax bronchial smooth muscles to relieve bronchospasm.',
   },
   {
     id: 'class-ppi',
     code: 'ppi',
     nameEn: 'Proton Pump Inhibitors (PPIs)',
-    nameAr: 'مثبطات مضخة البروتون',
     descriptionEn: 'Gastric acid suppressants acting on parietal cell H+/K+ ATPase enzymes.',
   },
   {
     id: 'class-cephalosporins',
     code: 'cephalosporins',
     nameEn: 'Cephalosporin Antibiotics',
-    nameAr: 'مضادات السيفالوسبورين الحيوية',
     descriptionEn: 'Broad-spectrum beta-lactam antimicrobials with bactericidal activity.',
   },
   {
     id: 'class-statins',
     code: 'statins',
     nameEn: 'HMG-CoA Reductase Inhibitors (Statins)',
-    nameAr: 'مثبطات إنزيم HMG-CoA (الستاتينات)',
     descriptionEn: 'Lipid-lowering compounds used to reduce cardiovascular morbidity.',
   },
 ];
 
 export const INITIAL_GENERIC_DRUGS: GenericDrug[] = [
-  { id: 'gen-bisoprolol', code: 'bisoprolol', nameEn: 'Bisoprolol Fumarate', nameAr: 'بيسوبرولول فومارات', drugClassId: 'class-beta-blockers' },
-  { id: 'gen-salbutamol', code: 'salbutamol', nameEn: 'Salbutamol (Albuterol)', nameAr: 'سالبوتامول', drugClassId: 'class-bronchodilators' },
-  { id: 'gen-esomeprazole', code: 'esomeprazole', nameEn: 'Esomeprazole Magnesium', nameAr: 'إيزوميبرازول مغنيسيوم', drugClassId: 'class-ppi' },
-  { id: 'gen-cefixime', code: 'cefixime', nameEn: 'Cefixime Trihydrate', nameAr: 'سيفيكسيم ثلاثي الهيدرات', drugClassId: 'class-cephalosporins' },
-  { id: 'gen-atorvastatin', code: 'atorvastatin', nameEn: 'Atorvastatin Calcium', nameAr: 'أتورفاستاتين كالسيوم', drugClassId: 'class-statins' },
+  { id: 'gen-bisoprolol', code: 'bisoprolol', nameEn: 'Bisoprolol Fumarate', drugClassId: 'class-beta-blockers' },
+  { id: 'gen-salbutamol', code: 'salbutamol', nameEn: 'Salbutamol (Albuterol)', drugClassId: 'class-bronchodilators' },
+  { id: 'gen-esomeprazole', code: 'esomeprazole', nameEn: 'Esomeprazole Magnesium', drugClassId: 'class-ppi' },
+  { id: 'gen-cefixime', code: 'cefixime', nameEn: 'Cefixime Trihydrate', drugClassId: 'class-cephalosporins' },
+  { id: 'gen-atorvastatin', code: 'atorvastatin', nameEn: 'Atorvastatin Calcium', drugClassId: 'class-statins' },
 ];
 
 export const INITIAL_PRODUCTS: ProductDetail[] = [
@@ -105,7 +100,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     genericDrugName: 'Bisoprolol Fumarate',
     specialtyIds: ['spec-cardiology', 'spec-internal'],
     brandNameEn: 'Cardiostead 5 mg',
-    brandNameAr: 'كارديوستيد 5 ملغ',
     strength: '5 mg',
     dosageForm: 'Film-coated tablet',
     route: 'Oral',
@@ -120,11 +114,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     contraindicationsEn: 'Acute heart failure or during episodes of decompensation requiring intravenous inotropic support. Cardiogenic shock, 2nd or 3rd degree AV block without permanent pacemaker, sick sinus syndrome, severe bradycardia (<50 bpm), severe bronchial asthma.',
     commonAdverseEffectsEn: 'Dizziness, headache, fatigue, sensation of coldness or numbness in extremities, gastrointestinal complaints (nausea, mild diarrhea, abdominal discomfort).',
     storageConditionsEn: 'Store below 25°C in original blister pack to protect from excessive moisture and direct sunlight.',
-    indicationsAr: 'علاج فرط ضغط الدم الشرياني والذبحة الصدرية المستقرة، ودعم حالات القصور القلبي المزمن المستقر.',
-    usualAdultDoseAr: 'الجرعة الابتدائية 5 ملغ مرة واحدة يومياً صباحاً مع أو بدون طعام، ويمكن زيادتها إلى 10 ملغ حسب الاستجابة السريرية.',
-    contraindicationsAr: 'قصور القلب الحاد، الصدمة القلبية، الحصار الأذيني البطيني من الدرجة الثانية أو الثالثة دون جهاز تنظيم، الربو الشعبي الحاد.',
-    commonAdverseEffectsAr: 'دوار، صداع، خمول وإرهاق، برودة في الأطراف، اضطرابات هضمية خفيفة.',
-    storageConditionsAr: 'يحفظ في درجة حرارة دون 25 مئوية داخل العبوة الأصلية بعيداً عن الرطوبة وأشعة الشمس المباشرة.',
     productImages: [
       {
         id: 'img-prod-001',
@@ -177,7 +166,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     genericDrugName: 'Salbutamol (Albuterol)',
     specialtyIds: ['spec-respiratory', 'spec-internal'],
     brandNameEn: 'Airvento 100 mcg',
-    brandNameAr: 'إيرفينتو 100 ميكروغرام',
     strength: '100 mcg/actuation',
     dosageForm: 'Pressurized inhalation suspension',
     route: 'Inhalation',
@@ -192,11 +180,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     contraindicationsEn: 'Known hypersensitivity to salbutamol or fluorocarbon propellants.',
     commonAdverseEffectsEn: 'Fine skeletal muscle tremor (especially hands), tachycardia, headache, mild peripheral vasodilation.',
     storageConditionsEn: 'Store below 30°C. Protect from frost and direct sunlight. Do not puncture or incinerate even when empty.',
-    indicationsAr: 'تسكين نوبات ضيق التنفس الحادة في الربو الشعبي والانسداد الرئوي القابل للانعكاس، والوقاية قبل المجهود البدني.',
-    usualAdultDoseAr: 'عند النوبات الحادة: استنشاق 1 إلى 2 بخة (100 إلى 200 ميكروغرام). قبل ممارسة الرياضة: بختان قبل 15 دقيقة.',
-    contraindicationsAr: 'فرط الحساسية المعروف للسالبوتامول أو المواد الحاملة للبخاخ.',
-    commonAdverseEffectsAr: 'رعشة خفيفة في اليدين، تسرع ضربات القلب، صداع، خفقان.',
-    storageConditionsAr: 'يحفظ دون 30 مئوية بعيداً عن الصقيع وأشعة الشمس، لا يتم ثقب أو حرق العبوة حتى لو فرغت.',
     productImages: [
       {
         id: 'img-prod-002',
@@ -245,7 +228,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     genericDrugName: 'Cefixime Trihydrate',
     specialtyIds: ['spec-infectious', 'spec-internal'],
     brandNameEn: 'Cefaxil 400 mg',
-    brandNameAr: 'سيفاكسيل 400 ملغ',
     strength: '400 mg',
     dosageForm: 'Dispersible tablet',
     route: 'Oral',
@@ -301,7 +283,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     genericDrugName: 'Esomeprazole Magnesium',
     specialtyIds: ['spec-gastro', 'spec-internal'],
     brandNameEn: 'Gastroloc 40 mg',
-    brandNameAr: 'غاسترولوك 40 ملغ',
     strength: '40 mg',
     dosageForm: 'Delayed-release capsule',
     route: 'Oral',
@@ -332,7 +313,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     genericDrugName: 'Atorvastatin Calcium',
     specialtyIds: ['spec-cardiology', 'spec-internal'],
     brandNameEn: 'Lipidnorm 20 mg',
-    brandNameAr: 'ليبيدنورم 20 ملغ',
     strength: '20 mg',
     dosageForm: 'Film-coated tablet',
     route: 'Oral',
@@ -347,11 +327,6 @@ export const INITIAL_PRODUCTS: ProductDetail[] = [
     contraindicationsEn: 'Active hepatic disease, unexplained persistent serum transaminase elevations (>3x ULN), pregnancy and lactation.',
     commonAdverseEffectsEn: 'Nasopharyngitis, arthralgia, diarrhea, dyspepsia, pain in extremity, urinary tract infection.',
     storageConditionsEn: 'Store below 25°C in original container.',
-    indicationsAr: 'فرط كوليسترول الدم الأولي واضطراب شحميات الدم المختلط، وتقليل خطر النوبات القلبية والوعائية.',
-    usualAdultDoseAr: 'الجرعة المعتادة 10 أو 20 ملغ مرة واحدة يومياً، ويمكن تعديلها بفواصل 4 أسابيع بحد أقصى 80 ملغ يومياً.',
-    contraindicationsAr: 'الاعتلال الكبدي النشط، الارتفاع المستمر لإنزيمات الكبد، الحمل والإرضاع.',
-    commonAdverseEffectsAr: 'آلام مفصلية وعضلية، اضطرابات معوية، التهاب الأنف والبلعوم.',
-    storageConditionsAr: 'يحفظ دون 25 مئوية داخل العبوة الأصلية.',
     productImages: [
       {
         id: 'img-prod-005',

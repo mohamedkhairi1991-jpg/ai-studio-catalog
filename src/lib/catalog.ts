@@ -14,7 +14,7 @@ export type ProductCategory =
   | 'otc_drug'
   | 'dietary_supplement';
 
-export type ContentLocale = 'en' | 'ar';
+export type ContentLocale = 'en';
 
 export type IraqMarketStatus =
   | 'marketed_in_iraq'
@@ -109,7 +109,6 @@ export interface CatalogProduct {
   category: ProductCategory;
   status: ProductStatus;
   brandNameEn: string;
-  brandNameAr?: string | null;
   market: ProductMarketRecord | null;
   marketTranslations: Record<ContentLocale, ProductMarketTranslationRecord | null>;
   specialtyIds: string[];
@@ -137,7 +136,6 @@ export interface CatalogBundle {
 export interface DoctorSearchRow {
   productId: string;
   brandNameEn: string;
-  brandNameAr: string | null;
   genericNameEn: string | null;
   companyId: string;
   companyName: string;
@@ -781,7 +779,6 @@ export async function searchCatalogProducts(
   const rows: DoctorSearchRow[] = rawRows.map((row) => ({
     productId: row.product_id,
     brandNameEn: row.brand_name_en ?? 'Untitled Product',
-    brandNameAr: row.brand_name_ar ?? null,
     genericNameEn: row.generic_name_en ?? null,
     companyId: row.company_id,
     companyName: row.company_name ?? 'Company',
@@ -918,10 +915,8 @@ export async function loadProductDetail(
   } | null;
 
   let brandNameEn = 'Untitled Product';
-  let brandNameAr: string | null = null;
   for (const t of transRows) {
     if (t.locale === 'en') brandNameEn = t.brand_name;
-    if (t.locale === 'ar') brandNameAr = t.brand_name;
   }
 
   let drugClassNameEn = 'Unclassified';
@@ -965,18 +960,19 @@ export async function loadProductDetail(
     ProductMarketTranslationRecord | null
   > = {
     en: null,
-    ar: null,
   };
   for (const row of (marketTransRes.data ?? []) as RawMarketTranslationRow[]) {
-    marketTranslations[row.locale] = {
-      productMarketId: row.product_market_id,
-      locale: row.locale,
-      storageConditions: row.storage_conditions,
-      approvedIndications: row.approved_indications,
-      usualAdultDose: row.usual_adult_dose,
-      contraindications: row.contraindications,
-      commonAdverseEffects: row.common_adverse_effects,
-    };
+    if (row.locale === 'en') {
+      marketTranslations.en = {
+        productMarketId: row.product_market_id,
+        locale: 'en',
+        storageConditions: row.storage_conditions,
+        approvedIndications: row.approved_indications,
+        usualAdultDose: row.usual_adult_dose,
+        contraindications: row.contraindications,
+        commonAdverseEffects: row.common_adverse_effects,
+      };
+    }
   }
 
   const specNameById = new Map<string, string>();
@@ -1036,7 +1032,6 @@ export async function loadProductDetail(
       category: productRow.category,
       status: productRow.status,
       brandNameEn,
-      brandNameAr,
       market,
       marketTranslations,
       specialtyIds,
@@ -1208,7 +1203,7 @@ export async function loadCatalogBundle(
   const genericById = new Map(genericDrugs.map((g) => [g.id, g]));
   const specialtyById = new Map(specialties.map((s) => [s.id, s]));
 
-  const translationsByProduct = new Map<string, { en?: string; ar?: string }>();
+  const translationsByProduct = new Map<string, { en?: string }>();
   const marketByProduct = new Map<string, ProductMarketRecord>();
   const marketTranslationsByMarket = new Map<
     string,
@@ -1299,13 +1294,11 @@ export async function loadCatalogBundle(
     }
 
     for (const row of transRes.data) {
-      const entry = translationsByProduct.get(row.product_id) ?? {};
       if (row.locale === 'en') {
+        const entry = translationsByProduct.get(row.product_id) ?? {};
         entry.en = row.brand_name;
-      } else if (row.locale === 'ar') {
-        entry.ar = row.brand_name;
+        translationsByProduct.set(row.product_id, entry);
       }
-      translationsByProduct.set(row.product_id, entry);
     }
 
     const marketIds: string[] = [];
@@ -1382,13 +1375,13 @@ export async function loadCatalogBundle(
       ]);
 
       for (const row of marketTransRes.data) {
+        if (row.locale !== 'en') continue;
         const entry = marketTranslationsByMarket.get(row.product_market_id) ?? {
           en: null,
-          ar: null,
         };
-        entry[row.locale] = {
+        entry.en = {
           productMarketId: row.product_market_id,
-          locale: row.locale,
+          locale: 'en',
           storageConditions: row.storage_conditions,
           approvedIndications: row.approved_indications,
           usualAdultDose: row.usual_adult_dose,
@@ -1426,8 +1419,8 @@ export async function loadCatalogBundle(
       const trans = translationsByProduct.get(row.id);
       const market = marketByProduct.get(row.id) ?? null;
       const marketTrans = market
-        ? (marketTranslationsByMarket.get(market.id) ?? { en: null, ar: null })
-        : { en: null, ar: null };
+        ? (marketTranslationsByMarket.get(market.id) ?? { en: null })
+        : { en: null };
       const specIds = specialtiesByProduct.get(row.id) ?? [];
       const specNames = specIds
         .map((id) => specialtyById.get(id)?.nameEn)
@@ -1445,7 +1438,6 @@ export async function loadCatalogBundle(
         category: row.category,
         status: row.status,
         brandNameEn: trans?.en ?? 'Untitled Product',
-        brandNameAr: trans?.ar ?? null,
         market,
         marketTranslations: marketTrans,
         specialtyIds: specIds,
@@ -2007,8 +1999,6 @@ export interface AiDraftSource {
 export interface AiProductDraft {
   found: boolean;
   brandName: string;
-  /** Not used: the catalog is English-only. */
-  brandNameAr?: string | null;
   category: ProductCategory | null;
   genericName: string | null;
   activeIngredients: string[];
@@ -2419,7 +2409,6 @@ export interface FullProductSaveInput {
   existingProduct?: CatalogProduct | null;
   companyId: string;
   brandNameEn: string;
-  brandNameAr?: string | null;
   category: ProductCategory;
   drugClassId: string;
   genericDrugId: string | null;
@@ -2517,17 +2506,6 @@ export async function saveAndPublishCompleteProduct(
     });
     if (!createRes.ok) return { ok: false, message: createRes.message };
     productId = createRes.data.id;
-  }
-
-  const brandNameAr = trimOrNull(input.brandNameAr);
-  if (brandNameAr) {
-    const arTr = await rpcUpsertProductTranslation(
-      client,
-      productId,
-      'ar',
-      brandNameAr
-    );
-    if (!arTr.ok) return { ok: false, message: arTr.message };
   }
 
   const mkt = await rpcUpsertProductMarket(client, {

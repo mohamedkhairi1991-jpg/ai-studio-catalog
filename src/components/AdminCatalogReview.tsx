@@ -1498,12 +1498,6 @@ function CompanyReviewDraftsView({
                         <h3 className="text-base font-semibold text-[#F2F5F8]">
                           {product.brandNameEn}
                         </h3>
-                        <span
-                          dir="rtl"
-                          className="text-sm text-[#B8C3CC] font-medium"
-                        >
-                          {product.brandNameAr ?? '—'}
-                        </span>
                         <StatusText status={product.status} />
                       </div>
                     </div>
@@ -1895,9 +1889,6 @@ function AdminProductEditorForm({
   const [brandNameEn, setBrandNameEn] = useState(
     existingProduct?.brandNameEn ?? ''
   );
-  const [brandNameAr, setBrandNameAr] = useState<string>(
-    existingProduct?.brandNameAr ?? ''
-  );
   const [category, setCategory] = useState<ProductCategory>(
     existingProduct?.category ?? 'prescription_drug'
   );
@@ -2071,7 +2062,6 @@ function AdminProductEditorForm({
 
     // Fill form fields from draft (do NOT save, do NOT touch marketStatus)
     setBrandNameEn(draft.brandName ?? '');
-    setBrandNameAr(draft.brandNameAr?.trim() ? draft.brandNameAr.trim() : '');
 
     const nextCategory: ProductCategory =
       draft.category === 'prescription_drug' ||
@@ -2236,7 +2226,6 @@ function AdminProductEditorForm({
       existingProduct,
       companyId,
       brandNameEn,
-      brandNameAr: brandNameAr.trim() || null,
       category,
       drugClassId: resolvedDrugClassId,
       genericDrugId: resolvedGenericDrugId,
@@ -2453,16 +2442,6 @@ function AdminProductEditorForm({
             required
             value={brandNameEn}
             onChange={(e) => setBrandNameEn(e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-
-        <Field label="Brand / Trade Name (AR)">
-          <input
-            type="text"
-            dir="rtl"
-            value={brandNameAr}
-            onChange={(e) => setBrandNameAr(e.target.value)}
             className={inputClass}
           />
         </Field>
@@ -2872,11 +2851,6 @@ function AdminProductInspector({
           <h2 className="text-2xl font-semibold text-[#F2F5F8] mt-1">
             {product.brandNameEn}
           </h2>
-          {product.brandNameAr && (
-            <div dir="rtl" className="text-sm text-[#B8C3CC] mt-0.5">
-              {product.brandNameAr}
-            </div>
-          )}
           <div className="text-xs text-[#5DB4F2] mt-1">
             {product.companyName}
           </div>

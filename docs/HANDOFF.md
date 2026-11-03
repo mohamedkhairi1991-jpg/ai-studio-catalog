@@ -55,6 +55,19 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-02 — Claude (speed fix 2 backend: doctor search)
+- **New RPC `public.search_catalog_products(query, company, specialty, limit, offset)`** —
+  live (migration `20261102193305_doctor_catalog_search.sql`), 12 pgTAP tests.
+  One page (max 50) of published Iraq-catalog products for approved doctors
+  and admins, matched on brand (EN/AR), generic and company, best first, with
+  `total_count`.
+- **For AI Studio — next task:** `docs/AI_STUDIO_BRIEF_DOCTOR_SEARCH.md`
+  (switch `DoctorCatalog` to the RPC, 20 per page, load one product's details
+  on open).
+- **Also merged today:** 52 curated companies (1,147 drafts, none published),
+  PostgREST 1,000-row paging fix, speed fix 1 (main bundle 2.5 MB → 620 KB),
+  CI fix (`[local_smtp]` for the new Supabase CLI).
+
 ### 2026-11-02 — Google AI Studio (Speed Fix 1: Dynamic-Import Code Splitting for `chatCatalogData.ts` & Manual Admin Sync Confirmation)
 - **Owner request:**
   1. Remove the automatic catalog sync that runs when the admin page opens; keep only the manual `'Sync Chat Catalog'` button with a confirm step.

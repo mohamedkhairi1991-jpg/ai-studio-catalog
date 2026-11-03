@@ -10,8 +10,8 @@ export function resolveLegalPage(hash: string, pathname: string): LegalPageKind 
   if (cleanHash === '/terms' || cleanHash === 'terms') return 'terms';
 
   const cleanPath = pathname.trim().toLowerCase().replace(/\/+$/, '');
-  if (cleanPath === '/privacy') return 'privacy';
-  if (cleanPath === '/terms') return 'terms';
+  if (cleanPath === '/privacy' || cleanPath.endsWith('/privacy')) return 'privacy';
+  if (cleanPath === '/terms' || cleanPath.endsWith('/terms')) return 'terms';
 
   return null;
 }
@@ -20,10 +20,13 @@ export function navigateToRoute(target: string) {
   const normalizedHash = target.startsWith('/') ? target : `/${target}`;
   const cleanPath = window.location.pathname.trim().toLowerCase().replace(/\/+$/, '');
   if (
-    (cleanPath === '/privacy' || cleanPath === '/terms') &&
+    (cleanPath === '/privacy' ||
+      cleanPath === '/terms' ||
+      cleanPath.endsWith('/privacy') ||
+      cleanPath.endsWith('/terms')) &&
     normalizedHash !== cleanPath
   ) {
-    window.history.pushState(null, '', '/');
+    window.history.pushState(null, '', import.meta.env.BASE_URL || '/');
   }
   if (window.location.hash === `#${normalizedHash}`) {
     window.dispatchEvent(new HashChangeEvent('hashchange'));

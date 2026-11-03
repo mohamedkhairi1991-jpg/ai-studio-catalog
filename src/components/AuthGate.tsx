@@ -2,13 +2,19 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { resolveAccess, type AccessResult, type Audience } from '../lib/access';
-import { submitSignUpWithConsent } from '../lib/onboarding';
+import { parseProductRoute } from '../lib/catalog';
+import {
+  doctorSelfSignup,
+  listSpecialties,
+  submitSignUpWithConsent,
+  type Option,
+} from '../lib/onboarding';
 import { AdminCatalogReview } from './AdminCatalogReview';
 import { CompanyCatalog } from './CompanyCatalog';
 import { DoctorCatalog } from './DoctorCatalog';
 import { LegalDocumentPage, resolveLegalPage } from './LegalPages';
 import Onboarding from './Onboarding';
-import { Screen, TermsAcceptanceCheckbox, buttonClass, inputClass } from './ui';
+import { Field, Screen, TermsAcceptanceCheckbox, buttonClass, inputClass } from './ui';
 
 const ROUTE_FOR: Partial<Record<Audience, string>> = {
   officialCatalog: '/catalog',
@@ -17,7 +23,6 @@ const ROUTE_FOR: Partial<Record<Audience, string>> = {
 };
 
 const BLOCKED_MESSAGE: Partial<Record<Audience, string>> = {
-  pending: 'Your account is awaiting verification by a platform administrator. Catalog access is unlocked after approval.',
   suspended: 'This account is suspended or archived. Contact the platform administrator.',
   roleIneligible: 'This account is not eligible for catalog access (verification, role, or company status).',
 };
@@ -29,9 +34,14 @@ export default function AuthGate() {
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialtyId, setSpecialtyId] = useState('');
+  const [specialties, setSpecialties] = useState<Option[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ tone: 'error' | 'ok'; text: string } | null>(null);
+  const [initialOnboardingError, setInitialOnboardingError] = useState<string | null>(null);
   const [route, setRoute] = useState(() => window.location.hash.replace(/^#/, '') || '/');
   const [pathname, setPathname] = useState(() => window.location.pathname || '/');
 
@@ -48,6 +58,11 @@ export default function AuthGate() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!supabase) return;
+    void listSpecialties(supabase).then(setSpecialties);
+  }, []);
+
   const load = useCallback(async (next: Session | null) => {
     setSession(next);
     if (!supabase || !next) {
@@ -55,7 +70,31 @@ export default function AuthGate() {
       setLoading(false);
       return;
     }
-    setAccess(await resolveAccess(supabase, next.user));
+    let resolved = await resolveAccess(supabase, next.user);
+    if (resolved.audience === 'pending') {
+      const meta = (next.user.user_metadata ?? {}) as {
+        full_name?: string | null;
+        phone?: string | null;
+        specialty_id?: string | null;
+      };
+      const metaPhone = (meta.phone ?? '').trim();
+      const metaSpecialtyId = (meta.specialty_id ?? '').trim();
+      const metaFullName = (meta.full_name ?? '').trim();
+      if (metaPhone && metaSpecialtyId) {
+        const selfRes = await doctorSelfSignup(supabase, {
+          fullName: metaFullName,
+          phone: metaPhone,
+          specialtyId: metaSpecialtyId,
+        });
+        if (selfRes.ok) {
+          setInitialOnboardingError(null);
+          resolved = await resolveAccess(supabase, next.user);
+        } else {
+          setInitialOnboardingError(selfRes.message);
+        }
+      }
+    }
+    setAccess(resolved);
     setLoading(false);
   }, []);
 
@@ -74,11 +113,15 @@ export default function AuthGate() {
   const legalPage = resolveLegalPage(route, pathname);
 
   // Redirect rule: signed-in users only ever see the route their database role allows,
-  // plus the public /privacy and /terms pages.
+  // plus the public /privacy and /terms pages and #/product/<id> for officialCatalog.
   useEffect(() => {
     if (!access || legalPage) return;
     const home = ROUTE_FOR[access.audience];
-    if (home && route !== home) window.location.hash = home;
+    if (!home) return;
+    if (access.audience === 'officialCatalog' && parseProductRoute(route)) {
+      return;
+    }
+    if (route !== home) window.location.hash = home;
   }, [access, route, legalPage]);
 
   if (legalPage) {
@@ -114,11 +157,20 @@ export default function AuthGate() {
 
   if (session && access) {
     if (access.audience === 'pending') {
+      const meta = (session.user.user_metadata ?? {}) as {
+        full_name?: string | null;
+        phone?: string | null;
+        specialty_id?: string | null;
+      };
       return (
         <Onboarding
           client={client}
           authUserId={session.user.id}
           email={access.email}
+          initialFullName={meta.full_name ?? ''}
+          initialPhone={meta.phone ?? ''}
+          initialSpecialtyId={meta.specialty_id ?? ''}
+          initialError={initialOnboardingError}
           onChanged={() => void load(session)}
           onSignOut={() => void signOut()}
         />
@@ -158,13 +210,33 @@ export default function AuthGate() {
         const res = await submitSignUpWithConsent(client, {
           email: cleanEmail,
           password,
+          fullName,
+          phone,
+          specialtyId,
           acceptedTerms,
         });
-        setNotice(
-          !res.ok
-            ? { tone: 'error', text: res.message }
-            : { tone: 'ok', text: 'Account created. Confirm your email if asked, then wait for admin verification.' }
-        );
+        if (!res.ok) {
+          setNotice({ tone: 'error', text: res.message });
+        } else if (res.sessionCreated) {
+          const selfRes = await doctorSelfSignup(client, {
+            fullName,
+            phone,
+            specialtyId,
+          });
+          if (!selfRes.ok) {
+            setInitialOnboardingError(selfRes.message);
+            setNotice({ tone: 'error', text: selfRes.message });
+          } else {
+            setInitialOnboardingError(null);
+          }
+          const { data } = await client.auth.getSession();
+          await load(data.session);
+        } else {
+          setNotice({
+            tone: 'ok',
+            text: 'Check your email to confirm your account, then sign in.',
+          });
+        }
       } else {
         const { error } = await client.auth.resetPasswordForEmail(cleanEmail, {
           redirectTo: window.location.origin + import.meta.env.BASE_URL,
@@ -185,41 +257,87 @@ export default function AuthGate() {
     <Screen>
       <form onSubmit={submit} className="space-y-3">
         <p className="text-sm text-[#B8C3CC]">
-          {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create a physician account' : 'Reset password'}
+          {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create a doctor account' : 'Reset password'}
         </p>
-        <input
-          className={inputClass}
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        {mode !== 'reset' && (
+        <Field label="Email">
           <input
             className={inputClass}
-            type="password"
+            type="email"
             required
-            minLength={8}
-            autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
+        </Field>
+        {mode !== 'reset' && (
+          <Field label="Password">
+            <input
+              className={inputClass}
+              type="password"
+              required
+              minLength={8}
+              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              placeholder="Password (at least 8 characters)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
         )}
         {mode === 'signup' && (
-          <TermsAcceptanceCheckbox
-            checked={acceptedTerms}
-            onChange={setAcceptedTerms}
-          />
+          <>
+            <Field label="Full name (optional)">
+              <input
+                className={inputClass}
+                type="text"
+                autoComplete="name"
+                placeholder="Dr. Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </Field>
+            <Field label="Phone number">
+              <input
+                className={inputClass}
+                type="tel"
+                required
+                autoComplete="tel"
+                placeholder="+964 770 123 4567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </Field>
+            <Field label="Medical specialty">
+              <select
+                className={inputClass}
+                required
+                value={specialtyId}
+                onChange={(e) => setSpecialtyId(e.target.value)}
+              >
+                <option value="">— Select specialty —</option>
+                {specialties.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <TermsAcceptanceCheckbox
+              checked={acceptedTerms}
+              onChange={setAcceptedTerms}
+            />
+          </>
         )}
         {notice && (
           <p className={`text-sm ${notice.tone === 'error' ? 'text-[#FF7272]' : 'text-[#38C976]'}`}>{notice.text}</p>
         )}
         <button
           className={buttonClass}
-          disabled={busy || (mode === 'signup' && !acceptedTerms)}
+          disabled={
+            busy ||
+            (mode === 'signup' &&
+              (!acceptedTerms || !phone.trim() || !specialtyId.trim()))
+          }
           type="submit"
         >
           {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send reset link'}

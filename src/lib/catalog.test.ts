@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   CATALOG_ID_CHUNK_SIZE,
   CATALOG_PAGE_SIZE,
+  buildProductRouteHash,
   buildUpsertMarketArgs,
   fetchAllPages,
   fetchInChunksPaged,
@@ -16,8 +17,10 @@ import {
   invokeAiFindCompanyProducts,
   invokeAiSuggestCompanies,
   isDomainOnlySourceUrl,
+  loadDoctorHomeSuggestions,
   loadProductAiDraft,
   loadProductDetail,
+  parseProductRoute,
   parsePublishChecklistErrors,
   publishCheckedProducts,
   rpcAdminArchiveCompany,
@@ -999,6 +1002,91 @@ describe('Admin Review Drafts helpers', () => {
           ok: false,
           message: 'Publish checklist failed (company_not_verified)',
           reasons: ['Company is not active'],
+        },
+      ],
+    });
+  });
+
+  it('parses and formats #/product/<id> routes and loads doctor_home_suggestions', async () => {
+    expect(parseProductRoute('#/product/123e4567-e89b-12d3-a456-426614174000')).toBe(
+      '123e4567-e89b-12d3-a456-426614174000'
+    );
+    expect(parseProductRoute('/product/prod-abc/')).toBe('prod-abc');
+    expect(parseProductRoute('#/catalog')).toBeNull();
+    expect(parseProductRoute('#/product/')).toBeNull();
+    expect(parseProductRoute('')).toBeNull();
+    expect(buildProductRouteHash('prod-123')).toBe('#/product/prod-123');
+
+    const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const client = {
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        rpcCalls.push({ fn, args });
+        return {
+          data: [
+            {
+              product_id: 'prod-1',
+              brand_name_en: 'Concor 5 mg',
+              generic_name_en: 'Bisoprolol',
+              company_id: 'comp-1',
+              company_name: 'Merck',
+              drug_class_name_en: 'Beta Blockers',
+              category: 'prescription_drug',
+              strength: '5 mg',
+              dosage_form: 'Film-coated tablet',
+              specialty_id: 'spec-1',
+              specialty_name: 'Cardiology',
+            },
+            {
+              product_id: 'prod-2',
+              brand_name_en: 'Entresto 100 mg',
+              generic_name_en: 'Sacubitril / Valsartan',
+              company_id: 'comp-2',
+              company_name: 'Novartis',
+              drug_class_name_en: 'ARNI',
+              category: 'prescription_drug',
+              strength: '100 mg',
+              dosage_form: 'Film-coated tablet',
+              specialty_id: 'spec-1',
+              specialty_name: 'Cardiology',
+            },
+          ],
+          error: null,
+        };
+      },
+    } as unknown as SupabaseClient;
+
+    const res = await loadDoctorHomeSuggestions(client, 2);
+    expect(rpcCalls).toEqual([
+      { fn: 'doctor_home_suggestions', args: { p_limit: 2 } },
+    ]);
+    expect(res).toEqual({
+      ok: true,
+      data: [
+        {
+          productId: 'prod-1',
+          brandNameEn: 'Concor 5 mg',
+          genericNameEn: 'Bisoprolol',
+          companyId: 'comp-1',
+          companyName: 'Merck',
+          drugClassNameEn: 'Beta Blockers',
+          category: 'prescription_drug',
+          strength: '5 mg',
+          dosageForm: 'Film-coated tablet',
+          specialtyId: 'spec-1',
+          specialtyName: 'Cardiology',
+        },
+        {
+          productId: 'prod-2',
+          brandNameEn: 'Entresto 100 mg',
+          genericNameEn: 'Sacubitril / Valsartan',
+          companyId: 'comp-2',
+          companyName: 'Novartis',
+          drugClassNameEn: 'ARNI',
+          category: 'prescription_drug',
+          strength: '100 mg',
+          dosageForm: 'Film-coated tablet',
+          specialtyId: 'spec-1',
+          specialtyName: 'Cardiology',
         },
       ],
     });

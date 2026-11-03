@@ -58,6 +58,16 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (Doctor self sign-up, specialty home page, standalone drug page)
+- **Doctor sign-up without admin approval (`src/lib/onboarding.ts`, `src/components/AuthGate.tsx`, `src/components/Onboarding.tsx`):**
+  - Updated the sign-up form with Email, Password, Full name (optional), Phone number (required), Medical specialty (required dropdown of active specialties sorted A–Z), and the Terms/Privacy checkbox; removed licence number, workplace, and "wait for admin verification" text.
+  - Passed `full_name`, `phone`, and `specialty_id` in `auth.signUp` `options.data`, and called `client.rpc('doctor_self_signup', { p_full_name, p_phone, p_specialty_id })` immediately when a session exists (right after sign-up or on first sign-in after email confirmation). If email confirmation is required, displays `"Check your email to confirm your account, then sign in."`
+  - Added a `"My profile"` option in `DoctorCatalog.tsx` for doctors to update full name, phone, and specialty (calls `doctor_self_signup` again and refreshes specialty suggestions).
+- **Doctor home page & standalone drug page (`src/lib/catalog.ts`, `src/components/DoctorCatalog.tsx`, `src/components/LegalPages.tsx`):**
+  - When search and filters are empty, `DoctorCatalog` shows only `"For your specialty: <specialty_name>"` (2 drugs from `client.rpc('doctor_home_suggestions')`) and a separated `"Sponsored"` placeholder box (`"Advertising space"`). Search results load only when the doctor types or selects a filter.
+  - Tapping any drug navigates to its own `#/product/<id>` page scrolled to the top with a `"Back"` button (and browser/phone back support) that preserves search text, filters, and results. Ensured `import.meta.env.BASE_URL` safety for `/pharmaconnect/`.
+  - Added unit tests in `src/lib/onboarding.test.ts` and `src/lib/catalog.test.ts`; `npm run lint`, `npm test`, and `npm run build` all pass.
+
 ### 2026-11-03 — Claude (doctor self sign-up, specialty suggestions, public link)
 - **Owner decisions:** doctors sign up with email, phone and medical specialty and
   can use the app at once (no admin approval, no licence). The home page shows

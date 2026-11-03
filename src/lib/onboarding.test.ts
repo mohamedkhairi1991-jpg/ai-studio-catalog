@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   COMPANY_SELF_SIGNUP_ENABLED,
   blankToNull,
+  doctorSelfSignup,
   onboardingStep,
   reviewProfessional,
   submitCompanyApplication,
@@ -10,6 +11,7 @@ import {
   submitSignUpWithConsent,
   validateCompanyForm,
   validateDoctorForm,
+  validateDoctorSelfSignupForm,
   validateSignUpInput,
   verifyCompany,
   type CompanyForm,
@@ -76,7 +78,7 @@ describe('validation mirrors database rules', () => {
     countryId: 'iq', cityId: '', companyName: 'A', legalName: 'A LLC',
     description: '', websiteUrl: '', contactEmail: '', contactPhone: '',
   };
-  it('requires workplace and license for doctors and blocks when terms are not accepted', () => {
+  it('requires workplace and license for legacy doctor form and blocks when terms are not accepted', () => {
     expect(validateDoctorForm({ specialtyId: '', workplace: ' ', licenseNumber: '' })).toHaveLength(2);
     expect(validateDoctorForm({ specialtyId: '', workplace: 'Clinic', licenseNumber: '123' })).toHaveLength(0);
     expect(
@@ -97,11 +99,47 @@ describe('validation mirrors database rules', () => {
     ).toHaveLength(0);
   });
 
-  it('blocks sign-up until the Terms of Use and Privacy Policy checkbox is ticked', async () => {
+  it('requires phone number, medical specialty, and Terms/Privacy acceptance on doctor sign-up', async () => {
     expect(
       validateSignUpInput({
         email: 'doctor@hospital.iq',
         password: 'Password123',
+        fullName: 'Dr. Ali',
+        phone: ' ',
+        specialtyId: 'spec-cardiology',
+        acceptedTerms: true,
+      })
+    ).toBe('Phone number is required.');
+
+    expect(
+      validateSignUpInput({
+        email: 'doctor@hospital.iq',
+        password: 'Password123',
+        fullName: 'Dr. Ali',
+        phone: 'abc',
+        specialtyId: 'spec-cardiology',
+        acceptedTerms: true,
+      })
+    ).toBe('Enter a valid phone number.');
+
+    expect(
+      validateSignUpInput({
+        email: 'doctor@hospital.iq',
+        password: 'Password123',
+        fullName: 'Dr. Ali',
+        phone: '+964 770 123 4567',
+        specialtyId: ' ',
+        acceptedTerms: true,
+      })
+    ).toBe('Choose your medical specialty.');
+
+    expect(
+      validateSignUpInput({
+        email: 'doctor@hospital.iq',
+        password: 'Password123',
+        fullName: 'Dr. Ali',
+        phone: '+964 770 123 4567',
+        specialtyId: 'spec-cardiology',
         acceptedTerms: false,
       })
     ).toBe('You must accept the Terms of Use and the Privacy Policy.');
@@ -110,16 +148,35 @@ describe('validation mirrors database rules', () => {
       validateSignUpInput({
         email: 'doctor@hospital.iq',
         password: 'Password123',
+        fullName: 'Dr. Ali',
+        phone: '+964 770 123 4567',
+        specialtyId: 'spec-cardiology',
         acceptedTerms: true,
       })
     ).toBeNull();
 
-    const signUpCalls: Array<{ email: string; password: string }> = [];
+    expect(
+      validateDoctorSelfSignupForm({
+        fullName: '',
+        phone: '',
+        specialtyId: '',
+      })
+    ).toEqual(['Phone number is required.', 'Choose your medical specialty.']);
+
+    const signUpCalls: Array<{
+      email: string;
+      password: string;
+      options?: { data?: Record<string, unknown> };
+    }> = [];
     const client = {
       auth: {
-        signUp: async (creds: { email: string; password: string }) => {
+        signUp: async (creds: {
+          email: string;
+          password: string;
+          options?: { data?: Record<string, unknown> };
+        }) => {
           signUpCalls.push(creds);
-          return { data: {}, error: null };
+          return { data: { session: { access_token: 'tok' } }, error: null };
         },
       },
     } as unknown as SupabaseClient;
@@ -127,6 +184,9 @@ describe('validation mirrors database rules', () => {
     const blocked = await submitSignUpWithConsent(client, {
       email: 'Doctor@Hospital.iq',
       password: 'Password123',
+      fullName: 'Dr. Ali',
+      phone: '+964 770 123 4567',
+      specialtyId: 'spec-cardiology',
       acceptedTerms: false,
     });
     expect(blocked).toEqual({
@@ -138,13 +198,22 @@ describe('validation mirrors database rules', () => {
     const allowed = await submitSignUpWithConsent(client, {
       email: 'Doctor@Hospital.iq',
       password: 'Password123',
+      fullName: '  Dr. Ali  ',
+      phone: ' +964 770 123 4567 ',
+      specialtyId: ' spec-cardiology ',
       acceptedTerms: true,
     });
-    expect(allowed).toEqual({ ok: true });
-    expect(signUpCalls).toEqual([
-      { email: 'doctor@hospital.iq', password: 'Password123' },
-    ]);
+    expect(allowed).toEqual({ ok: true, sessionCreated: true });
+    expect(signUpCalls).toHaveLength(1);
+    expect(signUpCalls[0]?.email).toBe('doctor@hospital.iq');
+    expect(signUpCalls[0]?.password).toBe('Password123');
+    expect(signUpCalls[0]?.options?.data).toEqual({
+      full_name: 'Dr. Ali',
+      phone: '+964 770 123 4567',
+      specialty_id: 'spec-cardiology',
+    });
   });
+
   it('accepts a minimal valid company and rejects bad fields', () => {
     expect(validateCompanyForm(company)).toHaveLength(0);
     expect(validateCompanyForm({ ...company, countryId: '' })).toHaveLength(1);
@@ -163,6 +232,11 @@ describe('database function calls match the migrations', () => {
   it('calls every RPC with real names and parameters', async () => {
     const calls: RpcCall[] = [];
     const client = recordingClient(calls);
+    await doctorSelfSignup(client, {
+      fullName: 'Dr. Ali',
+      phone: '+964 770 123 4567',
+      specialtyId: '00000000-0000-0000-0000-000000000001',
+    });
     await submitDoctorRecord(client, { specialtyId: '', workplace: 'W', licenseNumber: 'L' }, false);
     await submitDoctorRecord(client, { specialtyId: 's', workplace: 'W', licenseNumber: 'L' }, true);
     await submitCompanyApplication(client, {
@@ -172,6 +246,7 @@ describe('database function calls match the migrations', () => {
     await reviewProfessional(client, 'id', 'approved', '');
     await verifyCompany(client, 'id', 'checked');
     expect(calls.map((c) => c.fn)).toEqual([
+      'doctor_self_signup',
       'create_my_healthcare_professional_record',
       'update_my_healthcare_professional_record',
       'create_company_application',
@@ -202,6 +277,8 @@ describe('operating model', () => {
     expect(resolveLegalPage('#/terms', '/')).toBe('terms');
     expect(resolveLegalPage('', '/privacy')).toBe('privacy');
     expect(resolveLegalPage('', '/terms')).toBe('terms');
+    expect(resolveLegalPage('', '/pharmaconnect/privacy')).toBe('privacy');
+    expect(resolveLegalPage('', '/pharmaconnect/terms')).toBe('terms');
     expect(resolveLegalPage('#/catalog', '/')).toBeNull();
     expect(LEGAL_LAST_UPDATED).toBe('Last updated: 3 November 2026');
     expect(TERMS_OF_USE_SECTIONS).toHaveLength(9);

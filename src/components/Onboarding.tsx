@@ -2,17 +2,17 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   COMPANY_SELF_SIGNUP_ENABLED,
+  doctorSelfSignup,
   listCities,
   listCountries,
   listSpecialties,
+  loadDoctorProfileSummary,
   loadOnboardingState,
   onboardingStep,
   submitCompanyApplication,
-  submitDoctorRecord,
   validateCompanyForm,
-  validateDoctorForm,
+  validateDoctorSelfSignupForm,
   type CompanyForm,
-  type DoctorForm,
   type OnboardingState,
   type Option,
 } from '../lib/onboarding';
@@ -30,6 +30,10 @@ interface Props {
   client: SupabaseClient;
   authUserId: string;
   email: string;
+  initialFullName?: string;
+  initialPhone?: string;
+  initialSpecialtyId?: string;
+  initialError?: string | null;
   onChanged: () => void;
   onSignOut: () => void;
 }
@@ -50,32 +54,49 @@ const emptyCompany: CompanyForm = {
   contactPhone: '',
 };
 
-export default function Onboarding({ client, authUserId, email, onChanged, onSignOut }: Props) {
+export default function Onboarding({
+  client,
+  authUserId,
+  email,
+  initialFullName = '',
+  initialPhone = '',
+  initialSpecialtyId = '',
+  initialError = null,
+  onChanged,
+  onSignOut,
+}: Props) {
   const [state, setState] = useState<OnboardingState | null>(null);
   const [loading, setLoading] = useState(true);
   const [path, setPath] = useState<Path>(initialPath);
   const [busy, setBusy] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<string[]>(initialError ? [initialError] : []);
   const [specialties, setSpecialties] = useState<Option[]>([]);
   const [countries, setCountries] = useState<Option[]>([]);
   const [cities, setCities] = useState<Option[]>([]);
-  const [doctor, setDoctor] = useState<DoctorForm>({ specialtyId: '', workplace: '', licenseNumber: '' });
+  const [fullName, setFullName] = useState(initialFullName);
+  const [phone, setPhone] = useState(initialPhone);
+  const [specialtyId, setSpecialtyId] = useState(initialSpecialtyId);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [company, setCompany] = useState<CompanyForm>(emptyCompany);
 
   const reload = useCallback(async () => {
     setLoading(true);
-    const next = await loadOnboardingState(client, authUserId);
+    const [next, summary] = await Promise.all([
+      loadOnboardingState(client, authUserId),
+      loadDoctorProfileSummary(client, authUserId),
+    ]);
     setState(next);
-    if (next?.professional) {
-      setDoctor({
-        specialtyId: next.professional.specialtyId ?? '',
-        workplace: next.professional.workplace ?? '',
-        licenseNumber: next.professional.licenseNumber ?? '',
-      });
-    }
+    setFullName((prev) => prev || summary.fullName || initialFullName);
+    setPhone((prev) => prev || summary.phone || initialPhone);
+    setSpecialtyId(
+      (prev) =>
+        prev ||
+        summary.specialtyId ||
+        next?.professional?.specialtyId ||
+        initialSpecialtyId
+    );
     setLoading(false);
-  }, [client, authUserId]);
+  }, [client, authUserId, initialFullName, initialPhone, initialSpecialtyId]);
 
   useEffect(() => {
     void reload();
@@ -93,7 +114,9 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
   if (loading || !state) {
     return (
       <Screen>
-        <p className="text-sm text-[#B8C3CC]">{loading ? 'Loading…' : 'Your profile is not ready yet. Please sign out and sign in again.'}</p>
+        <p className="text-sm text-[#B8C3CC]">
+          {loading ? 'Loading…' : 'Your profile is not ready yet. Please sign out and sign in again.'}
+        </p>
         {!loading && (
           <button className={buttonClass} onClick={onSignOut}>
             Sign out
@@ -110,15 +133,24 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
     onChanged();
   };
 
-  const submitDoctor = async (e: FormEvent, update: boolean) => {
+  const submitDoctor = async (e: FormEvent) => {
     e.preventDefault();
-    const problems = validateDoctorForm(
-      update ? doctor : { ...doctor, acceptedTerms }
-    );
+    const problems = validateDoctorSelfSignupForm({
+      fullName,
+      phone,
+      specialtyId,
+    });
+    if (!acceptedTerms) {
+      problems.push('You must accept the Terms of Use and the Privacy Policy.');
+    }
     setErrors(problems);
     if (problems.length > 0) return;
     setBusy(true);
-    const result = await submitDoctorRecord(client, doctor, update);
+    const result = await doctorSelfSignup(client, {
+      fullName,
+      phone,
+      specialtyId,
+    });
     setBusy(false);
     if (!result.ok) return setErrors([result.message]);
     setPath(initialPath);
@@ -142,7 +174,7 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
   const footer = (
     <div className="flex gap-2">
       <button className={secondaryButtonClass} onClick={() => void refresh()}>
-        Check status
+        Refresh
       </button>
       <button className={secondaryButtonClass} onClick={onSignOut}>
         Sign out
@@ -150,11 +182,37 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
     </div>
   );
 
-  const doctorFields = (update: boolean) => (
-    <form onSubmit={(e) => void submitDoctor(e, update)} className="space-y-3">
-      <Field label="Specialty (optional)">
-        <select className={inputClass} value={doctor.specialtyId} onChange={(e) => setDoctor({ ...doctor, specialtyId: e.target.value })}>
-          <option value="">— Not specified —</option>
+  const doctorFields = () => (
+    <form onSubmit={(e) => void submitDoctor(e)} className="space-y-3">
+      <Field label="Full name (optional)">
+        <input
+          className={inputClass}
+          type="text"
+          autoComplete="name"
+          placeholder="Dr. Full Name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
+      </Field>
+      <Field label="Phone number">
+        <input
+          className={inputClass}
+          type="tel"
+          required
+          autoComplete="tel"
+          placeholder="+964 770 123 4567"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      </Field>
+      <Field label="Medical specialty">
+        <select
+          className={inputClass}
+          required
+          value={specialtyId}
+          onChange={(e) => setSpecialtyId(e.target.value)}
+        >
+          <option value="">— Select specialty —</option>
           {specialties.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
@@ -162,57 +220,27 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
           ))}
         </select>
       </Field>
-      <Field label="Workplace">
-        <input className={inputClass} value={doctor.workplace} onChange={(e) => setDoctor({ ...doctor, workplace: e.target.value })} />
-      </Field>
-      <Field label="Medical license number">
-        <input className={inputClass} value={doctor.licenseNumber} onChange={(e) => setDoctor({ ...doctor, licenseNumber: e.target.value })} />
-      </Field>
-      {!update && (
-        <TermsAcceptanceCheckbox
-          checked={acceptedTerms}
-          onChange={setAcceptedTerms}
-        />
-      )}
+      <TermsAcceptanceCheckbox
+        checked={acceptedTerms}
+        onChange={setAcceptedTerms}
+      />
       <Errors items={errors} />
       <button
         className={buttonClass}
-        disabled={busy || (!update && !acceptedTerms)}
+        disabled={busy || !acceptedTerms || !phone.trim() || !specialtyId.trim()}
         type="submit"
       >
-        {update ? 'Resubmit for verification' : 'Submit for verification'}
+        Continue to catalog
       </button>
     </form>
   );
-
-  if (step === 'doctor_pending') {
-    return (
-      <Screen>
-        {header}
-        <p className="text-sm text-[#F59E0B]">Your physician registration is awaiting verification by a platform administrator.</p>
-        {footer}
-      </Screen>
-    );
-  }
 
   if (step === 'doctor_rejected') {
     return (
       <Screen>
         {header}
-        <p className="text-sm text-[#FF7272]">Your physician registration was not approved.</p>
+        <p className="text-sm text-[#FF7272]">Your doctor account is not active.</p>
         {state.professional?.reason && <p className="text-sm text-[#B8C3CC]">Reason: {state.professional.reason}</p>}
-        {footer}
-      </Screen>
-    );
-  }
-
-  if (step === 'doctor_documents') {
-    return (
-      <Screen>
-        {header}
-        <p className="text-sm text-[#F59E0B]">The administrator asked for more information.</p>
-        {state.professional?.reason && <p className="text-sm text-[#B8C3CC]">Note: {state.professional.reason}</p>}
-        {doctorFields(true)}
         {footer}
       </Screen>
     );
@@ -223,26 +251,22 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
       <Screen>
         {header}
         <p className="text-sm text-[#F59E0B]">
-          Your application for {state.company?.name} is awaiting verification by a platform administrator.
+          Your application for {state.company?.name} is under review.
         </p>
         {footer}
       </Screen>
     );
   }
 
-  // step === 'choose'
-  if (path === 'doctor') {
+  if (path === 'doctor' || step === 'doctor_pending' || step === 'doctor_documents') {
     return (
       <Screen>
         {header}
-        <p className="text-sm">Physician registration</p>
-        {!COMPANY_SELF_SIGNUP_ENABLED && (
-          <p className="text-sm text-[#B8C3CC]">
-            Register to access the official Iraq product catalog. A platform administrator verifies every physician
-            before access is granted.
-          </p>
-        )}
-        {doctorFields(false)}
+        <p className="text-sm font-medium text-[#F2F5F8]">Complete your doctor profile</p>
+        <p className="text-sm text-[#B8C3CC]">
+          Enter your phone number and medical specialty to open the Iraq pharmaceutical directory.
+        </p>
+        {doctorFields()}
         {COMPANY_SELF_SIGNUP_ENABLED ? (
           <button className={secondaryButtonClass} onClick={() => { setPath('choose'); setErrors([]); }}>
             Back

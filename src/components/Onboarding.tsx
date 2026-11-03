@@ -16,7 +16,15 @@ import {
   type OnboardingState,
   type Option,
 } from '../lib/onboarding';
-import { Errors, Field, Screen, buttonClass, inputClass, secondaryButtonClass } from './ui';
+import {
+  Errors,
+  Field,
+  Screen,
+  TermsAcceptanceCheckbox,
+  buttonClass,
+  inputClass,
+  secondaryButtonClass,
+} from './ui';
 
 interface Props {
   client: SupabaseClient;
@@ -52,6 +60,7 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
   const [countries, setCountries] = useState<Option[]>([]);
   const [cities, setCities] = useState<Option[]>([]);
   const [doctor, setDoctor] = useState<DoctorForm>({ specialtyId: '', workplace: '', licenseNumber: '' });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [company, setCompany] = useState<CompanyForm>(emptyCompany);
 
   const reload = useCallback(async () => {
@@ -103,7 +112,9 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
 
   const submitDoctor = async (e: FormEvent, update: boolean) => {
     e.preventDefault();
-    const problems = validateDoctorForm(doctor);
+    const problems = validateDoctorForm(
+      update ? doctor : { ...doctor, acceptedTerms }
+    );
     setErrors(problems);
     if (problems.length > 0) return;
     setBusy(true);
@@ -157,8 +168,18 @@ export default function Onboarding({ client, authUserId, email, onChanged, onSig
       <Field label="Medical license number">
         <input className={inputClass} value={doctor.licenseNumber} onChange={(e) => setDoctor({ ...doctor, licenseNumber: e.target.value })} />
       </Field>
+      {!update && (
+        <TermsAcceptanceCheckbox
+          checked={acceptedTerms}
+          onChange={setAcceptedTerms}
+        />
+      )}
       <Errors items={errors} />
-      <button className={buttonClass} disabled={busy} type="submit">
+      <button
+        className={buttonClass}
+        disabled={busy || (!update && !acceptedTerms)}
+        type="submit"
+      >
         {update ? 'Resubmit for verification' : 'Submit for verification'}
       </button>
     </form>

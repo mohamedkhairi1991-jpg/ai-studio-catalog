@@ -58,6 +58,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (Privacy Policy and Terms of Use)
+- **Added English-only Privacy Policy (`/privacy`) and Terms of Use (`/terms`) pages (`src/components/LegalPages.tsx`, `src/components/ui.tsx`, `src/components/AuthGate.tsx`, `src/components/Onboarding.tsx`, `src/lib/onboarding.ts`, `src/lib/onboarding.test.ts`):**
+  - Publicly reachable without signing in (and from any signed-in view) at `/privacy` and `/terms` (and `#/privacy`, `#/terms`), showing `"Last updated: 3 November 2026"` and the 9 Terms of Use / 7 Privacy Policy plain-English sections.
+  - Added a compact `LegalFooter` with `"Privacy"` and `"Terms"` links across all screens (`Screen` in `ui.tsx`, `DoctorCatalog.tsx`, `CompanyCatalog.tsx`, `AdminCatalogReview.tsx`, and `App.tsx`).
+  - Added the required `"I have read and accept the Terms of Use and the Privacy Policy"` checkbox (with both linked) to sign-up and physician registration, blocking submission until ticked without changing any database or auth RPC calls.
+  - Added unit tests in `src/lib/onboarding.test.ts` verifying sign-up is blocked until the checkbox is ticked and verifying route resolution. `npm run lint`, `npm test`, and `npm run build` all pass.
+
 ### 2026-11-03 — Google AI Studio (English-only frontend)
 - **Removed all Arabic localization, fields, and RTL support in `src/`:**
   - `src/components/Header.tsx`: removed the English/Arabic language toggle and all `rtl:` classes.

@@ -63,6 +63,8 @@ import {
   RegistrationStatus,
   TaxonomyItem,
 } from './types/catalog';
+import { LegalDocumentPage, resolveLegalPage } from './components/LegalPages';
+import { LegalFooter, TermsAcceptanceCheckbox } from './components/ui';
 
 type ActiveWorkspace = 'doctor' | 'company' | 'admin' | 'auth' | 'readiness';
 
@@ -400,6 +402,26 @@ export default function App() {
   const [signupVerificationMode, setSignupVerificationMode] = useState<
     'approved' | 'pending'
   >('approved');
+  const [signupAcceptedTerms, setSignupAcceptedTerms] = useState<boolean>(false);
+  const [routeHash, setRouteHash] = useState<string>(
+    () => window.location.hash.replace(/^#/, '') || '/'
+  );
+  const [routePath, setRoutePath] = useState<string>(
+    () => window.location.pathname || '/'
+  );
+
+  useEffect(() => {
+    const syncLocation = () => {
+      setRouteHash(window.location.hash.replace(/^#/, '') || '/');
+      setRoutePath(window.location.pathname || '/');
+    };
+    window.addEventListener('hashchange', syncLocation);
+    window.addEventListener('popstate', syncLocation);
+    return () => {
+      window.removeEventListener('hashchange', syncLocation);
+      window.removeEventListener('popstate', syncLocation);
+    };
+  }, []);
 
   // Admin Workspace state
   const [adminViewMode, setAdminViewMode] = useState<
@@ -686,6 +708,13 @@ export default function App() {
 
   const handleDoctorSignUpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!signupAcceptedTerms) {
+      setBannerNotice({
+        tone: 'error',
+        message: 'You must accept the Terms of Use and the Privacy Policy.',
+      });
+      return;
+    }
     const cleanEmail = signupEmail.trim().toLowerCase();
     if (!cleanEmail) return;
 
@@ -751,6 +780,7 @@ export default function App() {
     setSignupWorkplace('');
     setSignupLicenseNumber('');
     setSignupPhone('');
+    setSignupAcceptedTerms(false);
 
     setBannerNotice({
       tone: newDoctor.verificationStatus === 'approved' ? 'success' : 'warning',
@@ -2210,6 +2240,11 @@ export default function App() {
       signedUrlToken: token,
     });
   };
+
+  const legalPage = resolveLegalPage(routeHash, routePath);
+  if (legalPage) {
+    return <LegalDocumentPage page={legalPage} backRoute="/" />;
+  }
 
   return (
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
@@ -7472,9 +7507,15 @@ export default function App() {
                     </div>
                   </div>
 
+                  <TermsAcceptanceCheckbox
+                    checked={signupAcceptedTerms}
+                    onChange={setSignupAcceptedTerms}
+                  />
+
                   <button
                     type="submit"
-                    className="w-full py-3 px-4 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] text-[#F2F5F8] text-[14px] font-bold flex items-center justify-center gap-2 transition cursor-pointer"
+                    disabled={!signupAcceptedTerms}
+                    className="w-full py-3 px-4 rounded-[10px] bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-60 border border-[#5DB4F2] text-[#F2F5F8] text-[14px] font-bold flex items-center justify-center gap-2 transition cursor-pointer"
                   >
                     <Stethoscope className="w-4 h-4" />
                     <span>Complete Physician Sign Up</span>
@@ -7972,6 +8013,8 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <LegalFooter />
 
       {/* =====================================================================
           MODAL: CREATE / EDIT OFFICIAL CATALOG PRODUCT

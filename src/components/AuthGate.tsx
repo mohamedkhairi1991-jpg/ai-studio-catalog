@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { resolveAccess, type AccessResult, type Audience } from '../lib/access';
+import { submitSignUpWithConsent } from '../lib/onboarding';
 import { AdminCatalogReview } from './AdminCatalogReview';
 import { CompanyCatalog } from './CompanyCatalog';
 import { DoctorCatalog } from './DoctorCatalog';
+import { LegalDocumentPage, resolveLegalPage } from './LegalPages';
 import Onboarding from './Onboarding';
-import { Screen, buttonClass, inputClass } from './ui';
+import { Screen, TermsAcceptanceCheckbox, buttonClass, inputClass } from './ui';
 
 const ROUTE_FOR: Partial<Record<Audience, string>> = {
   officialCatalog: '/catalog',
@@ -27,14 +29,23 @@ export default function AuthGate() {
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ tone: 'error' | 'ok'; text: string } | null>(null);
   const [route, setRoute] = useState(() => window.location.hash.replace(/^#/, '') || '/');
+  const [pathname, setPathname] = useState(() => window.location.pathname || '/');
 
   useEffect(() => {
-    const onHash = () => setRoute(window.location.hash.replace(/^#/, '') || '/');
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
+    const syncLocation = () => {
+      setRoute(window.location.hash.replace(/^#/, '') || '/');
+      setPathname(window.location.pathname || '/');
+    };
+    window.addEventListener('hashchange', syncLocation);
+    window.addEventListener('popstate', syncLocation);
+    return () => {
+      window.removeEventListener('hashchange', syncLocation);
+      window.removeEventListener('popstate', syncLocation);
+    };
   }, []);
 
   const load = useCallback(async (next: Session | null) => {
@@ -60,12 +71,20 @@ export default function AuthGate() {
     return () => data.subscription.unsubscribe();
   }, [load]);
 
-  // Redirect rule: signed-in users only ever see the route their database role allows.
+  const legalPage = resolveLegalPage(route, pathname);
+
+  // Redirect rule: signed-in users only ever see the route their database role allows,
+  // plus the public /privacy and /terms pages.
   useEffect(() => {
-    if (!access) return;
+    if (!access || legalPage) return;
     const home = ROUTE_FOR[access.audience];
     if (home && route !== home) window.location.hash = home;
-  }, [access, route]);
+  }, [access, route, legalPage]);
+
+  if (legalPage) {
+    const backRoute = (access && ROUTE_FOR[access.audience]) || '/';
+    return <LegalDocumentPage page={legalPage} backRoute={backRoute} />;
+  }
 
   if (!isSupabaseConfigured || !supabase) {
     return (
@@ -136,10 +155,14 @@ export default function AuthGate() {
         const { error } = await client.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) setNotice({ tone: 'error', text: 'Sign-in failed. Check your email and password.' });
       } else if (mode === 'signup') {
-        const { error } = await client.auth.signUp({ email: cleanEmail, password });
+        const res = await submitSignUpWithConsent(client, {
+          email: cleanEmail,
+          password,
+          acceptedTerms,
+        });
         setNotice(
-          error
-            ? { tone: 'error', text: error.message }
+          !res.ok
+            ? { tone: 'error', text: res.message }
             : { tone: 'ok', text: 'Account created. Confirm your email if asked, then wait for admin verification.' }
         );
       } else {
@@ -185,19 +208,42 @@ export default function AuthGate() {
             onChange={(e) => setPassword(e.target.value)}
           />
         )}
+        {mode === 'signup' && (
+          <TermsAcceptanceCheckbox
+            checked={acceptedTerms}
+            onChange={setAcceptedTerms}
+          />
+        )}
         {notice && (
           <p className={`text-sm ${notice.tone === 'error' ? 'text-[#FF7272]' : 'text-[#38C976]'}`}>{notice.text}</p>
         )}
-        <button className={buttonClass} disabled={busy} type="submit">
+        <button
+          className={buttonClass}
+          disabled={busy || (mode === 'signup' && !acceptedTerms)}
+          type="submit"
+        >
           {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send reset link'}
         </button>
       </form>
       <div className="flex justify-between text-xs text-[#5DB4F2]">
-        <button type="button" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}>
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === 'signin' ? 'signup' : 'signin');
+            setNotice(null);
+            setAcceptedTerms(false);
+          }}
+        >
           {mode === 'signin' ? 'Create account' : 'Back to sign in'}
         </button>
         {mode === 'signin' && (
-          <button type="button" onClick={() => setMode('reset')}>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('reset');
+              setNotice(null);
+            }}
+          >
             Forgot password?
           </button>
         )}

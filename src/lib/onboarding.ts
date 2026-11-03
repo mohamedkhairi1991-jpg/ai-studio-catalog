@@ -27,6 +27,13 @@ export interface DoctorForm {
   specialtyId: string;
   workplace: string;
   licenseNumber: string;
+  acceptedTerms?: boolean;
+}
+
+export interface SignUpCredentialsInput {
+  email: string;
+  password: string;
+  acceptedTerms: boolean;
 }
 
 export interface CompanyForm {
@@ -85,11 +92,27 @@ export function blankToNull(value: string): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
+export function validateSignUpInput(input: SignUpCredentialsInput): string | null {
+  if (!input.email.trim()) {
+    return 'Email is required.';
+  }
+  if (input.password.length < 8) {
+    return 'Password must be at least 8 characters.';
+  }
+  if (!input.acceptedTerms) {
+    return 'You must accept the Terms of Use and the Privacy Policy.';
+  }
+  return null;
+}
+
 // Mirrors the database constraints so users get a clear message before the server rejects.
 export function validateDoctorForm(form: DoctorForm): string[] {
   const errors: string[] = [];
   if (!form.workplace.trim()) errors.push('Workplace is required.');
   if (!form.licenseNumber.trim()) errors.push('License number is required for verification.');
+  if (form.acceptedTerms === false) {
+    errors.push('You must accept the Terms of Use and the Privacy Policy.');
+  }
   return errors;
 }
 
@@ -108,6 +131,19 @@ export function validateCompanyForm(form: CompanyForm): string[] {
 // ---------- Data access (all authorization is enforced by RLS and database functions) ----------
 type Result = { ok: true } | { ok: false; message: string };
 const fail = (message: string): Result => ({ ok: false, message });
+
+export async function submitSignUpWithConsent(
+  client: SupabaseClient,
+  input: SignUpCredentialsInput
+): Promise<Result> {
+  const problem = validateSignUpInput(input);
+  if (problem) return fail(problem);
+  const { error } = await client.auth.signUp({
+    email: input.email.trim().toLowerCase(),
+    password: input.password,
+  });
+  return error ? fail(error.message) : { ok: true };
+}
 
 export async function loadOnboardingState(client: SupabaseClient, authUserId: string): Promise<OnboardingState | null> {
   const { data: profile } = await client

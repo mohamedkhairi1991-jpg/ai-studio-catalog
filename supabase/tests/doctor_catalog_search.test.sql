@@ -104,9 +104,9 @@ select is(
 );
 
 select is(
-  (select brand_name_en from public.search_catalog_products('سيركورا')),
-  'Searcora 10 mg',
-  'Arabic brand names are searchable'
+  (select brand_name_ar from public.search_catalog_products('searcora')),
+  null::text,
+  'no Arabic brand name is stored (English-only catalog)'
 );
 
 select is(

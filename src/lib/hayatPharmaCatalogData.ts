@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_HAYAT_PHARMA: CompactDrug[] = [
   // 1. Biodal (Colecalciferol — Hayat Pharmaceutical Industries Co.)
   {
     brandName: 'Biodal 50000 IU',
-    brandNameAr: 'بيودال 50000 وحدة دولية',
     genericName: 'Colecalciferol',
     activeIngredients: ['Colecalciferol'],
     drugClass: 'Vitamin D3 (secosteroid calcium and bone homeostasis regulator)',
@@ -55,7 +53,6 @@ const RAW_HAYAT_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Biodal 5000 IU',
-    brandNameAr: 'بيودال 5000 وحدة دولية',
     genericName: 'Colecalciferol',
     activeIngredients: ['Colecalciferol'],
     drugClass: 'Vitamin D3 (secosteroid calcium and bone homeostasis regulator)',
@@ -87,7 +84,6 @@ const RAW_HAYAT_PHARMA: CompactDrug[] = [
   // 2. Xenodol (Lornoxicam — Hayat Pharmaceutical Industries Co.)
   {
     brandName: 'Xenodol 8 mg',
-    brandNameAr: 'زينودول 8 ملغ',
     genericName: 'Lornoxicam',
     activeIngredients: ['Lornoxicam'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, oxicam class)',
@@ -119,7 +115,6 @@ const RAW_HAYAT_PHARMA: CompactDrug[] = [
   // 3. Alpranax (Alprazolam — Hayat Pharmaceutical Industries Co.)
   {
     brandName: 'Alpranax 0.5 mg',
-    brandNameAr: 'ألبراناكس 0.5 ملغ',
     genericName: 'Alprazolam',
     activeIngredients: ['Alprazolam'],
     drugClass: 'Triazolobenzodiazepine anxiolytic',
@@ -152,7 +147,6 @@ const RAW_HAYAT_PHARMA: CompactDrug[] = [
 export const HAYAT_PHARMA_PRODUCTS: AiProductDraft[] = RAW_HAYAT_PHARMA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

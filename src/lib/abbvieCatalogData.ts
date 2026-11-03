@@ -4,7 +4,6 @@ const ABBVIE_SRC = (title: string, url: string): AiDraftSource[] => [{ title, ur
 
 interface CompactAbbvieDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClass: string;
@@ -26,7 +25,6 @@ function toAbbvieProductDraft(item: CompactAbbvieDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   // ===========================================================================
   {
     brandName: 'Humira 40 mg/0.4 mL Pre-filled Pen',
-    brandNameAr: 'هيوميرا 40 ملغ/0.4 مل قلم',
     genericName: 'Adalimumab',
     drugClass: 'Tumour Necrosis Factor Alpha (TNF-α) Inhibitors (L04AB04)',
     strength: '40 mg/0.4 mL',
@@ -78,7 +75,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Humira 40 mg/0.4 mL Pre-filled Syringe',
-    brandNameAr: 'هيوميرا 40 ملغ/0.4 مل سرنجة',
     genericName: 'Adalimumab',
     drugClass: 'Tumour Necrosis Factor Alpha (TNF-α) Inhibitors (L04AB04)',
     strength: '40 mg/0.4 mL',
@@ -101,7 +97,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Humira 80 mg/0.8 mL Pre-filled Pen',
-    brandNameAr: 'هيوميرا 80 ملغ/0.8 مل قلم',
     genericName: 'Adalimumab',
     drugClass: 'Tumour Necrosis Factor Alpha (TNF-α) Inhibitors (L04AB04)',
     strength: '80 mg/0.8 mL',
@@ -124,7 +119,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Humira 20 mg/0.2 mL Pre-filled Syringe',
-    brandNameAr: 'هيوميرا 20 ملغ/0.2 مل سرنجة',
     genericName: 'Adalimumab',
     drugClass: 'Tumour Necrosis Factor Alpha (TNF-α) Inhibitors (L04AB04)',
     strength: '20 mg/0.2 mL',
@@ -147,7 +141,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Rinvoq 15 mg',
-    brandNameAr: 'رينفوك 15 ملغ',
     genericName: 'Upadacitinib',
     drugClass: 'Selective Janus Kinase (JAK1) Inhibitors (L04AF03)',
     strength: '15 mg',
@@ -170,7 +163,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Rinvoq 30 mg',
-    brandNameAr: 'رينفوك 30 ملغ',
     genericName: 'Upadacitinib',
     drugClass: 'Selective Janus Kinase (JAK1) Inhibitors (L04AF03)',
     strength: '30 mg',
@@ -193,7 +185,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Rinvoq 45 mg',
-    brandNameAr: 'رينفوك 45 ملغ',
     genericName: 'Upadacitinib',
     drugClass: 'Selective Janus Kinase (JAK1) Inhibitors (L04AF03)',
     strength: '45 mg',
@@ -216,7 +207,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Skyrizi 150 mg Pre-filled Pen',
-    brandNameAr: 'سكايريزي 150 ملغ قلم',
     genericName: 'Risankizumab',
     drugClass: 'Selective Interleukin-23 (IL-23p19) Monoclonal Antibody Inhibitors (L04AC18)',
     strength: '150 mg/mL',
@@ -239,7 +229,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Skyrizi 150 mg Pre-filled Syringe',
-    brandNameAr: 'سكايريزي 150 ملغ سرنجة',
     genericName: 'Risankizumab',
     drugClass: 'Selective Interleukin-23 (IL-23p19) Monoclonal Antibody Inhibitors (L04AC18)',
     strength: '150 mg/mL',
@@ -262,7 +251,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Skyrizi 75 mg Pre-filled Syringe',
-    brandNameAr: 'سكايريزي 75 ملغ سرنجة',
     genericName: 'Risankizumab',
     drugClass: 'Selective Interleukin-23 (IL-23p19) Monoclonal Antibody Inhibitors (L04AC18)',
     strength: '75 mg/0.83 mL',
@@ -285,7 +273,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Skyrizi 360 mg/2.4 mL Cartridge',
-    brandNameAr: 'سكايريزي 360 ملغ/2.4 مل خرطوشة',
     genericName: 'Risankizumab',
     drugClass: 'Selective Interleukin-23 (IL-23p19) Monoclonal Antibody Inhibitors (L04AC18)',
     strength: '360 mg/2.4 mL (150 mg/mL)',
@@ -308,7 +295,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Skyrizi 600 mg/10 mL Vial',
-    brandNameAr: 'سكايريزي 600 ملغ/10 مل فيال',
     genericName: 'Risankizumab',
     drugClass: 'Selective Interleukin-23 (IL-23p19) Monoclonal Antibody Inhibitors (L04AC18)',
     strength: '600 mg/10 mL (60 mg/mL)',
@@ -335,7 +321,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   // ===========================================================================
   {
     brandName: 'Venclyxto 10 mg',
-    brandNameAr: 'فينكليكستو 10 ملغ',
     genericName: 'Venetoclax',
     drugClass: 'Selective BCL-2 Protein Inhibitors (L01XX52)',
     strength: '10 mg',
@@ -358,7 +343,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Venclyxto 50 mg',
-    brandNameAr: 'فينكليكستو 50 ملغ',
     genericName: 'Venetoclax',
     drugClass: 'Selective BCL-2 Protein Inhibitors (L01XX52)',
     strength: '50 mg',
@@ -381,7 +365,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Venclyxto 100 mg',
-    brandNameAr: 'فينكليكستو 100 ملغ',
     genericName: 'Venetoclax',
     drugClass: 'Selective BCL-2 Protein Inhibitors (L01XX52)',
     strength: '100 mg',
@@ -404,7 +387,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Tepkinly 4 mg/0.8 mL',
-    brandNameAr: 'تيبكينلي 4 ملغ/0.8 مل فيال',
     genericName: 'Epcoritamab',
     drugClass: 'Bispecific CD20-Directed CD3 T-Cell Engager Monoclonal Antibodies (L01FX27)',
     strength: '4 mg/0.8 mL (5 mg/mL)',
@@ -427,7 +409,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Tepkinly 48 mg/0.8 mL',
-    brandNameAr: 'تيبكينلي 48 ملغ/0.8 مل فيال',
     genericName: 'Epcoritamab',
     drugClass: 'Bispecific CD20-Directed CD3 T-Cell Engager Monoclonal Antibodies (L01FX27)',
     strength: '48 mg/0.8 mL (60 mg/mL)',
@@ -450,7 +431,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Lucrin Depot 3.75 mg',
-    brandNameAr: 'لوكرين ديبو 3.75 ملغ',
     genericName: 'Leuprorelin',
     drugClass: 'Gonadotropin-Releasing Hormone (GnRH / LHRH) Analogues (L02AE02)',
     strength: '3.75 mg',
@@ -473,7 +453,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Lucrin Depot 11.25 mg',
-    brandNameAr: 'لوكرين ديبو 11.25 ملغ',
     genericName: 'Leuprorelin',
     drugClass: 'Gonadotropin-Releasing Hormone (GnRH / LHRH) Analogues (L02AE02)',
     strength: '11.25 mg',
@@ -496,7 +475,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Lucrin Depot 30 mg',
-    brandNameAr: 'لوكرين ديبو 30 ملغ',
     genericName: 'Leuprorelin',
     drugClass: 'Gonadotropin-Releasing Hormone (GnRH / LHRH) Analogues (L02AE02)',
     strength: '30 mg',
@@ -523,7 +501,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   // ===========================================================================
   {
     brandName: 'Botox 50 Units',
-    brandNameAr: 'بوتوكس 50 وحدة',
     genericName: 'Botulinum toxin type A',
     drugClass: 'Neuromuscular Blocking Agents / Peripheral Muscle Relaxants (M03AX01)',
     strength: '50 Allergan Units',
@@ -546,7 +523,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Botox 100 Units',
-    brandNameAr: 'بوتوكس 100 وحدة',
     genericName: 'Botulinum toxin type A',
     drugClass: 'Neuromuscular Blocking Agents / Peripheral Muscle Relaxants (M03AX01)',
     strength: '100 Allergan Units',
@@ -569,7 +545,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Botox 200 Units',
-    brandNameAr: 'بوتوكس 200 وحدة',
     genericName: 'Botulinum toxin type A',
     drugClass: 'Neuromuscular Blocking Agents / Peripheral Muscle Relaxants (M03AX01)',
     strength: '200 Allergan Units',
@@ -592,7 +567,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Duodopa 20 mg/mL + 5 mg/mL',
-    brandNameAr: 'دودوبا 20 ملغ/مل + 5 ملغ/مل',
     genericName: 'Levodopa + Carbidopa',
     drugClass: 'Dopaminergic Anti-Parkinson Agents / DOPA and DOPA Derivatives (N04BA02)',
     strength: '20 mg/mL + 5 mg/mL',
@@ -615,7 +589,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Aquipta 10 mg',
-    brandNameAr: 'أكويبتا 10 ملغ',
     genericName: 'Atogepant',
     drugClass: 'Calcitonin Gene-Related Peptide (CGRP) Receptor Antagonists / Gepants (N02CD07)',
     strength: '10 mg',
@@ -638,7 +611,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Aquipta 60 mg',
-    brandNameAr: 'أكويبتا 60 ملغ',
     genericName: 'Atogepant',
     drugClass: 'Calcitonin Gene-Related Peptide (CGRP) Receptor Antagonists / Gepants (N02CD07)',
     strength: '60 mg',
@@ -661,7 +633,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Sevorane 100% v/v',
-    brandNameAr: 'سيفوران 100% سائل للاستنشاق',
     genericName: 'Sevoflurane',
     drugClass: 'Halogenated Hydrocarbon Inhalation General Anaesthetics (N01AB08)',
     strength: '100% v/v',
@@ -684,7 +655,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Maviret 100 mg/40 mg',
-    brandNameAr: 'مافيريت 100 ملغ / 40 ملغ',
     genericName: 'Glecaprevir + Pibrentasvir',
     drugClass: 'Pan-Genotypic Direct-Acting Antiviral NS3/4A Protease + NS5A Inhibitors (J05AP57)',
     strength: '100 mg / 40 mg',
@@ -711,7 +681,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   // ===========================================================================
   {
     brandName: 'Ozurdex 700 micrograms',
-    brandNameAr: 'أوزوردكس 700 ميكروغرام غرسة',
     genericName: 'Dexamethasone',
     drugClass: 'Intravitreal Corticosteroid Anti-Inflammatory Implants (S01BA01)',
     strength: '700 micrograms',
@@ -734,7 +703,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Ganfort 0.3 mg/mL + 5 mg/mL',
-    brandNameAr: 'جانفورت 0.3 ملغ/مل + 5 ملغ/مل قطرة عين',
     genericName: 'Bimatoprost + Timolol',
     drugClass: 'Prostamide + Beta-Blocker Fixed-Combination Antiglaucoma Preparations (S01ED51)',
     strength: '0.3 mg/mL + 5 mg/mL',
@@ -757,7 +725,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Lumigan 0.1 mg/mL',
-    brandNameAr: 'لوميجان 0.1 ملغ/مل قطرة عين',
     genericName: 'Bimatoprost',
     drugClass: 'Prostaglandin / Prostamide Analogues for Glaucoma (S01EE03)',
     strength: '0.1 mg/mL (0.01% w/v)',
@@ -780,7 +747,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Lumigan 0.3 mg/mL',
-    brandNameAr: 'لوميجان 0.3 ملغ/مل قطرة عين',
     genericName: 'Bimatoprost',
     drugClass: 'Prostaglandin / Prostamide Analogues for Glaucoma (S01EE03)',
     strength: '0.3 mg/mL (0.03% w/v)',
@@ -803,7 +769,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Combigan 2 mg/mL + 5 mg/mL',
-    brandNameAr: 'كومبيغان 2 ملغ/مل + 5 ملغ/مل قطرة عين',
     genericName: 'Brimonidine + Timolol',
     drugClass: 'Alpha-2 Adrenergic Agonist + Beta-Blocker Antiglaucoma Preparations (S01ED51)',
     strength: '2 mg/mL + 5 mg/mL',
@@ -826,7 +791,6 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
   },
   {
     brandName: 'Alphagan 2 mg/mL',
-    brandNameAr: 'ألفاغان 2 ملغ/مل قطرة عين',
     genericName: 'Brimonidine',
     drugClass: 'Selective Alpha-2 Adrenergic Receptor Agonist Antiglaucoma Preparations (S01EA05)',
     strength: '2 mg/mL (0.2% w/v)',

@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   // 1. Ciprodar (Ciprofloxacin — Dar Al Dawa Development & Investment Co.)
   {
     brandName: 'Ciprodar 500 mg',
-    brandNameAr: 'سيبرودار 500 ملغ',
     genericName: 'Ciprofloxacin',
     activeIngredients: ['Ciprofloxacin'],
     drugClass: 'Fluoroquinolone antibacterial',
@@ -57,7 +55,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   // 2. Claridar (Clarithromycin — Dar Al Dawa Development & Investment Co.)
   {
     brandName: 'Claridar 500 mg',
-    brandNameAr: 'كلاريدار 500 ملغ',
     genericName: 'Clarithromycin',
     activeIngredients: ['Clarithromycin'],
     drugClass: 'Macrolide antibacterial',
@@ -89,7 +86,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   // 3. Hyposec (Omeprazole — Dar Al Dawa Development & Investment Co.)
   {
     brandName: 'Hyposec 20 mg',
-    brandNameAr: 'هايبوسيك 20 ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -121,7 +117,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   // 4. Lansodar (Lansoprazole — Dar Al Dawa Development & Investment Co.)
   {
     brandName: 'Lansodar 30 mg',
-    brandNameAr: 'لانسودار 30 ملغ',
     genericName: 'Lansoprazole',
     activeIngredients: ['Lansoprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -153,7 +148,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   // 5. Amlodar (Amlodipine — Dar Al Dawa Development & Investment Co.)
   {
     brandName: 'Amlodar 5 mg',
-    brandNameAr: 'أملودار 5 ملغ',
     genericName: 'Amlodipine',
     activeIngredients: ['Amlodipine'],
     drugClass: 'Dihydropyridine calcium channel blocker',
@@ -183,7 +177,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   },
   {
     brandName: 'Amlodar 10 mg',
-    brandNameAr: 'أملودار 10 ملغ',
     genericName: 'Amlodipine',
     activeIngredients: ['Amlodipine'],
     drugClass: 'Dihydropyridine calcium channel blocker',
@@ -215,7 +208,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   // 6. Diclogesic (Diclofenac — Dar Al Dawa Development & Investment Co.)
   {
     brandName: 'Diclogesic 50 mg',
-    brandNameAr: 'ديكلوجيسيك 50 ملغ',
     genericName: 'Diclofenac',
     activeIngredients: ['Diclofenac'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, phenylacetic acid derivative)',
@@ -245,7 +237,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
   },
   {
     brandName: 'Diclogesic Retard 100 mg',
-    brandNameAr: 'ديكلوجيسيك ريتارد 100 ملغ',
     genericName: 'Diclofenac',
     activeIngredients: ['Diclofenac'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, phenylacetic acid derivative)',
@@ -278,7 +269,6 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
 export const DAR_AL_DAWA_PRODUCTS: AiProductDraft[] = RAW_DAR_AL_DAWA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

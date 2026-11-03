@@ -4,7 +4,6 @@ const SERVIER_SRC = (title: string, url: string): AiDraftSource[] => [{ title, u
 
 interface CompactServierDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toServierProductDraft(item: CompactServierDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   // =========================================================================
   {
     brandName: 'Coversyl 5 mg',
-    brandNameAr: 'كوفيرسيل 5 ملغم',
     genericName: 'Perindopril',
     drugClassNameEn: 'Angiotensin-Converting Enzyme (ACE) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -78,7 +75,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Coversyl 10 mg',
-    brandNameAr: 'كوفيرسيل 10 ملغم',
     genericName: 'Perindopril',
     drugClassNameEn: 'Angiotensin-Converting Enzyme (ACE) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -101,7 +97,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Coversyl Plus 5 mg/1.25 mg',
-    brandNameAr: 'كوفيرسيل بلس 5 ملغم/1.25 ملغم',
     genericName: 'Perindopril + Indapamide',
     drugClassNameEn: 'ACE Inhibitor and Thiazide-Like Diuretic Combinations',
     dosageForm: 'Film-coated tablet',
@@ -124,7 +119,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Coversyl Plus 10 mg/2.5 mg',
-    brandNameAr: 'كوفيرسيل بلس 10 ملغم/2.5 ملغم',
     genericName: 'Perindopril + Indapamide',
     drugClassNameEn: 'ACE Inhibitor and Thiazide-Like Diuretic Combinations',
     dosageForm: 'Film-coated tablet',
@@ -147,7 +141,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Bi-Preterax 5 mg/1.25 mg',
-    brandNameAr: 'بي-بريتيراكس 5 ملغم/1.25 ملغم',
     genericName: 'Perindopril + Indapamide',
     drugClassNameEn: 'ACE Inhibitor and Thiazide-Like Diuretic Combinations',
     dosageForm: 'Film-coated tablet',
@@ -170,7 +163,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Bi-Preterax 10 mg/2.5 mg',
-    brandNameAr: 'بي-بريتيراكس 10 ملغم/2.5 ملغم',
     genericName: 'Perindopril + Indapamide',
     drugClassNameEn: 'ACE Inhibitor and Thiazide-Like Diuretic Combinations',
     dosageForm: 'Film-coated tablet',
@@ -193,7 +185,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Coveram 5 mg/5 mg',
-    brandNameAr: 'كوفيرام 5 ملغم/5 ملغم',
     genericName: 'Perindopril + Amlodipine',
     drugClassNameEn: 'ACE Inhibitor and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -216,7 +207,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Coveram 5 mg/10 mg',
-    brandNameAr: 'كوفيرام 5 ملغم/10 ملغم',
     genericName: 'Perindopril + Amlodipine',
     drugClassNameEn: 'ACE Inhibitor and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -239,7 +229,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Coveram 10 mg/5 mg',
-    brandNameAr: 'كوفيرام 10 ملغم/5 ملغم',
     genericName: 'Perindopril + Amlodipine',
     drugClassNameEn: 'ACE Inhibitor and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -262,7 +251,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Coveram 10 mg/10 mg',
-    brandNameAr: 'كوفيرام 10 ملغم/10 ملغم',
     genericName: 'Perindopril + Amlodipine',
     drugClassNameEn: 'ACE Inhibitor and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -285,7 +273,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Triplixam 5 mg/1.25 mg/5 mg',
-    brandNameAr: 'تريبليكسام 5 ملغم/1.25 ملغم/5 ملغم',
     genericName: 'Perindopril + Indapamide + Amlodipine',
     drugClassNameEn: 'Triple Antihypertensive Combinations (ACE Inhibitor + Thiazide-Like Diuretic + Calcium Channel Blocker)',
     dosageForm: 'Film-coated tablet',
@@ -308,7 +295,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Triplixam 5 mg/1.25 mg/10 mg',
-    brandNameAr: 'تريبليكسام 5 ملغم/1.25 ملغم/10 ملغم',
     genericName: 'Perindopril + Indapamide + Amlodipine',
     drugClassNameEn: 'Triple Antihypertensive Combinations (ACE Inhibitor + Thiazide-Like Diuretic + Calcium Channel Blocker)',
     dosageForm: 'Film-coated tablet',
@@ -331,7 +317,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Triplixam 10 mg/2.5 mg/5 mg',
-    brandNameAr: 'تريبليكسام 10 ملغم/2.5 ملغم/5 ملغم',
     genericName: 'Perindopril + Indapamide + Amlodipine',
     drugClassNameEn: 'Triple Antihypertensive Combinations (ACE Inhibitor + Thiazide-Like Diuretic + Calcium Channel Blocker)',
     dosageForm: 'Film-coated tablet',
@@ -354,7 +339,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Triplixam 10 mg/2.5 mg/10 mg',
-    brandNameAr: 'تريبليكسام 10 ملغم/2.5 ملغم/10 ملغم',
     genericName: 'Perindopril + Indapamide + Amlodipine',
     drugClassNameEn: 'Triple Antihypertensive Combinations (ACE Inhibitor + Thiazide-Like Diuretic + Calcium Channel Blocker)',
     dosageForm: 'Film-coated tablet',
@@ -377,7 +361,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Viacoram 3.5 mg/2.5 mg',
-    brandNameAr: 'فياكورام 3.5 ملغم/2.5 ملغم',
     genericName: 'Perindopril + Amlodipine',
     drugClassNameEn: 'First-Line Single-Pill ACE Inhibitor and Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -400,7 +383,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Viacoram 7 mg/5 mg',
-    brandNameAr: 'فياكورام 7 ملغم/5 ملغم',
     genericName: 'Perindopril + Amlodipine',
     drugClassNameEn: 'Single-Pill ACE Inhibitor and Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -423,7 +405,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Natrilix SR 1.5 mg',
-    brandNameAr: 'ناتريليكس إس آر 1.5 ملغم',
     genericName: 'Indapamide',
     drugClassNameEn: 'Thiazide-Like Sulfonamide Diuretics (Sustained-Release)',
     dosageForm: 'Prolonged-release film-coated tablet',
@@ -446,7 +427,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Preductal MR 35 mg',
-    brandNameAr: 'بريدكتال إم آر 35 ملغم',
     genericName: 'Trimetazidine',
     drugClassNameEn: 'Metabolic Anti-Ischaemic Agents (3-Ketoacyl-CoA Thiolase Inhibitors)',
     dosageForm: 'Modified-release film-coated tablet',
@@ -469,7 +449,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Procoralan 5 mg',
-    brandNameAr: 'بروكورالان 5 ملغم',
     genericName: 'Ivabradine',
     drugClassNameEn: 'Selective Sinus Node If Current Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -492,7 +471,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Procoralan 7.5 mg',
-    brandNameAr: 'بروكورالان 7.5 ملغم',
     genericName: 'Ivabradine',
     drugClassNameEn: 'Selective Sinus Node If Current Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -519,7 +497,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   // =========================================================================
   {
     brandName: 'Daflon 500 mg',
-    brandNameAr: 'دافلون 500 ملغم',
     genericName: 'Diosmin + Hesperidin',
     drugClassNameEn: 'Micronised Purified Flavonoid Fraction (MPFF) Venotonics and Vasculoprotectors',
     dosageForm: 'Film-coated tablet',
@@ -542,7 +519,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Daflon 1000 mg',
-    brandNameAr: 'دافلون 1000 ملغم',
     genericName: 'Diosmin + Hesperidin',
     drugClassNameEn: 'Micronised Purified Flavonoid Fraction (MPFF) Venotonics and Vasculoprotectors',
     dosageForm: 'Film-coated tablet',
@@ -565,7 +541,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Diamicron MR 30 mg',
-    brandNameAr: 'دياميكرون إم آر 30 ملغم',
     genericName: 'Gliclazide',
     drugClassNameEn: 'Second-Generation Sulfonylurea Antidiabetics (Modified-Release)',
     dosageForm: 'Modified-release tablet',
@@ -588,7 +563,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Diamicron MR 60 mg',
-    brandNameAr: 'دياميكرون إم آر 60 ملغم',
     genericName: 'Gliclazide',
     drugClassNameEn: 'Second-Generation Sulfonylurea Antidiabetics (Breakable Modified-Release)',
     dosageForm: 'Modified-release tablet (scored)',
@@ -615,7 +589,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   // =========================================================================
   {
     brandName: 'Valdoxan 25 mg',
-    brandNameAr: 'فالدوكسان 25 ملغم',
     genericName: 'Agomelatine',
     drugClassNameEn: 'Melatonergic Agonist (MT1/MT2) and 5-HT2C Antagonist Antidepressants',
     dosageForm: 'Film-coated tablet',
@@ -638,7 +611,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Lonsurf 15 mg/6.14 mg',
-    brandNameAr: 'لونسورف 15 ملغم/6.14 ملغم',
     genericName: 'Trifluridine + Tipiracil',
     drugClassNameEn: 'Antineoplastic Thymidine-Based Nucleoside Analogue and Thymidine Phosphorylase Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -661,7 +633,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Lonsurf 20 mg/8.19 mg',
-    brandNameAr: 'لونسورف 20 ملغم/8.19 ملغم',
     genericName: 'Trifluridine + Tipiracil',
     drugClassNameEn: 'Antineoplastic Thymidine-Based Nucleoside Analogue and Thymidine Phosphorylase Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -684,7 +655,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Onivyde pegylated liposomal 4.3 mg/mL',
-    brandNameAr: 'أونيفايد 4.3 ملغم/مل',
     genericName: 'Irinotecan',
     drugClassNameEn: 'Topoisomerase I Inhibitors (Pegylated Liposomal Formulation)',
     dosageForm: 'Concentrate for dispersion for infusion',
@@ -707,7 +677,6 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
   },
   {
     brandName: 'Tibsovo 250 mg',
-    brandNameAr: 'تيبسوفو 250 ملغم',
     genericName: 'Ivosidenib',
     drugClassNameEn: 'Isocitrate Dehydrogenase-1 (IDH1) Inhibitors',
     dosageForm: 'Film-coated tablet',

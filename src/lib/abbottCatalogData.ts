@@ -4,7 +4,6 @@ const ABBOTT_SRC = (title: string, url: string): AiDraftSource[] => [{ title, ur
 
 interface CompactAbbottDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClass: string;
@@ -26,7 +25,6 @@ function toAbbottProductDraft(item: CompactAbbottDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   // ===========================================================================
   {
     brandName: 'Duphaston 10 mg',
-    brandNameAr: 'دوفاستون 10 ملغ',
     genericName: 'Dydrogesterone',
     drugClass: 'Selective Retroprogesterone Progestogens (G03DB01)',
     strength: '10 mg',
@@ -78,7 +75,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Femoston 1 mg/10 mg',
-    brandNameAr: 'فيموستون 1 ملغ / 10 ملغ',
     genericName: 'Estradiol + Dydrogesterone',
     drugClass: 'Sequential Combined Hormone Replacement Therapy (G03FB08)',
     strength: '1 mg / 10 mg',
@@ -101,7 +97,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Femoston 2 mg/10 mg',
-    brandNameAr: 'فيموستون 2 ملغ / 10 ملغ',
     genericName: 'Estradiol + Dydrogesterone',
     drugClass: 'Sequential Combined Hormone Replacement Therapy (G03FB08)',
     strength: '2 mg / 10 mg',
@@ -124,7 +119,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Femoston Conti 1 mg/5 mg',
-    brandNameAr: 'فيموستون كونتي 1 ملغ / 5 ملغ',
     genericName: 'Estradiol + Dydrogesterone',
     drugClass: 'Continuous Combined Hormone Replacement Therapy (G03FA14)',
     strength: '1 mg / 5 mg',
@@ -151,7 +145,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   // ===========================================================================
   {
     brandName: 'Creon 10000',
-    brandNameAr: 'كريون 10000 وحدة',
     genericName: 'Pancreatin',
     drugClass: 'Pancreatic Enzyme Replacement Therapy / Multienzymes (A09AA02)',
     strength: '150 mg (10,000 Ph.Eur. units lipase / 8,000 units amylase / 600 units protease)',
@@ -174,7 +167,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Creon 25000',
-    brandNameAr: 'كريون 25000 وحدة',
     genericName: 'Pancreatin',
     drugClass: 'Pancreatic Enzyme Replacement Therapy / Multienzymes (A09AA02)',
     strength: '300 mg (25,000 Ph.Eur. units lipase / 18,000 units amylase / 1,000 units protease)',
@@ -197,7 +189,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Creon 40000',
-    brandNameAr: 'كريون 40000 وحدة',
     genericName: 'Pancreatin',
     drugClass: 'Pancreatic Enzyme Replacement Therapy / Multienzymes (A09AA02)',
     strength: '400 mg (40,000 Ph.Eur. units lipase / 25,000 units amylase / 1,600 units protease)',
@@ -220,7 +211,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Dicetel 50 mg',
-    brandNameAr: 'ديستيل 50 ملغ',
     genericName: 'Pinaverium',
     drugClass: 'Gastrointestinal-Selective Calcium Antagonist Antispasmodics (A03AX04)',
     strength: '50 mg',
@@ -243,7 +233,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Dicetel 100 mg',
-    brandNameAr: 'ديستيل 100 ملغ',
     genericName: 'Pinaverium',
     drugClass: 'Gastrointestinal-Selective Calcium Antagonist Antispasmodics (A03AX04)',
     strength: '100 mg',
@@ -266,7 +255,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Duspatalin 135 mg',
-    brandNameAr: 'دوسباتالين 135 ملغ',
     genericName: 'Mebeverine',
     drugClass: 'Musculotropic Gastrointestinal Antispasmodics (A03AA04)',
     strength: '135 mg',
@@ -289,7 +277,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Duspatalin Retard 200 mg',
-    brandNameAr: 'دوسباتالين ريتارد 200 ملغ',
     genericName: 'Mebeverine',
     drugClass: 'Musculotropic Gastrointestinal Antispasmodics (A03AA04)',
     strength: '200 mg',
@@ -312,7 +299,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Ganaton 50 mg',
-    brandNameAr: 'جاناتون 50 ملغ',
     genericName: 'Itopride',
     drugClass: 'Gastroprokinetic Agents (D2 Antagonist & AChE Inhibitor, A03FA07)',
     strength: '50 mg',
@@ -335,7 +321,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Duphalac 667 mg/mL',
-    brandNameAr: 'دوفالاك 667 ملغ/مل',
     genericName: 'Lactulose',
     drugClass: 'Osmotically Acting Laxatives & Hepatic Encephalopathy Agents (A06AD11)',
     category: 'otc_drug',
@@ -359,7 +344,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Heptral 400 mg',
-    brandNameAr: 'هيبتـرال 400 ملغ',
     genericName: 'Ademetionine',
     drugClass: 'Hepatoprotective Methyl Donors / Amino Acid Derivatives (A16AA02)',
     strength: '400 mg',
@@ -382,7 +366,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Heptral 500 mg',
-    brandNameAr: 'هيبتـرال 500 ملغ',
     genericName: 'Ademetionine',
     drugClass: 'Hepatoprotective Methyl Donors / Amino Acid Derivatives (A16AA02)',
     strength: '500 mg',
@@ -405,7 +388,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Heptral 400 mg Injection',
-    brandNameAr: 'هيبتـرال 400 ملغ فيال',
     genericName: 'Ademetionine',
     drugClass: 'Hepatoprotective Methyl Donors / Amino Acid Derivatives (A16AA02)',
     strength: '400 mg',
@@ -432,7 +414,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   // ===========================================================================
   {
     brandName: 'Klaricid 250 mg',
-    brandNameAr: 'كلاريسيد 250 ملغ',
     genericName: 'Clarithromycin',
     drugClass: 'Macrolide Antibacterials (J01FA09)',
     strength: '250 mg',
@@ -455,7 +436,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Klaricid 500 mg',
-    brandNameAr: 'كلاريسيد 500 ملغ',
     genericName: 'Clarithromycin',
     drugClass: 'Macrolide Antibacterials (J01FA09)',
     strength: '500 mg',
@@ -478,7 +458,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Klaricid XL 500 mg',
-    brandNameAr: 'كلاريسيد إكس إل 500 ملغ',
     genericName: 'Clarithromycin',
     drugClass: 'Macrolide Antibacterials (J01FA09)',
     strength: '500 mg',
@@ -501,7 +480,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Klaricid 125 mg/5 mL',
-    brandNameAr: 'كلاريسيد معلق 125 ملغ/5 مل',
     genericName: 'Clarithromycin',
     drugClass: 'Macrolide Antibacterials (J01FA09)',
     strength: '125 mg/5 mL',
@@ -524,7 +502,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Klaricid 250 mg/5 mL',
-    brandNameAr: 'كلاريسيد فورت معلق 250 ملغ/5 مل',
     genericName: 'Clarithromycin',
     drugClass: 'Macrolide Antibacterials (J01FA09)',
     strength: '250 mg/5 mL',
@@ -547,7 +524,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Klaricid IV 500 mg',
-    brandNameAr: 'كلاريسيد 500 ملغ فيال وريدي',
     genericName: 'Clarithromycin',
     drugClass: 'Macrolide Antibacterials (J01FA09)',
     strength: '500 mg',
@@ -570,7 +546,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Brufen 400 mg',
-    brandNameAr: 'بروفين 400 ملغ',
     genericName: 'Ibuprofen',
     drugClass: 'Non-Steroidal Anti-Inflammatory Drugs (Propionic Acid Derivatives, M01AE01)',
     strength: '400 mg',
@@ -593,7 +568,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Brufen 600 mg',
-    brandNameAr: 'بروفين 600 ملغ',
     genericName: 'Ibuprofen',
     drugClass: 'Non-Steroidal Anti-Inflammatory Drugs (Propionic Acid Derivatives, M01AE01)',
     strength: '600 mg',
@@ -616,7 +590,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Brufen Retard 800 mg',
-    brandNameAr: 'بروفين ريتارد 800 ملغ',
     genericName: 'Ibuprofen',
     drugClass: 'Non-Steroidal Anti-Inflammatory Drugs (Propionic Acid Derivatives, M01AE01)',
     strength: '800 mg',
@@ -639,7 +612,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Brufen 100 mg/5 mL',
-    brandNameAr: 'بروفين شراب 100 ملغ/5 مل',
     genericName: 'Ibuprofen',
     drugClass: 'Non-Steroidal Anti-Inflammatory Drugs (Propionic Acid Derivatives, M01AE01)',
     strength: '100 mg/5 mL',
@@ -666,7 +638,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   // ===========================================================================
   {
     brandName: 'Betaserc 8 mg',
-    brandNameAr: 'بيتاسيرك 8 ملغ',
     genericName: 'Betahistine',
     drugClass: 'Histamine Analogue Antivertigo Preparations (N07CA01)',
     strength: '8 mg',
@@ -689,7 +660,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Betaserc 16 mg',
-    brandNameAr: 'بيتاسيرك 16 ملغ',
     genericName: 'Betahistine',
     drugClass: 'Histamine Analogue Antivertigo Preparations (N07CA01)',
     strength: '16 mg',
@@ -712,7 +682,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Betaserc 24 mg',
-    brandNameAr: 'بيتاسيرك 24 ملغ',
     genericName: 'Betahistine',
     drugClass: 'Histamine Analogue Antivertigo Preparations (N07CA01)',
     strength: '24 mg',
@@ -735,7 +704,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Luvox 50 mg',
-    brandNameAr: 'لوفوكس 50 ملغ',
     genericName: 'Fluvoxamine',
     drugClass: 'Selective Serotonin Reuptake Inhibitors (SSRIs, N06AB08)',
     strength: '50 mg',
@@ -758,7 +726,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Luvox 100 mg',
-    brandNameAr: 'لوفوكس 100 ملغ',
     genericName: 'Fluvoxamine',
     drugClass: 'Selective Serotonin Reuptake Inhibitors (SSRIs, N06AB08)',
     strength: '100 mg',
@@ -781,7 +748,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Physiotens 0.2 mg',
-    brandNameAr: 'فيزيوتنس 0.2 ملغ',
     genericName: 'Moxonidine',
     drugClass: 'Selective Imidazoline I1-Receptor Agonist Antihypertensives (C02AC05)',
     strength: '0.2 mg',
@@ -804,7 +770,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Physiotens 0.3 mg',
-    brandNameAr: 'فيزيوتنس 0.3 ملغ',
     genericName: 'Moxonidine',
     drugClass: 'Selective Imidazoline I1-Receptor Agonist Antihypertensives (C02AC05)',
     strength: '0.3 mg',
@@ -827,7 +792,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Physiotens 0.4 mg',
-    brandNameAr: 'فيزيوتنس 0.4 ملغ',
     genericName: 'Moxonidine',
     drugClass: 'Selective Imidazoline I1-Receptor Agonist Antihypertensives (C02AC05)',
     strength: '0.4 mg',
@@ -850,7 +814,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Lipanthyl 145 mg',
-    brandNameAr: 'ليبانثيل 145 ملغ',
     genericName: 'Fenofibrate',
     drugClass: 'PPAR-alpha Agonist Fibrates (C10AB05)',
     strength: '145 mg',
@@ -873,7 +836,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Lipanthyl Supra 160 mg',
-    brandNameAr: 'ليبانثيل سوبرا 160 ملغ',
     genericName: 'Fenofibrate',
     drugClass: 'PPAR-alpha Agonist Fibrates (C10AB05)',
     strength: '160 mg',
@@ -896,7 +858,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Lipanthyl Micronised 200 mg',
-    brandNameAr: 'ليبانثيل ميكرونايزد 200 ملغ',
     genericName: 'Fenofibrate',
     drugClass: 'PPAR-alpha Agonist Fibrates (C10AB05)',
     strength: '200 mg',
@@ -919,7 +880,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Isoptin 80 mg',
-    brandNameAr: 'إيزوبتين 80 ملغ',
     genericName: 'Verapamil',
     drugClass: 'Phenylalkylamine Non-DHP Calcium Channel Blockers (C08DA01)',
     strength: '80 mg',
@@ -942,7 +902,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Isoptin SR 240 mg',
-    brandNameAr: 'إيزوبتين إس آر 240 ملغ',
     genericName: 'Verapamil',
     drugClass: 'Phenylalkylamine Non-DHP Calcium Channel Blockers (C08DA01)',
     strength: '240 mg',
@@ -965,7 +924,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Rytmonorm 150 mg',
-    brandNameAr: 'ريتمونورم 150 ملغ',
     genericName: 'Propafenone',
     drugClass: 'Class IC Antiarrhythmics (Sodium Channel Blockers, C01BC03)',
     strength: '150 mg',
@@ -988,7 +946,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Rytmonorm 300 mg',
-    brandNameAr: 'ريتمونورم 300 ملغ',
     genericName: 'Propafenone',
     drugClass: 'Class IC Antiarrhythmics (Sodium Channel Blockers, C01BC03)',
     strength: '300 mg',
@@ -1011,7 +968,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Tarka 180 mg/2 mg',
-    brandNameAr: 'تاركا 180 ملغ / 2 ملغ',
     genericName: 'Verapamil + Trandolapril',
     drugClass: 'ACE Inhibitor and Non-DHP Calcium Channel Blocker Combinations (C09BB10)',
     strength: '180 mg / 2 mg',
@@ -1034,7 +990,6 @@ const ABBOTT_COMPACT_PRODUCTS: CompactAbbottDrug[] = [
   },
   {
     brandName: 'Omacor 1000 mg',
-    brandNameAr: 'أوماكور 1000 ملغ',
     genericName: 'Omega-3-acid ethyl esters',
     drugClass: 'Purified Omega-3 Fatty Acid Ethyl Esters (C10AX06)',
     strength: '1000 mg (containing 460 mg EPA ethyl ester + 380 mg DHA ethyl ester)',

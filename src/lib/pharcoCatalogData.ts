@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_PHARCO: CompactDrug[] = [
   // 1. Amrizole (Metronidazole — Pharco)
   {
     brandName: 'Amrizole 500 mg',
-    brandNameAr: 'أمريزول 500 ملغ',
     genericName: 'Metronidazole',
     activeIngredients: ['Metronidazole'],
     drugClass: 'Nitroimidazole derivative antibacterial and antiprotozoal (ATC P01AB01 / J01XD01)',
@@ -57,7 +55,6 @@ const RAW_PHARCO: CompactDrug[] = [
   // 2. Cefaxone (Ceftriaxone — Pharco)
   {
     brandName: 'Cefaxone 1 g',
-    brandNameAr: 'سيفاكسون 1 غ',
     genericName: 'Ceftriaxone',
     activeIngredients: ['Ceftriaxone'],
     drugClass: 'Third-generation parenteral cephalosporin antibacterial (ATC J01DD04)',
@@ -89,7 +86,6 @@ const RAW_PHARCO: CompactDrug[] = [
   // 3. Ciprofar (Ciprofloxacin — Pharco)
   {
     brandName: 'Ciprofar 500 mg',
-    brandNameAr: 'سيبروفار 500 ملغ',
     genericName: 'Ciprofloxacin',
     activeIngredients: ['Ciprofloxacin'],
     drugClass: 'Second-generation fluoroquinolone antibacterial (ATC J01MA02)',
@@ -121,7 +117,6 @@ const RAW_PHARCO: CompactDrug[] = [
   // 4. Farcolin (Salbutamol — Pharco)
   {
     brandName: 'Farcolin 5 mg/mL',
-    brandNameAr: 'فاركولين 5 ملغ/مل',
     genericName: 'Salbutamol',
     activeIngredients: ['Salbutamol'],
     drugClass: 'Selective short-acting beta-2 adrenergic agonist bronchodilator (ATC R03AC02)',
@@ -153,7 +148,6 @@ const RAW_PHARCO: CompactDrug[] = [
   // 5. Gratisovir (Sofosbuvir — Pharco)
   {
     brandName: 'Gratisovir 400 mg',
-    brandNameAr: 'غراتيسوفير 400 ملغ',
     genericName: 'Sofosbuvir',
     activeIngredients: ['Sofosbuvir'],
     drugClass: 'Direct-acting antiviral nucleotide analogue HCV NS5B polymerase inhibitor (ATC J05AP08)',
@@ -186,7 +180,6 @@ const RAW_PHARCO: CompactDrug[] = [
 export const PHARCO_PRODUCTS: AiProductDraft[] = RAW_PHARCO.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

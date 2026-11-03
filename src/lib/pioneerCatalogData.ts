@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_PIONEER: CompactDrug[] = [
   // 1. Piocefix 400 mg (Cefixime — Pioneer)
   {
     brandName: 'Piocefix 400 mg',
-    brandNameAr: 'بيوسيفيكس 400 ملغ',
     genericName: 'Cefixime',
     activeIngredients: ['Cefixime'],
     drugClass: 'Third-generation oral cephalosporin antibacterial (ATC J01DD08)',
@@ -57,7 +55,6 @@ const RAW_PIONEER: CompactDrug[] = [
   // 2. Piolexine 500 mg (Cefalexin — Pioneer)
   {
     brandName: 'Piolexine 500 mg',
-    brandNameAr: 'بيوليكسين 500 ملغ',
     genericName: 'Cefalexin',
     activeIngredients: ['Cefalexin'],
     drugClass: 'First-generation oral cephalosporin antibacterial (ATC J01DB01)',
@@ -89,7 +86,6 @@ const RAW_PIONEER: CompactDrug[] = [
   // 3. Zinax 500 mg (Cefuroxime — Pioneer)
   {
     brandName: 'Zinax 500 mg',
-    brandNameAr: 'زيناكس 500 ملغ',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation oral cephalosporin antibacterial (ATC J01DC02)',
@@ -121,7 +117,6 @@ const RAW_PIONEER: CompactDrug[] = [
   // 4. Omnimax 0.4 mg (Tamsulosin — Pioneer)
   {
     brandName: 'Omnimax 0.4 mg',
-    brandNameAr: 'أومنيماكس 0.4 ملغ',
     genericName: 'Tamsulosin',
     activeIngredients: ['Tamsulosin'],
     drugClass: 'Selective alpha-1A/1D adrenoceptor antagonist for benign prostatic hyperplasia (ATC G04CA02)',
@@ -154,7 +149,6 @@ const RAW_PIONEER: CompactDrug[] = [
 export const PIONEER_PRODUCTS: AiProductDraft[] = RAW_PIONEER.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

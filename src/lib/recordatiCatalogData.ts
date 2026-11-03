@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   // 1. Zanidip (Lercanidipine — Recordati S.p.A.)
   {
     brandName: 'Zanidip 10 mg',
-    brandNameAr: 'زانيديب 10 ملغ',
     genericName: 'Lercanidipine',
     activeIngredients: ['Lercanidipine'],
     drugClass: 'Third-generation lipophilic dihydropyridine calcium channel blocker',
@@ -55,7 +53,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   },
   {
     brandName: 'Zanidip 20 mg',
-    brandNameAr: 'زانيديب 20 ملغ',
     genericName: 'Lercanidipine',
     activeIngredients: ['Lercanidipine'],
     drugClass: 'Third-generation lipophilic dihydropyridine calcium channel blocker',
@@ -87,7 +84,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   // 2. Zanipress (Enalapril + Lercanidipine — Recordati S.p.A.)
   {
     brandName: 'Zanipress 20 mg/10 mg',
-    brandNameAr: 'زانيبريس 20 ملغ/10 ملغ',
     genericName: 'Enalapril + Lercanidipine',
     activeIngredients: ['Enalapril', 'Lercanidipine'],
     drugClass: 'ACE inhibitor and dihydropyridine calcium channel blocker fixed-dose combination',
@@ -119,7 +115,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   // 3. Urorec (Silodosin — Recordati S.p.A.)
   {
     brandName: 'Urorec 4 mg',
-    brandNameAr: 'يوروريك 4 ملغ',
     genericName: 'Silodosin',
     activeIngredients: ['Silodosin'],
     drugClass: 'Highly selective alpha-1A adrenoceptor antagonist',
@@ -149,7 +144,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   },
   {
     brandName: 'Urorec 8 mg',
-    brandNameAr: 'يوروريك 8 ملغ',
     genericName: 'Silodosin',
     activeIngredients: ['Silodosin'],
     drugClass: 'Highly selective alpha-1A adrenoceptor antagonist',
@@ -181,7 +175,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   // 4. Lomexin (Fenticonazole — Recordati S.p.A.)
   {
     brandName: 'Lomexin 600 mg',
-    brandNameAr: 'لوميكسين 600 ملغ',
     genericName: 'Fenticonazole',
     activeIngredients: ['Fenticonazole'],
     drugClass: 'Imidazole topical and gynaecological antifungal agent',
@@ -211,7 +204,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   },
   {
     brandName: 'Lomexin 2%',
-    brandNameAr: 'لوميكسين 2%',
     genericName: 'Fenticonazole',
     activeIngredients: ['Fenticonazole'],
     drugClass: 'Imidazole topical antifungal agent',
@@ -243,7 +235,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   // 5. Livazo (Pitavastatin — Recordati S.p.A.)
   {
     brandName: 'Livazo 2 mg',
-    brandNameAr: 'ليفازو 2 ملغ',
     genericName: 'Pitavastatin',
     activeIngredients: ['Pitavastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -273,7 +264,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   },
   {
     brandName: 'Livazo 4 mg',
-    brandNameAr: 'ليفازو 4 ملغ',
     genericName: 'Pitavastatin',
     activeIngredients: ['Pitavastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -305,7 +295,6 @@ const RAW_RECORDATI: CompactDrug[] = [
   // 6. Urispas (Flavoxate — Recordati S.p.A.)
   {
     brandName: 'Urispas 200 mg',
-    brandNameAr: 'يوريسباس 200 ملغ',
     genericName: 'Flavoxate',
     activeIngredients: ['Flavoxate'],
     drugClass: 'Urinary tract smooth muscle antispasmodic (musculotropic spasmolytic)',
@@ -338,7 +327,6 @@ const RAW_RECORDATI: CompactDrug[] = [
 export const RECORDATI_PRODUCTS: AiProductDraft[] = RAW_RECORDATI.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

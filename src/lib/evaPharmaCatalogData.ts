@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_EVA_PHARMA: CompactDrug[] = [
   // 1. Thiotacid (Thioctic acid — EVA Pharma)
   {
     brandName: 'Thiotacid 300 mg',
-    brandNameAr: 'ثيوتاسيد 300 ملغ',
     genericName: 'Thioctic acid',
     activeIngredients: ['Thioctic acid'],
     drugClass: 'Metabolic neuroprotective antioxidant (alpha-lipoic acid)',
@@ -55,7 +53,6 @@ const RAW_EVA_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Thiotacid 600 mg',
-    brandNameAr: 'ثيوتاسيد 600 ملغ',
     genericName: 'Thioctic acid',
     activeIngredients: ['Thioctic acid'],
     drugClass: 'Metabolic neuroprotective antioxidant (alpha-lipoic acid)',
@@ -87,7 +84,6 @@ const RAW_EVA_PHARMA: CompactDrug[] = [
   // 2. Mellitofix (Empagliflozin — EVA Pharma)
   {
     brandName: 'Mellitofix 10 mg',
-    brandNameAr: 'ميليتوفيكس 10 ملغ',
     genericName: 'Empagliflozin',
     activeIngredients: ['Empagliflozin'],
     drugClass: 'Sodium-glucose co-transporter 2 (SGLT2) inhibitor',
@@ -117,7 +113,6 @@ const RAW_EVA_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Mellitofix 25 mg',
-    brandNameAr: 'ميليتوفيكس 25 ملغ',
     genericName: 'Empagliflozin',
     activeIngredients: ['Empagliflozin'],
     drugClass: 'Sodium-glucose co-transporter 2 (SGLT2) inhibitor',
@@ -149,7 +144,6 @@ const RAW_EVA_PHARMA: CompactDrug[] = [
   // 3. Atoreza (Ezetimibe + Atorvastatin — EVA Pharma)
   {
     brandName: 'Atoreza 10 mg/10 mg',
-    brandNameAr: 'أتوريزا 10 ملغ/10 ملغ',
     genericName: 'Ezetimibe + Atorvastatin',
     activeIngredients: ['Ezetimibe', 'Atorvastatin'],
     drugClass: 'Cholesterol absorption inhibitor and HMG-CoA reductase inhibitor (statin) fixed-dose combination',
@@ -179,7 +173,6 @@ const RAW_EVA_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Atoreza 10 mg/20 mg',
-    brandNameAr: 'أتوريزا 10 ملغ/20 ملغ',
     genericName: 'Ezetimibe + Atorvastatin',
     activeIngredients: ['Ezetimibe', 'Atorvastatin'],
     drugClass: 'Cholesterol absorption inhibitor and HMG-CoA reductase inhibitor (statin) fixed-dose combination',
@@ -212,7 +205,6 @@ const RAW_EVA_PHARMA: CompactDrug[] = [
 export const EVA_PHARMA_PRODUCTS: AiProductDraft[] = RAW_EVA_PHARMA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

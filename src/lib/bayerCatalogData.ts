@@ -4,7 +4,6 @@ const BAYER_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url
 
 interface CompactBayerDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toBayerProductDraft(item: CompactBayerDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   // =========================================================================
   {
     brandName: 'Xarelto 2.5 mg',
-    brandNameAr: 'زاريلتو 2.5 ملغم',
     genericName: 'Rivaroxaban',
     drugClassNameEn: 'Direct Oral Factor Xa Inhibitors (DOACs)',
     dosageForm: 'Film-coated tablet',
@@ -78,7 +75,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Xarelto 10 mg',
-    brandNameAr: 'زاريلتو 10 ملغم',
     genericName: 'Rivaroxaban',
     drugClassNameEn: 'Direct Oral Factor Xa Inhibitors (DOACs)',
     dosageForm: 'Film-coated tablet',
@@ -101,7 +97,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Xarelto 15 mg',
-    brandNameAr: 'زاريلتو 15 ملغم',
     genericName: 'Rivaroxaban',
     drugClassNameEn: 'Direct Oral Factor Xa Inhibitors (DOACs)',
     dosageForm: 'Film-coated tablet',
@@ -124,7 +119,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Xarelto 20 mg',
-    brandNameAr: 'زاريلتو 20 ملغم',
     genericName: 'Rivaroxaban',
     drugClassNameEn: 'Direct Oral Factor Xa Inhibitors (DOACs)',
     dosageForm: 'Film-coated tablet',
@@ -147,7 +141,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Adalat LA 20 mg',
-    brandNameAr: 'أدالات إل إيه 20 ملغم',
     genericName: 'Nifedipine',
     drugClassNameEn: 'Dihydropyridine Calcium Channel Blockers (Osmotic Prolonged-Release)',
     dosageForm: 'Prolonged-release tablet',
@@ -170,7 +163,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Adalat LA 30 mg',
-    brandNameAr: 'أدالات إل إيه 30 ملغم',
     genericName: 'Nifedipine',
     drugClassNameEn: 'Dihydropyridine Calcium Channel Blockers (Osmotic Prolonged-Release)',
     dosageForm: 'Prolonged-release tablet',
@@ -193,7 +185,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Adalat LA 60 mg',
-    brandNameAr: 'أدالات إل إيه 60 ملغم',
     genericName: 'Nifedipine',
     drugClassNameEn: 'Dihydropyridine Calcium Channel Blockers (Osmotic Prolonged-Release)',
     dosageForm: 'Prolonged-release tablet',
@@ -216,7 +207,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Aspirin Protect 100 mg',
-    brandNameAr: 'أسبرين بروتكت 100 ملغم',
     category: 'otc_drug',
     genericName: 'Acetylsalicylic acid',
     drugClassNameEn: 'Platelet Aggregation Inhibitors (Cyclooxygenase-1 Inhibitors)',
@@ -240,7 +230,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Kerendia 10 mg',
-    brandNameAr: 'كيرينديا 10 ملغم',
     genericName: 'Finerenone',
     drugClassNameEn: 'Non-Steroidal Selective Mineralocorticoid Receptor Antagonists (MRAs)',
     dosageForm: 'Film-coated tablet',
@@ -263,7 +252,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Kerendia 20 mg',
-    brandNameAr: 'كيرينديا 20 ملغم',
     genericName: 'Finerenone',
     drugClassNameEn: 'Non-Steroidal Selective Mineralocorticoid Receptor Antagonists (MRAs)',
     dosageForm: 'Film-coated tablet',
@@ -286,7 +274,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Verquvo 2.5 mg',
-    brandNameAr: 'فيركوفو 2.5 ملغم',
     genericName: 'Vericiguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators',
     dosageForm: 'Film-coated tablet',
@@ -309,7 +296,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Verquvo 5 mg',
-    brandNameAr: 'فيركوفو 5 ملغم',
     genericName: 'Vericiguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators',
     dosageForm: 'Film-coated tablet',
@@ -332,7 +318,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Verquvo 10 mg',
-    brandNameAr: 'فيركوفو 10 ملغم',
     genericName: 'Vericiguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators',
     dosageForm: 'Film-coated tablet',
@@ -355,7 +340,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Adempas 1 mg',
-    brandNameAr: 'أديمباس 1 ملغم',
     genericName: 'Riociguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators (Pulmonary Hypertension)',
     dosageForm: 'Film-coated tablet',
@@ -378,7 +362,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Adempas 2.5 mg',
-    brandNameAr: 'أديمباس 2.5 ملغم',
     genericName: 'Riociguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators (Pulmonary Hypertension)',
     dosageForm: 'Film-coated tablet',
@@ -401,7 +384,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Glucobay 50 mg',
-    brandNameAr: 'غلوكوباي 50 ملغم',
     genericName: 'Acarbose',
     drugClassNameEn: 'Alpha-Glucosidase Inhibitors',
     dosageForm: 'Tablet',
@@ -424,7 +406,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Glucobay 100 mg',
-    brandNameAr: 'غلوكوباي 100 ملغم',
     genericName: 'Acarbose',
     drugClassNameEn: 'Alpha-Glucosidase Inhibitors',
     dosageForm: 'Tablet',
@@ -451,7 +432,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   // =========================================================================
   {
     brandName: 'Ciprobay 250 mg',
-    brandNameAr: 'سيبروباي 250 ملغم',
     genericName: 'Ciprofloxacin',
     drugClassNameEn: 'Fluoroquinolone Antibacterials',
     dosageForm: 'Film-coated tablet',
@@ -474,7 +454,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Ciprobay 500 mg',
-    brandNameAr: 'سيبروباي 500 ملغم',
     genericName: 'Ciprofloxacin',
     drugClassNameEn: 'Fluoroquinolone Antibacterials',
     dosageForm: 'Film-coated tablet',
@@ -497,7 +476,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Ciprobay 750 mg',
-    brandNameAr: 'سيبروباي 750 ملغم',
     genericName: 'Ciprofloxacin',
     drugClassNameEn: 'Fluoroquinolone Antibacterials',
     dosageForm: 'Film-coated tablet',
@@ -520,7 +498,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Ciprobay 200 mg/100 mL',
-    brandNameAr: 'سيبروباي 200 ملغم/100 مل',
     genericName: 'Ciprofloxacin',
     drugClassNameEn: 'Fluoroquinolone Antibacterials (Intravenous)',
     dosageForm: 'Solution for infusion',
@@ -543,7 +520,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Avelox 400 mg',
-    brandNameAr: 'أفيلوكس 400 ملغم',
     genericName: 'Moxifloxacin',
     drugClassNameEn: 'Respiratory Fluoroquinolone Antibacterials',
     dosageForm: 'Film-coated tablet',
@@ -566,7 +542,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Avelox 400 mg/250 mL',
-    brandNameAr: 'أفيلوكس 400 ملغم/250 مل',
     genericName: 'Moxifloxacin',
     drugClassNameEn: 'Respiratory Fluoroquinolone Antibacterials (Intravenous)',
     dosageForm: 'Solution for infusion',
@@ -593,7 +568,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   // =========================================================================
   {
     brandName: 'Yasmin 3 mg/0.03 mg',
-    brandNameAr: 'ياسمين 3 ملغم/0.03 ملغم',
     genericName: 'Drospirenone + Ethinylestradiol',
     drugClassNameEn: 'Combined Oral Contraceptives (Fourth-Generation Progestogen with Antimineralocorticoid Activity)',
     dosageForm: 'Film-coated tablet',
@@ -616,7 +590,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Yaz 3 mg/0.02 mg',
-    brandNameAr: 'ياز 3 ملغم/0.02 ملغم',
     genericName: 'Drospirenone + Ethinylestradiol',
     drugClassNameEn: 'Low-Dose Combined Oral Contraceptives (24/4 Regimen)',
     dosageForm: 'Film-coated tablet',
@@ -639,7 +612,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Diane-35 2 mg/0.035 mg',
-    brandNameAr: 'ديان-35 2 ملغم/0.035 ملغم',
     genericName: 'Cyproterone + Ethinylestradiol',
     drugClassNameEn: 'Antiandrogen and Oestrogen Combinations',
     dosageForm: 'Coated tablet',
@@ -662,7 +634,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Visanne 2 mg',
-    brandNameAr: 'فيزان 2 ملغم',
     genericName: 'Dienogest',
     drugClassNameEn: 'Selective Progestogens for Endometriosis',
     dosageForm: 'Tablet',
@@ -685,7 +656,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Mirena 52 mg (20 mcg/24 h)',
-    brandNameAr: 'ميرينا 52 ملغم (20 ميكروغرام/24 ساعة)',
     genericName: 'Levonorgestrel',
     drugClassNameEn: 'Levonorgestrel-Releasing Intrauterine Delivery Systems (IUS)',
     dosageForm: 'Intrauterine delivery system',
@@ -708,7 +678,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Progynova 2 mg',
-    brandNameAr: 'بروجينوفا 2 ملغم',
     genericName: 'Estradiol',
     drugClassNameEn: 'Natural Oestrogens for Hormone Replacement Therapy (HRT)',
     dosageForm: 'Sugar-coated tablet',
@@ -731,7 +700,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Primolut N 5 mg',
-    brandNameAr: 'بريمولوت إن 5 ملغم',
     genericName: 'Norethisterone',
     drugClassNameEn: 'Oral Progestogens',
     dosageForm: 'Tablet',
@@ -758,7 +726,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   // =========================================================================
   {
     brandName: 'Nexavar 200 mg',
-    brandNameAr: 'نيكسافار 200 ملغم',
     genericName: 'Sorafenib',
     drugClassNameEn: 'Multikinase (RAF/VEGFR/PDGFR) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -781,7 +748,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Stivarga 40 mg',
-    brandNameAr: 'ستيفارغا 40 ملغم',
     genericName: 'Regorafenib',
     drugClassNameEn: 'Oral Multikinase (Angiogenic, Stromal, and Oncogenic) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -804,7 +770,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Nubeqa 300 mg',
-    brandNameAr: 'نوبيكا 300 ملغم',
     genericName: 'Darolutamide',
     drugClassNameEn: 'Androgen Receptor Inhibitors (ARIs)',
     dosageForm: 'Film-coated tablet',
@@ -827,7 +792,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Eylea 40 mg/mL',
-    brandNameAr: 'إيليا 40 ملغم/مل',
     genericName: 'Aflibercept',
     drugClassNameEn: 'Anti-VEGF Recombinant Fusion Proteins (Intravitreal)',
     dosageForm: 'Solution for injection in vial / pre-filled syringe',
@@ -850,7 +814,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Betaferon 250 mcg/mL',
-    brandNameAr: 'بيتافيرون 250 ميكروغرام/مل',
     genericName: 'Interferon beta-1b',
     drugClassNameEn: 'Disease-Modifying Interferons for Multiple Sclerosis',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -873,7 +836,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Canesten 1% Cream',
-    brandNameAr: 'كانيستين 1%',
     category: 'otc_drug',
     genericName: 'Clotrimazole',
     drugClassNameEn: 'Imidazole Topical Antifungals',
@@ -897,7 +859,6 @@ const BAYER_COMPACT_PRODUCTS: CompactBayerDrug[] = [
   },
   {
     brandName: 'Canesten 500 mg Pessary',
-    brandNameAr: 'كانيستين 500 ملغم',
     category: 'otc_drug',
     genericName: 'Clotrimazole',
     drugClassNameEn: 'Imidazole Vaginal Antifungals',

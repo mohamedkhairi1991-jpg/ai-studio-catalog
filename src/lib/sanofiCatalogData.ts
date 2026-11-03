@@ -2,7 +2,6 @@ import type { AiProductDraft } from './catalog';
 
 interface CompactSanofiDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   activeIngredients: string[];
@@ -25,7 +24,6 @@ function toSanofiDraft(item: CompactSanofiDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.activeIngredients,
@@ -54,7 +52,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   // ============================================================================
   {
     brandName: 'Plavix 75 mg',
-    brandNameAr: 'بلافيكس ٧٥ ملغ',
     genericName: 'Clopidogrel',
     activeIngredients: ['Clopidogrel'],
     drugClass: 'P2Y12 Platelet Aggregation Inhibitors',
@@ -77,7 +74,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Plavix 300 mg',
-    brandNameAr: 'بلافيكس ٣٠٠ ملغ جرعة تحميل',
     genericName: 'Clopidogrel',
     activeIngredients: ['Clopidogrel'],
     drugClass: 'P2Y12 Platelet Aggregation Inhibitors',
@@ -100,7 +96,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'CoPlavix 75 mg / 100 mg',
-    brandNameAr: 'كو-بلافيكس ٧٥ ملغ / ١٠٠ ملغ',
     genericName: 'Clopidogrel + Acetylsalicylic acid',
     activeIngredients: ['Clopidogrel', 'Acetylsalicylic acid'],
     drugClass: 'Dual Antiplatelet Combinations (DAPT)',
@@ -123,7 +118,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Clexane 2000 IU (20 mg/0.2 mL)',
-    brandNameAr: 'كليكسان ٢٠٠٠ وحدة دولية (٢٠ ملغ / ٠.٢ مل) محقنة مسبقة التعبئة',
     genericName: 'Enoxaparin',
     activeIngredients: ['Enoxaparin'],
     drugClass: 'Low Molecular Weight Heparins (LMWH)',
@@ -146,7 +140,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Clexane 4000 IU (40 mg/0.4 mL)',
-    brandNameAr: 'كليكسان ٤٠٠٠ وحدة دولية (٤٠ ملغ / ٠.٤ مل) محقنة مسبقة التعبئة',
     genericName: 'Enoxaparin',
     activeIngredients: ['Enoxaparin'],
     drugClass: 'Low Molecular Weight Heparins (LMWH)',
@@ -169,7 +162,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Clexane 6000 IU (60 mg/0.6 mL)',
-    brandNameAr: 'كليكسان ٦٠٠٠ وحدة دولية (٦٠ ملغ / ٠.٦ مل) محقنة مسبقة التعبئة',
     genericName: 'Enoxaparin',
     activeIngredients: ['Enoxaparin'],
     drugClass: 'Low Molecular Weight Heparins (LMWH)',
@@ -192,7 +184,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Clexane 8000 IU (80 mg/0.8 mL)',
-    brandNameAr: 'كليكسان ٨٠٠٠ وحدة دولية (٨٠ ملغ / ٠.٨ مل) محقنة مسبقة التعبئة',
     genericName: 'Enoxaparin',
     activeIngredients: ['Enoxaparin'],
     drugClass: 'Low Molecular Weight Heparins (LMWH)',
@@ -215,7 +206,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Aprovel 150 mg',
-    brandNameAr: 'أبروفيل ١٥٠ ملغ',
     genericName: 'Irbesartan',
     activeIngredients: ['Irbesartan'],
     drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
@@ -238,7 +228,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Aprovel 300 mg',
-    brandNameAr: 'أبروفيل ٣٠٠ ملغ',
     genericName: 'Irbesartan',
     activeIngredients: ['Irbesartan'],
     drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
@@ -261,7 +250,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'CoAprovel 150 mg / 12.5 mg',
-    brandNameAr: 'كو-أبروفيل ١٥٠ ملغ / ١٢.٥ ملغ',
     genericName: 'Irbesartan + Hydrochlorothiazide',
     activeIngredients: ['Irbesartan', 'Hydrochlorothiazide'],
     drugClass: 'ARB & Thiazide Diuretic Combinations',
@@ -284,7 +272,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'CoAprovel 300 mg / 12.5 mg',
-    brandNameAr: 'كو-أبروفيل ٣٠٠ ملغ / ١٢.٥ ملغ',
     genericName: 'Irbesartan + Hydrochlorothiazide',
     activeIngredients: ['Irbesartan', 'Hydrochlorothiazide'],
     drugClass: 'ARB & Thiazide Diuretic Combinations',
@@ -307,7 +294,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'CoAprovel 300 mg / 25 mg',
-    brandNameAr: 'كو-أبروفيل ٣٠٠ ملغ / ٢٥ ملغ',
     genericName: 'Irbesartan + Hydrochlorothiazide',
     activeIngredients: ['Irbesartan', 'Hydrochlorothiazide'],
     drugClass: 'ARB & Thiazide Diuretic Combinations',
@@ -330,7 +316,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Aprovasc 150 mg / 5 mg',
-    brandNameAr: 'أبروفسك ١٥٠ ملغ / ٥ ملغ',
     genericName: 'Irbesartan + Amlodipine besylate',
     activeIngredients: ['Irbesartan', 'Amlodipine'],
     drugClass: 'ARB & Calcium Channel Blocker Combinations',
@@ -353,7 +338,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Aprovasc 300 mg / 10 mg',
-    brandNameAr: 'أبروفسك ٣٠٠ ملغ / ١٠ ملغ',
     genericName: 'Irbesartan + Amlodipine besylate',
     activeIngredients: ['Irbesartan', 'Amlodipine'],
     drugClass: 'ARB & Calcium Channel Blocker Combinations',
@@ -376,7 +360,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Tritace 2.5 mg',
-    brandNameAr: 'تريتاس ٢.٥ ملغ',
     genericName: 'Ramipril',
     activeIngredients: ['Ramipril'],
     drugClass: 'ACE Inhibitors',
@@ -399,7 +382,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Tritace 5 mg',
-    brandNameAr: 'تريتاس ٥ ملغ',
     genericName: 'Ramipril',
     activeIngredients: ['Ramipril'],
     drugClass: 'ACE Inhibitors',
@@ -422,7 +404,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Tritace 10 mg',
-    brandNameAr: 'تريتاس ١٠ ملغ',
     genericName: 'Ramipril',
     activeIngredients: ['Ramipril'],
     drugClass: 'ACE Inhibitors',
@@ -445,7 +426,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Cordarone 200 mg',
-    brandNameAr: 'كوردارون ٢٠٠ ملغ',
     genericName: 'Amiodarone',
     activeIngredients: ['Amiodarone'],
     drugClass: 'Class III Antiarrhythmics',
@@ -468,7 +448,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Cordarone IV 150 mg/3 mL',
-    brandNameAr: 'كوردارون ١٥٠ ملغ / ٣ مل أمبولات للزرق والتسريب الوريدي',
     genericName: 'Amiodarone',
     activeIngredients: ['Amiodarone'],
     drugClass: 'Class III Antiarrhythmics',
@@ -491,7 +470,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Lasix 40 mg',
-    brandNameAr: 'لازكس ٤٠ ملغ',
     genericName: 'Furosemide',
     activeIngredients: ['Furosemide'],
     drugClass: 'Loop Diuretics',
@@ -514,7 +492,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Lasix 20 mg/2 mL Ampoules',
-    brandNameAr: 'لازكس ٢٠ ملغ / ٢ مل أمبولات للحقن الوريدي أو العضلي',
     genericName: 'Furosemide',
     activeIngredients: ['Furosemide'],
     drugClass: 'Loop Diuretics',
@@ -537,7 +514,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Praluent 150 mg',
-    brandNameAr: 'برالوينت ١٥٠ ملغ قلم مسبق التعبئة',
     genericName: 'Alirocumab',
     activeIngredients: ['Alirocumab'],
     drugClass: 'PCSK9 Inhibitors',
@@ -564,7 +540,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   // ============================================================================
   {
     brandName: 'Lantus SoloStar 100 IU/mL',
-    brandNameAr: 'لانتوس سولوستار ١٠٠ وحدة/مل أقلام أنسولين مسبقة التعبئة',
     genericName: 'Insulin glargine',
     activeIngredients: ['Insulin glargine'],
     drugClass: 'Long-Acting Basal Insulins',
@@ -588,7 +563,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Toujeo SoloStar 300 IU/mL',
-    brandNameAr: 'توجيو سولوستار ٣٠٠ وحدة/مل أقلام أنسولين مسبقة التعبئة',
     genericName: 'Insulin glargine (300 units/mL)',
     activeIngredients: ['Insulin glargine'],
     drugClass: 'Ultra-Long-Acting Basal Insulins',
@@ -612,7 +586,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Apidra SoloStar 100 IU/mL',
-    brandNameAr: 'أبيدرا سولوستار ١٠٠ وحدة/مل أقلام أنسولين سريع المفعول',
     genericName: 'Insulin glulisine',
     activeIngredients: ['Insulin glulisine'],
     drugClass: 'Rapid-Acting Prandial Insulins',
@@ -636,7 +609,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Suliqua 100/50 SoloStar',
-    brandNameAr: 'سوليكوا ١٠٠ / ٥٠ سولوستار قلم مسبق التعبئة',
     genericName: 'Insulin glargine + Lixisenatide',
     activeIngredients: ['Insulin glargine', 'Lixisenatide'],
     drugClass: 'Basal Insulin & GLP-1 Receptor Agonist Combinations',
@@ -660,7 +632,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Amaryl 1 mg',
-    brandNameAr: 'أماريل ١ ملغ',
     genericName: 'Glimepiride',
     activeIngredients: ['Glimepiride'],
     drugClass: 'Sulfonylureas',
@@ -683,7 +654,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Amaryl 2 mg',
-    brandNameAr: 'أماريل ٢ ملغ',
     genericName: 'Glimepiride',
     activeIngredients: ['Glimepiride'],
     drugClass: 'Sulfonylureas',
@@ -706,7 +676,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Amaryl 3 mg',
-    brandNameAr: 'أماريل ٣ ملغ',
     genericName: 'Glimepiride',
     activeIngredients: ['Glimepiride'],
     drugClass: 'Sulfonylureas',
@@ -729,7 +698,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Amaryl 4 mg',
-    brandNameAr: 'أماريل ٤ ملغ',
     genericName: 'Glimepiride',
     activeIngredients: ['Glimepiride'],
     drugClass: 'Sulfonylureas',
@@ -752,7 +720,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Amaryl M 2 mg / 500 mg',
-    brandNameAr: 'أماريل إم ٢ ملغ / ٥٠٠ ملغ',
     genericName: 'Glimepiride + Metformin hydrochloride',
     activeIngredients: ['Glimepiride', 'Metformin'],
     drugClass: 'Sulfonylurea & Biguanide Combinations',
@@ -775,7 +742,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Daonil 5 mg',
-    brandNameAr: 'داونيل ٥ ملغ',
     genericName: 'Glibenclamide',
     activeIngredients: ['Glibenclamide'],
     drugClass: 'Sulfonylureas',
@@ -802,7 +768,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   // ============================================================================
   {
     brandName: 'Depakine Chrono 500 mg',
-    brandNameAr: 'ديباكين كرونو ٥٠٠ ملغ أقراص ممتدة المفعول',
     genericName: 'Valproic acid',
     activeIngredients: ['Valproic acid', 'Valproic acid'],
     drugClass: 'Antiepileptics & Mood Stabilizers',
@@ -825,7 +790,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Depakine 200 mg',
-    brandNameAr: 'ديباكين ٢٠٠ ملغ أقراص مقاومة للمعدة',
     genericName: 'Valproic acid',
     activeIngredients: ['Valproic acid'],
     drugClass: 'Antiepileptics & Mood Stabilizers',
@@ -848,7 +812,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Depakine Oral Solution 200 mg/mL',
-    brandNameAr: 'ديباكين ٢٠٠ ملغ/مل محلول (نقط) فموي',
     genericName: 'Valproic acid',
     activeIngredients: ['Valproic acid'],
     drugClass: 'Antiepileptics & Mood Stabilizers',
@@ -871,7 +834,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Depakine Syrup 57.64 mg/mL',
-    brandNameAr: 'ديباكين شراب فموي (٢٠٠ ملغ / ٣.٥ مل)',
     genericName: 'Valproic acid',
     activeIngredients: ['Valproic acid'],
     drugClass: 'Antiepileptics & Mood Stabilizers',
@@ -894,7 +856,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Depakine IV 400 mg',
-    brandNameAr: 'ديباكين ٤٠٠ ملغ فيال للزرق والتسريب الوريدي',
     genericName: 'Valproic acid',
     activeIngredients: ['Valproic acid'],
     drugClass: 'Antiepileptics & Mood Stabilizers',
@@ -917,7 +878,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Stilnox 10 mg',
-    brandNameAr: 'ستيلنوكس ١٠ ملغ',
     genericName: 'Zolpidem',
     activeIngredients: ['Zolpidem'],
     drugClass: 'Non-Benzodiazepine Hypnotics (Z-Drugs)',
@@ -940,7 +900,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Dogmatil 50 mg',
-    brandNameAr: 'دوغماتيل ٥٠ ملغ كبسولات',
     genericName: 'Sulpiride',
     activeIngredients: ['Sulpiride'],
     drugClass: 'Benzamide Antipsychotics',
@@ -963,7 +922,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Solian 200 mg',
-    brandNameAr: 'سوليان ٢٠٠ ملغ',
     genericName: 'Amisulpride',
     activeIngredients: ['Amisulpride'],
     drugClass: 'Benzamide Antipsychotics',
@@ -986,7 +944,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Aubagio 14 mg',
-    brandNameAr: 'أوباجيو ١٤ ملغ',
     genericName: 'Teriflunomide',
     activeIngredients: ['Teriflunomide'],
     drugClass: 'Multiple Sclerosis Immunomodulators',
@@ -1013,7 +970,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   // ============================================================================
   {
     brandName: 'Telfast 120 mg',
-    brandNameAr: 'تلفاست ١٢٠ ملغ',
     category: 'otc_drug',
     genericName: 'Fexofenadine',
     activeIngredients: ['Fexofenadine'],
@@ -1037,7 +993,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Telfast 180 mg',
-    brandNameAr: 'تلفاست ١٨٠ ملغ',
     category: 'otc_drug',
     genericName: 'Fexofenadine',
     activeIngredients: ['Fexofenadine'],
@@ -1061,7 +1016,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Telfast Oral Suspension 30 mg/5 mL',
-    brandNameAr: 'تلفاست ٣٠ ملغ / ٥ مل معلق فموي للأطفال',
     category: 'otc_drug',
     genericName: 'Fexofenadine',
     activeIngredients: ['Fexofenadine'],
@@ -1085,7 +1039,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Enterogermina 2 Billion/5 mL',
-    brandNameAr: 'إنتروجيرمينا ٢ مليار / ٥ مل أمبولات فموية (بروبيوتيك)',
     category: 'otc_drug',
     genericName: 'Spores of polyantibiotic-resistant Bacillus clausii (strains SIN, O/C, T, N/R)',
     activeIngredients: ['Bacillus clausii spores'],
@@ -1109,7 +1062,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Enterogermina 4 Billion/5 mL',
-    brandNameAr: 'إنتروجيرمينا ٤ مليار / ٥ مل أمبولات فموية',
     category: 'otc_drug',
     genericName: 'Spores of polyantibiotic-resistant Bacillus clausii (strains SIN, O/C, T, N/R)',
     activeIngredients: ['Bacillus clausii spores'],
@@ -1133,7 +1085,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Essentiale Forte N 300 mg',
-    brandNameAr: 'إسينشيالي فورت إن ٣٠٠ ملغ كبسولات لدعم الكبد',
     category: 'otc_drug',
     genericName: 'Essential phospholipids from soybean (EPL)',
     activeIngredients: ['Soybean phospholipids containing 76% (3-sn-phosphatidyl)choline'],
@@ -1157,7 +1108,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Maalox Plus Suspension',
-    brandNameAr: 'مالوكس بلس معلق فموي مضاد للحموضة والانتفاخ',
     category: 'otc_drug',
     genericName: 'Magnesium hydroxide + Dried aluminium hydroxide gel + Simethicone',
     activeIngredients: ['Magnesium hydroxide', 'Aluminium hydroxide', 'Simethicone'],
@@ -1181,7 +1131,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Buscopan 10 mg',
-    brandNameAr: 'بسكوبان ١٠ ملغ أقراص مضادة للتشنج',
     category: 'otc_drug',
     genericName: 'Hyoscine butylbromide (Scopolamine butylbromide)',
     activeIngredients: ['Hyoscine butylbromide'],
@@ -1205,7 +1154,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Buscopan 20 mg/mL Ampoules',
-    brandNameAr: 'بسكوبان ٢٠ ملغ / ١ مل أمبولات للحقن',
     genericName: 'Hyoscine butylbromide (Scopolamine butylbromide)',
     activeIngredients: ['Hyoscine butylbromide'],
     drugClass: 'Antispasmodics & Anticholinergics',
@@ -1228,7 +1176,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Profenid 100 mg',
-    brandNameAr: 'بروفينيد ١٠٠ ملغ أقراص معوية الكسوة',
     genericName: 'Ketoprofen',
     activeIngredients: ['Ketoprofen'],
     drugClass: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
@@ -1251,7 +1198,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Bi-Profenid 150 mg',
-    brandNameAr: 'باي-بروفينيد ١٥٠ ملغ أقراص معدلة الإطلاق ثنائية الطبقة',
     genericName: 'Ketoprofen',
     activeIngredients: ['Ketoprofen'],
     drugClass: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
@@ -1274,7 +1220,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Profenid IM 100 mg/2 mL',
-    brandNameAr: 'بروفينيد ١٠٠ ملغ / ٢ مل أمبولات للحقن العضلي',
     genericName: 'Ketoprofen',
     activeIngredients: ['Ketoprofen'],
     drugClass: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
@@ -1301,7 +1246,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   // ============================================================================
   {
     brandName: 'Flagyl 500 mg',
-    brandNameAr: 'فلاجيل ٥٠٠ ملغ أقراص',
     genericName: 'Metronidazole',
     activeIngredients: ['Metronidazole'],
     drugClass: 'Nitroimidazole Antibacterials & Antiprotozoals',
@@ -1324,7 +1268,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Flagyl Oral Suspension 125 mg/5 mL',
-    brandNameAr: 'فلاجيل ١٢٥ ملغ / ٥ مل معلق فموي للأطفال',
     genericName: 'Metronidazole benzoate',
     activeIngredients: ['Metronidazole'],
     drugClass: 'Nitroimidazole Antibacterials & Antiprotozoals',
@@ -1347,7 +1290,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Flagyl IV 500 mg/100 mL',
-    brandNameAr: 'فلاجيل ٥٠٠ ملغ / ١٠٠ مل محلول للتسريب الوريدي',
     genericName: 'Metronidazole',
     activeIngredients: ['Metronidazole'],
     drugClass: 'Nitroimidazole Antibacterials & Antiprotozoals',
@@ -1370,7 +1312,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Rovamycine 3 MIU',
-    brandNameAr: 'روفامايسين ٣ مليون وحدة دولية أقراص',
     genericName: 'Spiramycin',
     activeIngredients: ['Spiramycin'],
     drugClass: 'Macrolide Antibacterials',
@@ -1393,7 +1334,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Targocid 400 mg',
-    brandNameAr: 'تارجوسيد ٤٠٠ ملغ فيال للزرق الوريدي أو العضلي',
     genericName: 'Teicoplanin',
     activeIngredients: ['Teicoplanin'],
     drugClass: 'Glycopeptide Antibacterials',
@@ -1416,7 +1356,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Tavanic 500 mg',
-    brandNameAr: 'تافانيك ٥٠٠ ملغ أقراص',
     genericName: 'Levofloxacin hemihydrate',
     activeIngredients: ['Levofloxacin'],
     drugClass: 'Fluoroquinolone Antibacterials',
@@ -1439,7 +1378,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Claforan 1 g',
-    brandNameAr: 'كلافوران ١ غرام فيال للزرق الوريدي أو العضلي',
     genericName: 'Cefotaxime',
     activeIngredients: ['Cefotaxime'],
     drugClass: 'Third-Generation Cephalosporins',
@@ -1462,7 +1400,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Xatral XL 10 mg',
-    brandNameAr: 'زاترال إكس إل ١٠ ملغ أقراص ممتدة المفعول',
     genericName: 'Alfuzosin',
     activeIngredients: ['Alfuzosin'],
     drugClass: 'Alpha-1 Adrenoceptor Antagonists (BPH)',
@@ -1485,7 +1422,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Dupixent 300 mg/2 mL',
-    brandNameAr: 'دوبيكسنت ٣٠٠ ملغ / ٢ مل محقنة / قلم مسبق التعبئة',
     genericName: 'Dupilumab',
     activeIngredients: ['Dupilumab'],
     drugClass: 'Anti-IL-4Rα Monoclonal Antibodies',
@@ -1508,7 +1444,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Taxotere 80 mg/4 mL',
-    brandNameAr: 'تاكسوتير ٨٠ ملغ / ٤ مل فيال للتسريب الوريدي',
     genericName: 'Docetaxel',
     activeIngredients: ['Docetaxel'],
     drugClass: 'Taxane Antineoplastics',
@@ -1531,7 +1466,6 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
   },
   {
     brandName: 'Eloxatin 100 mg/20 mL',
-    brandNameAr: 'إيلوكساتين ١٠٠ ملغ / ٢٠ مل فيال للتسريب الوريدي',
     genericName: 'Oxaliplatin',
     activeIngredients: ['Oxaliplatin'],
     drugClass: 'Platinum Antineoplastics',

@@ -4,7 +4,6 @@ const GSK_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }
 
 interface CompactGskDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toGskProductDraft(item: CompactGskDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   // =========================================================================
   {
     brandName: 'Augmentin 625 mg',
-    brandNameAr: 'أوغمنتين 625 ملغم',
     genericName: 'Amoxicillin + Clavulanic Acid',
     drugClassNameEn: 'Aminopenicillin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -77,7 +74,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Augmentin 1 g',
-    brandNameAr: 'أوغمنتين 1 غم',
     genericName: 'Amoxicillin + Clavulanic Acid',
     drugClassNameEn: 'Aminopenicillin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -99,7 +95,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Augmentin 457 mg/5 mL',
-    brandNameAr: 'أوغمنتين 457 ملغم / 5 مل',
     genericName: 'Amoxicillin + Clavulanic Acid',
     drugClassNameEn: 'Aminopenicillin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for oral suspension',
@@ -121,7 +116,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Augmentin ES 600 mg/42.9 mg per 5 mL',
-    brandNameAr: 'أوغمنتين إي إس 600 ملغم / 42.9 ملغم لكل 5 مل',
     genericName: 'Amoxicillin + Clavulanic Acid',
     drugClassNameEn: 'Aminopenicillin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for oral suspension',
@@ -143,7 +137,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Augmentin IV 1.2 g',
-    brandNameAr: 'أوغمنتين وريدي 1.2 غم',
     genericName: 'Amoxicillin + Clavulanic Acid',
     drugClassNameEn: 'Aminopenicillin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for solution for injection/infusion',
@@ -165,7 +158,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Valtrex 500 mg',
-    brandNameAr: 'فالتريكس 500 ملغم',
     genericName: 'Valaciclovir',
     drugClassNameEn: 'Nucleoside Analogue Antivirals',
     dosageForm: 'Film-coated tablet',
@@ -187,7 +179,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Valtrex 1000 mg',
-    brandNameAr: 'فالتريكس 1000 ملغم',
     genericName: 'Valaciclovir',
     drugClassNameEn: 'Nucleoside Analogue Antivirals',
     dosageForm: 'Film-coated tablet',
@@ -209,7 +200,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Zeffix 100 mg',
-    brandNameAr: 'زيفيكس 100 ملغم',
     genericName: 'Lamivudine',
     drugClassNameEn: 'Nucleoside Reverse Transcriptase Inhibitors (Anti-HBV Antivirals)',
     dosageForm: 'Film-coated tablet',
@@ -231,7 +221,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Tivicay 50 mg',
-    brandNameAr: 'تيفيكاي 50 ملغم',
     genericName: 'Dolutegravir',
     drugClassNameEn: 'HIV Integrase Strand Transfer Inhibitors (INSTIs)',
     dosageForm: 'Film-coated tablet',
@@ -253,7 +242,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Triumeq 50 mg/600 mg/300 mg',
-    brandNameAr: 'تريوميك 50 ملغم / 600 ملغم / 300 ملغم',
     genericName: 'Dolutegravir + Abacavir + Lamivudine',
     drugClassNameEn: 'Single-Tablet HIV Antiretroviral Combinations (INSTI + 2 NRTIs)',
     dosageForm: 'Film-coated tablet',
@@ -275,7 +263,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Dovato 50 mg/300 mg',
-    brandNameAr: 'دوفاتو 50 ملغم / 300 ملغم',
     genericName: 'Dolutegravir + Lamivudine',
     drugClassNameEn: 'Two-Drug HIV Antiretroviral Combinations (INSTI + NRTI)',
     dosageForm: 'Film-coated tablet',
@@ -301,7 +288,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   // =========================================================================
   {
     brandName: 'Ventolin Evohaler 100 mcg',
-    brandNameAr: 'فنتولين إيفوهيلر 100 مايكروغرام',
     genericName: 'Salbutamol',
     drugClassNameEn: 'Short-Acting Beta-2 Adrenergic Agonists (SABAs)',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -323,7 +309,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Ventolin Nebules 2.5 mg/2.5 mL',
-    brandNameAr: 'فنتولين نبيولز 2.5 ملغم / 2.5 مل',
     genericName: 'Salbutamol',
     drugClassNameEn: 'Short-Acting Beta-2 Adrenergic Agonists (SABAs)',
     dosageForm: 'Nebuliser solution',
@@ -345,7 +330,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Ventolin Nebules 5 mg/2.5 mL',
-    brandNameAr: 'فنتولين نبيولز 5 ملغم / 2.5 مل',
     genericName: 'Salbutamol',
     drugClassNameEn: 'Short-Acting Beta-2 Adrenergic Agonists (SABAs)',
     dosageForm: 'Nebuliser solution',
@@ -367,7 +351,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seretide Diskus 50/100 mcg',
-    brandNameAr: 'سيريتايد ديسكس 50 / 100 مايكروغرام',
     genericName: 'Salmeterol + Fluticasone',
     drugClassNameEn: 'LABA & Inhaled Corticosteroid (ICS) Combinations',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -389,7 +372,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seretide Diskus 50/250 mcg',
-    brandNameAr: 'سيريتايد ديسكس 50 / 250 مايكروغرام',
     genericName: 'Salmeterol + Fluticasone',
     drugClassNameEn: 'LABA & Inhaled Corticosteroid (ICS) Combinations',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -411,7 +393,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seretide Diskus 50/500 mcg',
-    brandNameAr: 'سيريتايد ديسكس 50 / 500 مايكروغرام',
     genericName: 'Salmeterol + Fluticasone',
     drugClassNameEn: 'LABA & Inhaled Corticosteroid (ICS) Combinations',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -433,7 +414,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seretide Evohaler 25/50 mcg',
-    brandNameAr: 'سيريتايد إيفوهيلر 25 / 50 مايكروغرام',
     genericName: 'Salmeterol + Fluticasone',
     drugClassNameEn: 'LABA & Inhaled Corticosteroid (ICS) Combinations',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -455,7 +435,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seretide Evohaler 25/125 mcg',
-    brandNameAr: 'سيريتايد إيفوهيلر 25 / 125 مايكروغرام',
     genericName: 'Salmeterol + Fluticasone',
     drugClassNameEn: 'LABA & Inhaled Corticosteroid (ICS) Combinations',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -477,7 +456,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seretide Evohaler 25/250 mcg',
-    brandNameAr: 'سيريتايد إيفوهيلر 25 / 250 مايكروغرام',
     genericName: 'Salmeterol + Fluticasone',
     drugClassNameEn: 'LABA & Inhaled Corticosteroid (ICS) Combinations',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -499,7 +477,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Flixotide Evohaler 50 mcg',
-    brandNameAr: 'فليكسوتايد إيفوهيلر 50 مايكروغرام',
     genericName: 'Fluticasone',
     drugClassNameEn: 'Inhaled Corticosteroids (ICS)',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -521,7 +498,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Flixotide Evohaler 125 mcg',
-    brandNameAr: 'فليكسوتايد إيفوهيلر 125 مايكروغرام',
     genericName: 'Fluticasone',
     drugClassNameEn: 'Inhaled Corticosteroids (ICS)',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -543,7 +519,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Flixotide Evohaler 250 mcg',
-    brandNameAr: 'فليكسوتايد إيفوهيلر 250 مايكروغرام',
     genericName: 'Fluticasone',
     drugClassNameEn: 'Inhaled Corticosteroids (ICS)',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -565,7 +540,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Serevent Evohaler 25 mcg',
-    brandNameAr: 'سيريفنت إيفوهيلر 25 مايكروغرام',
     genericName: 'Salmeterol',
     drugClassNameEn: 'Long-Acting Beta-2 Adrenergic Agonists (LABAs)',
     dosageForm: 'Pressurised inhalation, suspension',
@@ -587,7 +561,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Relvar Ellipta 92/22 mcg',
-    brandNameAr: 'ريلفار إليبتا 92 / 22 مايكروغرام',
     genericName: 'Fluticasone + Vilanterol',
     drugClassNameEn: 'Once-Daily ICS & Ultra-LABA Combinations',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -609,7 +582,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Relvar Ellipta 184/22 mcg',
-    brandNameAr: 'ريلفار إليبتا 184 / 22 مايكروغرام',
     genericName: 'Fluticasone + Vilanterol',
     drugClassNameEn: 'Once-Daily ICS & Ultra-LABA Combinations',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -631,7 +603,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Trelegy Ellipta 92/55/22 mcg',
-    brandNameAr: 'تريليجي إليبتا 92 / 55 / 22 مايكروغرام',
     genericName: 'Fluticasone + Umeclidinium + Vilanterol',
     drugClassNameEn: 'Once-Daily Triple Inhaled Therapy (ICS + LAMA + LABA)',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -653,7 +624,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Anoro Ellipta 55/22 mcg',
-    brandNameAr: 'أنورو إليبتا 55 / 22 مايكروغرام',
     genericName: 'Umeclidinium + Vilanterol',
     drugClassNameEn: 'Once-Daily Dual Bronchodilators (LAMA + LABA)',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -675,7 +645,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Incruse Ellipta 55 mcg',
-    brandNameAr: 'إنكروز إليبتا 55 مايكروغرام',
     genericName: 'Umeclidinium',
     drugClassNameEn: 'Long-Acting Muscarinic Antagonists (LAMAs)',
     dosageForm: 'Inhalation powder, pre-dispensed',
@@ -697,7 +666,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Avamys 27.5 mcg',
-    brandNameAr: 'أفاميس 27.5 مايكروغرام',
     genericName: 'Fluticasone',
     drugClassNameEn: 'Intranasal Corticosteroids',
     dosageForm: 'Nasal spray, suspension',
@@ -719,7 +687,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Flixonase 50 mcg',
-    brandNameAr: 'فليكسونيز 50 مايكروغرام',
     genericName: 'Fluticasone',
     drugClassNameEn: 'Intranasal Corticosteroids',
     dosageForm: 'Nasal spray, suspension',
@@ -741,7 +708,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Nucala 100 mg',
-    brandNameAr: 'نوكالا 100 ملغم',
     genericName: 'Mepolizumab',
     drugClassNameEn: 'Anti-Interleukin-5 (IL-5) Monoclonal Antibodies',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -767,7 +733,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   // =========================================================================
   {
     brandName: 'Lamictal 25 mg',
-    brandNameAr: 'لاميكتال 25 ملغم',
     genericName: 'Lamotrigine',
     drugClassNameEn: 'Phenyltriazine Anticonvulsants & Mood Stabilizers',
     dosageForm: 'Tablet',
@@ -789,7 +754,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Lamictal 50 mg',
-    brandNameAr: 'لاميكتال 50 ملغم',
     genericName: 'Lamotrigine',
     drugClassNameEn: 'Phenyltriazine Anticonvulsants & Mood Stabilizers',
     dosageForm: 'Tablet',
@@ -811,7 +775,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Lamictal 100 mg',
-    brandNameAr: 'لاميكتال 100 ملغم',
     genericName: 'Lamotrigine',
     drugClassNameEn: 'Phenyltriazine Anticonvulsants & Mood Stabilizers',
     dosageForm: 'Tablet',
@@ -833,7 +796,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Lamictal 200 mg',
-    brandNameAr: 'لاميكتال 200 ملغم',
     genericName: 'Lamotrigine',
     drugClassNameEn: 'Phenyltriazine Anticonvulsants & Mood Stabilizers',
     dosageForm: 'Tablet',
@@ -855,7 +817,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Imigran 50 mg',
-    brandNameAr: 'إيميجران 50 ملغم',
     genericName: 'Sumatriptan',
     drugClassNameEn: 'Selective 5-HT1B/1D Receptor Agonists (Triptans)',
     dosageForm: 'Film-coated tablet',
@@ -877,7 +838,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Imigran 100 mg',
-    brandNameAr: 'إيميجران 100 ملغم',
     genericName: 'Sumatriptan',
     drugClassNameEn: 'Selective 5-HT1B/1D Receptor Agonists (Triptans)',
     dosageForm: 'Film-coated tablet',
@@ -899,7 +859,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Requip XL 2 mg',
-    brandNameAr: 'ريكويب إكس إل 2 ملغم',
     genericName: 'Ropinirole',
     drugClassNameEn: 'Non-Ergoline Dopamine D2/D3 Receptor Agonists',
     dosageForm: 'Prolonged-release tablet',
@@ -921,7 +880,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Requip XL 4 mg',
-    brandNameAr: 'ريكويب إكس إل 4 ملغم',
     genericName: 'Ropinirole',
     drugClassNameEn: 'Non-Ergoline Dopamine D2/D3 Receptor Agonists',
     dosageForm: 'Prolonged-release tablet',
@@ -943,7 +901,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Requip XL 8 mg',
-    brandNameAr: 'ريكويب إكس إل 8 ملغم',
     genericName: 'Ropinirole',
     drugClassNameEn: 'Non-Ergoline Dopamine D2/D3 Receptor Agonists',
     dosageForm: 'Prolonged-release tablet',
@@ -965,7 +922,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seroxat 20 mg',
-    brandNameAr: 'سيروكسات 20 ملغم',
     genericName: 'Paroxetine',
     drugClassNameEn: 'Selective Serotonin Reuptake Inhibitors (SSRIs)',
     dosageForm: 'Film-coated tablet',
@@ -987,7 +943,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Seroxat 30 mg',
-    brandNameAr: 'سيروكسات 30 ملغم',
     genericName: 'Paroxetine',
     drugClassNameEn: 'Selective Serotonin Reuptake Inhibitors (SSRIs)',
     dosageForm: 'Film-coated tablet',
@@ -1013,7 +968,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   // =========================================================================
   {
     brandName: 'Avodart 0.5 mg',
-    brandNameAr: 'أفودارت 0.5 ملغم',
     genericName: 'Dutasteride',
     drugClassNameEn: 'Dual 5-Alpha Reductase (Type 1 and Type 2) Inhibitors',
     dosageForm: 'Soft capsule',
@@ -1035,7 +989,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Combodart 0.5 mg/0.4 mg',
-    brandNameAr: 'كومبودارت 0.5 ملغم / 0.4 ملغم',
     genericName: 'Dutasteride + Tamsulosin',
     drugClassNameEn: '5-Alpha Reductase Inhibitor & Alpha-1A Adrenoceptor Blocker Combinations',
     dosageForm: 'Hard capsule',
@@ -1057,7 +1010,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Dermovate Cream 0.05%',
-    brandNameAr: 'ديرموفيت كريم 0.05%',
     genericName: 'Clobetasol',
     drugClassNameEn: 'Very Potent Topical Corticosteroids (Group IV)',
     dosageForm: 'Cream',
@@ -1079,7 +1031,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Dermovate Ointment 0.05%',
-    brandNameAr: 'ديرموفيت مرهم 0.05%',
     genericName: 'Clobetasol',
     drugClassNameEn: 'Very Potent Topical Corticosteroids (Group IV)',
     dosageForm: 'Ointment',
@@ -1101,7 +1052,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Betnovate Cream 0.1%',
-    brandNameAr: 'بيتنوفيت كريم 0.1%',
     genericName: 'Betamethasone',
     drugClassNameEn: 'Potent Topical Corticosteroids (Group III)',
     dosageForm: 'Cream',
@@ -1123,7 +1073,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Betnovate Ointment 0.1%',
-    brandNameAr: 'بيتنوفيت مرهم 0.1%',
     genericName: 'Betamethasone',
     drugClassNameEn: 'Potent Topical Corticosteroids (Group III)',
     dosageForm: 'Ointment',
@@ -1145,7 +1094,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Bactroban Ointment 2%',
-    brandNameAr: 'باكتروبان مرهم 2%',
     genericName: 'Mupirocin',
     drugClassNameEn: 'Topical Antibacterials (Isoleucyl-tRNA Synthetase Inhibitors)',
     dosageForm: 'Ointment',
@@ -1167,7 +1115,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Bactroban Cream 2%',
-    brandNameAr: 'باكتروبان كريم 2%',
     genericName: 'Mupirocin',
     drugClassNameEn: 'Topical Antibacterials (Isoleucyl-tRNA Synthetase Inhibitors)',
     dosageForm: 'Cream',
@@ -1189,7 +1136,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Benlysta 200 mg',
-    brandNameAr: 'بينليستا 200 ملغم',
     genericName: 'Belimumab',
     drugClassNameEn: 'Anti-BLyS (B-Lymphocyte Stimulator) Monoclonal Antibodies',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -1211,7 +1157,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Zejula 100 mg',
-    brandNameAr: 'زيجولا 100 ملغم',
     genericName: 'Niraparib',
     drugClassNameEn: 'Poly (ADP-Ribose) Polymerase (PARP1 / PARP2) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1233,7 +1178,6 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
   },
   {
     brandName: 'Jemperli 500 mg/10 mL',
-    brandNameAr: 'جيمبيرلي 500 ملغم / 10 مل',
     genericName: 'Dostarlimab',
     drugClassNameEn: 'Anti-PD-1 Immune Checkpoint Inhibitor Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',

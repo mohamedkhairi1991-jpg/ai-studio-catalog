@@ -71,7 +71,6 @@ const AZ_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }]
 
 interface CompactAzDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   activeIngredients: string[];
@@ -94,7 +93,6 @@ function toAiProductDraft(item: CompactAzDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.activeIngredients,
@@ -123,7 +121,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   // ============================================================================
   {
     brandName: 'Nexium 20 mg',
-    brandNameAr: 'نيكسيوم ٢٠ ملغ',
     genericName: 'Esomeprazole',
     activeIngredients: ['Esomeprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -147,7 +144,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Nexium 40 mg',
-    brandNameAr: 'نيكسيوم ٤٠ ملغ',
     genericName: 'Esomeprazole',
     activeIngredients: ['Esomeprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -171,7 +167,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Nexium 10 mg Sachets',
-    brandNameAr: 'أكياس نيكسيوم ١٠ ملغ حبيبات للمعلق الفموي',
     genericName: 'Esomeprazole',
     activeIngredients: ['Esomeprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -194,7 +189,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Nexium IV 40 mg',
-    brandNameAr: 'نيكسيوم ٤٠ ملغ فيال للزرق الوريدي',
     genericName: 'Esomeprazole',
     activeIngredients: ['Esomeprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -223,7 +217,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Losec MUPS 20 mg',
-    brandNameAr: 'لوسيك مابس ٢٠ ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -247,7 +240,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Losec MUPS 40 mg',
-    brandNameAr: 'لوسيك مابس ٤٠ ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -275,7 +267,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   // ============================================================================
   {
     brandName: 'Crestor 5 mg',
-    brandNameAr: 'كريستور ٥ ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA Reductase Inhibitors (Statins)',
@@ -299,7 +290,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Crestor 10 mg',
-    brandNameAr: 'كريستور ١٠ ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA Reductase Inhibitors (Statins)',
@@ -323,7 +313,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Crestor 20 mg',
-    brandNameAr: 'كريستور ٢٠ ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA Reductase Inhibitors (Statins)',
@@ -347,7 +336,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Crestor 40 mg',
-    brandNameAr: 'كريستور ٤٠ ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA Reductase Inhibitors (Statins)',
@@ -375,7 +363,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   // ============================================================================
   {
     brandName: 'Forxiga 5 mg',
-    brandNameAr: 'فورسيجا ٥ ملغ',
     genericName: 'Dapagliflozin',
     activeIngredients: ['Dapagliflozin'],
     drugClass: 'SGLT2 Inhibitors',
@@ -398,7 +385,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Forxiga 10 mg',
-    brandNameAr: 'فورسيجا ١٠ ملغ',
     genericName: 'Dapagliflozin',
     activeIngredients: ['Dapagliflozin'],
     drugClass: 'SGLT2 Inhibitors',
@@ -421,7 +407,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Xigduo XR 5 mg / 1000 mg',
-    brandNameAr: 'زيجدو إكس آر ٥ / ١٠٠٠ ملغ',
     genericName: 'Dapagliflozin + Metformin hydrochloride',
     activeIngredients: ['Dapagliflozin', 'Metformin'],
     drugClass: 'SGLT2 Inhibitor & Biguanide Combinations',
@@ -444,7 +429,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Xigduo XR 10 mg / 1000 mg',
-    brandNameAr: 'زيجدو إكس آر ١٠ / ١٠٠٠ ملغ',
     genericName: 'Dapagliflozin + Metformin hydrochloride',
     activeIngredients: ['Dapagliflozin', 'Metformin'],
     drugClass: 'SGLT2 Inhibitor & Biguanide Combinations',
@@ -467,7 +451,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Qtern 5 mg / 10 mg',
-    brandNameAr: 'كويتيرن ٥ ملغ / ١٠ ملغ',
     genericName: 'Saxagliptin + Dapagliflozin',
     activeIngredients: ['Saxagliptin', 'Dapagliflozin'],
     drugClass: 'DPP-4 & SGLT2 Inhibitor Combinations',
@@ -490,7 +473,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Onglyza 5 mg',
-    brandNameAr: 'أونجليزا ٥ ملغ',
     genericName: 'Saxagliptin',
     activeIngredients: ['Saxagliptin'],
     drugClass: 'DPP-4 Inhibitors (Gliptins)',
@@ -513,7 +495,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Kombiglyze XR 5 mg / 1000 mg',
-    brandNameAr: 'كومبيجليز إكس آر ٥ / ١٠٠٠ ملغ',
     genericName: 'Saxagliptin + Metformin hydrochloride',
     activeIngredients: ['Saxagliptin', 'Metformin'],
     drugClass: 'DPP-4 Inhibitor & Biguanide Combinations',
@@ -540,7 +521,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   // ============================================================================
   {
     brandName: 'Brilinta 90 mg',
-    brandNameAr: 'بريلينتا ٩٠ ملغ',
     genericName: 'Ticagrelor',
     activeIngredients: ['Ticagrelor'],
     drugClass: 'P2Y12 Platelet Aggregation Inhibitors',
@@ -563,7 +543,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Brilinta 60 mg',
-    brandNameAr: 'بريلينتا ٦٠ ملغ',
     genericName: 'Ticagrelor',
     activeIngredients: ['Ticagrelor'],
     drugClass: 'P2Y12 Platelet Aggregation Inhibitors',
@@ -586,7 +565,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Betaloc ZOK 25 mg',
-    brandNameAr: 'بيتالوك زوك ٢٥ ملغ',
     genericName: 'Metoprolol',
     activeIngredients: ['Metoprolol'],
     drugClass: 'Beta-1 Selective Adrenergic Blockers',
@@ -609,7 +587,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Betaloc ZOK 50 mg',
-    brandNameAr: 'بيتالوك زوك ٥٠ ملغ',
     genericName: 'Metoprolol',
     activeIngredients: ['Metoprolol'],
     drugClass: 'Beta-1 Selective Adrenergic Blockers',
@@ -632,7 +609,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Betaloc ZOK 100 mg',
-    brandNameAr: 'بيتالوك زوك ١٠٠ ملغ',
     genericName: 'Metoprolol',
     activeIngredients: ['Metoprolol'],
     drugClass: 'Beta-1 Selective Adrenergic Blockers',
@@ -655,7 +631,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Betaloc ZOK 200 mg',
-    brandNameAr: 'بيتالوك زوك ٢٠٠ ملغ',
     genericName: 'Metoprolol',
     activeIngredients: ['Metoprolol'],
     drugClass: 'Beta-1 Selective Adrenergic Blockers',
@@ -678,7 +653,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Tenormin 50 mg',
-    brandNameAr: 'تينورمين ٥٠ ملغ',
     genericName: 'Atenolol',
     activeIngredients: ['Atenolol'],
     drugClass: 'Beta-1 Selective Adrenergic Blockers',
@@ -701,7 +675,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Tenormin 100 mg',
-    brandNameAr: 'تينورمين ١٠٠ ملغ',
     genericName: 'Atenolol',
     activeIngredients: ['Atenolol'],
     drugClass: 'Beta-1 Selective Adrenergic Blockers',
@@ -724,7 +697,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Atacand 8 mg',
-    brandNameAr: 'أتاكاند ٨ ملغ',
     genericName: 'Candesartan cilexetil',
     activeIngredients: ['Candesartan cilexetil'],
     drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
@@ -747,7 +719,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Atacand 16 mg',
-    brandNameAr: 'أتاكاند ١٦ ملغ',
     genericName: 'Candesartan cilexetil',
     activeIngredients: ['Candesartan cilexetil'],
     drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
@@ -770,7 +741,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Atacand 32 mg',
-    brandNameAr: 'أتاكاند ٣٢ ملغ',
     genericName: 'Candesartan cilexetil',
     activeIngredients: ['Candesartan cilexetil'],
     drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
@@ -793,7 +763,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Atacand Plus 16 mg / 12.5 mg',
-    brandNameAr: 'أتاكاند بلس ١٦ / ١٢.٥ ملغ',
     genericName: 'Candesartan cilexetil + Hydrochlorothiazide',
     activeIngredients: ['Candesartan cilexetil', 'Hydrochlorothiazide'],
     drugClass: 'ARB & Thiazide Diuretic Combinations',
@@ -816,7 +785,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Plendil 5 mg',
-    brandNameAr: 'بلنديل ٥ ملغ',
     genericName: 'Felodipine',
     activeIngredients: ['Felodipine'],
     drugClass: 'Dihydropyridine Calcium Channel Blockers',
@@ -839,7 +807,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Plendil 10 mg',
-    brandNameAr: 'بلنديل ١٠ ملغ',
     genericName: 'Felodipine',
     activeIngredients: ['Felodipine'],
     drugClass: 'Dihydropyridine Calcium Channel Blockers',
@@ -862,7 +829,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Zestril 10 mg',
-    brandNameAr: 'زيستريل ١٠ ملغ',
     genericName: 'Lisinopril',
     activeIngredients: ['Lisinopril'],
     drugClass: 'ACE Inhibitors',
@@ -885,7 +851,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Zestril 20 mg',
-    brandNameAr: 'زيستريل ٢٠ ملغ',
     genericName: 'Lisinopril',
     activeIngredients: ['Lisinopril'],
     drugClass: 'ACE Inhibitors',
@@ -908,7 +873,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Zestoretic 20 mg / 12.5 mg',
-    brandNameAr: 'زيستوريتيك ٢٠ / ١٢.٥ ملغ',
     genericName: 'Lisinopril + Hydrochlorothiazide',
     activeIngredients: ['Lisinopril', 'Hydrochlorothiazide'],
     drugClass: 'ACE Inhibitor & Thiazide Diuretic Combinations',
@@ -931,7 +895,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Lokelma 5 g',
-    brandNameAr: 'لوكيلما ٥ غرام مسحوق للمعلق الفموي',
     genericName: 'Sodium zirconium cyclosilicate',
     activeIngredients: ['Sodium zirconium cyclosilicate'],
     drugClass: 'Potassium Binders (Hyperkalemia Agents)',
@@ -958,7 +921,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   // ============================================================================
   {
     brandName: 'Symbicort Turbuhaler 80/4.5 mcg',
-    brandNameAr: 'سيمبيكورت تيربوهيلر ٨٠ / ٤.٥ ميكروغرام',
     genericName: 'Budesonide + Formoterol fumarate dihydrate',
     activeIngredients: ['Budesonide', 'Formoterol'],
     drugClass: 'Inhaled Corticosteroid & LABA Combinations',
@@ -982,7 +944,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Symbicort Turbuhaler 160/4.5 mcg',
-    brandNameAr: 'سيمبيكورت تيربوهيلر ١٦٠ / ٤.٥ ميكروغرام',
     genericName: 'Budesonide + Formoterol fumarate dihydrate',
     activeIngredients: ['Budesonide', 'Formoterol'],
     drugClass: 'Inhaled Corticosteroid & LABA Combinations',
@@ -1006,7 +967,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Symbicort Turbuhaler 320/9 mcg',
-    brandNameAr: 'سيمبيكورت تيربوهيلر ٣٢٠ / ٩ ميكروغرام',
     genericName: 'Budesonide + Formoterol fumarate dihydrate',
     activeIngredients: ['Budesonide', 'Formoterol'],
     drugClass: 'Inhaled Corticosteroid & LABA Combinations',
@@ -1030,7 +990,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Pulmicort Respules 0.5 mg/2 mL',
-    brandNameAr: 'بلميكورت ريسبولز ٠.٥ ملغ / ٢ مل',
     genericName: 'Budesonide',
     activeIngredients: ['Budesonide'],
     drugClass: 'Inhaled Corticosteroids (ICS)',
@@ -1054,7 +1013,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Pulmicort Respules 1 mg/2 mL',
-    brandNameAr: 'بلميكورت ريسبولز ١ ملغ / ٢ مل',
     genericName: 'Budesonide',
     activeIngredients: ['Budesonide'],
     drugClass: 'Inhaled Corticosteroids (ICS)',
@@ -1078,7 +1036,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Pulmicort Turbuhaler 200 mcg',
-    brandNameAr: 'بلميكورت تيربوهيلر ٢٠٠ ميكروغرام',
     genericName: 'Budesonide',
     activeIngredients: ['Budesonide'],
     drugClass: 'Inhaled Corticosteroids (ICS)',
@@ -1102,7 +1059,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Bricanyl Turbuhaler 0.5 mg',
-    brandNameAr: 'بريكانيل تيربوهيلر ٠.٥ ملغ',
     genericName: 'Terbutaline sulfate',
     activeIngredients: ['Terbutaline sulfate'],
     drugClass: 'Short-Acting Beta-2 Agonists (SABA)',
@@ -1126,7 +1082,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Rhinocort Aqua 64 mcg',
-    brandNameAr: 'رينوكورت أكوا ٦٤ ميكروغرام بخاخ أنفي',
     genericName: 'Budesonide',
     activeIngredients: ['Budesonide'],
     drugClass: 'Intranasal Corticosteroids',
@@ -1149,7 +1104,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Fasenra 30 mg',
-    brandNameAr: 'فاسينرا ٣٠ ملغ محقنة مسبقة التعبئة',
     genericName: 'Benralizumab',
     activeIngredients: ['Benralizumab'],
     drugClass: 'Anti-IL-5 Receptor Monoclonal Antibodies',
@@ -1177,7 +1131,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   // ============================================================================
   {
     brandName: 'Tagrisso 80 mg',
-    brandNameAr: 'تاجريسو ٨٠ ملغ',
     genericName: 'Osimertinib mesylate',
     activeIngredients: ['Osimertinib'],
     drugClass: 'Third-Generation EGFR Tyrosine Kinase Inhibitors',
@@ -1200,7 +1153,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Lynparza 150 mg',
-    brandNameAr: 'لينبارزا ١٥٠ ملغ',
     genericName: 'Olaparib',
     activeIngredients: ['Olaparib'],
     drugClass: 'PARP Inhibitors',
@@ -1224,7 +1176,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Calquence 100 mg',
-    brandNameAr: 'كالكوينس ١٠٠ ملغ',
     genericName: 'Acalabrutinib',
     activeIngredients: ['Acalabrutinib'],
     drugClass: 'Bruton Tyrosine Kinase (BTK) Inhibitors',
@@ -1247,7 +1198,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Imfinzi 500 mg/10 mL',
-    brandNameAr: 'إمفينزي ٥٠٠ ملغ / ١٠ مل فيال للتسريب الوريدي',
     genericName: 'Durvalumab',
     activeIngredients: ['Durvalumab'],
     drugClass: 'PD-L1 Immune Checkpoint Inhibitors',
@@ -1271,7 +1221,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Iressa 250 mg',
-    brandNameAr: 'إيريسا ٢٥٠ ملغ',
     genericName: 'Gefitinib',
     activeIngredients: ['Gefitinib'],
     drugClass: 'EGFR Tyrosine Kinase Inhibitors',
@@ -1295,7 +1244,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Faslodex 250 mg/5 mL',
-    brandNameAr: 'فاسلوديكس ٢٥٠ ملغ / ٥ مل محقنتان للحقن العضلي',
     genericName: 'Fulvestrant',
     activeIngredients: ['Fulvestrant'],
     drugClass: 'Estrogen Receptor Downregulators (SERDs)',
@@ -1319,7 +1267,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Zoladex 3.6 mg',
-    brandNameAr: 'زولاديكس ٣.٦ ملغ غرسة تحت الجلد',
     genericName: 'Goserelin',
     activeIngredients: ['Goserelin'],
     drugClass: 'Gonadotropin-Releasing Hormone (GnRH) Agonists',
@@ -1342,7 +1289,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Zoladex LA 10.8 mg',
-    brandNameAr: 'زولاديكس إل إيه ١٠.٨ ملغ غرسة تحت الجلد',
     genericName: 'Goserelin',
     activeIngredients: ['Goserelin'],
     drugClass: 'Gonadotropin-Releasing Hormone (GnRH) Agonists',
@@ -1365,7 +1311,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Arimidex 1 mg',
-    brandNameAr: 'أريميدكس ١ ملغ',
     genericName: 'Anastrozole',
     activeIngredients: ['Anastrozole'],
     drugClass: 'Aromatase Inhibitors',
@@ -1388,7 +1333,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Casodex 50 mg',
-    brandNameAr: 'كاسوديكس ٥٠ ملغ',
     genericName: 'Bicalutamide',
     activeIngredients: ['Bicalutamide'],
     drugClass: 'Non-Steroidal Anti-Androgens',
@@ -1411,7 +1355,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Nolvadex 10 mg',
-    brandNameAr: 'نولفاديكس ١٠ ملغ',
     genericName: 'Tamoxifen citrate',
     activeIngredients: ['Tamoxifen'],
     drugClass: 'Selective Estrogen Receptor Modulators (SERMs)',
@@ -1434,7 +1377,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Nolvadex-D 20 mg',
-    brandNameAr: 'نولفاديكس-دي ٢٠ ملغ',
     genericName: 'Tamoxifen citrate',
     activeIngredients: ['Tamoxifen'],
     drugClass: 'Selective Estrogen Receptor Modulators (SERMs)',
@@ -1461,7 +1403,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   // ============================================================================
   {
     brandName: 'Seroquel 25 mg',
-    brandNameAr: 'سيروكويل ٢٥ ملغ',
     genericName: 'Quetiapine',
     activeIngredients: ['Quetiapine'],
     drugClass: 'Atypical Antipsychotics',
@@ -1484,7 +1425,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Seroquel 100 mg',
-    brandNameAr: 'سيروكويل ١٠٠ ملغ',
     genericName: 'Quetiapine',
     activeIngredients: ['Quetiapine'],
     drugClass: 'Atypical Antipsychotics',
@@ -1507,7 +1447,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Seroquel 200 mg',
-    brandNameAr: 'سيروكويل ٢٠٠ ملغ',
     genericName: 'Quetiapine',
     activeIngredients: ['Quetiapine'],
     drugClass: 'Atypical Antipsychotics',
@@ -1530,7 +1469,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Seroquel XR 300 mg',
-    brandNameAr: 'سيروكويل إكس آر ٣٠٠ ملغ',
     genericName: 'Quetiapine',
     activeIngredients: ['Quetiapine'],
     drugClass: 'Atypical Antipsychotics',
@@ -1553,7 +1491,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Zomig 2.5 mg',
-    brandNameAr: 'زوميغ ٢.٥ ملغ',
     genericName: 'Zolmitriptan',
     activeIngredients: ['Zolmitriptan'],
     drugClass: 'Selective 5-HT1B/1D Receptor Agonists (Triptans)',
@@ -1576,7 +1513,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Xylocaine 2% Jelly',
-    brandNameAr: 'زايلوكايين ٢٪ جل معقم',
     genericName: 'Lidocaine',
     activeIngredients: ['Lidocaine'],
     drugClass: 'Local Anesthetics (Amide Type)',
@@ -1599,7 +1535,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Xylocaine 10% Pump Spray',
-    brandNameAr: 'زايلوكايين ١٠٪ بخاخ موضعي',
     genericName: 'Lidocaine',
     activeIngredients: ['Lidocaine'],
     drugClass: 'Local Anesthetics (Amide Type)',
@@ -1622,7 +1557,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Xylocaine 2% Injection',
-    brandNameAr: 'زايلوكايين ٢٪ محلول للحقن الموضعي',
     genericName: 'Lidocaine',
     activeIngredients: ['Lidocaine'],
     drugClass: 'Local Anesthetics (Amide Type)',
@@ -1645,7 +1579,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Marcaine 0.5% Spinal Heavy',
-    brandNameAr: 'ماركايين ٠.٥٪ سباينل هيفي أمبولات للتخدير النصفي',
     genericName: 'Bupivacaine hydrochloride + Dextrose',
     activeIngredients: ['Bupivacaine', 'Glucose monohydrate'],
     drugClass: 'Long-Acting Local Anesthetics',
@@ -1668,7 +1601,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Naropin 0.2% (2 mg/mL)',
-    brandNameAr: 'ناروبين ٠.٢٪ محلول للحقن والتسريب فوق الجافية',
     genericName: 'Ropivacaine',
     activeIngredients: ['Ropivacaine'],
     drugClass: 'Long-Acting Local Anesthetics',
@@ -1691,7 +1623,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Diprivan 1% (10 mg/mL)',
-    brandNameAr: 'ديبريفان ١٪ مستحلب للحقن والتسريب الوريدي',
     genericName: 'Propofol',
     activeIngredients: ['Propofol'],
     drugClass: 'Intravenous General Anesthetics',
@@ -1714,7 +1645,6 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
   },
   {
     brandName: 'Meronem 1 g IV',
-    brandNameAr: 'ميرونيم ١ غرام فيال للزرق والتسريب الوريدي',
     genericName: 'Meropenem',
     activeIngredients: ['Meropenem'],
     drugClass: 'Carbapenem Antibacterials',

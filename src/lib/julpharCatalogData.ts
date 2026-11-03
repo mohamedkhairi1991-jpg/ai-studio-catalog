@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   // 1. Julmentin (Amoxicillin + Clavulanic acid — Julphar)
   {
     brandName: 'Julmentin 625 mg',
-    brandNameAr: 'جولمنتين 625 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -55,7 +53,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   },
   {
     brandName: 'Julmentin 1 g',
-    brandNameAr: 'جولمنتين 1 غ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -85,7 +82,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   },
   {
     brandName: 'Julmentin Forte 457 mg/5 mL',
-    brandNameAr: 'جولمنتين فورت 457 ملغ/5 مل',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -117,7 +113,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   // 2. Julphamox (Amoxicillin — Julphar)
   {
     brandName: 'Julphamox 500 mg',
-    brandNameAr: 'جولفاموكس 500 ملغ',
     genericName: 'Amoxicillin',
     activeIngredients: ['Amoxicillin'],
     drugClass: 'Broad-spectrum aminopenicillin beta-lactam antibacterial',
@@ -149,7 +144,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   // 3. Profinal (Ibuprofen — Julphar)
   {
     brandName: 'Profinal 400 mg',
-    brandNameAr: 'بروفينال 400 ملغ',
     genericName: 'Ibuprofen',
     activeIngredients: ['Ibuprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, propionic acid derivative)',
@@ -179,7 +173,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   },
   {
     brandName: 'Profinal 600 mg',
-    brandNameAr: 'بروفينال 600 ملغ',
     genericName: 'Ibuprofen',
     activeIngredients: ['Ibuprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, propionic acid derivative)',
@@ -209,7 +202,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   },
   {
     brandName: 'Profinal 100 mg/5 mL',
-    brandNameAr: 'بروفينال 100 ملغ/5 مل',
     genericName: 'Ibuprofen',
     activeIngredients: ['Ibuprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, propionic acid derivative)',
@@ -241,7 +233,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   // 4. Jusprin (Acetylsalicylic acid — Julphar)
   {
     brandName: 'Jusprin 81 mg',
-    brandNameAr: 'جوسبرين 81 ملغ',
     genericName: 'Acetylsalicylic acid',
     activeIngredients: ['Acetylsalicylic acid'],
     drugClass: 'Antiplatelet agent (irreversible cyclooxygenase-1 inhibitor)',
@@ -273,7 +264,6 @@ const RAW_JULPHAR: CompactDrug[] = [
   // 5. Mebo (Beta-sitosterol — Julphar)
   {
     brandName: 'Mebo 0.25%',
-    brandNameAr: 'ميبو 0.25%',
     genericName: 'Beta-sitosterol',
     activeIngredients: ['Beta-sitosterol'],
     drugClass: 'Topical burn, wound, and ulcer healing dermatological ointment',
@@ -306,7 +296,6 @@ const RAW_JULPHAR: CompactDrug[] = [
 export const JULPHAR_PRODUCTS: AiProductDraft[] = RAW_JULPHAR.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

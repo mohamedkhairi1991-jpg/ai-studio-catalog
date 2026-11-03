@@ -4,7 +4,6 @@ const PFE_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }
 
 interface CompactPfizerDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toPfizerProductDraft(item: CompactPfizerDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   // =========================================================================
   {
     brandName: 'Eliquis 2.5 mg',
-    brandNameAr: 'إليكويس 2.5 ملغم',
     genericName: 'Apixaban',
     drugClassNameEn: 'Direct Factor Xa Inhibitor Oral Anticoagulants (DOACs)',
     dosageForm: 'Film-coated tablet',
@@ -77,7 +74,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Eliquis 5 mg',
-    brandNameAr: 'إليكويس 5 ملغم',
     genericName: 'Apixaban',
     drugClassNameEn: 'Direct Factor Xa Inhibitor Oral Anticoagulants (DOACs)',
     dosageForm: 'Film-coated tablet',
@@ -99,7 +95,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Fragmin 2500 IU',
-    brandNameAr: 'فراجمين 2500 وحدة دولية',
     genericName: 'Dalteparin',
     drugClassNameEn: 'Low Molecular Weight Heparins (LMWH)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -121,7 +116,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Fragmin 5000 IU',
-    brandNameAr: 'فراجمين 5000 وحدة دولية',
     genericName: 'Dalteparin',
     drugClassNameEn: 'Low Molecular Weight Heparins (LMWH)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -143,7 +137,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Fragmin 7500 IU',
-    brandNameAr: 'فراجمين 7500 وحدة دولية',
     genericName: 'Dalteparin',
     drugClassNameEn: 'Low Molecular Weight Heparins (LMWH)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -165,7 +158,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Fragmin 10000 IU',
-    brandNameAr: 'فراجمين 10000 وحدة دولية',
     genericName: 'Dalteparin',
     drugClassNameEn: 'Low Molecular Weight Heparins (LMWH)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -187,7 +179,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Aldactone 25 mg',
-    brandNameAr: 'ألداكتون 25 ملغم',
     genericName: 'Spironolactone',
     drugClassNameEn: 'Mineralocorticoid (Aldosterone) Receptor Antagonists / Potassium-Sparing Diuretics',
     dosageForm: 'Film-coated tablet',
@@ -209,7 +200,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Aldactone 100 mg',
-    brandNameAr: 'ألداكتون 100 ملغم',
     genericName: 'Spironolactone',
     drugClassNameEn: 'Mineralocorticoid (Aldosterone) Receptor Antagonists / Potassium-Sparing Diuretics',
     dosageForm: 'Film-coated tablet',
@@ -231,7 +221,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Vyndaqel 61 mg',
-    brandNameAr: 'فينداكيل 61 ملغم',
     genericName: 'Tafamidis',
     drugClassNameEn: 'Transthyretin (TTR) Kinetic Stabilizers',
     dosageForm: 'Soft capsule',
@@ -257,7 +246,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   // =========================================================================
   {
     brandName: 'Zithromax 250 mg',
-    brandNameAr: 'زيثروماكس 250 ملغم',
     genericName: 'Azithromycin',
     drugClassNameEn: 'Macrolide Antibacterials (Azalides)',
     dosageForm: 'Hard capsule',
@@ -279,7 +267,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Zithromax 500 mg',
-    brandNameAr: 'زيثروماكس 500 ملغم',
     genericName: 'Azithromycin',
     drugClassNameEn: 'Macrolide Antibacterials (Azalides)',
     dosageForm: 'Film-coated tablet',
@@ -301,7 +288,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Zithromax 200 mg/5 mL',
-    brandNameAr: 'زيثروماكس 200 ملغم / 5 مل',
     genericName: 'Azithromycin',
     drugClassNameEn: 'Macrolide Antibacterials (Azalides)',
     dosageForm: 'Powder for oral suspension',
@@ -323,7 +309,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Zithromax IV 500 mg',
-    brandNameAr: 'زيثروماكس وريدي 500 ملغم',
     genericName: 'Azithromycin',
     drugClassNameEn: 'Macrolide Antibacterials (Azalides)',
     dosageForm: 'Powder for solution for infusion',
@@ -345,7 +330,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Unasyn 1.5 g',
-    brandNameAr: 'يوناسين 1.5 غم',
     genericName: 'Ampicillin + Sulbactam',
     drugClassNameEn: 'Aminopenicillin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for solution for injection/infusion',
@@ -367,7 +351,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Unasyn 3 g',
-    brandNameAr: 'يوناسين 3 غم',
     genericName: 'Ampicillin + Sulbactam',
     drugClassNameEn: 'Aminopenicillin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for solution for injection/infusion',
@@ -389,7 +372,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Tygacil 50 mg',
-    brandNameAr: 'تيجاسيل 50 ملغم',
     genericName: 'Tigecycline',
     drugClassNameEn: 'Glycylcycline Antibacterials',
     dosageForm: 'Powder for solution for infusion',
@@ -411,7 +393,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Zavicefta 2 g/0.5 g',
-    brandNameAr: 'زافيسيفتا 2 غم / 0.5 غم',
     genericName: 'Ceftazidime + Avibactam',
     drugClassNameEn: 'Third-Generation Cephalosporin & Non-Beta-Lactam Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -433,7 +414,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Zinforo 600 mg',
-    brandNameAr: 'زينفورو 600 ملغم',
     genericName: 'Ceftaroline',
     drugClassNameEn: 'Fifth-Generation Advanced Cephalosporin Antibacterials (Anti-MRSA)',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -455,7 +435,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Zyvox 600 mg',
-    brandNameAr: 'زيفوكس 600 ملغم',
     genericName: 'Linezolid',
     drugClassNameEn: 'Oxazolidinone Antibacterials',
     dosageForm: 'Film-coated tablet',
@@ -477,7 +456,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Zyvox 2 mg/mL',
-    brandNameAr: 'زيفوكس 2 ملغم / مل',
     genericName: 'Linezolid',
     drugClassNameEn: 'Oxazolidinone Antibacterials',
     dosageForm: 'Solution for infusion',
@@ -499,7 +477,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Vfend 200 mg',
-    brandNameAr: 'فيفند 200 ملغم',
     genericName: 'Voriconazole',
     drugClassNameEn: 'Broad-Spectrum Triazole Antifungals',
     dosageForm: 'Film-coated tablet',
@@ -521,7 +498,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Vfend IV 200 mg',
-    brandNameAr: 'فيفند وريدي 200 ملغم',
     genericName: 'Voriconazole',
     drugClassNameEn: 'Broad-Spectrum Triazole Antifungals',
     dosageForm: 'Powder for solution for infusion',
@@ -543,7 +519,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Diflucan 150 mg',
-    brandNameAr: 'ديفلوكان 150 ملغم',
     genericName: 'Fluconazole',
     drugClassNameEn: 'Triazole Antifungals',
     dosageForm: 'Hard capsule',
@@ -565,7 +540,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Diflucan 200 mg',
-    brandNameAr: 'ديفلوكان 200 ملغم',
     genericName: 'Fluconazole',
     drugClassNameEn: 'Triazole Antifungals',
     dosageForm: 'Hard capsule',
@@ -587,7 +561,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Diflucan 2 mg/mL',
-    brandNameAr: 'ديفلوكان 2 ملغم / مل',
     genericName: 'Fluconazole',
     drugClassNameEn: 'Triazole Antifungals',
     dosageForm: 'Solution for infusion',
@@ -609,7 +582,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Ecalta 100 mg',
-    brandNameAr: 'إيكالتا 100 ملغم',
     genericName: 'Anidulafungin',
     drugClassNameEn: 'Echinocandin Antifungals',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -631,7 +603,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Cresemba 100 mg',
-    brandNameAr: 'كريسيمبا 100 ملغم',
     genericName: 'Isavuconazole',
     drugClassNameEn: 'Triazole Antifungals',
     dosageForm: 'Hard capsule',
@@ -653,7 +624,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Cresemba 200 mg',
-    brandNameAr: 'كريسيمبا 200 ملغم',
     genericName: 'Isavuconazole',
     drugClassNameEn: 'Triazole Antifungals',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -675,7 +645,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Dalacin C 150 mg',
-    brandNameAr: 'دالاسين سي 150 ملغم',
     genericName: 'Clindamycin',
     drugClassNameEn: 'Lincosamide Antibacterials',
     dosageForm: 'Hard capsule',
@@ -697,7 +666,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Dalacin C 300 mg',
-    brandNameAr: 'دالاسين سي 300 ملغم',
     genericName: 'Clindamycin',
     drugClassNameEn: 'Lincosamide Antibacterials',
     dosageForm: 'Hard capsule',
@@ -723,7 +691,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   // =========================================================================
   {
     brandName: 'Xeljanz 5 mg',
-    brandNameAr: 'زيلجانز 5 ملغم',
     genericName: 'Tofacitinib',
     drugClassNameEn: 'Janus Kinase (JAK) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -745,7 +712,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Xeljanz 10 mg',
-    brandNameAr: 'زيلجانز 10 ملغم',
     genericName: 'Tofacitinib',
     drugClassNameEn: 'Janus Kinase (JAK) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -767,7 +733,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Xeljanz XR 11 mg',
-    brandNameAr: 'زيلجانز إكس آر 11 ملغم',
     genericName: 'Tofacitinib',
     drugClassNameEn: 'Janus Kinase (JAK) Inhibitors',
     dosageForm: 'Prolonged-release tablet',
@@ -789,7 +754,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Enbrel 25 mg',
-    brandNameAr: 'إنبريل 25 ملغم',
     genericName: 'Etanercept',
     drugClassNameEn: 'Tumor Necrosis Factor-Alpha (TNF-α) Inhibitors',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -811,7 +775,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Enbrel 50 mg',
-    brandNameAr: 'إنبريل 50 ملغم',
     genericName: 'Etanercept',
     drugClassNameEn: 'Tumor Necrosis Factor-Alpha (TNF-α) Inhibitors',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -833,7 +796,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Cibinqo 100 mg',
-    brandNameAr: 'سيبينكو 100 ملغم',
     genericName: 'Abrocitinib',
     drugClassNameEn: 'Selective Janus Kinase 1 (JAK1) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -855,7 +817,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Litfulo 50 mg',
-    brandNameAr: 'ليتفولو 50 ملغم',
     genericName: 'Ritlecitinib',
     drugClassNameEn: 'Selective JAK3 and TEC Family Kinase Inhibitors',
     dosageForm: 'Hard capsule',
@@ -877,7 +838,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Vydura 75 mg',
-    brandNameAr: 'فيدورا 75 ملغم',
     genericName: 'Rimegepant',
     drugClassNameEn: 'Calcitonin Gene-Related Peptide (CGRP) Receptor Antagonists (Gepants)',
     dosageForm: 'Oral lyophilisate',
@@ -903,7 +863,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   // =========================================================================
   {
     brandName: 'Medrol 4 mg',
-    brandNameAr: 'ميدرول 4 ملغم',
     genericName: 'Methylprednisolone',
     drugClassNameEn: 'Systemic Glucocorticoids (Intermediate-Acting Corticosteroids)',
     dosageForm: 'Tablet',
@@ -925,7 +884,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Medrol 16 mg',
-    brandNameAr: 'ميدرول 16 ملغم',
     genericName: 'Methylprednisolone',
     drugClassNameEn: 'Systemic Glucocorticoids (Intermediate-Acting Corticosteroids)',
     dosageForm: 'Tablet',
@@ -947,7 +905,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Solu-Medrol 40 mg',
-    brandNameAr: 'سولو-ميدرول 40 ملغم',
     genericName: 'Methylprednisolone',
     drugClassNameEn: 'Parenteral Glucocorticoids',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -969,7 +926,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Solu-Medrol 125 mg',
-    brandNameAr: 'سولو-ميدرول 125 ملغم',
     genericName: 'Methylprednisolone',
     drugClassNameEn: 'Parenteral Glucocorticoids',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -991,7 +947,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Solu-Medrol 500 mg',
-    brandNameAr: 'سولو-ميدرول 500 ملغم',
     genericName: 'Methylprednisolone',
     drugClassNameEn: 'Parenteral Glucocorticoids',
     dosageForm: 'Powder and solvent for solution for injection/infusion',
@@ -1013,7 +968,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Solu-Medrol 1000 mg',
-    brandNameAr: 'سولو-ميدرول 1000 ملغم',
     genericName: 'Methylprednisolone',
     drugClassNameEn: 'Parenteral Glucocorticoids',
     dosageForm: 'Powder and solvent for solution for injection/infusion',
@@ -1035,7 +989,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Depo-Medrol 40 mg/mL',
-    brandNameAr: 'ديبو-ميدرول 40 ملغم / مل',
     genericName: 'Methylprednisolone',
     drugClassNameEn: 'Depot Parenteral Glucocorticoids',
     dosageForm: 'Suspension for injection',
@@ -1057,7 +1010,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Dostinex 0.5 mg',
-    brandNameAr: 'دوستينكس 0.5 ملغم',
     genericName: 'Cabergoline',
     drugClassNameEn: 'Dopamine D2 Receptor Agonists (Prolactin Inhibitors)',
     dosageForm: 'Tablet',
@@ -1079,7 +1031,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Genotropin 5.3 mg',
-    brandNameAr: 'جينوتروبين 5.3 ملغم',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -1101,7 +1052,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Genotropin 12 mg',
-    brandNameAr: 'جينوتروبين 12 ملغم',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -1127,7 +1077,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   // =========================================================================
   {
     brandName: 'Ibrance 75 mg',
-    brandNameAr: 'إيبرانس 75 ملغم',
     genericName: 'Palbociclib',
     drugClassNameEn: 'Cyclin-Dependent Kinase 4 and 6 (CDK4/6) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1149,7 +1098,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Ibrance 100 mg',
-    brandNameAr: 'إيبرانس 100 ملغم',
     genericName: 'Palbociclib',
     drugClassNameEn: 'Cyclin-Dependent Kinase 4 and 6 (CDK4/6) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1171,7 +1119,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Ibrance 125 mg',
-    brandNameAr: 'إيبرانس 125 ملغم',
     genericName: 'Palbociclib',
     drugClassNameEn: 'Cyclin-Dependent Kinase 4 and 6 (CDK4/6) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1193,7 +1140,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Sutent 12.5 mg',
-    brandNameAr: 'سوتنت 12.5 ملغم',
     genericName: 'Sunitinib',
     drugClassNameEn: 'Multi-Targeted Receptor Tyrosine Kinase Inhibitors (VEGFR / PDGFR / KIT)',
     dosageForm: 'Hard capsule',
@@ -1215,7 +1161,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Sutent 25 mg',
-    brandNameAr: 'سوتنت 25 ملغم',
     genericName: 'Sunitinib',
     drugClassNameEn: 'Multi-Targeted Receptor Tyrosine Kinase Inhibitors (VEGFR / PDGFR / KIT)',
     dosageForm: 'Hard capsule',
@@ -1237,7 +1182,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Sutent 50 mg',
-    brandNameAr: 'سوتنت 50 ملغم',
     genericName: 'Sunitinib',
     drugClassNameEn: 'Multi-Targeted Receptor Tyrosine Kinase Inhibitors (VEGFR / PDGFR / KIT)',
     dosageForm: 'Hard capsule',
@@ -1259,7 +1203,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Inlyta 5 mg',
-    brandNameAr: 'إنليتا 5 ملغم',
     genericName: 'Axitinib',
     drugClassNameEn: 'Selective VEGFR-1, -2, and -3 Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1281,7 +1224,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Xalkori 250 mg',
-    brandNameAr: 'زالكوري 250 ملغم',
     genericName: 'Crizotinib',
     drugClassNameEn: 'ALK and ROS1 Receptor Tyrosine Kinase Inhibitors',
     dosageForm: 'Hard capsule',
@@ -1303,7 +1245,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Lorviqua 100 mg',
-    brandNameAr: 'لورفيكوا 100 ملغم',
     genericName: 'Lorlatinib',
     drugClassNameEn: 'Third-Generation ALK and ROS1 Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1325,7 +1266,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Bosulif 100 mg',
-    brandNameAr: 'بوسوليف 100 ملغم',
     genericName: 'Bosutinib',
     drugClassNameEn: 'Dual Src / Abl Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1347,7 +1287,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Bosulif 500 mg',
-    brandNameAr: 'بوسوليف 500 ملغم',
     genericName: 'Bosutinib',
     drugClassNameEn: 'Dual Src / Abl Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1369,7 +1308,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Talzenna 1 mg',
-    brandNameAr: 'تالزينا 1 ملغم',
     genericName: 'Talazoparib',
     drugClassNameEn: 'Poly (ADP-Ribose) Polymerase (PARP1 / PARP2) Inhibitors',
     dosageForm: 'Hard capsule',
@@ -1391,7 +1329,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Aromasin 25 mg',
-    brandNameAr: 'أروماسين 25 ملغم',
     genericName: 'Exemestane',
     drugClassNameEn: 'Steroidal Irreversible Aromatase Inactivators',
     dosageForm: 'Coated tablet',
@@ -1413,7 +1350,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Camptosar 40 mg/2 mL',
-    brandNameAr: 'كامبتوسار 40 ملغم / 2 مل',
     genericName: 'Irinotecan',
     drugClassNameEn: 'Topoisomerase I Inhibitor Antineoplastic Agents',
     dosageForm: 'Concentrate for solution for infusion',
@@ -1435,7 +1371,6 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
   },
   {
     brandName: 'Camptosar 100 mg/5 mL',
-    brandNameAr: 'كامبتوسار 100 ملغم / 5 مل',
     genericName: 'Irinotecan',
     drugClassNameEn: 'Topoisomerase I Inhibitor Antineoplastic Agents',
     dosageForm: 'Concentrate for solution for infusion',

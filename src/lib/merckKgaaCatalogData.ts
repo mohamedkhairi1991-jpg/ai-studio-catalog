@@ -4,7 +4,6 @@ const MERCK_KGAA_SRC = (title: string, url: string): AiDraftSource[] => [{ title
 
 interface CompactMerckKgaaDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toMerckKgaaProductDraft(item: CompactMerckKgaaDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   // =========================================================================
   {
     brandName: 'Concor 5 mg',
-    brandNameAr: 'كونكور 5 ملغم',
     genericName: 'Bisoprolol',
     drugClassNameEn: 'Cardioselective Beta-1 Adrenoceptor Blockers',
     dosageForm: 'Film-coated tablet',
@@ -77,7 +74,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor 10 mg',
-    brandNameAr: 'كونكور 10 ملغم',
     genericName: 'Bisoprolol',
     drugClassNameEn: 'Cardioselective Beta-1 Adrenoceptor Blockers',
     dosageForm: 'Film-coated tablet',
@@ -99,7 +95,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor Cor 1.25 mg',
-    brandNameAr: 'كونكور كور 1.25 ملغم',
     genericName: 'Bisoprolol',
     drugClassNameEn: 'Cardioselective Beta-1 Adrenoceptor Blockers',
     dosageForm: 'Film-coated tablet',
@@ -121,7 +116,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor Cor 2.5 mg',
-    brandNameAr: 'كونكور كور 2.5 ملغم',
     genericName: 'Bisoprolol',
     drugClassNameEn: 'Cardioselective Beta-1 Adrenoceptor Blockers',
     dosageForm: 'Film-coated tablet',
@@ -143,7 +137,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor Cor 3.75 mg',
-    brandNameAr: 'كونكور كور 3.75 ملغم',
     genericName: 'Bisoprolol',
     drugClassNameEn: 'Cardioselective Beta-1 Adrenoceptor Blockers',
     dosageForm: 'Film-coated tablet',
@@ -165,7 +158,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor AM 5 mg/5 mg',
-    brandNameAr: 'كونكور إيه إم 5 ملغم/5 ملغم',
     genericName: 'Bisoprolol + Amlodipine',
     drugClassNameEn: 'Beta-Blocker and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -187,7 +179,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor AM 5 mg/10 mg',
-    brandNameAr: 'كونكور إيه إم 5 ملغم/10 ملغم',
     genericName: 'Bisoprolol + Amlodipine',
     drugClassNameEn: 'Beta-Blocker and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -209,7 +200,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor AM 10 mg/5 mg',
-    brandNameAr: 'كونكور إيه إم 10 ملغم/5 ملغم',
     genericName: 'Bisoprolol + Amlodipine',
     drugClassNameEn: 'Beta-Blocker and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -231,7 +221,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor AM 10 mg/10 mg',
-    brandNameAr: 'كونكور إيه إم 10 ملغم/10 ملغم',
     genericName: 'Bisoprolol + Amlodipine',
     drugClassNameEn: 'Beta-Blocker and Dihydropyridine Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -253,7 +242,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor Plus 5 mg/12.5 mg',
-    brandNameAr: 'كونكور بلس 5 ملغم/12.5 ملغم',
     genericName: 'Bisoprolol + Hydrochlorothiazide',
     drugClassNameEn: 'Beta-Blocker and Thiazide Diuretic Combinations',
     dosageForm: 'Film-coated tablet',
@@ -275,7 +263,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Concor Plus 10 mg/25 mg',
-    brandNameAr: 'كونكور بلس 10 ملغم/25 ملغم',
     genericName: 'Bisoprolol + Hydrochlorothiazide',
     drugClassNameEn: 'Beta-Blocker and Thiazide Diuretic Combinations',
     dosageForm: 'Film-coated tablet',
@@ -301,7 +288,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   // =========================================================================
   {
     brandName: 'Glucophage 500 mg',
-    brandNameAr: 'غلوكوفاج 500 ملغم',
     genericName: 'Metformin',
     drugClassNameEn: 'Biguanide Antidiabetics',
     dosageForm: 'Film-coated tablet',
@@ -323,7 +309,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Glucophage 850 mg',
-    brandNameAr: 'غلوكوفاج 850 ملغم',
     genericName: 'Metformin',
     drugClassNameEn: 'Biguanide Antidiabetics',
     dosageForm: 'Film-coated tablet',
@@ -345,7 +330,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Glucophage 1000 mg',
-    brandNameAr: 'غلوكوفاج 1000 ملغم',
     genericName: 'Metformin',
     drugClassNameEn: 'Biguanide Antidiabetics',
     dosageForm: 'Film-coated tablet',
@@ -367,7 +351,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Glucophage XR 500 mg',
-    brandNameAr: 'غلوكوفاج إكس آر 500 ملغم',
     genericName: 'Metformin',
     drugClassNameEn: 'Biguanide Antidiabetics (Prolonged-Release)',
     dosageForm: 'Prolonged-release tablet',
@@ -389,7 +372,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Glucophage XR 750 mg',
-    brandNameAr: 'غلوكوفاج إكس آر 750 ملغم',
     genericName: 'Metformin',
     drugClassNameEn: 'Biguanide Antidiabetics (Prolonged-Release)',
     dosageForm: 'Prolonged-release tablet',
@@ -411,7 +393,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Glucophage XR 1000 mg',
-    brandNameAr: 'غلوكوفاج إكس آر 1000 ملغم',
     genericName: 'Metformin',
     drugClassNameEn: 'Biguanide Antidiabetics (Prolonged-Release)',
     dosageForm: 'Prolonged-release tablet',
@@ -433,7 +414,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Glucovance 500 mg/2.5 mg',
-    brandNameAr: 'غلوكوفانس 500 ملغم/2.5 ملغم',
     genericName: 'Metformin + Glibenclamide',
     drugClassNameEn: 'Biguanide and Sulfonylurea Combinations',
     dosageForm: 'Film-coated tablet',
@@ -455,7 +435,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Glucovance 500 mg/5 mg',
-    brandNameAr: 'غلوكوفانس 500 ملغم/5 ملغم',
     genericName: 'Metformin + Glibenclamide',
     drugClassNameEn: 'Biguanide and Sulfonylurea Combinations',
     dosageForm: 'Film-coated tablet',
@@ -477,7 +456,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Euthyrox 25 mcg',
-    brandNameAr: 'إيوثيروكس 25 ميكروغرام',
     genericName: 'Levothyroxine',
     drugClassNameEn: 'Thyroid Hormones (Synthetic Thyroxine T4)',
     dosageForm: 'Tablet',
@@ -499,7 +477,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Euthyrox 50 mcg',
-    brandNameAr: 'إيوثيروكس 50 ميكروغرام',
     genericName: 'Levothyroxine',
     drugClassNameEn: 'Thyroid Hormones (Synthetic Thyroxine T4)',
     dosageForm: 'Tablet',
@@ -521,7 +498,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Euthyrox 75 mcg',
-    brandNameAr: 'إيوثيروكس 75 ميكروغرام',
     genericName: 'Levothyroxine',
     drugClassNameEn: 'Thyroid Hormones (Synthetic Thyroxine T4)',
     dosageForm: 'Tablet',
@@ -543,7 +519,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Euthyrox 100 mcg',
-    brandNameAr: 'إيوثيروكس 100 ميكروغرام',
     genericName: 'Levothyroxine',
     drugClassNameEn: 'Thyroid Hormones (Synthetic Thyroxine T4)',
     dosageForm: 'Tablet',
@@ -565,7 +540,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Euthyrox 125 mcg',
-    brandNameAr: 'إيوثيروكس 125 ميكروغرام',
     genericName: 'Levothyroxine',
     drugClassNameEn: 'Thyroid Hormones (Synthetic Thyroxine T4)',
     dosageForm: 'Tablet',
@@ -587,7 +561,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Euthyrox 150 mcg',
-    brandNameAr: 'إيوثيروكس 150 ميكروغرام',
     genericName: 'Levothyroxine',
     drugClassNameEn: 'Thyroid Hormones (Synthetic Thyroxine T4)',
     dosageForm: 'Tablet',
@@ -613,7 +586,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   // =========================================================================
   {
     brandName: 'Gonal-f 75 IU',
-    brandNameAr: 'غونال-إف 75 وحدة دولية',
     genericName: 'Follitropin Alfa',
     drugClassNameEn: 'Recombinant Human Follicle-Stimulating Hormones (r-hFSH)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -635,7 +607,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Gonal-f 300 IU/0.5 mL',
-    brandNameAr: 'غونال-إف 300 وحدة دولية/0.5 مل',
     genericName: 'Follitropin Alfa',
     drugClassNameEn: 'Recombinant Human Follicle-Stimulating Hormones (r-hFSH)',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -657,7 +628,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Gonal-f 450 IU/0.75 mL',
-    brandNameAr: 'غونال-إف 450 وحدة دولية/0.75 مل',
     genericName: 'Follitropin Alfa',
     drugClassNameEn: 'Recombinant Human Follicle-Stimulating Hormones (r-hFSH)',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -679,7 +649,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Gonal-f 900 IU/1.5 mL',
-    brandNameAr: 'غونال-إف 900 وحدة دولية/1.5 مل',
     genericName: 'Follitropin Alfa',
     drugClassNameEn: 'Recombinant Human Follicle-Stimulating Hormones (r-hFSH)',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -701,7 +670,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Pergoveris 150 IU/75 IU',
-    brandNameAr: 'بيرغوفيريس 150 وحدة دولية/75 وحدة دولية',
     genericName: 'Follitropin Alfa + Lutropin Alfa',
     drugClassNameEn: 'Recombinant Human FSH and LH Combinations',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -723,7 +691,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Pergoveris 300 IU/150 IU',
-    brandNameAr: 'بيرغوفيريس 300 وحدة دولية/150 وحدة دولية',
     genericName: 'Follitropin Alfa + Lutropin Alfa',
     drugClassNameEn: 'Recombinant Human FSH and LH Combinations',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -745,7 +712,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Pergoveris 450 IU/225 IU',
-    brandNameAr: 'بيرغوفيريس 450 وحدة دولية/225 وحدة دولية',
     genericName: 'Follitropin Alfa + Lutropin Alfa',
     drugClassNameEn: 'Recombinant Human FSH and LH Combinations',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -767,7 +733,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Pergoveris 900 IU/450 IU',
-    brandNameAr: 'بيرغوفيريس 900 وحدة دولية/450 وحدة دولية',
     genericName: 'Follitropin Alfa + Lutropin Alfa',
     drugClassNameEn: 'Recombinant Human FSH and LH Combinations',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -789,7 +754,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Luveris 75 IU',
-    brandNameAr: 'لوفيريس 75 وحدة دولية',
     genericName: 'Lutropin Alfa',
     drugClassNameEn: 'Recombinant Human Luteinising Hormones (r-hLH)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -811,7 +775,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Cetrotide 0.25 mg',
-    brandNameAr: 'سيتروتايد 0.25 ملغم',
     genericName: 'Cetrorelix',
     drugClassNameEn: 'Gonadotropin-Releasing Hormone (GnRH) Antagonists',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -833,7 +796,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Ovitrelle 250 mcg/0.5 mL',
-    brandNameAr: 'أوفيتريل 250 ميكروغرام/0.5 مل',
     genericName: 'Choriogonadotropin Alfa',
     drugClassNameEn: 'Recombinant Human Chorionic Gonadotropins (r-hCG)',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -855,7 +817,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Crinone 8%',
-    brandNameAr: 'كرينون 8%',
     genericName: 'Progesterone',
     drugClassNameEn: 'Progestogens',
     dosageForm: 'Vaginal gel',
@@ -877,7 +838,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Saizen 6 mg',
-    brandNameAr: 'سايزن 6 ملغم',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones (r-hGH)',
     dosageForm: 'Solution for injection in cartridge',
@@ -899,7 +859,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Saizen 12 mg',
-    brandNameAr: 'سايزن 12 ملغم',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones (r-hGH)',
     dosageForm: 'Solution for injection in cartridge',
@@ -921,7 +880,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Saizen 20 mg',
-    brandNameAr: 'سايزن 20 ملغم',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones (r-hGH)',
     dosageForm: 'Solution for injection in cartridge',
@@ -947,7 +905,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   // =========================================================================
   {
     brandName: 'Rebif 22 mcg/0.5 mL',
-    brandNameAr: 'ريبيف 22 ميكروغرام/0.5 مل',
     genericName: 'Interferon Beta-1a',
     drugClassNameEn: 'Disease-Modifying Interferons for Multiple Sclerosis',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -969,7 +926,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Rebif 44 mcg/0.5 mL',
-    brandNameAr: 'ريبيف 44 ميكروغرام/0.5 مل',
     genericName: 'Interferon Beta-1a',
     drugClassNameEn: 'Disease-Modifying Interferons for Multiple Sclerosis',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -991,7 +947,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Mavenclad 10 mg',
-    brandNameAr: 'مافينكلاد 10 ملغم',
     genericName: 'Cladribine',
     drugClassNameEn: 'Nucleoside Metabolic Inhibitors (Selective Immune Reconstitution Therapy)',
     dosageForm: 'Tablet',
@@ -1013,7 +968,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Erbitux 100 mg/20 mL',
-    brandNameAr: 'إربيتوكس 100 ملغم/20 مل',
     genericName: 'Cetuximab',
     drugClassNameEn: 'Anti-EGFR Monoclonal Antibodies',
     dosageForm: 'Solution for infusion',
@@ -1035,7 +989,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Erbitux 500 mg/100 mL',
-    brandNameAr: 'إربيتوكس 500 ملغم/100 مل',
     genericName: 'Cetuximab',
     drugClassNameEn: 'Anti-EGFR Monoclonal Antibodies',
     dosageForm: 'Solution for infusion',
@@ -1057,7 +1010,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Bavencio 200 mg/10 mL',
-    brandNameAr: 'بافينسيو 200 ملغم/10 مل',
     genericName: 'Avelumab',
     drugClassNameEn: 'PD-L1 Blocking Monoclonal Antibodies (Immune Checkpoint Inhibitors)',
     dosageForm: 'Concentrate for solution for infusion',
@@ -1079,7 +1031,6 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
   },
   {
     brandName: 'Tepmetko 225 mg',
-    brandNameAr: 'تيبميتكو 225 ملغم',
     genericName: 'Tepotinib',
     drugClassNameEn: 'MET Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',

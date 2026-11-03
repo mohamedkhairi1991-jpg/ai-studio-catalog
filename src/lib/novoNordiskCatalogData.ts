@@ -4,7 +4,6 @@ const NOVO_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url 
 
 interface CompactNovoDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toNovoProductDraft(item: CompactNovoDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   // =========================================================================
   {
     brandName: 'NovoRapid FlexPen 100 units/mL',
-    brandNameAr: 'نوفورابيد فليكسبن 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Rapid-Acting Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (FlexPen)',
@@ -78,7 +75,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoRapid Penfill 100 units/mL',
-    brandNameAr: 'نوفورابيد بنفيل 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Rapid-Acting Insulin Analogues',
     dosageForm: 'Solution for injection in cartridge (Penfill)',
@@ -101,7 +97,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoRapid 100 units/mL Vial',
-    brandNameAr: 'نوفورابيد 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Rapid-Acting Insulin Analogues',
     dosageForm: 'Solution for injection in vial',
@@ -124,7 +119,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Fiasp FlexTouch 100 units/mL',
-    brandNameAr: 'فياسب فليكستاتش 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Ultra-Rapid-Acting Mealtime Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -147,7 +141,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Fiasp Penfill 100 units/mL',
-    brandNameAr: 'فياسب بنفيل 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Ultra-Rapid-Acting Mealtime Insulin Analogues',
     dosageForm: 'Solution for injection in cartridge (Penfill)',
@@ -170,7 +163,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Fiasp 100 units/mL Vial',
-    brandNameAr: 'فياسب 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Ultra-Rapid-Acting Mealtime Insulin Analogues',
     dosageForm: 'Solution for injection in vial',
@@ -193,7 +185,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoMix 30 FlexPen 100 units/mL',
-    brandNameAr: 'نوفوميكس 30 فليكسبن 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (30% Soluble / 70% Protamine)',
     dosageForm: 'Suspension for injection in pre-filled pen (FlexPen)',
@@ -216,7 +207,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoMix 30 Penfill 100 units/mL',
-    brandNameAr: 'نوفوميكس 30 بنفيل 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (30% Soluble / 70% Protamine)',
     dosageForm: 'Suspension for injection in cartridge (Penfill)',
@@ -239,7 +229,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoMix 50 FlexPen 100 units/mL',
-    brandNameAr: 'نوفوميكس 50 فليكسبن 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (50% Soluble / 50% Protamine)',
     dosageForm: 'Suspension for injection in pre-filled pen (FlexPen)',
@@ -262,7 +251,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoMix 70 FlexPen 100 units/mL',
-    brandNameAr: 'نوفوميكس 70 فليكسبن 100 وحدة/مل',
     genericName: 'Insulin aspart',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (70% Soluble / 30% Protamine)',
     dosageForm: 'Suspension for injection in pre-filled pen (FlexPen)',
@@ -285,7 +273,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Levemir FlexPen 100 units/mL',
-    brandNameAr: 'ليفيمير فليكسبن 100 وحدة/مل',
     genericName: 'Insulin detemir',
     drugClassNameEn: 'Long-Acting Basal Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (FlexPen)',
@@ -308,7 +295,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Levemir Penfill 100 units/mL',
-    brandNameAr: 'ليفيمير بنفيل 100 وحدة/مل',
     genericName: 'Insulin detemir',
     drugClassNameEn: 'Long-Acting Basal Insulin Analogues',
     dosageForm: 'Solution for injection in cartridge (Penfill)',
@@ -331,7 +317,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Tresiba FlexTouch 100 units/mL',
-    brandNameAr: 'تريسيبا فليكستاتش 100 وحدة/مل',
     genericName: 'Insulin degludec',
     drugClassNameEn: 'Ultra-Long-Acting Basal Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -354,7 +339,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Tresiba FlexTouch 200 units/mL',
-    brandNameAr: 'تريسيبا فليكستاتش 200 وحدة/مل',
     genericName: 'Insulin degludec',
     drugClassNameEn: 'Ultra-Long-Acting Basal Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -377,7 +361,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Tresiba Penfill 100 units/mL',
-    brandNameAr: 'تريسيبا بنفيل 100 وحدة/مل',
     genericName: 'Insulin degludec',
     drugClassNameEn: 'Ultra-Long-Acting Basal Insulin Analogues',
     dosageForm: 'Solution for injection in cartridge (Penfill)',
@@ -400,7 +383,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Ryzodeg FlexTouch 100 units/mL',
-    brandNameAr: 'ريزوديغ فليكستاتش 100 وحدة/مل',
     genericName: 'Insulin degludec + Insulin aspart',
     drugClassNameEn: 'Soluble Basal and Rapid-Acting Insulin Analogue Co-Formulations (70% / 30%)',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -423,7 +405,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Xultophy 100 units/mL + 3.6 mg/mL',
-    brandNameAr: 'زولتوفي 100 وحدة/مل + 3.6 ملغم/مل',
     genericName: 'Insulin degludec + Liraglutide',
     drugClassNameEn: 'Fixed-Ratio Basal Insulin and GLP-1 Receptor Agonist Combinations',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -450,7 +431,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   // =========================================================================
   {
     brandName: 'Actrapid 100 IU/mL Vial',
-    brandNameAr: 'أكترابيد 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Short-Acting Soluble Human Insulins (rDNA)',
     dosageForm: 'Solution for injection in vial',
@@ -473,7 +453,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Actrapid Penfill 100 IU/mL',
-    brandNameAr: 'أكترابيد بنفيل 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Short-Acting Soluble Human Insulins (rDNA)',
     dosageForm: 'Solution for injection in cartridge (Penfill)',
@@ -496,7 +475,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Insulatard 100 IU/mL Vial',
-    brandNameAr: 'إنسولاتارد 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Intermediate-Acting Isophane (NPH) Human Insulins',
     dosageForm: 'Suspension for injection in vial',
@@ -519,7 +497,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Insulatard Penfill 100 IU/mL',
-    brandNameAr: 'إنسولاتارد بنفيل 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Intermediate-Acting Isophane (NPH) Human Insulins',
     dosageForm: 'Suspension for injection in cartridge (Penfill)',
@@ -542,7 +519,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Insulatard FlexPen 100 IU/mL',
-    brandNameAr: 'إنسولاتارد فليكسبن 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Intermediate-Acting Isophane (NPH) Human Insulins',
     dosageForm: 'Suspension for injection in pre-filled pen (FlexPen)',
@@ -565,7 +541,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Mixtard 30 100 IU/mL Vial',
-    brandNameAr: 'ميكستارد 30 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Biphasic (Premixed) Human Insulins (30% Soluble / 70% Isophane)',
     dosageForm: 'Suspension for injection in vial',
@@ -588,7 +563,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Mixtard 30 Penfill 100 IU/mL',
-    brandNameAr: 'ميكستارد 30 بنفيل 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Biphasic (Premixed) Human Insulins (30% Soluble / 70% Isophane)',
     dosageForm: 'Suspension for injection in cartridge (Penfill)',
@@ -611,7 +585,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Mixtard 30 FlexPen 100 IU/mL',
-    brandNameAr: 'ميكستارد 30 فليكسبن 100 وحدة دولية/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Biphasic (Premixed) Human Insulins (30% Soluble / 70% Isophane)',
     dosageForm: 'Suspension for injection in pre-filled pen (FlexPen)',
@@ -638,7 +611,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   // =========================================================================
   {
     brandName: 'Ozempic 0.25 mg',
-    brandNameAr: 'أوزمبيك 0.25 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -661,7 +633,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Ozempic 0.5 mg',
-    brandNameAr: 'أوزمبيك 0.5 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -684,7 +655,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Ozempic 1 mg',
-    brandNameAr: 'أوزمبيك 1 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -707,7 +677,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Ozempic 2 mg',
-    brandNameAr: 'أوزمبيك 2 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -730,7 +699,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Rybelsus 3 mg',
-    brandNameAr: 'ريبلسس 3 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'Oral Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Tablet',
@@ -753,7 +721,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Rybelsus 7 mg',
-    brandNameAr: 'ريبلسس 7 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'Oral Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Tablet',
@@ -776,7 +743,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Rybelsus 14 mg',
-    brandNameAr: 'ريبلسس 14 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'Oral Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Tablet',
@@ -799,7 +765,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Victoza 6 mg/mL',
-    brandNameAr: 'فيكتوزا 6 ملغم/مل',
     genericName: 'Liraglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -822,7 +787,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Saxenda 6 mg/mL',
-    brandNameAr: 'ساكسيندا 6 ملغم/مل',
     genericName: 'Liraglutide',
     drugClassNameEn: 'GLP-1 Receptor Agonists for Chronic Weight Management',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -845,7 +809,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Wegovy 0.25 mg',
-    brandNameAr: 'ويغوفي 0.25 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'GLP-1 Receptor Agonists for Chronic Weight Management',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -868,7 +831,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Wegovy 0.5 mg',
-    brandNameAr: 'ويغوفي 0.5 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'GLP-1 Receptor Agonists for Chronic Weight Management',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -891,7 +853,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Wegovy 1 mg',
-    brandNameAr: 'ويغوفي 1 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'GLP-1 Receptor Agonists for Chronic Weight Management',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -914,7 +875,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Wegovy 1.7 mg',
-    brandNameAr: 'ويغوفي 1.7 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'GLP-1 Receptor Agonists for Chronic Weight Management',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -937,7 +897,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Wegovy 2.4 mg',
-    brandNameAr: 'ويغوفي 2.4 ملغم',
     genericName: 'Semaglutide',
     drugClassNameEn: 'GLP-1 Receptor Agonists for Chronic Weight Management',
     dosageForm: 'Solution for injection in pre-filled pen (FlexTouch)',
@@ -964,7 +923,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   // =========================================================================
   {
     brandName: 'NovoNorm 0.5 mg',
-    brandNameAr: 'نوفونورم 0.5 ملغم',
     genericName: 'Repaglinide',
     drugClassNameEn: 'Meglitinide Prandial Glucose Regulators',
     dosageForm: 'Tablet',
@@ -987,7 +945,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoNorm 1 mg',
-    brandNameAr: 'نوفونورم 1 ملغم',
     genericName: 'Repaglinide',
     drugClassNameEn: 'Meglitinide Prandial Glucose Regulators',
     dosageForm: 'Tablet',
@@ -1010,7 +967,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoNorm 2 mg',
-    brandNameAr: 'نوفونورم 2 ملغم',
     genericName: 'Repaglinide',
     drugClassNameEn: 'Meglitinide Prandial Glucose Regulators',
     dosageForm: 'Tablet',
@@ -1033,7 +989,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'GlucaGen HypoKit 1 mg',
-    brandNameAr: 'غلوكاغين هايبوكيت 1 ملغم',
     genericName: 'Glucagon',
     drugClassNameEn: 'Glycogenolytic Hormones (Emergency Antihypoglycaemic Agents)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -1056,7 +1011,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Norditropin FlexPro 5 mg/1.5 mL',
-    brandNameAr: 'نورديتروبين فليكسبرو 5 ملغم/1.5 مل',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones (r-hGH)',
     dosageForm: 'Solution for injection in pre-filled pen (FlexPro)',
@@ -1079,7 +1033,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Norditropin FlexPro 10 mg/1.5 mL',
-    brandNameAr: 'نورديتروبين فليكسبرو 10 ملغم/1.5 مل',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones (r-hGH)',
     dosageForm: 'Solution for injection in pre-filled pen (FlexPro)',
@@ -1102,7 +1055,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Norditropin FlexPro 15 mg/1.5 mL',
-    brandNameAr: 'نورديتروبين فليكسبرو 15 ملغم/1.5 مل',
     genericName: 'Somatropin',
     drugClassNameEn: 'Recombinant Human Growth Hormones (r-hGH)',
     dosageForm: 'Solution for injection in pre-filled pen (FlexPro)',
@@ -1125,7 +1077,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoSeven 1 mg',
-    brandNameAr: 'نوفوسيفن 1 ملغم',
     genericName: 'Eptacog alfa (activated)',
     drugClassNameEn: 'Recombinant Coagulation Factor VIIa (Bypassing Agents)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -1148,7 +1099,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoSeven 2 mg',
-    brandNameAr: 'نوفوسيفن 2 ملغم',
     genericName: 'Eptacog alfa (activated)',
     drugClassNameEn: 'Recombinant Coagulation Factor VIIa (Bypassing Agents)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -1171,7 +1121,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoSeven 5 mg',
-    brandNameAr: 'نوفوسيفن 5 ملغم',
     genericName: 'Eptacog alfa (activated)',
     drugClassNameEn: 'Recombinant Coagulation Factor VIIa (Bypassing Agents)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -1194,7 +1143,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'NovoEight 500 IU',
-    brandNameAr: 'نوفوإيت 500 وحدة دولية',
     genericName: 'Turoctocog alfa',
     drugClassNameEn: 'Recombinant Coagulation Factor VIII',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -1217,7 +1165,6 @@ const NOVO_COMPACT_PRODUCTS: CompactNovoDrug[] = [
   },
   {
     brandName: 'Vagifem 10 mcg',
-    brandNameAr: 'فاجيفيم 10 ميكروغرام',
     genericName: 'Estradiol',
     drugClassNameEn: 'Local Vaginal Oestrogens',
     dosageForm: 'Vaginal tablet',

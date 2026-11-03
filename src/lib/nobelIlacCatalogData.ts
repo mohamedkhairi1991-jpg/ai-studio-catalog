@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_NOBEL_ILAC: CompactDrug[] = [
   // 1. Etol Fort 400 mg (Etodolac — Nobel Ilac)
   {
     brandName: 'Etol Fort 400 mg',
-    brandNameAr: 'إيتول فورت 400 ملغ',
     genericName: 'Etodolac',
     activeIngredients: ['Etodolac'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID), pyranocarboxylic acid derivative (ATC M01AB08)',
@@ -57,7 +55,6 @@ const RAW_NOBEL_ILAC: CompactDrug[] = [
   // 2. Pulcet 40 mg (Pantoprazole — Nobel Ilac)
   {
     brandName: 'Pulcet 40 mg',
-    brandNameAr: 'بولسيت 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (PPI) gastric acid secretion inhibitor (ATC A02BC02)',
@@ -89,7 +86,6 @@ const RAW_NOBEL_ILAC: CompactDrug[] = [
   // 3. Ultrox 20 mg (Rosuvastatin — Nobel Ilac)
   {
     brandName: 'Ultrox 20 mg',
-    brandNameAr: 'أولتروكس 20 ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin) lipid-modifying agent (ATC C10AA07)',
@@ -121,7 +117,6 @@ const RAW_NOBEL_ILAC: CompactDrug[] = [
   // 4. Lansoprol 30 mg (Lansoprazole — Nobel Ilac)
   {
     brandName: 'Lansoprol 30 mg',
-    brandNameAr: 'لانسوبرول 30 ملغ',
     genericName: 'Lansoprazole',
     activeIngredients: ['Lansoprazole'],
     drugClass: 'Proton pump inhibitor (PPI) gastric acid secretion inhibitor (ATC A02BC03)',
@@ -154,7 +149,6 @@ const RAW_NOBEL_ILAC: CompactDrug[] = [
 export const NOBEL_ILAC_PRODUCTS: AiProductDraft[] = RAW_NOBEL_ILAC.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

@@ -4,7 +4,6 @@ const SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }];
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   activeIngredients: string[];
@@ -30,7 +29,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   // =========================================================================
   {
     brandName: 'Pantoloc 20 mg',
-    brandNameAr: 'بانتولوك 20 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -56,7 +54,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Pantoloc 40 mg',
-    brandNameAr: 'بانتولوك 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -82,7 +79,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Pantoloc 40 mg Powder for Solution for Injection',
-    brandNameAr: 'بانتولوك 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -108,7 +104,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Controloc 20 mg',
-    brandNameAr: 'كونترولوك 20 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -134,7 +129,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Controloc 40 mg',
-    brandNameAr: 'كونترولوك 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -160,7 +154,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Controloc 40 mg Powder for Solution for Injection',
-    brandNameAr: 'كونترولوك 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -186,7 +179,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Dexilant 30 mg',
-    brandNameAr: 'ديكسيلانت 30 ملغ',
     genericName: 'Dexlansoprazole',
     activeIngredients: ['Dexlansoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -212,7 +204,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Dexilant 60 mg',
-    brandNameAr: 'ديكسيلانت 60 ملغ',
     genericName: 'Dexlansoprazole',
     activeIngredients: ['Dexlansoprazole'],
     drugClass: 'Proton Pump Inhibitors (PPIs)',
@@ -238,7 +229,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Entyvio 300 mg',
-    brandNameAr: 'إنتيفيو 300 ملغ',
     genericName: 'Vedolizumab',
     activeIngredients: ['Vedolizumab'],
     drugClass: 'Integrin Receptor Antagonists (Selective Immunosuppressants)',
@@ -264,7 +254,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Entyvio 108 mg',
-    brandNameAr: 'إنتيفيو 108 ملغ',
     genericName: 'Vedolizumab',
     activeIngredients: ['Vedolizumab'],
     drugClass: 'Integrin Receptor Antagonists (Selective Immunosuppressants)',
@@ -294,7 +283,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   // =========================================================================
   {
     brandName: 'Edarbi 40 mg',
-    brandNameAr: 'إيداربي 40 ملغ',
     genericName: 'Azilsartan',
     activeIngredients: ['Azilsartan'],
     drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
@@ -320,7 +308,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Edarbi 80 mg',
-    brandNameAr: 'إيداربي 80 ملغ',
     genericName: 'Azilsartan',
     activeIngredients: ['Azilsartan'],
     drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
@@ -346,7 +333,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Edarbyclor 40 mg / 12.5 mg',
-    brandNameAr: 'إيداربيكلور 40 ملغ / 12.5 ملغ',
     genericName: 'Azilsartan + Chlortalidone',
     activeIngredients: ['Azilsartan', 'Chlortalidone'],
     drugClass: 'Angiotensin II Receptor Blocker and Thiazide-Like Diuretic Combinations',
@@ -372,7 +358,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Edarbyclor 40 mg / 25 mg',
-    brandNameAr: 'إيداربيكلور 40 ملغ / 25 ملغ',
     genericName: 'Azilsartan + Chlortalidone',
     activeIngredients: ['Azilsartan', 'Chlortalidone'],
     drugClass: 'Angiotensin II Receptor Blocker and Thiazide-Like Diuretic Combinations',
@@ -402,7 +387,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   // =========================================================================
   {
     brandName: 'Ninlaro 2.3 mg',
-    brandNameAr: 'نينلارو 2.3 ملغ',
     genericName: 'Ixazomib',
     activeIngredients: ['Ixazomib'],
     drugClass: 'Proteasome Inhibitors',
@@ -428,7 +412,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Ninlaro 3 mg',
-    brandNameAr: 'نينلارو 3 ملغ',
     genericName: 'Ixazomib',
     activeIngredients: ['Ixazomib'],
     drugClass: 'Proteasome Inhibitors',
@@ -454,7 +437,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Ninlaro 4 mg',
-    brandNameAr: 'نينلارو 4 ملغ',
     genericName: 'Ixazomib',
     activeIngredients: ['Ixazomib'],
     drugClass: 'Proteasome Inhibitors',
@@ -480,7 +462,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Alunbrig 30 mg',
-    brandNameAr: 'ألونبريغ 30 ملغ',
     genericName: 'Brigatinib',
     activeIngredients: ['Brigatinib'],
     drugClass: 'ALK Tyrosine Kinase Inhibitors',
@@ -506,7 +487,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Alunbrig 90 mg',
-    brandNameAr: 'ألونبريغ 90 ملغ',
     genericName: 'Brigatinib',
     activeIngredients: ['Brigatinib'],
     drugClass: 'ALK Tyrosine Kinase Inhibitors',
@@ -532,7 +512,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Alunbrig 180 mg',
-    brandNameAr: 'ألونبريغ 180 ملغ',
     genericName: 'Brigatinib',
     activeIngredients: ['Brigatinib'],
     drugClass: 'ALK Tyrosine Kinase Inhibitors',
@@ -558,7 +537,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Adcetris 50 mg',
-    brandNameAr: 'أدسيتريس 50 ملغ',
     genericName: 'Brentuximab vedotin',
     activeIngredients: ['Brentuximab vedotin'],
     drugClass: 'CD30-Directed Antibody-Drug Conjugates',
@@ -588,7 +566,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   // =========================================================================
   {
     brandName: 'Takhzyro 300 mg',
-    brandNameAr: 'تاكزيرو 300 ملغ',
     genericName: 'Lanadelumab',
     activeIngredients: ['Lanadelumab'],
     drugClass: 'Plasma Kallikrein Inhibitors (Hereditary Angioedema Agents)',
@@ -614,7 +591,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Vpriv 400 Units',
-    brandNameAr: 'فيبريف 400 وحدة',
     genericName: 'Velaglucerase alfa',
     activeIngredients: ['Velaglucerase alfa'],
     drugClass: 'Enzyme Replacement Therapies (Gaucher Disease)',
@@ -640,7 +616,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Replagal 1 mg/mL (3.5 mg)',
-    brandNameAr: 'ريبلاغال 1 ملغ/مل (3.5 ملغ)',
     genericName: 'Agalsidase alfa',
     activeIngredients: ['Agalsidase alfa'],
     drugClass: 'Enzyme Replacement Therapies (Fabry Disease)',
@@ -666,7 +641,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Elaprase 2 mg/mL (6 mg)',
-    brandNameAr: 'إيلابراز 2 ملغ/مل (6 ملغ)',
     genericName: 'Idursulfase',
     activeIngredients: ['Idursulfase'],
     drugClass: 'Enzyme Replacement Therapies (Hunter Syndrome / MPS II)',
@@ -696,7 +670,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   // =========================================================================
   {
     brandName: 'Advate 250 IU',
-    brandNameAr: 'أدفات 250 وحدة دولية',
     genericName: 'Octocog alfa',
     activeIngredients: ['Octocog alfa'],
     drugClass: 'Recombinant Coagulation Factor VIII Concentrates',
@@ -722,7 +695,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Advate 500 IU',
-    brandNameAr: 'أدفات 500 وحدة دولية',
     genericName: 'Octocog alfa',
     activeIngredients: ['Octocog alfa'],
     drugClass: 'Recombinant Coagulation Factor VIII Concentrates',
@@ -748,7 +720,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Advate 1000 IU',
-    brandNameAr: 'أدفات 1000 وحدة دولية',
     genericName: 'Octocog alfa',
     activeIngredients: ['Octocog alfa'],
     drugClass: 'Recombinant Coagulation Factor VIII Concentrates',
@@ -774,7 +745,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Adynovi 500 IU',
-    brandNameAr: 'أدينوفي 500 وحدة دولية',
     genericName: 'Rurioctocog alfa pegol',
     activeIngredients: ['Rurioctocog alfa pegol'],
     drugClass: 'Extended Half-Life Recombinant Coagulation Factor VIII Concentrates',
@@ -800,7 +770,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Adynovi 1000 IU',
-    brandNameAr: 'أدينوفي 1000 وحدة دولية',
     genericName: 'Rurioctocog alfa pegol',
     activeIngredients: ['Rurioctocog alfa pegol'],
     drugClass: 'Extended Half-Life Recombinant Coagulation Factor VIII Concentrates',
@@ -826,7 +795,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Feiba 500 U',
-    brandNameAr: 'فيبا 500 وحدة',
     genericName: 'Anti-inhibitor coagulant complex',
     activeIngredients: ['Anti-inhibitor coagulant complex'],
     drugClass: 'Activated Prothrombin Complex Concentrates (Bypassing Agents)',
@@ -852,7 +820,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Feiba 1000 U',
-    brandNameAr: 'فيبا 1000 وحدة',
     genericName: 'Anti-inhibitor coagulant complex',
     activeIngredients: ['Anti-inhibitor coagulant complex'],
     drugClass: 'Activated Prothrombin Complex Concentrates (Bypassing Agents)',
@@ -881,7 +848,6 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
 export const TAKEDA_PRODUCTS: AiProductDraft[] = TAKEDA_COMPACT_DRUGS.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

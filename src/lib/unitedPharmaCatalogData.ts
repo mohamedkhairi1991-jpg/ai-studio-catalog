@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_UNITED_PHARMA: CompactDrug[] = [
   // 1. Unicast (Montelukast — United Pharmaceuticals)
   {
     brandName: 'Unicast 4 mg',
-    brandNameAr: 'يونيكاست 4 ملغ',
     genericName: 'Montelukast',
     activeIngredients: ['Montelukast'],
     drugClass: 'Selective leukotriene receptor antagonist (CysLT1 antagonist)',
@@ -55,7 +53,6 @@ const RAW_UNITED_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Unicast 5 mg',
-    brandNameAr: 'يونيكاست 5 ملغ',
     genericName: 'Montelukast',
     activeIngredients: ['Montelukast'],
     drugClass: 'Selective leukotriene receptor antagonist (CysLT1 antagonist)',
@@ -85,7 +82,6 @@ const RAW_UNITED_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Unicast 10 mg',
-    brandNameAr: 'يونيكاست 10 ملغ',
     genericName: 'Montelukast',
     activeIngredients: ['Montelukast'],
     drugClass: 'Selective leukotriene receptor antagonist (CysLT1 antagonist)',
@@ -117,7 +113,6 @@ const RAW_UNITED_PHARMA: CompactDrug[] = [
   // 2. Unicam (Piroxicam — United Pharmaceuticals)
   {
     brandName: 'Unicam 20 mg',
-    brandNameAr: 'يونيكام 20 ملغ',
     genericName: 'Piroxicam',
     activeIngredients: ['Piroxicam'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, oxicam derivative)',
@@ -149,7 +144,6 @@ const RAW_UNITED_PHARMA: CompactDrug[] = [
   // 3. Unifed (Pseudoephedrine + Triprolidine — United Pharmaceuticals)
   {
     brandName: 'Unifed 60 mg/2.5 mg',
-    brandNameAr: 'يونيفيد 60 ملغ/2.5 ملغ',
     genericName: 'Pseudoephedrine + Triprolidine',
     activeIngredients: ['Pseudoephedrine', 'Triprolidine'],
     drugClass: 'Sympathomimetic nasal decongestant and first-generation H1-antihistamine combination',
@@ -181,7 +175,6 @@ const RAW_UNITED_PHARMA: CompactDrug[] = [
   // 4. Unidox (Doxycycline — United Pharmaceuticals)
   {
     brandName: 'Unidox 100 mg',
-    brandNameAr: 'يونيدوكس 100 ملغ',
     genericName: 'Doxycycline',
     activeIngredients: ['Doxycycline'],
     drugClass: 'Tetracycline broad-spectrum bacteriostatic antibacterial',
@@ -214,7 +207,6 @@ const RAW_UNITED_PHARMA: CompactDrug[] = [
 export const UNITED_PHARMA_PRODUCTS: AiProductDraft[] = RAW_UNITED_PHARMA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

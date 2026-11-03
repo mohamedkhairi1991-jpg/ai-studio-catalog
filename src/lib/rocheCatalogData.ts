@@ -4,7 +4,6 @@ const ROCHE_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url
 
 interface CompactRocheDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toRocheProductDraft(item: CompactRocheDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   // =========================================================================
   {
     brandName: 'Rocephin 500 mg',
-    brandNameAr: 'روسيفين 500 ملغم',
     genericName: 'Ceftriaxone',
     drugClassNameEn: 'Third-Generation Parenteral Cephalosporin Antibacterials',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -78,7 +75,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Rocephin 1 g IV',
-    brandNameAr: 'روسيفين 1 غم وريدي',
     genericName: 'Ceftriaxone',
     drugClassNameEn: 'Third-Generation Parenteral Cephalosporin Antibacterials',
     dosageForm: 'Powder and solvent for solution for injection / infusion',
@@ -101,7 +97,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Rocephin 1 g IM',
-    brandNameAr: 'روسيفين 1 غم عضلي',
     genericName: 'Ceftriaxone',
     drugClassNameEn: 'Third-Generation Parenteral Cephalosporin Antibacterials',
     dosageForm: 'Powder and solvent for solution for intramuscular injection',
@@ -124,7 +119,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Tamiflu 75 mg',
-    brandNameAr: 'تاميفلو 75 ملغم',
     genericName: 'Oseltamivir',
     drugClassNameEn: 'Viral Neuraminidase Inhibitors (Anti-Influenza Antivirals)',
     dosageForm: 'Hard capsule',
@@ -147,7 +141,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Tamiflu 6 mg/mL Oral Suspension',
-    brandNameAr: 'تاميفلو 6 ملغم/مل',
     genericName: 'Oseltamivir',
     drugClassNameEn: 'Viral Neuraminidase Inhibitors (Anti-Influenza Antivirals)',
     dosageForm: 'Powder for oral suspension',
@@ -170,7 +163,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Xofluza 40 mg',
-    brandNameAr: 'زوفلوزا 40 ملغم',
     genericName: 'Baloxavir marboxil',
     drugClassNameEn: 'Cap-Dependent Endonuclease Inhibitors (Single-Dose Anti-Influenza Antivirals)',
     dosageForm: 'Film-coated tablet',
@@ -193,7 +185,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'CellCept 250 mg',
-    brandNameAr: 'سيلسيبت 250 ملغم',
     genericName: 'Mycophenolate mofetil',
     drugClassNameEn: 'Inosine Monophosphate Dehydrogenase (IMPDH) Inhibitor Immunosuppressants',
     dosageForm: 'Hard capsule',
@@ -216,7 +207,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'CellCept 500 mg',
-    brandNameAr: 'سيلسيبت 500 ملغم',
     genericName: 'Mycophenolate mofetil',
     drugClassNameEn: 'Inosine Monophosphate Dehydrogenase (IMPDH) Inhibitor Immunosuppressants',
     dosageForm: 'Film-coated tablet',
@@ -239,7 +229,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Actemra 162 mg/0.9 mL SC',
-    brandNameAr: 'أكتيمرا 162 ملغم/0.9 مل',
     genericName: 'Tocilizumab',
     drugClassNameEn: 'Interleukin-6 (IL-6) Receptor Antagonist Monoclonal Antibodies',
     dosageForm: 'Solution for injection in pre-filled syringe / pre-filled pen (ACTPen)',
@@ -262,7 +251,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Actemra 80 mg/4 mL IV',
-    brandNameAr: 'أكتيمرا 80 ملغم/4 مل',
     genericName: 'Tocilizumab',
     drugClassNameEn: 'Interleukin-6 (IL-6) Receptor Antagonist Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -285,7 +273,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Actemra 200 mg/10 mL IV',
-    brandNameAr: 'أكتيمرا 200 ملغم/10 مل',
     genericName: 'Tocilizumab',
     drugClassNameEn: 'Interleukin-6 (IL-6) Receptor Antagonist Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -308,7 +295,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Actemra 400 mg/20 mL IV',
-    brandNameAr: 'أكتيمرا 400 ملغم/20 مل',
     genericName: 'Tocilizumab',
     drugClassNameEn: 'Interleukin-6 (IL-6) Receptor Antagonist Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -335,7 +321,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   // =========================================================================
   {
     brandName: 'Herceptin 150 mg IV',
-    brandNameAr: 'هرسبتين 150 ملغم وريدي',
     genericName: 'Trastuzumab',
     drugClassNameEn: 'Anti-HER2 Monoclonal Antibodies',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -358,7 +343,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Herceptin 600 mg/5 mL SC',
-    brandNameAr: 'هرسبتين 600 ملغم/5 مل تحت الجلد',
     genericName: 'Trastuzumab',
     drugClassNameEn: 'Anti-HER2 Monoclonal Antibodies (Subcutaneous Fixed-Dose)',
     dosageForm: 'Solution for injection',
@@ -381,7 +365,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Perjeta 420 mg/14 mL',
-    brandNameAr: 'بيرجيتا 420 ملغم/14 مل',
     genericName: 'Pertuzumab',
     drugClassNameEn: 'HER2 Dimerisation Inhibitor Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -404,7 +387,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Phesgo 600 mg/600 mg',
-    brandNameAr: 'فيسغو 600 ملغم/600 ملغم',
     genericName: 'Pertuzumab + Trastuzumab',
     drugClassNameEn: 'Fixed-Dose Subcutaneous Anti-HER2 Monoclonal Antibody Combinations',
     dosageForm: 'Solution for injection',
@@ -427,7 +409,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Phesgo 1200 mg/600 mg',
-    brandNameAr: 'فيسغو 1200 ملغم/600 ملغم',
     genericName: 'Pertuzumab + Trastuzumab',
     drugClassNameEn: 'Fixed-Dose Subcutaneous Anti-HER2 Monoclonal Antibody Combinations',
     dosageForm: 'Solution for injection',
@@ -450,7 +431,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Kadcyla 100 mg',
-    brandNameAr: 'كادسيلا 100 ملغم',
     genericName: 'Trastuzumab emtansine',
     drugClassNameEn: 'HER2-Targeted Antibody-Drug Conjugates (ADCs)',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -473,7 +453,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Kadcyla 160 mg',
-    brandNameAr: 'كادسيلا 160 ملغم',
     genericName: 'Trastuzumab emtansine',
     drugClassNameEn: 'HER2-Targeted Antibody-Drug Conjugates (ADCs)',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -496,7 +475,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Avastin 100 mg/4 mL',
-    brandNameAr: 'أفاستين 100 ملغم/4 مل',
     genericName: 'Bevacizumab',
     drugClassNameEn: 'Anti-VEGF Monoclonal Antibodies (Angiogenesis Inhibitors)',
     dosageForm: 'Concentrate for solution for infusion',
@@ -519,7 +497,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Avastin 400 mg/16 mL',
-    brandNameAr: 'أفاستين 400 ملغم/16 مل',
     genericName: 'Bevacizumab',
     drugClassNameEn: 'Anti-VEGF Monoclonal Antibodies (Angiogenesis Inhibitors)',
     dosageForm: 'Concentrate for solution for infusion',
@@ -542,7 +519,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'MabThera 100 mg/10 mL',
-    brandNameAr: 'مابثيرا 100 ملغم/10 مل',
     genericName: 'Rituximab',
     drugClassNameEn: 'Anti-CD20 Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -565,7 +541,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'MabThera 500 mg/50 mL',
-    brandNameAr: 'مابثيرا 500 ملغم/50 مل',
     genericName: 'Rituximab',
     drugClassNameEn: 'Anti-CD20 Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -588,7 +563,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'MabThera 1400 mg SC',
-    brandNameAr: 'مابثيرا 1400 ملغم تحت الجلد',
     genericName: 'Rituximab',
     drugClassNameEn: 'Anti-CD20 Monoclonal Antibodies (Subcutaneous Fixed-Dose)',
     dosageForm: 'Solution for subcutaneous injection',
@@ -611,7 +585,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Gazyvaro 1000 mg/40 mL',
-    brandNameAr: 'غازيفارو 1000 ملغم/40 مل',
     genericName: 'Obinutuzumab',
     drugClassNameEn: 'Glycoengineered Type II Anti-CD20 Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -634,7 +607,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Tecentriq 1200 mg/20 mL',
-    brandNameAr: 'تيسينتريك 1200 ملغم/20 مل',
     genericName: 'Atezolizumab',
     drugClassNameEn: 'Anti-PD-L1 Monoclonal Antibodies (Immune Checkpoint Inhibitors)',
     dosageForm: 'Concentrate for solution for infusion',
@@ -657,7 +629,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Alecensa 150 mg',
-    brandNameAr: 'أليسينسا 150 ملغم',
     genericName: 'Alectinib',
     drugClassNameEn: 'Anaplastic Lymphoma Kinase (ALK) and RET Tyrosine Kinase Inhibitors',
     dosageForm: 'Hard capsule',
@@ -680,7 +651,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Xeloda 150 mg',
-    brandNameAr: 'زيلودا 150 ملغم',
     genericName: 'Capecitabine',
     drugClassNameEn: 'Oral Fluoropyrimidine Antimetabolites (5-Fluorouracil Prodrug)',
     dosageForm: 'Film-coated tablet',
@@ -703,7 +673,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Xeloda 500 mg',
-    brandNameAr: 'زيلودا 500 ملغم',
     genericName: 'Capecitabine',
     drugClassNameEn: 'Oral Fluoropyrimidine Antimetabolites (5-Fluorouracil Prodrug)',
     dosageForm: 'Film-coated tablet',
@@ -726,7 +695,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Polivy 140 mg',
-    brandNameAr: 'بوليفي 140 ملغم',
     genericName: 'Polatuzumab vedotin',
     drugClassNameEn: 'CD79b-Directed Antibody-Drug Conjugates (ADCs)',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -753,7 +721,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   // =========================================================================
   {
     brandName: 'Rivotril 0.5 mg',
-    brandNameAr: 'ريفوتريل 0.5 ملغم',
     genericName: 'Clonazepam',
     drugClassNameEn: 'Benzodiazepine Antiepileptics',
     dosageForm: 'Tablet',
@@ -776,7 +743,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Rivotril 2 mg',
-    brandNameAr: 'ريفوتريل 2 ملغم',
     genericName: 'Clonazepam',
     drugClassNameEn: 'Benzodiazepine Antiepileptics',
     dosageForm: 'Tablet (cross-scored)',
@@ -799,7 +765,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Madopar 200 mg/50 mg',
-    brandNameAr: 'مادوبار 200 ملغم/50 ملغم',
     genericName: 'Levodopa + Benserazide',
     drugClassNameEn: 'Dopamine Precursor and Peripheral Decarboxylase Inhibitor Combinations',
     dosageForm: 'Tablet (scored)',
@@ -822,7 +787,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Ocrevus 300 mg/10 mL',
-    brandNameAr: 'أوكريفوس 300 ملغم/10 مل',
     genericName: 'Ocrelizumab',
     drugClassNameEn: 'Humanised Anti-CD20 Monoclonal Antibodies for Multiple Sclerosis',
     dosageForm: 'Concentrate for solution for infusion',
@@ -845,7 +809,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Evrysdi 0.75 mg/mL',
-    brandNameAr: 'إفريسدي 0.75 ملغم/مل',
     genericName: 'Risdiplam',
     drugClassNameEn: 'Survival of Motor Neuron 2 (SMN2) Pre-mRNA Splicing Modifiers',
     dosageForm: 'Powder for oral solution',
@@ -868,7 +831,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Enspryng 120 mg',
-    brandNameAr: 'إنسبيرينغ 120 ملغم',
     genericName: 'Satralizumab',
     drugClassNameEn: 'Recycling Anti-IL-6 Receptor Monoclonal Antibodies (NMOSD)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -895,7 +857,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   // =========================================================================
   {
     brandName: 'Hemlibra 30 mg/1 mL',
-    brandNameAr: 'هيمليبرا 30 ملغم/1 مل',
     genericName: 'Emicizumab',
     drugClassNameEn: 'Bispecific Factor IXa- and Factor X-Directed Monoclonal Antibodies',
     dosageForm: 'Solution for injection',
@@ -918,7 +879,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Hemlibra 60 mg/0.4 mL',
-    brandNameAr: 'هيمليبرا 60 ملغم/0.4 مل',
     genericName: 'Emicizumab',
     drugClassNameEn: 'Bispecific Factor IXa- and Factor X-Directed Monoclonal Antibodies',
     dosageForm: 'Solution for injection',
@@ -941,7 +901,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Hemlibra 105 mg/0.7 mL',
-    brandNameAr: 'هيمليبرا 105 ملغم/0.7 مل',
     genericName: 'Emicizumab',
     drugClassNameEn: 'Bispecific Factor IXa- and Factor X-Directed Monoclonal Antibodies',
     dosageForm: 'Solution for injection',
@@ -964,7 +923,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Hemlibra 150 mg/1 mL',
-    brandNameAr: 'هيمليبرا 150 ملغم/1 مل',
     genericName: 'Emicizumab',
     drugClassNameEn: 'Bispecific Factor IXa- and Factor X-Directed Monoclonal Antibodies',
     dosageForm: 'Solution for injection',
@@ -987,7 +945,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Mircera 50 mcg/0.3 mL',
-    brandNameAr: 'ميرسيرا 50 ميكروغرام/0.3 مل',
     genericName: 'Methoxy polyethylene glycol-epoetin beta',
     drugClassNameEn: 'Continuous Erythropoietin Receptor Activators (Long-Acting ESAs)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -1010,7 +967,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Mircera 100 mcg/0.3 mL',
-    brandNameAr: 'ميرسيرا 100 ميكروغرام/0.3 مل',
     genericName: 'Methoxy polyethylene glycol-epoetin beta',
     drugClassNameEn: 'Continuous Erythropoietin Receptor Activators (Long-Acting ESAs)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -1033,7 +989,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Mircera 200 mcg/0.3 mL',
-    brandNameAr: 'ميرسيرا 200 ميكروغرام/0.3 مل',
     genericName: 'Methoxy polyethylene glycol-epoetin beta',
     drugClassNameEn: 'Continuous Erythropoietin Receptor Activators (Long-Acting ESAs)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -1056,7 +1011,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'NeoRecormon 4000 IU',
-    brandNameAr: 'نيوريكورمون 4000 وحدة دولية',
     genericName: 'Epoetin beta',
     drugClassNameEn: 'Recombinant Human Erythropoietins (ESAs)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -1079,7 +1033,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'NeoRecormon 30000 IU',
-    brandNameAr: 'نيوريكورمون 30000 وحدة دولية',
     genericName: 'Epoetin beta',
     drugClassNameEn: 'Recombinant Human Erythropoietins (ESAs)',
     dosageForm: 'Solution for injection in pre-filled syringe',
@@ -1102,7 +1055,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Pulmozyme 2.5 mg/2.5 mL',
-    brandNameAr: 'بلموزايم 2.5 ملغم/2.5 مل',
     genericName: 'Dornase alfa',
     drugClassNameEn: 'Recombinant Human Deoxyribonucleases (Mucolytics for Cystic Fibrosis)',
     dosageForm: 'Nebuliser solution',
@@ -1125,7 +1077,6 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
   },
   {
     brandName: 'Vabysmo 120 mg/mL',
-    brandNameAr: 'فابيسمو 120 ملغم/مل',
     genericName: 'Faricimab',
     drugClassNameEn: 'Bispecific Anti-Angiopoietin-2 (Ang-2) and Anti-VEGF-A Monoclonal Antibodies (Intravitreal)',
     dosageForm: 'Solution for injection',

@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   // 1. Klavox (Amoxicillin + Clavulanic acid — SPIMACO Addwaeih)
   {
     brandName: 'Klavox 625 mg',
-    brandNameAr: 'كلافوكس 625 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -55,7 +53,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   },
   {
     brandName: 'Klavox 1 g',
-    brandNameAr: 'كلافوكس 1 غ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -85,7 +82,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   },
   {
     brandName: 'Klavox 457 mg/5 mL',
-    brandNameAr: 'كلافوكس 457 ملغ/5 مل',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -117,7 +113,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   // 2. Zimax (Azithromycin — SPIMACO Addwaeih)
   {
     brandName: 'Zimax 250 mg',
-    brandNameAr: 'زيماكس 250 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -147,7 +142,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   },
   {
     brandName: 'Zimax 500 mg',
-    brandNameAr: 'زيماكس 500 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -179,7 +173,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   // 3. Cipromax (Ciprofloxacin — SPIMACO Addwaeih)
   {
     brandName: 'Cipromax 500 mg',
-    brandNameAr: 'سيبروماكس 500 ملغ',
     genericName: 'Ciprofloxacin',
     activeIngredients: ['Ciprofloxacin'],
     drugClass: 'Fluoroquinolone antibacterial',
@@ -211,7 +204,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   // 4. Sapofen (Ibuprofen — SPIMACO Addwaeih)
   {
     brandName: 'Sapofen 400 mg',
-    brandNameAr: 'سابوفين 400 ملغ',
     genericName: 'Ibuprofen',
     activeIngredients: ['Ibuprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, propionic acid derivative)',
@@ -241,7 +233,6 @@ const RAW_SPIMACO: CompactDrug[] = [
   },
   {
     brandName: 'Sapofen 600 mg',
-    brandNameAr: 'سابوفين 600 ملغ',
     genericName: 'Ibuprofen',
     activeIngredients: ['Ibuprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, propionic acid derivative)',
@@ -274,7 +265,6 @@ const RAW_SPIMACO: CompactDrug[] = [
 export const SPIMACO_PRODUCTS: AiProductDraft[] = RAW_SPIMACO.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

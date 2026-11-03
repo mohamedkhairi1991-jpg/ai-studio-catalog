@@ -4,7 +4,6 @@ const JANSSEN_SRC = (title: string, url: string): AiDraftSource[] => [{ title, u
 
 interface CompactJanssenDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClass: string;
@@ -26,7 +25,6 @@ function toJanssenProductDraft(item: CompactJanssenDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   // ===========================================================================
   {
     brandName: 'Risperdal 1 mg',
-    brandNameAr: 'ريسبردال 1 ملغ',
     genericName: 'Risperidone',
     drugClass: 'Second-Generation (Atypical) Antipsychotics (N05AX08)',
     strength: '1 mg',
@@ -78,7 +75,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Risperdal 2 mg',
-    brandNameAr: 'ريسبردال 2 ملغ',
     genericName: 'Risperidone',
     drugClass: 'Second-Generation (Atypical) Antipsychotics (N05AX08)',
     strength: '2 mg',
@@ -101,7 +97,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Risperdal 4 mg',
-    brandNameAr: 'ريسبردال 4 ملغ',
     genericName: 'Risperidone',
     drugClass: 'Second-Generation (Atypical) Antipsychotics (N05AX08)',
     strength: '4 mg',
@@ -124,7 +119,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Risperdal 1 mg/mL Oral Solution',
-    brandNameAr: 'ريسبردال 1 ملغ/مل محلول فموي',
     genericName: 'Risperidone',
     drugClass: 'Second-Generation (Atypical) Antipsychotics (N05AX08)',
     strength: '1 mg/mL',
@@ -147,7 +141,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Risperdal Consta 25 mg',
-    brandNameAr: 'ريسبردال كونستا 25 ملغ',
     genericName: 'Risperidone',
     drugClass: 'Long-Acting Injectable Atypical Antipsychotics (N05AX08)',
     strength: '25 mg',
@@ -170,7 +163,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Risperdal Consta 37.5 mg',
-    brandNameAr: 'ريسبردال كونستا 37.5 ملغ',
     genericName: 'Risperidone',
     drugClass: 'Long-Acting Injectable Atypical Antipsychotics (N05AX08)',
     strength: '37.5 mg',
@@ -193,7 +185,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Risperdal Consta 50 mg',
-    brandNameAr: 'ريسبردال كونستا 50 ملغ',
     genericName: 'Risperidone',
     drugClass: 'Long-Acting Injectable Atypical Antipsychotics (N05AX08)',
     strength: '50 mg',
@@ -216,7 +207,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Invega 3 mg',
-    brandNameAr: 'إنفيغا 3 ملغ',
     genericName: 'Paliperidone',
     drugClass: 'Second-Generation (Atypical) Antipsychotics (N05AX13)',
     strength: '3 mg',
@@ -239,7 +229,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Invega 6 mg',
-    brandNameAr: 'إنفيغا 6 ملغ',
     genericName: 'Paliperidone',
     drugClass: 'Second-Generation (Atypical) Antipsychotics (N05AX13)',
     strength: '6 mg',
@@ -262,7 +251,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Invega 9 mg',
-    brandNameAr: 'إنفيغا 9 ملغ',
     genericName: 'Paliperidone',
     drugClass: 'Second-Generation (Atypical) Antipsychotics (N05AX13)',
     strength: '9 mg',
@@ -285,7 +273,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Xeplion 75 mg',
-    brandNameAr: 'زيبليون 75 ملغ سرنجة',
     genericName: 'Paliperidone',
     drugClass: 'Monthly Long-Acting Injectable Atypical Antipsychotics (N05AX13)',
     strength: '75 mg (equivalent to 117 mg paliperidone palmitate)',
@@ -308,7 +295,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Xeplion 100 mg',
-    brandNameAr: 'زيبليون 100 ملغ سرنجة',
     genericName: 'Paliperidone',
     drugClass: 'Monthly Long-Acting Injectable Atypical Antipsychotics (N05AX13)',
     strength: '100 mg (equivalent to 156 mg paliperidone palmitate)',
@@ -331,7 +317,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Xeplion 150 mg',
-    brandNameAr: 'زيبليون 150 ملغ سرنجة',
     genericName: 'Paliperidone',
     drugClass: 'Monthly Long-Acting Injectable Atypical Antipsychotics (N05AX13)',
     strength: '150 mg (equivalent to 234 mg paliperidone palmitate)',
@@ -354,7 +339,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Trevicta 350 mg',
-    brandNameAr: 'تريفيكتا 350 ملغ سرنجة',
     genericName: 'Paliperidone',
     drugClass: '3-Monthly Long-Acting Injectable Atypical Antipsychotics (N05AX13)',
     strength: '350 mg (equivalent to 546 mg paliperidone palmitate)',
@@ -377,7 +361,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Trevicta 525 mg',
-    brandNameAr: 'تريفيكتا 525 ملغ سرنجة',
     genericName: 'Paliperidone',
     drugClass: '3-Monthly Long-Acting Injectable Atypical Antipsychotics (N05AX13)',
     strength: '525 mg (equivalent to 819 mg paliperidone palmitate)',
@@ -400,7 +383,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Spravato 28 mg',
-    brandNameAr: 'سبرافاتو 28 ملغ بخاخ أنفي',
     genericName: 'Esketamine',
     drugClass: 'NMDA Receptor Antagonist Rapid-Acting Antidepressants (N06AX27)',
     strength: '28 mg (delivered in 2 sprays of 14 mg per device)',
@@ -423,7 +405,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Topamax 25 mg',
-    brandNameAr: 'توباماكس 25 ملغ',
     genericName: 'Topiramate',
     drugClass: 'Broad-Spectrum Sulfamate-Substituted Monosaccharide Antiepileptics & Migraine Prophylactics (N03AX11)',
     strength: '25 mg',
@@ -446,7 +427,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Topamax 50 mg',
-    brandNameAr: 'توباماكس 50 ملغ',
     genericName: 'Topiramate',
     drugClass: 'Broad-Spectrum Sulfamate-Substituted Monosaccharide Antiepileptics & Migraine Prophylactics (N03AX11)',
     strength: '50 mg',
@@ -469,7 +449,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Topamax 100 mg',
-    brandNameAr: 'توباماكس 100 ملغ',
     genericName: 'Topiramate',
     drugClass: 'Broad-Spectrum Sulfamate-Substituted Monosaccharide Antiepileptics & Migraine Prophylactics (N03AX11)',
     strength: '100 mg',
@@ -492,7 +471,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Concerta XL 18 mg',
-    brandNameAr: 'كونسيرتا إكس إل 18 ملغ',
     genericName: 'Methylphenidate',
     drugClass: 'Centrally Acting Sympathomimetic Psychostimulants for ADHD (N06BA04)',
     strength: '18 mg',
@@ -515,7 +493,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Concerta XL 36 mg',
-    brandNameAr: 'كونسيرتا إكس إل 36 ملغ',
     genericName: 'Methylphenidate',
     drugClass: 'Centrally Acting Sympathomimetic Psychostimulants for ADHD (N06BA04)',
     strength: '36 mg',
@@ -538,7 +515,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Concerta XL 54 mg',
-    brandNameAr: 'كونسيرتا إكس إل 54 ملغ',
     genericName: 'Methylphenidate',
     drugClass: 'Centrally Acting Sympathomimetic Psychostimulants for ADHD (N06BA04)',
     strength: '54 mg',
@@ -561,7 +537,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Durogesic 25 mcg/h',
-    brandNameAr: 'دوروجيسيك 25 ميكروغرام/ساعة لصقة جلدية',
     genericName: 'Fentanyl',
     drugClass: 'Phenylpiperidine Opioid Analgesics (Transdermal Matrix System, N02AB03)',
     strength: '25 micrograms/hour (4.2 mg fentanyl per 10.5 cm² patch)',
@@ -584,7 +559,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Durogesic 50 mcg/h',
-    brandNameAr: 'دوروجيسيك 50 ميكروغرام/ساعة لصقة جلدية',
     genericName: 'Fentanyl',
     drugClass: 'Phenylpiperidine Opioid Analgesics (Transdermal Matrix System, N02AB03)',
     strength: '50 micrograms/hour (8.4 mg fentanyl per 21 cm² patch)',
@@ -607,7 +581,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Durogesic 100 mcg/h',
-    brandNameAr: 'دوروجيسيك 100 ميكروغرام/ساعة لصقة جلدية',
     genericName: 'Fentanyl',
     drugClass: 'Phenylpiperidine Opioid Analgesics (Transdermal Matrix System, N02AB03)',
     strength: '100 micrograms/hour (16.8 mg fentanyl per 42 cm² patch)',
@@ -634,7 +607,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   // ===========================================================================
   {
     brandName: 'Stelara 45 mg Pre-filled Syringe',
-    brandNameAr: 'ستيلارا 45 ملغ سرنجة',
     genericName: 'Ustekinumab',
     drugClass: 'Interleukin-12 and Interleukin-23 (IL-12/23p40) Monoclonal Antibody Inhibitors (L04AC05)',
     strength: '45 mg/0.5 mL',
@@ -657,7 +629,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Stelara 90 mg Pre-filled Syringe',
-    brandNameAr: 'ستيلارا 90 ملغ سرنجة',
     genericName: 'Ustekinumab',
     drugClass: 'Interleukin-12 and Interleukin-23 (IL-12/23p40) Monoclonal Antibody Inhibitors (L04AC05)',
     strength: '90 mg/1 mL',
@@ -680,7 +651,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Stelara 130 mg Concentrate for Infusion',
-    brandNameAr: 'ستيلارا 130 ملغ/26 مل فيال وريدي',
     genericName: 'Ustekinumab',
     drugClass: 'Interleukin-12 and Interleukin-23 (IL-12/23p40) Monoclonal Antibody Inhibitors (L04AC05)',
     strength: '130 mg/26 mL (5 mg/mL)',
@@ -703,7 +673,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Remicade 100 mg',
-    brandNameAr: 'ريميكيد 100 ملغ فيال',
     genericName: 'Infliximab',
     drugClass: 'Chimeric Monoclonal Tumour Necrosis Factor Alpha (TNF-α) Inhibitors (L04AB02)',
     strength: '100 mg',
@@ -726,7 +695,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Simponi 50 mg Pre-filled Pen',
-    brandNameAr: 'سيمبوني 50 ملغ قلم',
     genericName: 'Golimumab',
     drugClass: 'Human Monoclonal Tumour Necrosis Factor Alpha (TNF-α) Inhibitors (L04AB06)',
     strength: '50 mg/0.5 mL',
@@ -749,7 +717,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Simponi 100 mg Pre-filled Pen',
-    brandNameAr: 'سيمبوني 100 ملغ قلم',
     genericName: 'Golimumab',
     drugClass: 'Human Monoclonal Tumour Necrosis Factor Alpha (TNF-α) Inhibitors (L04AB06)',
     strength: '100 mg/1 mL',
@@ -772,7 +739,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Tremfya 100 mg Pre-filled Pen',
-    brandNameAr: 'تريمفايا 100 ملغ قلم',
     genericName: 'Guselkumab',
     drugClass: 'Selective Human Interleukin-23 (IL-23p19) Monoclonal Antibody Inhibitors (L04AC16)',
     strength: '100 mg/1 mL',
@@ -799,7 +765,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   // ===========================================================================
   {
     brandName: 'Darzalex 100 mg/5 mL',
-    brandNameAr: 'دارزاليكس 100 ملغ/5 مل فيال',
     genericName: 'Daratumumab',
     drugClass: 'Anti-CD38 Human Monoclonal Antibodies (L01FC01)',
     strength: '100 mg/5 mL (20 mg/mL)',
@@ -822,7 +787,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Darzalex 400 mg/20 mL',
-    brandNameAr: 'دارزاليكس 400 ملغ/20 مل فيال',
     genericName: 'Daratumumab',
     drugClass: 'Anti-CD38 Human Monoclonal Antibodies (L01FC01)',
     strength: '400 mg/20 mL (20 mg/mL)',
@@ -845,7 +809,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Darzalex 1800 mg Subcutaneous',
-    brandNameAr: 'دارزاليكس 1800 ملغ/15 مل تحت الجلد',
     genericName: 'Daratumumab',
     drugClass: 'Anti-CD38 Human Monoclonal Antibodies (L01FC01)',
     strength: '1800 mg/15 mL (120 mg/mL)',
@@ -868,7 +831,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Imbruvica 140 mg',
-    brandNameAr: 'إمبروفيكا 140 ملغ',
     genericName: 'Ibrutinib',
     drugClass: 'Bruton’s Tyrosine Kinase (BTK) Inhibitors (L01EL01)',
     strength: '140 mg',
@@ -891,7 +853,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Imbruvica 420 mg',
-    brandNameAr: 'إمبروفيكا 420 ملغ',
     genericName: 'Ibrutinib',
     drugClass: 'Bruton’s Tyrosine Kinase (BTK) Inhibitors (L01EL01)',
     strength: '420 mg',
@@ -914,7 +875,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Imbruvica 560 mg',
-    brandNameAr: 'إمبروفيكا 560 ملغ',
     genericName: 'Ibrutinib',
     drugClass: 'Bruton’s Tyrosine Kinase (BTK) Inhibitors (L01EL01)',
     strength: '560 mg',
@@ -937,7 +897,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Zytiga 250 mg',
-    brandNameAr: 'زايتيغا 250 ملغ',
     genericName: 'Abiraterone',
     drugClass: 'Androgen Biosynthesis (CYP17) Inhibitors (L02BX03)',
     strength: '250 mg',
@@ -960,7 +919,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Zytiga 500 mg',
-    brandNameAr: 'زايتيغا 500 ملغ',
     genericName: 'Abiraterone',
     drugClass: 'Androgen Biosynthesis (CYP17) Inhibitors (L02BX03)',
     strength: '500 mg',
@@ -983,7 +941,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Erleada 60 mg',
-    brandNameAr: 'إرليدا 60 ملغ',
     genericName: 'Apalutamide',
     drugClass: 'Selective Androgen Receptor Inhibitors (L02BB05)',
     strength: '60 mg',
@@ -1006,7 +963,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Erleada 240 mg',
-    brandNameAr: 'إرليدا 240 ملغ',
     genericName: 'Apalutamide',
     drugClass: 'Selective Androgen Receptor Inhibitors (L02BB05)',
     strength: '240 mg',
@@ -1029,7 +985,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Velcade 3.5 mg',
-    brandNameAr: 'فيلكيد 3.5 ملغ فيال',
     genericName: 'Bortezomib',
     drugClass: 'Reversible 26S Proteasome Inhibitors (L01XG01)',
     strength: '3.5 mg',
@@ -1056,7 +1011,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   // ===========================================================================
   {
     brandName: 'Edurant 25 mg',
-    brandNameAr: 'إيدورانت 25 ملغ',
     genericName: 'Rilpivirine',
     drugClass: 'Non-Nucleoside Reverse Transcriptase Inhibitors (NNRTIs, J05AG05)',
     strength: '25 mg',
@@ -1079,7 +1033,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Prezista 600 mg',
-    brandNameAr: 'بريزيستا 600 ملغ',
     genericName: 'Darunavir',
     drugClass: 'HIV-1 Protease Inhibitors (J05AE10)',
     strength: '600 mg',
@@ -1102,7 +1055,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Prezista 800 mg',
-    brandNameAr: 'بريزيستا 800 ملغ',
     genericName: 'Darunavir',
     drugClass: 'HIV-1 Protease Inhibitors (J05AE10)',
     strength: '800 mg',
@@ -1125,7 +1077,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Symtuza 800 mg/150 mg/200 mg/10 mg',
-    brandNameAr: 'سيمتوزا 800 ملغ / 150 ملغ / 200 ملغ / 10 ملغ',
     genericName: 'Darunavir + Cobicistat + Emtricitabine + Tenofovir alafenamide',
     drugClass: 'Single-Tablet Complete HIV-1 Antiretroviral Regimens (PI + Booster + 2 NRTIs, J05AR22)',
     strength: '800 mg / 150 mg / 200 mg / 10 mg',
@@ -1148,7 +1099,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Sporanox 100 mg',
-    brandNameAr: 'سبورانوكس 100 ملغ كبسول',
     genericName: 'Itraconazole',
     drugClass: 'Triazole Systemic Antimycotics / Antifungals (J02AC02)',
     strength: '100 mg',
@@ -1171,7 +1121,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Sporanox 10 mg/mL Oral Solution',
-    brandNameAr: 'سبورانوكس 10 ملغ/مل محلول فموي',
     genericName: 'Itraconazole',
     drugClass: 'Triazole Systemic Antimycotics / Antifungals (J02AC02)',
     strength: '10 mg/mL',
@@ -1194,7 +1143,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Opsumit 10 mg',
-    brandNameAr: 'أوبسوميت 10 ملغ',
     genericName: 'Macitentan',
     drugClass: 'Dual Endothelin Receptor (ET-A / ET-B) Antagonists for PAH (C02KX04)',
     strength: '10 mg',
@@ -1217,7 +1165,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Uptravi 200 micrograms',
-    brandNameAr: 'أوبترافي 200 ميكروغرام',
     genericName: 'Selexipag',
     drugClass: 'Oral Selective Prostacyclin (IP) Receptor Agonists for PAH (B01AC27)',
     strength: '200 micrograms',
@@ -1240,7 +1187,6 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
   },
   {
     brandName: 'Uptravi 800 micrograms',
-    brandNameAr: 'أوبترافي 800 ميكروغرام',
     genericName: 'Selexipag',
     drugClass: 'Oral Selective Prostacyclin (IP) Receptor Agonists for PAH (B01AC27)',
     strength: '800 micrograms',

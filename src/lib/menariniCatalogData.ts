@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 1. Nebilet (Nebivolol)
   {
     brandName: 'Nebilet 5 mg',
-    brandNameAr: 'نيبيليت 5 ملغ',
     genericName: 'Nebivolol',
     activeIngredients: ['Nebivolol'],
     drugClass: 'Selective beta-1 adrenergic receptor antagonist with vasodilating properties (NO-potentiating)',
@@ -56,7 +54,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 2. Nebilet Plus (Nebivolol + Hydrochlorothiazide)
   {
     brandName: 'Nebilet Plus 5 mg / 12.5 mg',
-    brandNameAr: 'نيبيليت بلس 5 ملغ / 12.5 ملغ',
     genericName: 'Nebivolol + Hydrochlorothiazide',
     activeIngredients: ['Nebivolol', 'Hydrochlorothiazide'],
     drugClass: 'Selective beta-1 blocker and thiazide diuretic fixed-dose combination',
@@ -85,7 +82,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Nebilet Plus 5 mg / 25 mg',
-    brandNameAr: 'نيبيليت بلس 5 ملغ / 25 ملغ',
     genericName: 'Nebivolol + Hydrochlorothiazide',
     activeIngredients: ['Nebivolol', 'Hydrochlorothiazide'],
     drugClass: 'Selective beta-1 blocker and thiazide diuretic fixed-dose combination',
@@ -116,7 +112,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 3. Adenuric (Febuxostat)
   {
     brandName: 'Adenuric 80 mg',
-    brandNameAr: 'أدينوريك 80 ملغ',
     genericName: 'Febuxostat',
     activeIngredients: ['Febuxostat'],
     drugClass: 'Non-purine selective xanthine oxidase inhibitor (antigout preparation)',
@@ -145,7 +140,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Adenuric 120 mg',
-    brandNameAr: 'أدينوريك 120 ملغ',
     genericName: 'Febuxostat',
     activeIngredients: ['Febuxostat'],
     drugClass: 'Non-purine selective xanthine oxidase inhibitor (antigout preparation)',
@@ -176,7 +170,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 4. Fastum Gel (Ketoprofen)
   {
     brandName: 'Fastum Gel 2.5%',
-    brandNameAr: 'فاستوم جل 2.5%',
     genericName: 'Ketoprofen',
     activeIngredients: ['Ketoprofen'],
     drugClass: 'Topical non-steroidal anti-inflammatory drug (propionic acid derivative)',
@@ -207,7 +200,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 5. Enantyum (Dexketoprofen)
   {
     brandName: 'Enantyum 12.5 mg',
-    brandNameAr: 'إينانتيوم 12.5 ملغ',
     genericName: 'Dexketoprofen',
     activeIngredients: ['Dexketoprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (propionic acid derivative)',
@@ -236,7 +228,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Enantyum 25 mg',
-    brandNameAr: 'إينانتيوم 25 ملغ',
     genericName: 'Dexketoprofen',
     activeIngredients: ['Dexketoprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (propionic acid derivative)',
@@ -265,7 +256,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Enantyum 50 mg/2 mL',
-    brandNameAr: 'إينانتيوم 50 ملغ/2 مل',
     genericName: 'Dexketoprofen',
     activeIngredients: ['Dexketoprofen'],
     drugClass: 'Non-steroidal anti-inflammatory drug (propionic acid derivative)',
@@ -296,7 +286,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 6. Ranexa (Ranolazine)
   {
     brandName: 'Ranexa 375 mg',
-    brandNameAr: 'رانيكسا 375 ملغ',
     genericName: 'Ranolazine',
     activeIngredients: ['Ranolazine'],
     drugClass: 'Antianginal agent (late sodium current inhibitor in cardiac cells)',
@@ -325,7 +314,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Ranexa 500 mg',
-    brandNameAr: 'رانيكسا 500 ملغ',
     genericName: 'Ranolazine',
     activeIngredients: ['Ranolazine'],
     drugClass: 'Antianginal agent (late sodium current inhibitor in cardiac cells)',
@@ -354,7 +342,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Ranexa 750 mg',
-    brandNameAr: 'رانيكسا 750 ملغ',
     genericName: 'Ranolazine',
     activeIngredients: ['Ranolazine'],
     drugClass: 'Antianginal agent (late sodium current inhibitor in cardiac cells)',
@@ -385,7 +372,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 7. Zofenil (Zofenopril)
   {
     brandName: 'Zofenil 7.5 mg',
-    brandNameAr: 'زوفينيل 7.5 ملغ',
     genericName: 'Zofenopril',
     activeIngredients: ['Zofenopril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor (sulfhydryl-containing)',
@@ -414,7 +400,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Zofenil 30 mg',
-    brandNameAr: 'زوفينيل 30 ملغ',
     genericName: 'Zofenopril',
     activeIngredients: ['Zofenopril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor (sulfhydryl-containing)',
@@ -445,7 +430,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 8. Zofenil Plus (Zofenopril + Hydrochlorothiazide)
   {
     brandName: 'Zofenil Plus 30 mg / 12.5 mg',
-    brandNameAr: 'زوفينيل بلس 30 ملغ / 12.5 ملغ',
     genericName: 'Zofenopril + Hydrochlorothiazide',
     activeIngredients: ['Zofenopril', 'Hydrochlorothiazide'],
     drugClass: 'ACE inhibitor and thiazide diuretic fixed-dose combination',
@@ -476,7 +460,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 9. Bilaxten (Bilastine)
   {
     brandName: 'Bilaxten 20 mg',
-    brandNameAr: 'بيلاكستين 20 ملغ',
     genericName: 'Bilastine',
     activeIngredients: ['Bilastine'],
     drugClass: 'Non-sedating long-acting peripheral histamine H1-receptor antagonist',
@@ -507,7 +490,6 @@ const RAW_MENARINI: CompactDrug[] = [
   // 10. Priligy (Dapoxetine)
   {
     brandName: 'Priligy 30 mg',
-    brandNameAr: 'بريليجي 30 ملغ',
     genericName: 'Dapoxetine',
     activeIngredients: ['Dapoxetine'],
     drugClass: 'Short-acting selective serotonin reuptake inhibitor (SSRI) for premature ejaculation',
@@ -536,7 +518,6 @@ const RAW_MENARINI: CompactDrug[] = [
   },
   {
     brandName: 'Priligy 60 mg',
-    brandNameAr: 'بريليجي 60 ملغ',
     genericName: 'Dapoxetine',
     activeIngredients: ['Dapoxetine'],
     drugClass: 'Short-acting selective serotonin reuptake inhibitor (SSRI) for premature ejaculation',
@@ -568,7 +549,6 @@ const RAW_MENARINI: CompactDrug[] = [
 export const MENARINI_PRODUCTS: AiProductDraft[] = RAW_MENARINI.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

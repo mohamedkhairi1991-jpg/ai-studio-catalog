@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_CHIESI: CompactDrug[] = [
   // 1. Foster (Beclometasone + Formoterol — Chiesi Farmaceutici S.p.A.)
   {
     brandName: 'Foster 100/6 micrograms',
-    brandNameAr: 'فوستر 100/6 ميكروغرام',
     genericName: 'Beclometasone + Formoterol',
     activeIngredients: ['Beclometasone', 'Formoterol'],
     drugClass: 'Extrafine inhaled corticosteroid (ICS) and long-acting beta2-agonist (LABA) fixed-dose combination',
@@ -55,7 +53,6 @@ const RAW_CHIESI: CompactDrug[] = [
   },
   {
     brandName: 'Foster 200/6 micrograms',
-    brandNameAr: 'فوستر 200/6 ميكروغرام',
     genericName: 'Beclometasone + Formoterol',
     activeIngredients: ['Beclometasone', 'Formoterol'],
     drugClass: 'Extrafine inhaled corticosteroid (ICS) and long-acting beta2-agonist (LABA) fixed-dose combination',
@@ -85,7 +82,6 @@ const RAW_CHIESI: CompactDrug[] = [
   },
   {
     brandName: 'Foster NEXThaler 100/6 micrograms',
-    brandNameAr: 'فوستر نيكسثيلر 100/6 ميكروغرام',
     genericName: 'Beclometasone + Formoterol',
     activeIngredients: ['Beclometasone', 'Formoterol'],
     drugClass: 'Extrafine inhaled corticosteroid (ICS) and long-acting beta2-agonist (LABA) dry powder inhaler',
@@ -117,7 +113,6 @@ const RAW_CHIESI: CompactDrug[] = [
   // 2. Clenil (Beclometasone — Chiesi Farmaceutici S.p.A.)
   {
     brandName: 'Clenil Modulite 100 micrograms',
-    brandNameAr: 'كلينيل موديولايت 100 ميكروغرام',
     genericName: 'Beclometasone',
     activeIngredients: ['Beclometasone'],
     drugClass: 'Inhaled corticosteroid (ICS) anti-inflammatory preventative therapy',
@@ -147,7 +142,6 @@ const RAW_CHIESI: CompactDrug[] = [
   },
   {
     brandName: 'Clenil Modulite 250 micrograms',
-    brandNameAr: 'كلينيل موديولايت 250 ميكروغرام',
     genericName: 'Beclometasone',
     activeIngredients: ['Beclometasone'],
     drugClass: 'Inhaled corticosteroid (ICS) anti-inflammatory preventative therapy',
@@ -179,7 +173,6 @@ const RAW_CHIESI: CompactDrug[] = [
   // 3. Trimbow (Beclometasone + Formoterol + Glycopyrronium — Chiesi Farmaceutici S.p.A.)
   {
     brandName: 'Trimbow 87/5/9 micrograms',
-    brandNameAr: 'تريمبو 87/5/9 ميكروغرام',
     genericName: 'Beclometasone + Formoterol + Glycopyrronium',
     activeIngredients: ['Beclometasone', 'Formoterol', 'Glycopyrronium'],
     drugClass: 'Extrafine triple therapy: inhaled corticosteroid (ICS), long-acting beta2-agonist (LABA), and long-acting muscarinic antagonist (LAMA)',
@@ -209,7 +202,6 @@ const RAW_CHIESI: CompactDrug[] = [
   },
   {
     brandName: 'Trimbow 172/5/9 micrograms',
-    brandNameAr: 'تريمبو 172/5/9 ميكروغرام',
     genericName: 'Beclometasone + Formoterol + Glycopyrronium',
     activeIngredients: ['Beclometasone', 'Formoterol', 'Glycopyrronium'],
     drugClass: 'Extrafine high-dose ICS/LABA/LAMA fixed triple inhalation therapy',
@@ -241,7 +233,6 @@ const RAW_CHIESI: CompactDrug[] = [
   // 4. Curosurf (Poractant alfa — Chiesi Farmaceutici S.p.A.)
   {
     brandName: 'Curosurf 120 mg/1.5 mL',
-    brandNameAr: 'كيوروسيرف 120 ملغ/1.5 مل',
     genericName: 'Poractant alfa',
     activeIngredients: ['Poractant alfa'],
     drugClass: 'Natural porcine lung surfactant (phospholipid fraction)',
@@ -271,7 +262,6 @@ const RAW_CHIESI: CompactDrug[] = [
   },
   {
     brandName: 'Curosurf 240 mg/3 mL',
-    brandNameAr: 'كيوروسيرف 240 ملغ/3 مل',
     genericName: 'Poractant alfa',
     activeIngredients: ['Poractant alfa'],
     drugClass: 'Natural porcine lung surfactant (phospholipid fraction)',
@@ -303,7 +293,6 @@ const RAW_CHIESI: CompactDrug[] = [
   // 5. Peyona (Caffeine — Chiesi Farmaceutici S.p.A.)
   {
     brandName: 'Peyona 20 mg/mL',
-    brandNameAr: 'بيونا 20 ملغ/مل',
     genericName: 'Caffeine',
     activeIngredients: ['Caffeine'],
     drugClass: 'Methylxanthine central nervous system and respiratory stimulant',
@@ -336,7 +325,6 @@ const RAW_CHIESI: CompactDrug[] = [
 export const CHIESI_PRODUCTS: AiProductDraft[] = RAW_CHIESI.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

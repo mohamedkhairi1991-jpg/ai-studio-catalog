@@ -4,7 +4,6 @@ const SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }];
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -28,7 +27,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 1. Omnic Ocas (Tamsulosin) — Oral Controlled Absorption System prolonged-release film-coated tablet
   {
     brandName: 'Omnic Ocas 0.4 mg',
-    brandNameAr: 'أومنيك أوكاس 0.4 ملغ',
     genericName: 'Tamsulosin',
     activeIngredients: ['Tamsulosin'],
     drugClass: 'Alpha-1 Adrenoceptor Antagonists (Benign Prostatic Hyperplasia)',
@@ -57,7 +55,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 2. Omnic (Tamsulosin) — Modified-release hard capsule
   {
     brandName: 'Omnic 0.4 mg',
-    brandNameAr: 'أومنيك 0.4 ملغ',
     genericName: 'Tamsulosin',
     activeIngredients: ['Tamsulosin'],
     drugClass: 'Alpha-1 Adrenoceptor Antagonists (Benign Prostatic Hyperplasia)',
@@ -86,7 +83,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 3. Betmiga (Mirabegron)
   {
     brandName: 'Betmiga 25 mg',
-    brandNameAr: 'بيتميغا 25 ملغ',
     genericName: 'Mirabegron',
     activeIngredients: ['Mirabegron'],
     drugClass: 'Selective Beta-3 Adrenoceptor Agonists (Overactive Bladder)',
@@ -112,7 +108,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Betmiga 50 mg',
-    brandNameAr: 'بيتميغا 50 ملغ',
     genericName: 'Mirabegron',
     activeIngredients: ['Mirabegron'],
     drugClass: 'Selective Beta-3 Adrenoceptor Agonists (Overactive Bladder)',
@@ -140,7 +135,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 4. Vesicare (Solifenacin)
   {
     brandName: 'Vesicare 5 mg',
-    brandNameAr: 'فيزيكير 5 ملغ',
     genericName: 'Solifenacin',
     activeIngredients: ['Solifenacin'],
     drugClass: 'Urinary Antispasmodics (Muscarinic M3 Receptor Antagonists)',
@@ -167,7 +161,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Vesicare 10 mg',
-    brandNameAr: 'فيزيكير 10 ملغ',
     genericName: 'Solifenacin',
     activeIngredients: ['Solifenacin'],
     drugClass: 'Urinary Antispasmodics (Muscarinic M3 Receptor Antagonists)',
@@ -196,7 +189,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 5. Vesomni (Solifenacin + Tamsulosin)
   {
     brandName: 'Vesomni 6 mg / 0.4 mg',
-    brandNameAr: 'فيزومني 6 ملغ / 0.4 ملغ',
     genericName: 'Solifenacin + Tamsulosin',
     activeIngredients: ['Solifenacin', 'Tamsulosin'],
     drugClass: 'Fixed-Dose Antimuscarinic and Alpha-1 Blocker Combinations (BPH with Storage LUTS)',
@@ -225,7 +217,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 6. Prograf (Tacrolimus — immediate-release hard capsules & concentrate for IV infusion)
   {
     brandName: 'Prograf 0.5 mg',
-    brandNameAr: 'بروغراف 0.5 ملغ',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Transplant Immunosuppressants)',
@@ -252,7 +243,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Prograf 1 mg',
-    brandNameAr: 'بروغراف 1 ملغ',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Transplant Immunosuppressants)',
@@ -279,7 +269,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Prograf 5 mg',
-    brandNameAr: 'بروغراف 5 ملغ',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Transplant Immunosuppressants)',
@@ -306,7 +295,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Prograf 5 mg/mL',
-    brandNameAr: 'بروغراف 5 ملغ/مل',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Transplant Immunosuppressants)',
@@ -335,7 +323,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 7. Advagraf (Tacrolimus — prolonged-release once-daily hard capsules)
   {
     brandName: 'Advagraf 0.5 mg',
-    brandNameAr: 'أدفاغراف 0.5 ملغ',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Once-Daily Prolonged-Release Transplant Immunosuppressants)',
@@ -361,7 +348,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Advagraf 1 mg',
-    brandNameAr: 'أدفاغراف 1 ملغ',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Once-Daily Prolonged-Release Transplant Immunosuppressants)',
@@ -387,7 +373,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Advagraf 3 mg',
-    brandNameAr: 'أدفاغراف 3 ملغ',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Once-Daily Prolonged-Release Transplant Immunosuppressants)',
@@ -413,7 +398,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Advagraf 5 mg',
-    brandNameAr: 'أدفاغراف 5 ملغ',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Calcineurin Inhibitors (Once-Daily Prolonged-Release Transplant Immunosuppressants)',
@@ -441,7 +425,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 8. Xtandi (Enzalutamide)
   {
     brandName: 'Xtandi 40 mg',
-    brandNameAr: 'إكستاندي 40 ملغ',
     genericName: 'Enzalutamide',
     activeIngredients: ['Enzalutamide'],
     drugClass: 'Androgen Receptor Signalling Inhibitors (Prostate Cancer)',
@@ -467,7 +450,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Xtandi 80 mg',
-    brandNameAr: 'إكستاندي 80 ملغ',
     genericName: 'Enzalutamide',
     activeIngredients: ['Enzalutamide'],
     drugClass: 'Androgen Receptor Signalling Inhibitors (Prostate Cancer)',
@@ -495,7 +477,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 9. Xospata (Gilteritinib)
   {
     brandName: 'Xospata 40 mg',
-    brandNameAr: 'زوسباتا 40 ملغ',
     genericName: 'Gilteritinib',
     activeIngredients: ['Gilteritinib'],
     drugClass: 'FLT3 Tyrosine Kinase Inhibitors (Acute Myeloid Leukaemia)',
@@ -523,7 +504,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 10. Padcev (Enfortumab vedotin)
   {
     brandName: 'Padcev 20 mg',
-    brandNameAr: 'بادسيف 20 ملغ',
     genericName: 'Enfortumab vedotin',
     activeIngredients: ['Enfortumab vedotin'],
     drugClass: 'Nectin-4-Directed Antibody-Drug Conjugates (Urothelial Carcinoma)',
@@ -549,7 +529,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Padcev 30 mg',
-    brandNameAr: 'بادسيف 30 ملغ',
     genericName: 'Enfortumab vedotin',
     activeIngredients: ['Enfortumab vedotin'],
     drugClass: 'Nectin-4-Directed Antibody-Drug Conjugates (Urothelial Carcinoma)',
@@ -577,7 +556,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   // 11. Mycamine (Micafungin)
   {
     brandName: 'Mycamine 50 mg',
-    brandNameAr: 'ميكامين 50 ملغ',
     genericName: 'Micafungin',
     activeIngredients: ['Micafungin'],
     drugClass: 'Echinocandin Systemic Antifungals',
@@ -603,7 +581,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
   },
   {
     brandName: 'Mycamine 100 mg',
-    brandNameAr: 'ميكامين 100 ملغ',
     genericName: 'Micafungin',
     activeIngredients: ['Micafungin'],
     drugClass: 'Echinocandin Systemic Antifungals',
@@ -632,7 +609,6 @@ const ASTELLAS_COMPACT_DRUGS: CompactDrug[] = [
 export const ASTELLAS_PRODUCTS: AiProductDraft[] = ASTELLAS_COMPACT_DRUGS.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

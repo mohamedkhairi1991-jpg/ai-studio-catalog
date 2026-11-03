@@ -4,11 +4,9 @@ const NVS_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }
 
 interface CompactNovartisDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
-  drugClassNameAr: string;
   dosageForm: string;
   strength: string;
   route: string;
@@ -28,7 +26,6 @@ function toNovartisProductDraft(item: CompactNovartisDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -57,10 +54,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   // =========================================================================
   {
     brandName: 'Diovan 80 mg',
-    brandNameAr: 'ديوفان 80 ملغم',
     genericName: 'Valsartan',
     drugClassNameEn: 'Angiotensin II Receptor Blockers (ARBs)',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2',
     dosageForm: 'Film-coated tablet',
     strength: '80 mg',
     route: 'Oral',
@@ -82,10 +77,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Diovan 160 mg',
-    brandNameAr: 'ديوفان 160 ملغم',
     genericName: 'Valsartan',
     drugClassNameEn: 'Angiotensin II Receptor Blockers (ARBs)',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2',
     dosageForm: 'Film-coated tablet',
     strength: '160 mg',
     route: 'Oral',
@@ -107,10 +100,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Diovan 320 mg',
-    brandNameAr: 'ديوفان 320 ملغم',
     genericName: 'Valsartan',
     drugClassNameEn: 'Angiotensin II Receptor Blockers (ARBs)',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2',
     dosageForm: 'Film-coated tablet',
     strength: '320 mg',
     route: 'Oral',
@@ -132,10 +123,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Co-Diovan 80 mg/12.5 mg',
-    brandNameAr: 'كو-ديوفان 80 ملغم / 12.5 ملغم',
     genericName: 'Valsartan + Hydrochlorothiazide',
     drugClassNameEn: 'ARB & Thiazide Diuretic Combinations',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2 مع مدرات الثيازيد',
     dosageForm: 'Film-coated tablet',
     strength: '80 mg / 12.5 mg',
     route: 'Oral',
@@ -157,10 +146,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Co-Diovan 160 mg/12.5 mg',
-    brandNameAr: 'كو-ديوفان 160 ملغم / 12.5 ملغم',
     genericName: 'Valsartan + Hydrochlorothiazide',
     drugClassNameEn: 'ARB & Thiazide Diuretic Combinations',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2 مع مدرات الثيازيد',
     dosageForm: 'Film-coated tablet',
     strength: '160 mg / 12.5 mg',
     route: 'Oral',
@@ -182,10 +169,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Co-Diovan 160 mg/25 mg',
-    brandNameAr: 'كو-ديوفان 160 ملغم / 25 ملغم',
     genericName: 'Valsartan + Hydrochlorothiazide',
     drugClassNameEn: 'ARB & Thiazide Diuretic Combinations',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2 مع مدرات الثيازيد',
     dosageForm: 'Film-coated tablet',
     strength: '160 mg / 25 mg',
     route: 'Oral',
@@ -207,10 +192,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Co-Diovan 320 mg/12.5 mg',
-    brandNameAr: 'كو-ديوفان 320 ملغم / 12.5 ملغم',
     genericName: 'Valsartan + Hydrochlorothiazide',
     drugClassNameEn: 'ARB & Thiazide Diuretic Combinations',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2 مع مدرات الثيازيد',
     dosageForm: 'Film-coated tablet',
     strength: '320 mg / 12.5 mg',
     route: 'Oral',
@@ -232,10 +215,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Co-Diovan 320 mg/25 mg',
-    brandNameAr: 'كو-ديوفان 320 ملغم / 25 ملغم',
     genericName: 'Valsartan + Hydrochlorothiazide',
     drugClassNameEn: 'ARB & Thiazide Diuretic Combinations',
-    drugClassNameAr: 'حاصرات مستقبلات الأنجيوتنسين 2 مع مدرات الثيازيد',
     dosageForm: 'Film-coated tablet',
     strength: '320 mg / 25 mg',
     route: 'Oral',
@@ -257,10 +238,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exforge 5 mg/80 mg',
-    brandNameAr: 'إكسفورج 5 ملغم / 80 ملغم',
     genericName: 'Amlodipine + Valsartan',
     drugClassNameEn: 'Calcium Channel Blocker & ARB Combinations',
-    drugClassNameAr: 'حاصرات قنوات الكالسيوم مع حاصرات مستقبلات الأنجيوتنسين 2',
     dosageForm: 'Film-coated tablet',
     strength: '5 mg / 80 mg',
     route: 'Oral',
@@ -282,10 +261,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exforge 5 mg/160 mg',
-    brandNameAr: 'إكسفورج 5 ملغم / 160 ملغم',
     genericName: 'Amlodipine + Valsartan',
     drugClassNameEn: 'Calcium Channel Blocker & ARB Combinations',
-    drugClassNameAr: 'حاصرات قنوات الكالسيوم مع حاصرات مستقبلات الأنجيوتنسين 2',
     dosageForm: 'Film-coated tablet',
     strength: '5 mg / 160 mg',
     route: 'Oral',
@@ -307,10 +284,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exforge 10 mg/160 mg',
-    brandNameAr: 'إكسفورج 10 ملغم / 160 ملغم',
     genericName: 'Amlodipine + Valsartan',
     drugClassNameEn: 'Calcium Channel Blocker & ARB Combinations',
-    drugClassNameAr: 'حاصرات قنوات الكالسيوم مع حاصرات مستقبلات الأنجيوتنسين 2',
     dosageForm: 'Film-coated tablet',
     strength: '10 mg / 160 mg',
     route: 'Oral',
@@ -332,10 +307,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exforge HCT 5 mg/160 mg/12.5 mg',
-    brandNameAr: 'إكسفورج إتش سي تي 5 ملغم / 160 ملغم / 12.5 ملغم',
     genericName: 'Amlodipine + Valsartan + Hydrochlorothiazide',
     drugClassNameEn: 'Triple Antihypertensive Combinations (CCB + ARB + Thiazide)',
-    drugClassNameAr: 'مضادات ارتفاع ضغط الدم الثلاثية',
     dosageForm: 'Film-coated tablet',
     strength: '5 mg / 160 mg / 12.5 mg',
     route: 'Oral',
@@ -357,10 +330,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exforge HCT 10 mg/160 mg/25 mg',
-    brandNameAr: 'إكسفورج إتش سي تي 10 ملغم / 160 ملغم / 25 ملغم',
     genericName: 'Amlodipine + Valsartan + Hydrochlorothiazide',
     drugClassNameEn: 'Triple Antihypertensive Combinations (CCB + ARB + Thiazide)',
-    drugClassNameAr: 'مضادات ارتفاع ضغط الدم الثلاثية',
     dosageForm: 'Film-coated tablet',
     strength: '10 mg / 160 mg / 25 mg',
     route: 'Oral',
@@ -382,10 +353,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Entresto 24 mg/26 mg',
-    brandNameAr: 'إنتريستو 24 ملغم / 26 ملغم',
     genericName: 'Sacubitril + Valsartan',
     drugClassNameEn: 'Angiotensin Receptor-Neprilysin Inhibitors (ARNIs)',
-    drugClassNameAr: 'مثبطات مستقبلات الأنجيوتنسين والنيبريليسين',
     dosageForm: 'Film-coated tablet',
     strength: '24 mg / 26 mg',
     route: 'Oral',
@@ -407,10 +376,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Entresto 49 mg/51 mg',
-    brandNameAr: 'إنتريستو 49 ملغم / 51 ملغم',
     genericName: 'Sacubitril + Valsartan',
     drugClassNameEn: 'Angiotensin Receptor-Neprilysin Inhibitors (ARNIs)',
-    drugClassNameAr: 'مثبطات مستقبلات الأنجيوتنسين والنيبريليسين',
     dosageForm: 'Film-coated tablet',
     strength: '49 mg / 51 mg',
     route: 'Oral',
@@ -432,10 +399,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Entresto 97 mg/103 mg',
-    brandNameAr: 'إنتريستو 97 ملغم / 103 ملغم',
     genericName: 'Sacubitril + Valsartan',
     drugClassNameEn: 'Angiotensin Receptor-Neprilysin Inhibitors (ARNIs)',
-    drugClassNameAr: 'مثبطات مستقبلات الأنجيوتنسين والنيبريليسين',
     dosageForm: 'Film-coated tablet',
     strength: '97 mg / 103 mg',
     route: 'Oral',
@@ -457,10 +422,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Leqvio 284 mg',
-    brandNameAr: 'ليكفيو 284 ملغم',
     genericName: 'Inclisiran',
     drugClassNameEn: 'PCSK9-Targeting Small Interfering RNA (siRNA)',
-    drugClassNameAr: 'مثبطات PCSK9 عبر الحمض النووي الريبوزي المتداخل الصغير',
     dosageForm: 'Solution for injection in pre-filled syringe',
     strength: '284 mg / 1.5 mL',
     route: 'Subcutaneous',
@@ -486,10 +449,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   // =========================================================================
   {
     brandName: 'Galvus 50 mg',
-    brandNameAr: 'جالفوس 50 ملغم',
     genericName: 'Vildagliptin',
     drugClassNameEn: 'Dipeptidyl Peptidase-4 (DPP-4) Inhibitors',
-    drugClassNameAr: 'مثبطات ثنائي ببتيديل ببتيداز-4',
     dosageForm: 'Tablet',
     strength: '50 mg',
     route: 'Oral',
@@ -511,10 +472,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Galvus Met 50 mg/500 mg',
-    brandNameAr: 'جالفوس مت 50 ملغم / 500 ملغم',
     genericName: 'Vildagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Biguanide Combinations',
-    drugClassNameAr: 'مثبطات DPP-4 مع البيغوانيد',
     dosageForm: 'Film-coated tablet',
     strength: '50 mg / 500 mg',
     route: 'Oral',
@@ -536,10 +495,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Galvus Met 50 mg/850 mg',
-    brandNameAr: 'جالفوس مت 50 ملغم / 850 ملغم',
     genericName: 'Vildagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Biguanide Combinations',
-    drugClassNameAr: 'مثبطات DPP-4 مع البيغوانيد',
     dosageForm: 'Film-coated tablet',
     strength: '50 mg / 850 mg',
     route: 'Oral',
@@ -561,10 +518,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Galvus Met 50 mg/1000 mg',
-    brandNameAr: 'جالفوس مت 50 ملغم / 1000 ملغم',
     genericName: 'Vildagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Biguanide Combinations',
-    drugClassNameAr: 'مثبطات DPP-4 مع البيغوانيد',
     dosageForm: 'Film-coated tablet',
     strength: '50 mg / 1000 mg',
     route: 'Oral',
@@ -590,10 +545,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   // =========================================================================
   {
     brandName: 'Voltaren 50 mg',
-    brandNameAr: 'فولتارين 50 ملغم',
     genericName: 'Diclofenac',
     drugClassNameEn: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
-    drugClassNameAr: 'مضادات الالتهاب غير الستيرويدية',
     dosageForm: 'Gastro-resistant tablet',
     strength: '50 mg',
     route: 'Oral',
@@ -615,10 +568,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Voltaren SR 75 mg',
-    brandNameAr: 'فولتارين إس آر 75 ملغم',
     genericName: 'Diclofenac',
     drugClassNameEn: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
-    drugClassNameAr: 'مضادات الالتهاب غير الستيرويدية',
     dosageForm: 'Prolonged-release tablet',
     strength: '75 mg',
     route: 'Oral',
@@ -640,10 +591,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Voltaren SR 100 mg',
-    brandNameAr: 'فولتارين إس آر 100 ملغم',
     genericName: 'Diclofenac',
     drugClassNameEn: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
-    drugClassNameAr: 'مضادات الالتهاب غير الستيرويدية',
     dosageForm: 'Prolonged-release tablet',
     strength: '100 mg',
     route: 'Oral',
@@ -665,10 +614,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Voltaren 75 mg/3 mL',
-    brandNameAr: 'فولتارين 75 ملغم / 3 مل',
     genericName: 'Diclofenac',
     drugClassNameEn: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
-    drugClassNameAr: 'مضادات الالتهاب غير الستيرويدية',
     dosageForm: 'Solution for injection',
     strength: '75 mg / 3 mL',
     route: 'Intramuscular',
@@ -690,10 +637,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Cataflam 50 mg',
-    brandNameAr: 'كتافلام 50 ملغم',
     genericName: 'Diclofenac',
     drugClassNameEn: 'Non-Steroidal Anti-Inflammatory Drugs (NSAIDs)',
-    drugClassNameAr: 'مضادات الالتهاب غير الستيرويدية',
     dosageForm: 'Coated tablet',
     strength: '50 mg',
     route: 'Oral',
@@ -719,10 +664,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   // =========================================================================
   {
     brandName: 'Tegretol 200 mg',
-    brandNameAr: 'تيغريتول 200 ملغم',
     genericName: 'Carbamazepine',
     drugClassNameEn: 'Anticonvulsants & Mood Stabilizers (Dibenzazepine Derivatives)',
-    drugClassNameAr: 'مضادات الاختلاج ومثبتات المزاج',
     dosageForm: 'Tablet',
     strength: '200 mg',
     route: 'Oral',
@@ -744,10 +687,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Tegretol Prolonged Release 200 mg',
-    brandNameAr: 'تيغريتول ممتد المفعول 200 ملغم',
     genericName: 'Carbamazepine',
     drugClassNameEn: 'Anticonvulsants & Mood Stabilizers (Dibenzazepine Derivatives)',
-    drugClassNameAr: 'مضادات الاختلاج ومثبتات المزاج',
     dosageForm: 'Prolonged-release tablet',
     strength: '200 mg',
     route: 'Oral',
@@ -769,10 +710,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Tegretol Prolonged Release 400 mg',
-    brandNameAr: 'تيغريتول ممتد المفعول 400 ملغم',
     genericName: 'Carbamazepine',
     drugClassNameEn: 'Anticonvulsants & Mood Stabilizers (Dibenzazepine Derivatives)',
-    drugClassNameAr: 'مضادات الاختلاج ومثبتات المزاج',
     dosageForm: 'Prolonged-release tablet',
     strength: '400 mg',
     route: 'Oral',
@@ -794,10 +733,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Tegretol 100 mg/5 mL',
-    brandNameAr: 'تيغريتول 100 ملغم / 5 مل',
     genericName: 'Carbamazepine',
     drugClassNameEn: 'Anticonvulsants & Mood Stabilizers (Dibenzazepine Derivatives)',
-    drugClassNameAr: 'مضادات الاختلاج ومثبتات المزاج',
     dosageForm: 'Oral suspension',
     strength: '100 mg / 5 mL',
     route: 'Oral',
@@ -819,10 +756,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Trileptal 300 mg',
-    brandNameAr: 'تريليبتال 300 ملغم',
     genericName: 'Oxcarbazepine',
     drugClassNameEn: 'Anticonvulsants (Keto-Analogue Dibenzazepine Derivatives)',
-    drugClassNameAr: 'مضادات الاختلاج',
     dosageForm: 'Film-coated tablet',
     strength: '300 mg',
     route: 'Oral',
@@ -844,10 +779,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Trileptal 600 mg',
-    brandNameAr: 'تريليبتال 600 ملغم',
     genericName: 'Oxcarbazepine',
     drugClassNameEn: 'Anticonvulsants (Keto-Analogue Dibenzazepine Derivatives)',
-    drugClassNameAr: 'مضادات الاختلاج',
     dosageForm: 'Film-coated tablet',
     strength: '600 mg',
     route: 'Oral',
@@ -869,10 +802,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exelon 1.5 mg',
-    brandNameAr: 'إكسيلون 1.5 ملغم',
     genericName: 'Rivastigmine',
     drugClassNameEn: 'Acetylcholinesterase & Butyrylcholinesterase Inhibitors',
-    drugClassNameAr: 'مثبطات إستيراز الأسيتيل كولين والبيوتيريل كولين',
     dosageForm: 'Hard capsule',
     strength: '1.5 mg',
     route: 'Oral',
@@ -894,10 +825,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exelon 3 mg',
-    brandNameAr: 'إكسيلون 3 ملغم',
     genericName: 'Rivastigmine',
     drugClassNameEn: 'Acetylcholinesterase & Butyrylcholinesterase Inhibitors',
-    drugClassNameAr: 'مثبطات إستيراز الأسيتيل كولين والبيوتيريل كولين',
     dosageForm: 'Hard capsule',
     strength: '3 mg',
     route: 'Oral',
@@ -919,10 +848,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exelon Patch 4.6 mg/24 h',
-    brandNameAr: 'إكسيلون لصقات 4.6 ملغم / 24 ساعة',
     genericName: 'Rivastigmine',
     drugClassNameEn: 'Acetylcholinesterase & Butyrylcholinesterase Inhibitors',
-    drugClassNameAr: 'مثبطات إستيراز الأسيتيل كولين والبيوتيريل كولين',
     dosageForm: 'Transdermal patch',
     strength: '4.6 mg / 24 h',
     route: 'Transdermal',
@@ -944,10 +871,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exelon Patch 9.5 mg/24 h',
-    brandNameAr: 'إكسيلون لصقات 9.5 ملغم / 24 ساعة',
     genericName: 'Rivastigmine',
     drugClassNameEn: 'Acetylcholinesterase & Butyrylcholinesterase Inhibitors',
-    drugClassNameAr: 'مثبطات إستيراز الأسيتيل كولين والبيوتيريل كولين',
     dosageForm: 'Transdermal patch',
     strength: '9.5 mg / 24 h',
     route: 'Transdermal',
@@ -969,10 +894,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Gilenya 0.5 mg',
-    brandNameAr: 'جيلينيا 0.5 ملغم',
     genericName: 'Fingolimod',
     drugClassNameEn: 'Sphingosine 1-Phosphate (S1P) Receptor Modulators',
-    drugClassNameAr: 'معدلات مستقبلات سفينغوزين 1-فوسفات',
     dosageForm: 'Hard capsule',
     strength: '0.5 mg',
     route: 'Oral',
@@ -994,10 +917,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Kesimpta 20 mg',
-    brandNameAr: 'كيسيمبتا 20 ملغم',
     genericName: 'Ofatumumab',
     drugClassNameEn: 'Anti-CD20 Monoclonal Antibodies (Selective Immunosuppressants)',
-    drugClassNameAr: 'الأجسام المضادة وحيدة النسيلة المضادة لـ CD20',
     dosageForm: 'Solution for injection in pre-filled pen',
     strength: '20 mg / 0.4 mL',
     route: 'Subcutaneous',
@@ -1019,10 +940,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Mayzent 2 mg',
-    brandNameAr: 'مايزنت 2 ملغم',
     genericName: 'Siponimod',
     drugClassNameEn: 'Selective Sphingosine 1-Phosphate (S1P1/S1P5) Receptor Modulators',
-    drugClassNameAr: 'معدلات مستقبلات سفينغوزين 1-فوسفات الانتقائية',
     dosageForm: 'Film-coated tablet',
     strength: '2 mg',
     route: 'Oral',
@@ -1044,10 +963,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Aimovig 70 mg',
-    brandNameAr: 'أيموفيج 70 ملغم',
     genericName: 'Erenumab',
     drugClassNameEn: 'Calcitonin Gene-Related Peptide (CGRP) Receptor Antagonists',
-    drugClassNameAr: 'مضادات مستقبلات الببتيد المرتبط بجين الكالسيتونين',
     dosageForm: 'Solution for injection in pre-filled pen',
     strength: '70 mg / mL',
     route: 'Subcutaneous',
@@ -1069,10 +986,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Aimovig 140 mg',
-    brandNameAr: 'أيموفيج 140 ملغم',
     genericName: 'Erenumab',
     drugClassNameEn: 'Calcitonin Gene-Related Peptide (CGRP) Receptor Antagonists',
-    drugClassNameAr: 'مضادات مستقبلات الببتيد المرتبط بجين الكالسيتونين',
     dosageForm: 'Solution for injection in pre-filled pen',
     strength: '140 mg / mL',
     route: 'Subcutaneous',
@@ -1098,10 +1013,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   // =========================================================================
   {
     brandName: 'Cosentyx 150 mg',
-    brandNameAr: 'كوسنتيكس 150 ملغم',
     genericName: 'Secukinumab',
     drugClassNameEn: 'Interleukin-17A (IL-17A) Inhibitors',
-    drugClassNameAr: 'مثبطات الإنترلوكين 17-أ',
     dosageForm: 'Solution for injection in pre-filled pen',
     strength: '150 mg / mL',
     route: 'Subcutaneous',
@@ -1123,10 +1036,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Cosentyx 300 mg',
-    brandNameAr: 'كوسنتيكس 300 ملغم',
     genericName: 'Secukinumab',
     drugClassNameEn: 'Interleukin-17A (IL-17A) Inhibitors',
-    drugClassNameAr: 'مثبطات الإنترلوكين 17-أ',
     dosageForm: 'Solution for injection in pre-filled pen',
     strength: '300 mg / 2 mL',
     route: 'Subcutaneous',
@@ -1148,10 +1059,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Xolair 150 mg',
-    brandNameAr: 'زولير 150 ملغم',
     genericName: 'Omalizumab',
     drugClassNameEn: 'Anti-IgE Monoclonal Antibodies',
-    drugClassNameAr: 'الأجسام المضادة وحيدة النسيلة المضادة لـ IgE',
     dosageForm: 'Solution for injection in pre-filled syringe',
     strength: '150 mg / mL',
     route: 'Subcutaneous',
@@ -1173,10 +1082,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Ilaris 150 mg/mL',
-    brandNameAr: 'إيلاريس 150 ملغم / مل',
     genericName: 'Canakinumab',
     drugClassNameEn: 'Interleukin-1 Beta (IL-1β) Inhibitors',
-    drugClassNameAr: 'مثبطات الإنترلوكين-1 بيتا',
     dosageForm: 'Solution for injection',
     strength: '150 mg / mL',
     route: 'Subcutaneous',
@@ -1198,10 +1105,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Sandimmun Neoral 25 mg',
-    brandNameAr: 'سانديميون نيورال 25 ملغم',
     genericName: 'Ciclosporin',
     drugClassNameEn: 'Calcineurin Inhibitor Immunosuppressants',
-    drugClassNameAr: 'مثبطات المناعة (مثبطات الكالسينيورين)',
     dosageForm: 'Soft capsule',
     strength: '25 mg',
     route: 'Oral',
@@ -1223,10 +1128,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Sandimmun Neoral 50 mg',
-    brandNameAr: 'سانديميون نيورال 50 ملغم',
     genericName: 'Ciclosporin',
     drugClassNameEn: 'Calcineurin Inhibitor Immunosuppressants',
-    drugClassNameAr: 'مثبطات المناعة (مثبطات الكالسينيورين)',
     dosageForm: 'Soft capsule',
     strength: '50 mg',
     route: 'Oral',
@@ -1248,10 +1151,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Sandimmun Neoral 100 mg',
-    brandNameAr: 'سانديميون نيورال 100 ملغم',
     genericName: 'Ciclosporin',
     drugClassNameEn: 'Calcineurin Inhibitor Immunosuppressants',
-    drugClassNameAr: 'مثبطات المناعة (مثبطات الكالسينيورين)',
     dosageForm: 'Soft capsule',
     strength: '100 mg',
     route: 'Oral',
@@ -1273,10 +1174,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Sandimmun Neoral 100 mg/mL',
-    brandNameAr: 'سانديميون نيورال 100 ملغم / مل',
     genericName: 'Ciclosporin',
     drugClassNameEn: 'Calcineurin Inhibitor Immunosuppressants',
-    drugClassNameAr: 'مثبطات المناعة (مثبطات الكالسينيورين)',
     dosageForm: 'Oral solution',
     strength: '100 mg / mL',
     route: 'Oral',
@@ -1298,10 +1197,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Myfortic 180 mg',
-    brandNameAr: 'مايفورتيك 180 ملغم',
     genericName: 'Mycophenolic Acid',
     drugClassNameEn: 'Inosine Monophosphate Dehydrogenase (IMPDH) Inhibitor Immunosuppressants',
-    drugClassNameAr: 'مثبطات المناعة (حمض الميكوفينوليك)',
     dosageForm: 'Gastro-resistant tablet',
     strength: '180 mg',
     route: 'Oral',
@@ -1323,10 +1220,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Myfortic 360 mg',
-    brandNameAr: 'مايفورتيك 360 ملغم',
     genericName: 'Mycophenolic Acid',
     drugClassNameEn: 'Inosine Monophosphate Dehydrogenase (IMPDH) Inhibitor Immunosuppressants',
-    drugClassNameAr: 'مثبطات المناعة (حمض الميكوفينوليك)',
     dosageForm: 'Gastro-resistant tablet',
     strength: '360 mg',
     route: 'Oral',
@@ -1348,10 +1243,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Certican 0.75 mg',
-    brandNameAr: 'سيرتيكان 0.75 ملغم',
     genericName: 'Everolimus',
     drugClassNameEn: 'mTOR Inhibitor Immunosuppressants',
-    drugClassNameAr: 'مثبطات المناعة (مثبطات mTOR)',
     dosageForm: 'Tablet',
     strength: '0.75 mg',
     route: 'Oral',
@@ -1373,10 +1266,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Simulect 20 mg',
-    brandNameAr: 'سيميوليكت 20 ملغم',
     genericName: 'Basiliximab',
     drugClassNameEn: 'Interleukin-2 Receptor Antagonist Monoclonal Antibodies (Anti-CD25)',
-    drugClassNameAr: 'الأجسام المضادة لمستقبلات الإنترلوكين-2',
     dosageForm: 'Powder and solvent for solution for injection/infusion',
     strength: '20 mg',
     route: 'Intravenous',
@@ -1402,10 +1293,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   // =========================================================================
   {
     brandName: 'Glivec 100 mg',
-    brandNameAr: 'جليفيك 100 ملغم',
     genericName: 'Imatinib',
     drugClassNameEn: 'BCR-ABL / c-KIT / PDGFR Tyrosine Kinase Inhibitors',
-    drugClassNameAr: 'مثبطات كيناز التيروسين (BCR-ABL / c-KIT)',
     dosageForm: 'Film-coated tablet',
     strength: '100 mg',
     route: 'Oral',
@@ -1427,10 +1316,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Glivec 400 mg',
-    brandNameAr: 'جليفيك 400 ملغم',
     genericName: 'Imatinib',
     drugClassNameEn: 'BCR-ABL / c-KIT / PDGFR Tyrosine Kinase Inhibitors',
-    drugClassNameAr: 'مثبطات كيناز التيروسين (BCR-ABL / c-KIT)',
     dosageForm: 'Film-coated tablet',
     strength: '400 mg',
     route: 'Oral',
@@ -1452,10 +1339,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Tasigna 150 mg',
-    brandNameAr: 'تاسيجنا 150 ملغم',
     genericName: 'Nilotinib',
     drugClassNameEn: 'Second-Generation BCR-ABL Tyrosine Kinase Inhibitors',
-    drugClassNameAr: 'مثبطات كيناز التيروسين BCR-ABL من الجيل الثاني',
     dosageForm: 'Hard capsule',
     strength: '150 mg',
     route: 'Oral',
@@ -1477,10 +1362,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Tasigna 200 mg',
-    brandNameAr: 'تاسيجنا 200 ملغم',
     genericName: 'Nilotinib',
     drugClassNameEn: 'Second-Generation BCR-ABL Tyrosine Kinase Inhibitors',
-    drugClassNameAr: 'مثبطات كيناز التيروسين BCR-ABL من الجيل الثاني',
     dosageForm: 'Hard capsule',
     strength: '200 mg',
     route: 'Oral',
@@ -1502,10 +1385,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Jakavi 5 mg',
-    brandNameAr: 'جاكافي 5 ملغم',
     genericName: 'Ruxolitinib',
     drugClassNameEn: 'Janus Associated Kinase (JAK1 / JAK2) Inhibitors',
-    drugClassNameAr: 'مثبطات كيناز جانوس (JAK1 / JAK2)',
     dosageForm: 'Tablet',
     strength: '5 mg',
     route: 'Oral',
@@ -1527,10 +1408,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Jakavi 15 mg',
-    brandNameAr: 'جاكافي 15 ملغم',
     genericName: 'Ruxolitinib',
     drugClassNameEn: 'Janus Associated Kinase (JAK1 / JAK2) Inhibitors',
-    drugClassNameAr: 'مثبطات كيناز جانوس (JAK1 / JAK2)',
     dosageForm: 'Tablet',
     strength: '15 mg',
     route: 'Oral',
@@ -1552,10 +1431,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Jakavi 20 mg',
-    brandNameAr: 'جاكافي 20 ملغم',
     genericName: 'Ruxolitinib',
     drugClassNameEn: 'Janus Associated Kinase (JAK1 / JAK2) Inhibitors',
-    drugClassNameAr: 'مثبطات كيناز جانوس (JAK1 / JAK2)',
     dosageForm: 'Tablet',
     strength: '20 mg',
     route: 'Oral',
@@ -1577,10 +1454,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Kisqali 200 mg',
-    brandNameAr: 'كيسكالي 200 ملغم',
     genericName: 'Ribociclib',
     drugClassNameEn: 'Cyclin-Dependent Kinase 4 and 6 (CDK4/6) Inhibitors',
-    drugClassNameAr: 'مثبطات الكيناز المعتمد على السيكلين 4 و 6',
     dosageForm: 'Film-coated tablet',
     strength: '200 mg',
     route: 'Oral',
@@ -1602,10 +1477,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Afinitor 5 mg',
-    brandNameAr: 'أفينيتور 5 ملغم',
     genericName: 'Everolimus',
     drugClassNameEn: 'mTOR Kinase Inhibitor Antineoplastic Agents',
-    drugClassNameAr: 'مثبطات كيناز mTOR المضادة للأورام',
     dosageForm: 'Tablet',
     strength: '5 mg',
     route: 'Oral',
@@ -1627,10 +1500,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Afinitor 10 mg',
-    brandNameAr: 'أفينيتور 10 ملغم',
     genericName: 'Everolimus',
     drugClassNameEn: 'mTOR Kinase Inhibitor Antineoplastic Agents',
-    drugClassNameAr: 'مثبطات كيناز mTOR المضادة للأورام',
     dosageForm: 'Tablet',
     strength: '10 mg',
     route: 'Oral',
@@ -1652,10 +1523,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Femara 2.5 mg',
-    brandNameAr: 'فيمارا 2.5 ملغم',
     genericName: 'Letrozole',
     drugClassNameEn: 'Non-Steroidal Aromatase Inhibitors',
-    drugClassNameAr: 'مثبطات الأروماتاز غير الستيرويدية',
     dosageForm: 'Film-coated tablet',
     strength: '2.5 mg',
     route: 'Oral',
@@ -1677,10 +1546,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Revolade 25 mg',
-    brandNameAr: 'ريفوليد 25 ملغم',
     genericName: 'Eltrombopag',
     drugClassNameEn: 'Thrombopoietin Receptor Agonists (TPO-RAs)',
-    drugClassNameAr: 'ناهضات مستقبلات الثرومبوبويتين',
     dosageForm: 'Film-coated tablet',
     strength: '25 mg',
     route: 'Oral',
@@ -1702,10 +1569,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Revolade 50 mg',
-    brandNameAr: 'ريفوليد 50 ملغم',
     genericName: 'Eltrombopag',
     drugClassNameEn: 'Thrombopoietin Receptor Agonists (TPO-RAs)',
-    drugClassNameAr: 'ناهضات مستقبلات الثرومبوبويتين',
     dosageForm: 'Film-coated tablet',
     strength: '50 mg',
     route: 'Oral',
@@ -1727,10 +1592,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Exjade 360 mg',
-    brandNameAr: 'إكسجيد 360 ملغم',
     genericName: 'Deferasirox',
     drugClassNameEn: 'Oral Iron Chelating Agents',
-    drugClassNameAr: 'خالبات الحديد الفموية',
     dosageForm: 'Film-coated tablet',
     strength: '360 mg',
     route: 'Oral',
@@ -1752,10 +1615,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Sandostatin LAR 30 mg',
-    brandNameAr: 'ساندوستاتين لار 30 ملغم',
     genericName: 'Octreotide',
     drugClassNameEn: 'Long-Acting Somatostatin Analogues',
-    drugClassNameAr: 'نظائر السوماتوستاتين طويلة المفعول',
     dosageForm: 'Powder and solvent for prolonged-release suspension for injection',
     strength: '30 mg',
     route: 'Intramuscular',
@@ -1777,10 +1638,8 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
   },
   {
     brandName: 'Lucentis 10 mg/mL',
-    brandNameAr: 'لوسنتس 10 ملغم / مل',
     genericName: 'Ranibizumab',
     drugClassNameEn: 'Anti-VEGF-A Monoclonal Antibody Fragments (Ocular Anti-Neovascular Agents)',
-    drugClassNameAr: 'مثبطات عامل نمو بطانة الأوعية الدموية العينية (Anti-VEGF)',
     dosageForm: 'Solution for injection',
     strength: '10 mg / mL',
     route: 'Intravitreal',

@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_RIYADH_PHARMA: CompactDrug[] = [
   // 1. Gastrozole (Omeprazole — Riyadh Pharma)
   {
     brandName: 'Gastrozole 20 mg',
-    brandNameAr: 'غاستروزول 20 ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -57,7 +55,6 @@ const RAW_RIYADH_PHARMA: CompactDrug[] = [
   // 2. Riapanta (Pantoprazole — Riyadh Pharma)
   {
     brandName: 'Riapanta 20 mg',
-    brandNameAr: 'ريابانتا 20 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -87,7 +84,6 @@ const RAW_RIYADH_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Riapanta 40 mg',
-    brandNameAr: 'ريابانتا 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -119,7 +115,6 @@ const RAW_RIYADH_PHARMA: CompactDrug[] = [
   // 3. Simvagen Plus (Ezetimibe + Simvastatin — Riyadh Pharma)
   {
     brandName: 'Simvagen Plus 10 mg/20 mg',
-    brandNameAr: 'سيمفاجين بلس 10 ملغ/20 ملغ',
     genericName: 'Ezetimibe + Simvastatin',
     activeIngredients: ['Ezetimibe', 'Simvastatin'],
     drugClass: 'Cholesterol absorption inhibitor and HMG-CoA reductase inhibitor (statin) fixed-dose combination',
@@ -151,7 +146,6 @@ const RAW_RIYADH_PHARMA: CompactDrug[] = [
   // 4. Lorahist (Loratadine — Riyadh Pharma)
   {
     brandName: 'Lorahist 10 mg',
-    brandNameAr: 'لوراهيست 10 ملغ',
     genericName: 'Loratadine',
     activeIngredients: ['Loratadine'],
     drugClass: 'Second-generation non-sedating histamine H1-receptor antagonist',
@@ -184,7 +178,6 @@ const RAW_RIYADH_PHARMA: CompactDrug[] = [
 export const RIYADH_PHARMA_PRODUCTS: AiProductDraft[] = RAW_RIYADH_PHARMA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

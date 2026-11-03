@@ -57,6 +57,7 @@ import { PIONEER_PRODUCTS } from './pioneerCatalogData';
 import { AWAMEDICA_PRODUCTS } from './awamedicaCatalogData';
 import { AL_KINDI_PRODUCTS } from './alKindiCatalogData';
 import { NDI_PRODUCTS } from './ndiCatalogData';
+import { VIATRIS_PRODUCTS } from './viatrisCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -2135,6 +2136,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Iraqi state-owned pharmaceutical manufacturing facility (Mosul, Nineveh Governorate, Iraq) under the Ministry of Industry and Minerals.',
     products: NDI_PRODUCTS,
+  },
+  {
+    key: 'viatris',
+    companyName: 'Viatris',
+    legalName: 'Viatris Inc.',
+    websiteUrl: 'https://www.viatris.com',
+    description:
+      'Global pharmaceutical company (Pittsburgh, USA) formed from Mylan and Pfizer Upjohn; markets established brands such as Lipitor, Norvasc, Lyrica, Celebrex and Viagra outside the US.',
+    products: VIATRIS_PRODUCTS,
   },
 ];
 

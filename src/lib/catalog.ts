@@ -123,6 +123,7 @@ export interface CatalogProduct {
   createdAt: string;
   updatedAt: string;
   hasAiDraft?: boolean;
+  aiSources?: AiDraftSource[];
 }
 
 export interface CatalogBundle {
@@ -1052,6 +1053,125 @@ export async function loadProductDetail(
   };
 }
 
+export function extractAiDraftSources(
+  sourcesRaw: unknown,
+  draftRaw?: unknown
+): AiDraftSource[] {
+  const combined: unknown[] = [];
+  if (Array.isArray(sourcesRaw)) {
+    combined.push(...sourcesRaw);
+  }
+  if (
+    draftRaw &&
+    typeof draftRaw === 'object' &&
+    Array.isArray((draftRaw as { sources?: unknown }).sources)
+  ) {
+    combined.push(...(draftRaw as { sources: unknown[] }).sources);
+  }
+  const seen = new Set<string>();
+  const result: AiDraftSource[] = [];
+  for (const item of combined) {
+    if (!item || typeof item !== 'object') continue;
+    const rawUrl = (item as { url?: unknown }).url;
+    const rawTitle = (item as { title?: unknown }).title;
+    const url = typeof rawUrl === 'string' ? rawUrl.trim() : '';
+    if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
+    seen.add(url);
+    const title =
+      typeof rawTitle === 'string' && rawTitle.trim().length > 0
+        ? rawTitle.trim()
+        : url;
+    result.push({ title, url });
+  }
+  return result;
+}
+
+export function isDomainOnlySourceUrl(rawUrl: string): boolean {
+  try {
+    const parsed = new URL(rawUrl.trim());
+    const cleanPath = parsed.pathname.replace(/\/+/g, '');
+    return cleanPath.length === 0 && !parsed.search;
+  } catch {
+    return true;
+  }
+}
+
+export type ProductSourceWarning =
+  | 'No source'
+  | 'Weak source: company home page only'
+  | null;
+
+export function getProductSourceWarning(
+  sources: AiDraftSource[] | null | undefined
+): ProductSourceWarning {
+  const valid = (sources ?? []).filter(
+    (s) => Boolean(s?.url && s.url.trim().length > 0)
+  );
+  if (valid.length === 0) {
+    return 'No source';
+  }
+  if (valid.every((s) => isDomainOnlySourceUrl(s.url))) {
+    return 'Weak source: company home page only';
+  }
+  return null;
+}
+
+export interface CompanyProductCounts {
+  drafts: number;
+  published: number;
+  archived: number;
+}
+
+export function getCompanyProductCounts(
+  products: CatalogProduct[],
+  companyId: string
+): CompanyProductCounts {
+  let drafts = 0;
+  let published = 0;
+  let archived = 0;
+  for (const p of products) {
+    if (p.companyId !== companyId) continue;
+    if (p.status === 'draft' || p.status === 'changes_requested') {
+      drafts += 1;
+    } else if (p.status === 'published') {
+      published += 1;
+    } else if (p.status === 'archived') {
+      archived += 1;
+    }
+  }
+  return { drafts, published, archived };
+}
+
+export async function loadCompanyAiDraftSources(
+  client: SupabaseClient,
+  productIds: string[]
+): Promise<Record<string, AiDraftSource[]>> {
+  const cleaned = Array.from(new Set(productIds.filter(Boolean)));
+  if (cleaned.length === 0) return {};
+
+  const { data } = await fetchInChunksPaged<{
+    product_id: string;
+    sources?: unknown;
+    draft?: unknown;
+  }>(cleaned, (chunkIds, from, to) =>
+    client
+      .from('product_ai_drafts')
+      .select('product_id,sources,draft')
+      .in('product_id', chunkIds)
+      .order('id')
+      .range(from, to)
+  );
+
+  const byProduct: Record<string, AiDraftSource[]> = {};
+  for (const row of data) {
+    if (!row.product_id) continue;
+    const extracted = extractAiDraftSources(row.sources, row.draft);
+    const prev = byProduct[row.product_id] ?? [];
+    byProduct[row.product_id] = extractAiDraftSources([...prev, ...extracted]);
+  }
+  return byProduct;
+}
+
 export async function loadCatalogBundle(
   client: SupabaseClient
 ): Promise<RpcResult<CatalogBundle>> {
@@ -1062,7 +1182,6 @@ export async function loadCatalogBundle(
         .select(
           'id,company_id,generic_drug_id,drug_class_id,category,status,submitted_at,reviewed_at,review_reason,created_at,updated_at'
         )
-        .neq('status', 'archived')
         .order('updated_at', { ascending: false })
         .order('id')
         .range(from, to)
@@ -1080,8 +1199,8 @@ export async function loadCatalogBundle(
   ]);
 
   const companyById = new Map(companies.map((c) => [c.id, c]));
-  const productRows = (rawProducts ?? []).filter(
-    (p) => p.status !== 'archived' && companyById.has(p.company_id)
+  const productRows = (rawProducts ?? []).filter((p) =>
+    companyById.has(p.company_id)
   );
   const productIds = productRows.map((p) => p.id);
 
@@ -1089,7 +1208,7 @@ export async function loadCatalogBundle(
   const genericById = new Map(genericDrugs.map((g) => [g.id, g]));
   const specialtyById = new Map(specialties.map((s) => [s.id, s]));
 
-  const translationsByProduct = new Map<string, { en?: string }>();
+  const translationsByProduct = new Map<string, { en?: string; ar?: string }>();
   const marketByProduct = new Map<string, ProductMarketRecord>();
   const marketTranslationsByMarket = new Map<
     string,
@@ -1100,6 +1219,7 @@ export async function loadCatalogBundle(
   const brochuresByMarket = new Map<string, ProductBrochureRecord[]>();
   const keywordsByProduct = new Map<string, string[]>();
   const aiDraftProductIds = new Set<string>();
+  const aiSourcesByProduct = new Map<string, AiDraftSource[]>();
 
   if (productIds.length > 0) {
     const [transRes, marketsRes, specRes, mediaRes, keywordsRes, aiDraftsRes] =
@@ -1152,12 +1272,12 @@ export async function loadCatalogBundle(
             .order('id')
             .range(from, to)
         ),
-        fetchInChunksPaged<{ product_id: string }>(
+        fetchInChunksPaged<{ product_id: string; sources?: unknown }>(
           productIds,
           (chunkIds, from, to) =>
             client
               .from('product_ai_drafts')
-              .select('product_id')
+              .select('product_id,sources')
               .in('product_id', chunkIds)
               .order('id')
               .range(from, to)
@@ -1167,13 +1287,25 @@ export async function loadCatalogBundle(
     for (const row of aiDraftsRes.data) {
       if (row.product_id) {
         aiDraftProductIds.add(row.product_id);
+        const extracted = extractAiDraftSources(row.sources);
+        if (extracted.length > 0) {
+          const prev = aiSourcesByProduct.get(row.product_id) ?? [];
+          aiSourcesByProduct.set(
+            row.product_id,
+            extractAiDraftSources([...prev, ...extracted])
+          );
+        }
       }
     }
 
     for (const row of transRes.data) {
+      const entry = translationsByProduct.get(row.product_id) ?? {};
       if (row.locale === 'en') {
-        translationsByProduct.set(row.product_id, { en: row.brand_name });
+        entry.en = row.brand_name;
+      } else if (row.locale === 'ar') {
+        entry.ar = row.brand_name;
       }
+      translationsByProduct.set(row.product_id, entry);
     }
 
     const marketIds: string[] = [];
@@ -1313,6 +1445,7 @@ export async function loadCatalogBundle(
         category: row.category,
         status: row.status,
         brandNameEn: trans?.en ?? 'Untitled Product',
+        brandNameAr: trans?.ar ?? null,
         market,
         marketTranslations: marketTrans,
         specialtyIds: specIds,
@@ -1326,6 +1459,7 @@ export async function loadCatalogBundle(
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         hasAiDraft: aiDraftProductIds.has(row.id),
+        aiSources: aiSourcesByProduct.get(row.id) ?? [],
       };
     });
 
@@ -1524,6 +1658,86 @@ export async function publishProduct(
   }
 
   return rpcAdminPublishProduct(client, product.id);
+}
+
+export interface PublishCheckedItemInput {
+  id: string;
+  brandNameEn: string;
+  status: ProductStatus;
+}
+
+export interface PublishCheckedItemResult {
+  id: string;
+  brandNameEn: string;
+  ok: boolean;
+  message?: string;
+  reasons?: string[];
+}
+
+export interface PublishCheckedSummary {
+  results: PublishCheckedItemResult[];
+  publishedCount: number;
+  failedCount: number;
+}
+
+export async function publishCheckedProducts(
+  client: SupabaseClient,
+  items: PublishCheckedItemInput[],
+  options?: {
+    onProgress?: (
+      currentIndex: number,
+      total: number,
+      item: PublishCheckedItemInput
+    ) => void;
+  }
+): Promise<PublishCheckedSummary> {
+  const results: PublishCheckedItemResult[] = [];
+  let publishedCount = 0;
+  let failedCount = 0;
+
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
+    options?.onProgress?.(i + 1, items.length, item);
+
+    const subRes = await rpcSubmitProductForReview(client, item.id);
+    if (!subRes.ok) {
+      failedCount += 1;
+      results.push({
+        id: item.id,
+        brandNameEn: item.brandNameEn,
+        ok: false,
+        message: subRes.message,
+        ...(subRes.reasons ? { reasons: subRes.reasons } : {}),
+      });
+      continue;
+    }
+
+    const pubRes = await rpcAdminPublishProduct(client, item.id);
+    if (!pubRes.ok) {
+      failedCount += 1;
+      results.push({
+        id: item.id,
+        brandNameEn: item.brandNameEn,
+        ok: false,
+        message: pubRes.message,
+        ...(pubRes.reasons ? { reasons: pubRes.reasons } : {}),
+      });
+      continue;
+    }
+
+    publishedCount += 1;
+    results.push({
+      id: item.id,
+      brandNameEn: item.brandNameEn,
+      ok: true,
+    });
+  }
+
+  return {
+    results,
+    publishedCount,
+    failedCount,
+  };
 }
 
 export async function rpcAdminRequestProductChanges(

@@ -55,6 +55,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (Admin Review Drafts page)
+- **Admin company Review Drafts view (`src/components/AdminCatalogReview.tsx`, `src/lib/catalog.ts`):**
+  - Added a **Review drafts** view inside each company workspace listing that company's `draft` and `changes_requested` products with brand (EN + AR), generic, strength, dosage form, route, pack size, category, drug class, specialties, all 5 clinical fields (`approvedIndications`, `usualAdultDose`, `contraindications`, `commonAdverseEffects`, `storageConditions`), and clickable AI sources from `product_ai_drafts` (`target="_blank" rel="noopener noreferrer"`).
+  - Added amber row warnings: `'Weak source: company home page only'` when all source URLs have no path/query, and `'No source'` when no sources exist.
+  - Added per-product `'Checked'` checkboxes, `'Select all'` toggle, and `'Publish checked (N)'` with confirmation (`'Publish N products? Doctors will see them.'`), sequential execution of `submit_product_for_review(id)` then `admin_publish_product(id)` via `publishCheckedProducts`, live progress indicator, and final published/failed result report.
+  - Added per-product `'Archive'` action with reason prompt calling `admin_archive_product(id, reason)`, and `'Edit'` button opening `AdminProductEditorForm` (with `Brand / Trade Name (AR)` support and no registration number fields).
+  - Displayed `Drafts / Published / Archived` counts per company across company cards, dropdowns, and headers, and removed the global `'Publish All Pending'` button completely.
+  - Added unit tests in `src/lib/catalog.test.ts`. No changes to `supabase/` or `.github/`.
+
 ### 2026-11-03 — Claude (catalog clean-up, owner-approved)
 - **Migration `20261103090659_ai_draft_skip_archived.sql` (live):** `admin_save_ai_product_draft`
   now treats archived products as existing, so "Sync Chat Catalog" never

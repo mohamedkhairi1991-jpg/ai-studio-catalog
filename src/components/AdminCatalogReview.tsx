@@ -4,14 +4,17 @@ import type { AccessResult } from '../lib/access';
 import {
   CATEGORY_LABELS,
   MARKET_STATUS_LABELS,
-  REGISTRATION_STATUS_LABELS,
   STATUS_LABELS,
+  extractAiDraftSources,
   filterProductsByStatus,
   findMatchingTaxonomyOption,
+  getCompanyProductCounts,
+  getProductSourceWarning,
   invokeAiDraftProduct,
   loadCatalogBundle,
+  loadCompanyAiDraftSources,
   loadProductAiDraft,
-  publishProduct,
+  publishCheckedProducts,
   rpcAdminArchiveCompany,
   rpcAdminArchiveProduct,
   rpcAdminCreateCompany,
@@ -23,13 +26,14 @@ import {
   rpcAdminUpdateCompany,
   saveAndPublishCompleteProduct,
   type AiDraftProductResponse,
+  type AiDraftSource,
   type CatalogBundle,
   type CatalogProduct,
   type CompanySummary,
   type IraqMarketStatus,
   type ProductCategory,
-  type ProductRegistrationStatus,
   type ProductStatus,
+  type PublishCheckedSummary,
   type StoredProductAiDraft,
 } from '../lib/catalog';
 import { listCities, listCountries, type Option } from '../lib/onboarding';
@@ -48,6 +52,9 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [adminView, setAdminView] = useState<
     'catalog' | 'companies' | 'approvals'
   >('catalog');
+  const [companySubView, setCompanySubView] = useState<
+    'review_drafts' | 'catalog'
+  >('review_drafts');
   const [bundle, setBundle] = useState<CatalogBundle | null>(null);
   const [cities, setCities] = useState<Option[]>([]);
   const [defaultCountryId, setDefaultCountryId] = useState<string>('');
@@ -75,7 +82,6 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [editingCompany, setEditingCompany] = useState<CompanySummary | null>(
     null
   );
-  const [batchPublishing, setBatchPublishing] = useState(false);
 
   // Company Add / Edit form state
   const [compName, setCompName] = useState('');
@@ -195,7 +201,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     clearFeedback();
 
     const companyProducts = (bundle?.products ?? []).filter(
-      (p) => p.companyId === comp.id
+      (p) => p.companyId === comp.id && p.status !== 'archived'
     );
     for (const prod of companyProducts) {
       await rpcAdminArchiveProduct(
@@ -231,16 +237,6 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     if (companyFilterId === 'all') return byStatus;
     return byStatus.filter((p) => p.companyId === companyFilterId);
   }, [bundle, statusFilter, companyFilterId]);
-
-  const pendingProducts = useMemo(() => {
-    if (!bundle) return [];
-    return bundle.products.filter(
-      (p) =>
-        p.status === 'submitted' ||
-        p.status === 'draft' ||
-        p.status === 'changes_requested'
-    );
-  }, [bundle]);
 
   const openAddCompanyForm = () => {
     setEditingCompany(null);
@@ -306,48 +302,12 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     const wasEditing = Boolean(editingCompany);
     closeCompanyForm();
     setCompanyFilterId(res.data.id);
+    setCompanySubView('review_drafts');
     setNotice(
       wasEditing
         ? `Updated company "${res.data.companyName}".`
         : `Added company "${res.data.companyName}".`
     );
-    await refresh();
-  };
-
-  const handlePublishAllPending = async () => {
-    if (pendingProducts.length === 0) return;
-    setBatchPublishing(true);
-    clearFeedback();
-    let publishedCount = 0;
-    const errors: string[] = [];
-    const collectedReasons: string[] = [];
-
-    for (const item of pendingProducts) {
-      const res = await publishProduct(client, item);
-      if (res.ok) {
-        publishedCount += 1;
-      } else {
-        errors.push(`${item.brandNameEn}: ${res.message}`);
-        for (const r of res.reasons ?? []) {
-          const labeled = `${item.brandNameEn}: ${r}`;
-          if (!collectedReasons.includes(labeled)) {
-            collectedReasons.push(labeled);
-          }
-        }
-      }
-    }
-
-    setBatchPublishing(false);
-    if (errors.length > 0) {
-      setFailure(errors.join(' | '), collectedReasons);
-    }
-    if (publishedCount > 0) {
-      setNotice(
-        `Published ${publishedCount} product${
-          publishedCount === 1 ? '' : 's'
-        } to the Official Doctor Catalog.`
-      );
-    }
     await refresh();
   };
 
@@ -366,6 +326,22 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     }
     return Array.from(groups.entries());
   }, [filteredProducts]);
+
+  const selectedCompanyCounts = useMemo(() => {
+    if (!bundle || companyFilterId === 'all') {
+      return { drafts: 0, published: 0, archived: 0 };
+    }
+    return getCompanyProductCounts(bundle.products, companyFilterId);
+  }, [bundle, companyFilterId]);
+
+  const selectedCompanyDrafts = useMemo(() => {
+    if (!bundle || companyFilterId === 'all') return [];
+    return bundle.products.filter(
+      (p) =>
+        p.companyId === companyFilterId &&
+        (p.status === 'draft' || p.status === 'changes_requested')
+    );
+  }, [bundle, companyFilterId]);
 
   return (
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
@@ -429,7 +405,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
               type="button"
               className={secondaryButtonClass}
               onClick={() => void refresh()}
-              disabled={loading || batchPublishing}
+              disabled={loading}
             >
               Refresh
             </button>
@@ -479,7 +455,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     Companies ({bundle?.companies.length ?? 0})
                   </h1>
                   <p className="text-xs text-[#B8C3CC] mt-0.5">
-                    Manage pharmaceutical companies in the catalog.
+                    Manage pharmaceutical companies and review their drafts.
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -568,8 +544,9 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {(bundle?.companies ?? []).map((comp) => {
-                    const compProducts = (bundle?.products ?? []).filter(
-                      (p) => p.companyId === comp.id
+                    const counts = getCompanyProductCounts(
+                      bundle?.products ?? [],
+                      comp.id
                     );
                     const isConfirmingRemove =
                       confirmingRemoveCompanyId === comp.id;
@@ -586,6 +563,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                                 type="button"
                                 onClick={() => {
                                   setCompanyFilterId(comp.id);
+                                  setCompanySubView('review_drafts');
                                   setSelectedId(null);
                                   setAdminView('catalog');
                                 }}
@@ -609,10 +587,24 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                               {comp.description}
                             </p>
                           )}
-                          <div className="text-xs text-[#B8C3CC]">
-                            Drugs:{' '}
-                            <span className="font-mono text-[#F2F5F8]">
-                              {compProducts.length}
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-[#B8C3CC] pt-1">
+                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 font-mono">
+                              Drafts:{' '}
+                              <span className="text-[#F59E0B] font-semibold">
+                                {counts.drafts}
+                              </span>
+                            </span>
+                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 font-mono">
+                              Published:{' '}
+                              <span className="text-[#38C976] font-semibold">
+                                {counts.published}
+                              </span>
+                            </span>
+                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 font-mono">
+                              Archived:{' '}
+                              <span className="text-[#F2F5F8] font-semibold">
+                                {counts.archived}
+                              </span>
                             </span>
                           </div>
                         </div>
@@ -621,9 +613,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                           {isConfirmingRemove ? (
                             <>
                               <span className="text-xs text-[#F59E0B] w-full">
-                                Remove {comp.companyName} and archive its{' '}
-                                {compProducts.length} product
-                                {compProducts.length === 1 ? '' : 's'}?
+                                Remove {comp.companyName} and archive its
+                                products?
                               </span>
                               <button
                                 type="button"
@@ -650,12 +641,13 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                                 type="button"
                                 onClick={() => {
                                   setCompanyFilterId(comp.id);
+                                  setCompanySubView('review_drafts');
                                   setSelectedId(null);
                                   setAdminView('catalog');
                                 }}
                                 className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
                               >
-                                View Drugs ({compProducts.length})
+                                Review drafts ({counts.drafts})
                               </button>
                               <button
                                 type="button"
@@ -704,18 +696,26 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     value={companyFilterId}
                     onChange={(e) => {
                       setCompanyFilterId(e.target.value);
+                      setCompanySubView('review_drafts');
                       setSelectedId(null);
                     }}
-                    className={`${inputClass} sm:w-64`}
+                    className={`${inputClass} sm:w-80`}
                   >
                     <option value="all">
                       All Companies ({bundle?.companies.length ?? 0})
                     </option>
-                    {(bundle?.companies ?? []).map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.companyName}
-                      </option>
-                    ))}
+                    {(bundle?.companies ?? []).map((c) => {
+                      const counts = getCompanyProductCounts(
+                        bundle?.products ?? [],
+                        c.id
+                      );
+                      return (
+                        <option key={c.id} value={c.id}>
+                          {c.companyName} ({counts.drafts} drafts /{' '}
+                          {counts.published} pub / {counts.archived} arch)
+                        </option>
+                      );
+                    })}
                   </select>
 
                   <button
@@ -762,19 +762,6 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                       className={secondaryButtonClass}
                     >
                       {syncingChatCatalog ? 'Syncing…' : 'Sync Chat Catalog'}
-                    </button>
-                  )}
-
-                  {pendingProducts.length > 0 && (
-                    <button
-                      type="button"
-                      disabled={batchPublishing || loading}
-                      onClick={() => void handlePublishAllPending()}
-                      className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-3.5 py-2 transition-colors"
-                    >
-                      {batchPublishing
-                        ? 'Publishing…'
-                        : `Publish All Pending (${pendingProducts.length})`}
                     </button>
                   )}
 
@@ -837,9 +824,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                         ? ` Added to the catalog: ${createdTaxonomy.join(', ')}.`
                         : '';
                     setNotice(
-                      (status === 'published'
-                        ? 'Product created and published to the Official Doctor Catalog.'
-                        : `Product saved (${STATUS_LABELS[status]}).`) + addedMsg
+                      `Product saved (${STATUS_LABELS[status]}).` + addedMsg
                     );
                     await refresh(productId);
                   }}
@@ -851,36 +836,60 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   Loading catalog…
                 </div>
               ) : companyFilterId === 'all' ? (
-                /* Step 1: Single Button per Company (e.g., AstraZeneca) */
+                /* Step 1: Company Selection Grid with drafts / published / archived counts */
                 <div className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-4">
                   <div className="text-xs text-[#B8C3CC]">
-                    Press a company button to open its drugs page:
+                    Select a company to review its drafts and manage its
+                    products:
                   </div>
                   {(bundle?.companies.length ?? 0) === 0 ? (
                     <div className="text-sm text-[#B8C3CC] py-6 text-center">
                       No companies in the catalog yet.
                     </div>
                   ) : (
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {(bundle?.companies ?? []).map((comp) => {
-                        const compDrugCount = (bundle?.products ?? []).filter(
-                          (p) => p.companyId === comp.id
-                        ).length;
+                        const counts = getCompanyProductCounts(
+                          bundle?.products ?? [],
+                          comp.id
+                        );
                         return (
                           <button
                             key={comp.id}
                             type="button"
                             onClick={() => {
                               setCompanyFilterId(comp.id);
+                              setCompanySubView('review_drafts');
                               setSelectedId(null);
                               clearFeedback();
                             }}
-                            className="inline-flex items-center gap-3 rounded-lg bg-[#1769AA] hover:bg-[#1E78BA] border border-[#5DB4F2] px-5 py-3 text-sm font-semibold text-white transition-colors"
+                            className="flex flex-col justify-between gap-2.5 rounded-lg bg-[#1F2D38] hover:bg-[#1769AA]/25 border border-[#304451] hover:border-[#5DB4F2] p-4 text-left transition-colors"
                           >
-                            <span>{comp.companyName}</span>
-                            <span className="rounded bg-[#1F2D38]/60 px-2 py-0.5 text-xs font-mono text-[#F2F5F8]">
-                              {compDrugCount}
-                            </span>
+                            <div className="font-semibold text-sm text-[#F2F5F8]">
+                              {comp.companyName}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#B8C3CC]">
+                              <span>
+                                Drafts:{' '}
+                                <strong className="text-[#F59E0B]">
+                                  {counts.drafts}
+                                </strong>
+                              </span>
+                              <span>·</span>
+                              <span>
+                                Published:{' '}
+                                <strong className="text-[#38C976]">
+                                  {counts.published}
+                                </strong>
+                              </span>
+                              <span>·</span>
+                              <span>
+                                Archived:{' '}
+                                <strong className="text-[#F2F5F8]">
+                                  {counts.archived}
+                                </strong>
+                              </span>
+                            </div>
                           </button>
                         );
                       })}
@@ -889,9 +898,9 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 </div>
               ) : (
                 <>
-                  {/* Company Page Header + Status Filter Bar */}
+                  {/* Company Page Header + View Switcher + Counts */}
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="button"
                         onClick={() => {
@@ -903,145 +912,228 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                       >
                         ← Back
                       </button>
-                      <h2 className="text-base font-semibold text-[#F2F5F8]">
-                        {bundle?.companies.find((c) => c.id === companyFilterId)
-                          ?.companyName ?? 'Company'}
-                      </h2>
+                      <div>
+                        <h2 className="text-base font-semibold text-[#F2F5F8]">
+                          {bundle?.companies.find(
+                            (c) => c.id === companyFilterId
+                          )?.companyName ?? 'Company'}
+                        </h2>
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#B8C3CC] mt-0.5">
+                          <span>
+                            Drafts:{' '}
+                            <strong className="text-[#F59E0B]">
+                              {selectedCompanyCounts.drafts}
+                            </strong>
+                          </span>
+                          <span>/</span>
+                          <span>
+                            Published:{' '}
+                            <strong className="text-[#38C976]">
+                              {selectedCompanyCounts.published}
+                            </strong>
+                          </span>
+                          <span>/</span>
+                          <span>
+                            Archived:{' '}
+                            <strong className="text-[#F2F5F8]">
+                              {selectedCompanyCounts.archived}
+                            </strong>
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      {(
-                        [
-                          'all',
-                          'published',
-                          'submitted',
-                          'draft',
-                          'changes_requested',
-                          'hidden',
-                        ] as const
-                      ).map((st) => {
-                        const active = statusFilter === st;
-                        const baseList = (bundle?.products ?? []).filter(
-                          (p) => p.companyId === companyFilterId
-                        );
-                        const count =
-                          st === 'all'
-                            ? baseList.length
-                            : baseList.filter((p) => p.status === st).length;
-                        return (
-                          <button
-                            key={st}
-                            type="button"
-                            onClick={() => {
-                              setStatusFilter(st);
-                              setSelectedId(null);
-                              clearFeedback();
-                            }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                              active
-                                ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
-                                : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
-                            }`}
-                          >
-                            {st === 'all' ? 'All' : STATUS_LABELS[st]}{' '}
-                            <span className="font-mono tabular-nums opacity-75">
-                              ({count})
-                            </span>
-                          </button>
-                        );
-                      })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompanySubView('review_drafts');
+                          setSelectedId(null);
+                          clearFeedback();
+                        }}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                          companySubView === 'review_drafts'
+                            ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                            : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                        }`}
+                      >
+                        Review drafts ({selectedCompanyCounts.drafts})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompanySubView('catalog');
+                          setSelectedId(null);
+                          clearFeedback();
+                        }}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                          companySubView === 'catalog'
+                            ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                            : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                        }`}
+                      >
+                        Catalog list
+                      </button>
                     </div>
                   </div>
 
-                  {/* Step 2: Drug Names List vs Step 3: Opened Drug Details */}
-                  {filteredProducts.length === 0 ? (
-                    <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
-                      <h2 className="text-base font-medium text-[#F2F5F8]">
-                        No drugs found for this filter
-                      </h2>
-                      <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
-                        Click "+ New Product" to add a drug.
-                      </p>
-                    </div>
-                  ) : selectedProduct && bundle ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedId(null);
-                            clearFeedback();
-                          }}
-                          className={secondaryButtonClass}
-                        >
-                          ← Back to {selectedProduct.companyName} Drugs (
-                          {filteredProducts.length})
-                        </button>
-                        <div className="text-xs text-[#B8C3CC]">
-                          <span className="text-[#5DB4F2] font-medium">
-                            {selectedProduct.companyName}
-                          </span>{' '}
-                          · {selectedProduct.drugClassNameEn}
-                        </div>
-                      </div>
-
-                      <AdminProductInspector
-                        key={
-                          selectedProduct.id + ':' + selectedProduct.updatedAt
-                        }
-                        client={client}
-                        product={selectedProduct}
-                        bundle={bundle}
-                        onError={(msg, reasons) => setFailure(msg, reasons)}
-                        onSuccess={async (msg) => {
-                          clearFeedback();
-                          setNotice(msg);
-                          await refresh(selectedProduct.id);
-                        }}
-                      />
-                    </div>
+                  {companySubView === 'review_drafts' && bundle ? (
+                    <CompanyReviewDraftsView
+                      key={companyFilterId}
+                      client={client}
+                      bundle={bundle}
+                      companyId={companyFilterId}
+                      draftProducts={selectedCompanyDrafts}
+                      onError={(msg, reasons) => setFailure(msg, reasons)}
+                      onNotice={(msg) => {
+                        setError(null);
+                        setErrorReasons([]);
+                        setNotice(msg);
+                      }}
+                      onRefresh={refresh}
+                    />
                   ) : (
-                    <div className="space-y-4">
-                      <div className="text-xs text-[#B8C3CC] px-1">
-                        Click any drug name below to open its full clinical
-                        information and controls.
+                    <>
+                      {/* Status Filter Bar for Catalog list view */}
+                      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
+                        {(
+                          [
+                            'all',
+                            'published',
+                            'submitted',
+                            'draft',
+                            'changes_requested',
+                            'hidden',
+                            'archived',
+                          ] as const
+                        ).map((st) => {
+                          const active = statusFilter === st;
+                          const baseList = (bundle?.products ?? []).filter(
+                            (p) => p.companyId === companyFilterId
+                          );
+                          const count =
+                            st === 'all'
+                              ? baseList.length
+                              : baseList.filter((p) => p.status === st).length;
+                          return (
+                            <button
+                              key={st}
+                              type="button"
+                              onClick={() => {
+                                setStatusFilter(st);
+                                setSelectedId(null);
+                                clearFeedback();
+                              }}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                                active
+                                  ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                                  : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                              }`}
+                            >
+                              {st === 'all' ? 'All' : STATUS_LABELS[st]}{' '}
+                              <span className="font-mono tabular-nums opacity-75">
+                                ({count})
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
-                      {productsByDrugClass.map(([className, classProducts]) => (
-                        <div
-                          key={className}
-                          className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3"
-                        >
-                          <div className="flex items-center justify-between border-b border-[#304451] pb-2">
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#5DB4F2]">
-                              {className}
-                            </h3>
-                            <span className="text-xs font-mono text-[#B8C3CC]">
-                              {classProducts.length} drug
-                              {classProducts.length === 1 ? '' : 's'}
-                            </span>
+
+                      {/* Step 2: Drug Names List vs Step 3: Opened Drug Details */}
+                      {filteredProducts.length === 0 ? (
+                        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
+                          <h2 className="text-base font-medium text-[#F2F5F8]">
+                            No drugs found for this filter
+                          </h2>
+                          <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
+                            Click "+ New Product" to add a drug.
+                          </p>
+                        </div>
+                      ) : selectedProduct && bundle ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedId(null);
+                                clearFeedback();
+                              }}
+                              className={secondaryButtonClass}
+                            >
+                              ← Back to {selectedProduct.companyName} Drugs (
+                              {filteredProducts.length})
+                            </button>
+                            <div className="text-xs text-[#B8C3CC]">
+                              <span className="text-[#5DB4F2] font-medium">
+                                {selectedProduct.companyName}
+                              </span>{' '}
+                              · {selectedProduct.drugClassNameEn}
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                            {classProducts.map((product) => (
-                              <button
-                                key={product.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedId(product.id);
-                                  clearFeedback();
-                                }}
-                                className="flex items-center justify-between gap-2 rounded-lg bg-[#1F2D38] hover:bg-[#1769AA]/25 border border-[#304451] hover:border-[#5DB4F2] px-3.5 py-2.5 text-left transition-colors"
-                              >
-                                <span className="text-sm font-medium text-[#F2F5F8] truncate">
-                                  {product.brandNameEn}
-                                </span>
-                                <StatusText status={product.status} />
-                              </button>
-                            ))}
-                          </div>
+                          <AdminProductInspector
+                            key={
+                              selectedProduct.id +
+                              ':' +
+                              selectedProduct.updatedAt
+                            }
+                            client={client}
+                            product={selectedProduct}
+                            bundle={bundle}
+                            onError={(msg, reasons) => setFailure(msg, reasons)}
+                            onSuccess={async (msg) => {
+                              clearFeedback();
+                              setNotice(msg);
+                              await refresh(selectedProduct.id);
+                            }}
+                          />
                         </div>
-                      ))}
-                    </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="text-xs text-[#B8C3CC] px-1">
+                            Click any drug name below to open its full clinical
+                            information and controls.
+                          </div>
+                          {productsByDrugClass.map(
+                            ([className, classProducts]) => (
+                              <div
+                                key={className}
+                                className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3"
+                              >
+                                <div className="flex items-center justify-between border-b border-[#304451] pb-2">
+                                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[#5DB4F2]">
+                                    {className}
+                                  </h3>
+                                  <span className="text-xs font-mono text-[#B8C3CC]">
+                                    {classProducts.length} drug
+                                    {classProducts.length === 1 ? '' : 's'}
+                                  </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                                  {classProducts.map((product) => (
+                                    <button
+                                      key={product.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedId(product.id);
+                                        clearFeedback();
+                                      }}
+                                      className="flex items-center justify-between gap-2 rounded-lg bg-[#1F2D38] hover:bg-[#1769AA]/25 border border-[#304451] hover:border-[#5DB4F2] px-3.5 py-2.5 text-left transition-colors"
+                                    >
+                                      <span className="text-sm font-medium text-[#F2F5F8] truncate">
+                                        {product.brandNameEn}
+                                      </span>
+                                      <StatusText status={product.status} />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -1049,6 +1141,582 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
           )}
         </main>
       )}
+    </div>
+  );
+}
+
+interface CompanyReviewDraftsViewProps {
+  client: SupabaseClient;
+  bundle: CatalogBundle;
+  companyId: string;
+  draftProducts: CatalogProduct[];
+  onError: (msg: string, reasons?: string[]) => void;
+  onNotice: (msg: string) => void;
+  onRefresh: (preferProductId?: string) => Promise<void>;
+}
+
+function CompanyReviewDraftsView({
+  client,
+  bundle,
+  companyId,
+  draftProducts,
+  onError,
+  onNotice,
+  onRefresh,
+}: CompanyReviewDraftsViewProps) {
+  const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  const [confirmingPublishIds, setConfirmingPublishIds] = useState<
+    string[] | null
+  >(null);
+  const [publishing, setPublishing] = useState(false);
+  const [progressText, setProgressText] = useState<string | null>(null);
+  const [publishSummary, setPublishSummary] =
+    useState<PublishCheckedSummary | null>(null);
+
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [archivingProductId, setArchivingProductId] = useState<string | null>(
+    null
+  );
+  const [archiveReason, setArchiveReason] = useState('');
+  const [archivingBusy, setArchivingBusy] = useState(false);
+
+  const [extraSourcesByProduct, setExtraSourcesByProduct] = useState<
+    Record<string, AiDraftSource[]>
+  >({});
+
+  const draftIdKey = useMemo(
+    () => draftProducts.map((p) => p.id).join(','),
+    [draftProducts]
+  );
+
+  // Load any sources from product_ai_drafts (both sources column and draft.sources) for this company's drafts
+  useEffect(() => {
+    const ids = draftProducts.map((p) => p.id);
+    if (ids.length === 0) return;
+    let active = true;
+    void loadCompanyAiDraftSources(client, ids).then((map) => {
+      if (!active) return;
+      setExtraSourcesByProduct(map);
+    });
+    return () => {
+      active = false;
+    };
+  }, [client, draftIdKey, draftProducts]);
+
+  // Keep checkedIds in sync with remaining draftProducts
+  useEffect(() => {
+    const validIds = new Set(draftProducts.map((p) => p.id));
+    setCheckedIds((prev) => prev.filter((id) => validIds.has(id)));
+  }, [draftProducts]);
+
+  const editingProduct = useMemo(
+    () => draftProducts.find((p) => p.id === editingProductId) ?? null,
+    [draftProducts, editingProductId]
+  );
+
+  if (editingProduct) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setEditingProductId(null)}
+            className={secondaryButtonClass}
+          >
+            ← Back to Review drafts ({draftProducts.length})
+          </button>
+          <span className="text-xs text-[#B8C3CC]">
+            Editing draft:{' '}
+            <strong className="text-[#F2F5F8]">
+              {editingProduct.brandNameEn}
+            </strong>
+          </span>
+        </div>
+
+        <AdminProductEditorForm
+          key={editingProduct.id + ':' + editingProduct.updatedAt}
+          client={client}
+          bundle={bundle}
+          defaultCompanyId={companyId}
+          existingProduct={editingProduct}
+          onCancel={() => setEditingProductId(null)}
+          onError={onError}
+          onSaved={async (productId, status, createdTaxonomy) => {
+            setEditingProductId(null);
+            const addedMsg =
+              createdTaxonomy && createdTaxonomy.length > 0
+                ? ` Added to the catalog: ${createdTaxonomy.join(', ')}.`
+                : '';
+            onNotice(
+              `Product updated (${STATUS_LABELS[status]}).` + addedMsg
+            );
+            await onRefresh(productId);
+          }}
+        />
+      </div>
+    );
+  }
+
+  const allSelected =
+    draftProducts.length > 0 && checkedIds.length === draftProducts.length;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setCheckedIds([]);
+    } else {
+      setCheckedIds(draftProducts.map((p) => p.id));
+    }
+  };
+
+  const toggleProductChecked = (productId: string) => {
+    setCheckedIds((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const handleConfirmPublish = async () => {
+    if (!confirmingPublishIds || confirmingPublishIds.length === 0) return;
+    const targetProducts = draftProducts.filter((p) =>
+      confirmingPublishIds.includes(p.id)
+    );
+    setConfirmingPublishIds(null);
+    if (targetProducts.length === 0) return;
+
+    setPublishing(true);
+    setPublishSummary(null);
+    setProgressText(
+      `Publishing 1 of ${targetProducts.length}: ${targetProducts[0].brandNameEn}…`
+    );
+
+    const summary = await publishCheckedProducts(
+      client,
+      targetProducts.map((p) => ({
+        id: p.id,
+        brandNameEn: p.brandNameEn,
+        status: p.status,
+      })),
+      {
+        onProgress: (idx, total, item) => {
+          setProgressText(
+            `Publishing ${idx} of ${total}: ${item.brandNameEn}…`
+          );
+        },
+      }
+    );
+
+    setProgressText(null);
+    setPublishing(false);
+    setPublishSummary(summary);
+
+    const publishedIds = new Set(
+      summary.results.filter((r) => r.ok).map((r) => r.id)
+    );
+    setCheckedIds((prev) => prev.filter((id) => !publishedIds.has(id)));
+    await onRefresh();
+  };
+
+  const handleConfirmArchive = async (product: CatalogProduct) => {
+    const cleanReason = archiveReason.trim();
+    if (!cleanReason) {
+      onError('Please enter a reason for archiving this product.');
+      return;
+    }
+    setArchivingBusy(true);
+    const res = await rpcAdminArchiveProduct(client, product.id, cleanReason);
+    setArchivingBusy(false);
+
+    if (!res.ok) {
+      onError(res.message, res.reasons);
+      return;
+    }
+
+    setArchivingProductId(null);
+    setArchiveReason('');
+    setCheckedIds((prev) => prev.filter((id) => id !== product.id));
+    onNotice(`Archived "${product.brandNameEn}".`);
+    await onRefresh();
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Review Toolbar: Select all + Publish checked (N) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] p-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="inline-flex items-center gap-2 text-xs font-medium text-[#F2F5F8] cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              disabled={draftProducts.length === 0 || publishing}
+              onChange={toggleSelectAll}
+              className="accent-[#1769AA] h-4 w-4"
+            />
+            <span>Select all ({draftProducts.length})</span>
+          </label>
+          <span className="text-xs text-[#B8C3CC]">
+            Check each product against its official source before publishing.
+          </span>
+        </div>
+
+        <button
+          type="button"
+          disabled={checkedIds.length === 0 || publishing}
+          onClick={() => {
+            setPublishSummary(null);
+            setConfirmingPublishIds(checkedIds);
+          }}
+          className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
+        >
+          Publish checked ({checkedIds.length})
+        </button>
+      </div>
+
+      {/* Confirmation prompt before publishing */}
+      {confirmingPublishIds && confirmingPublishIds.length > 0 && (
+        <div className="rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B] p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm font-medium text-[#F59E0B]">
+            Publish {confirmingPublishIds.length} products? Doctors will see
+            them.
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={publishing}
+              onClick={() => void handleConfirmPublish()}
+              className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
+            >
+              Confirm Publish
+            </button>
+            <button
+              type="button"
+              disabled={publishing}
+              onClick={() => setConfirmingPublishIds(null)}
+              className={secondaryButtonClass}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Progress line during publishing */}
+      {publishing && progressText && (
+        <Banner tone="warn">{progressText}</Banner>
+      )}
+
+      {/* Result list after publishing */}
+      {publishSummary && (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs font-semibold text-[#F2F5F8]">
+              Publish results: {publishSummary.publishedCount} published,{' '}
+              {publishSummary.failedCount} failed
+            </div>
+            <button
+              type="button"
+              onClick={() => setPublishSummary(null)}
+              className="text-xs text-[#B8C3CC] hover:text-white"
+            >
+              Dismiss
+            </button>
+          </div>
+          <ul className="divide-y divide-[#304451] text-xs">
+            {publishSummary.results.map((item) => (
+              <li
+                key={item.id}
+                className="py-2 flex flex-wrap items-start justify-between gap-2"
+              >
+                <span className="font-medium text-[#F2F5F8]">
+                  {item.brandNameEn}
+                </span>
+                {item.ok ? (
+                  <span className="text-[#38C976] font-semibold">
+                    Published
+                  </span>
+                ) : (
+                  <div className="text-right text-[#FF7272]">
+                    <div>Failed: {item.message}</div>
+                    {item.reasons && item.reasons.length > 0 && (
+                      <div className="text-[#B8C3CC] mt-0.5">
+                        {item.reasons.join(' · ')}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {draftProducts.length === 0 ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-2">
+          <div className="text-base font-medium text-[#F2F5F8]">
+            No draft or changes-requested products for this company
+          </div>
+          <p className="text-xs text-[#B8C3CC]">
+            All products for this company have been reviewed or archived.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {draftProducts.map((product) => {
+            const isChecked = checkedIds.includes(product.id);
+            const market = product.market;
+            const enClinical = product.marketTranslations.en;
+            const sources = extractAiDraftSources(
+              product.aiSources ?? [],
+              { sources: extraSourcesByProduct[product.id] ?? [] }
+            );
+            const sourceWarning = getProductSourceWarning(sources);
+            const isArchiving = archivingProductId === product.id;
+
+            return (
+              <div
+                key={product.id}
+                className={`rounded-xl bg-[#263744] border p-5 space-y-4 transition-colors ${
+                  isChecked ? 'border-[#5DB4F2]' : 'border-[#304451]'
+                }`}
+              >
+                {/* Row Top Bar */}
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#304451] pb-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="inline-flex items-center gap-2 rounded-md bg-[#1F2D38] border border-[#304451] px-3 py-1.5 text-xs font-medium text-[#F2F5F8] cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        disabled={publishing}
+                        onChange={() => toggleProductChecked(product.id)}
+                        className="accent-[#1769AA] h-4 w-4"
+                      />
+                      <span>Checked</span>
+                    </label>
+
+                    <div>
+                      <div className="flex flex-wrap items-baseline gap-2.5">
+                        <h3 className="text-base font-semibold text-[#F2F5F8]">
+                          {product.brandNameEn}
+                        </h3>
+                        <span
+                          dir="rtl"
+                          className="text-sm text-[#B8C3CC] font-medium"
+                        >
+                          {product.brandNameAr ?? '—'}
+                        </span>
+                        <StatusText status={product.status} />
+                      </div>
+                    </div>
+
+                    {sourceWarning && (
+                      <span className="rounded-md bg-[#F59E0B]/15 border border-[#F59E0B]/60 px-2.5 py-1 text-xs font-semibold text-[#F59E0B]">
+                        {sourceWarning}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={publishing}
+                      onClick={() => setEditingProductId(product.id)}
+                      className={secondaryButtonClass}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      disabled={publishing}
+                      onClick={() => {
+                        setPublishSummary(null);
+                        setConfirmingPublishIds([product.id]);
+                      }}
+                      className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-3 py-2 transition-colors"
+                    >
+                      Publish
+                    </button>
+                    <button
+                      type="button"
+                      disabled={publishing}
+                      onClick={() => {
+                        setArchivingProductId(isArchiving ? null : product.id);
+                        setArchiveReason('');
+                      }}
+                      className="rounded-md bg-[#1F2D38] hover:bg-[#B42318] border border-[#304451] text-[#B8C3CC] hover:text-white text-xs font-medium px-3 py-2 transition-colors"
+                    >
+                      Archive
+                    </button>
+                  </div>
+                </div>
+
+                {/* Inline Archive Reason Prompt */}
+                {isArchiving && (
+                  <div className="rounded-lg bg-[#1F2D38] border border-[#B42318]/60 p-3.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                    <input
+                      type="text"
+                      value={archiveReason}
+                      onChange={(e) => setArchiveReason(e.target.value)}
+                      placeholder="Reason for archiving this product…"
+                      className={`${inputClass} flex-1`}
+                    />
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        disabled={archivingBusy || !archiveReason.trim()}
+                        onClick={() => void handleConfirmArchive(product)}
+                        className="rounded-md bg-[#B42318] hover:bg-[#991B1B] disabled:opacity-50 text-white text-xs font-medium px-3.5 py-2 transition-colors"
+                      >
+                        {archivingBusy ? 'Archiving…' : 'Confirm Archive'}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={archivingBusy}
+                        onClick={() => {
+                          setArchivingProductId(null);
+                          setArchiveReason('');
+                        }}
+                        className={secondaryButtonClass}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Presentation & Taxonomy Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 text-xs">
+                  <ReviewField
+                    label="Generic"
+                    value={product.genericNameEn ?? '—'}
+                  />
+                  <ReviewField
+                    label="Strength"
+                    value={market?.strength || '—'}
+                    mono
+                  />
+                  <ReviewField
+                    label="Dosage Form"
+                    value={market?.dosageForm || '—'}
+                  />
+                  <ReviewField label="Route" value={market?.route || '—'} />
+                  <ReviewField
+                    label="Pack Size"
+                    value={market?.packSize || '—'}
+                    mono
+                  />
+                  <ReviewField
+                    label="Category"
+                    value={CATEGORY_LABELS[product.category]}
+                  />
+                  <ReviewField
+                    label="Drug Class"
+                    value={product.drugClassNameEn}
+                  />
+                  <ReviewField
+                    label="Specialties"
+                    value={
+                      product.specialtyNamesEn.length > 0
+                        ? product.specialtyNamesEn.join(', ')
+                        : '—'
+                    }
+                  />
+                </div>
+
+                {/* 5 Clinical Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 text-xs">
+                  <ReviewClinicalField
+                    label="Indications"
+                    value={enClinical?.approvedIndications || '—'}
+                  />
+                  <ReviewClinicalField
+                    label="Usual Adult Dose"
+                    value={enClinical?.usualAdultDose || '—'}
+                  />
+                  <ReviewClinicalField
+                    label="Contraindications"
+                    value={enClinical?.contraindications || '—'}
+                  />
+                  <ReviewClinicalField
+                    label="Common Adverse Effects"
+                    value={enClinical?.commonAdverseEffects || '—'}
+                  />
+                  <div className="md:col-span-2">
+                    <ReviewClinicalField
+                      label="Storage"
+                      value={enClinical?.storageConditions || '—'}
+                    />
+                  </div>
+                </div>
+
+                {/* AI Sources */}
+                <div className="text-xs space-y-1">
+                  <div className="text-[#B8C3CC] font-medium">
+                    AI Sources (product_ai_drafts):
+                  </div>
+                  {sources.length === 0 ? (
+                    <div className="text-[#F59E0B]">No source recorded</div>
+                  ) : (
+                    <ul className="list-disc list-inside space-y-1">
+                      {sources.map((src) => (
+                        <li key={src.url}>
+                          <a
+                            href={src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#5DB4F2] hover:underline break-all"
+                          >
+                            {src.title} ({src.url})
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReviewField({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="rounded-lg bg-[#1F2D38]/70 border border-[#304451]/70 px-3 py-2">
+      <div className="text-[#B8C3CC]">{label}</div>
+      <div
+        className={`text-[#F2F5F8] mt-0.5 break-words ${
+          mono ? 'font-mono tabular-nums' : 'font-medium'
+        }`}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function ReviewClinicalField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="space-y-0.5">
+      <div className="text-[#B8C3CC] font-medium">{label}</div>
+      <p className="text-[#F2F5F8] whitespace-pre-line leading-relaxed">
+        {value}
+      </p>
     </div>
   );
 }
@@ -1227,7 +1895,9 @@ function AdminProductEditorForm({
   const [brandNameEn, setBrandNameEn] = useState(
     existingProduct?.brandNameEn ?? ''
   );
-  const [brandNameAr, setBrandNameAr] = useState<string | null>(null);
+  const [brandNameAr, setBrandNameAr] = useState<string>(
+    existingProduct?.brandNameAr ?? ''
+  );
   const [category, setCategory] = useState<ProductCategory>(
     existingProduct?.category ?? 'prescription_drug'
   );
@@ -1265,19 +1935,6 @@ function AdminProductEditorForm({
   );
   const [marketStatus, setMarketStatus] = useState<IraqMarketStatus>(
     existingProduct?.market?.marketStatus ?? 'marketed_in_iraq'
-  );
-  const [registrationStatus, setRegistrationStatus] =
-    useState<ProductRegistrationStatus>(
-      existingProduct?.market?.registrationStatus ?? 'not_recorded'
-    );
-  const [registrationNumber, setRegistrationNumber] = useState(
-    existingProduct?.market?.registrationNumber ?? ''
-  );
-  const [registrationAuthority, setRegistrationAuthority] = useState(
-    existingProduct?.market?.registrationAuthority ?? ''
-  );
-  const [registrationExpiresOn, setRegistrationExpiresOn] = useState(
-    existingProduct?.market?.registrationExpiresOn ?? ''
   );
 
   const [approvedIndications, setApprovedIndications] = useState(
@@ -1412,9 +2069,9 @@ function AdminProductEditorForm({
       return;
     }
 
-    // Fill form fields from draft (do NOT save, do NOT touch registration or marketStatus)
+    // Fill form fields from draft (do NOT save, do NOT touch marketStatus)
     setBrandNameEn(draft.brandName ?? '');
-    setBrandNameAr(draft.brandNameAr?.trim() ? draft.brandNameAr.trim() : null);
+    setBrandNameAr(draft.brandNameAr?.trim() ? draft.brandNameAr.trim() : '');
 
     const nextCategory: ProductCategory =
       draft.category === 'prescription_drug' ||
@@ -1579,7 +2236,7 @@ function AdminProductEditorForm({
       existingProduct,
       companyId,
       brandNameEn,
-      brandNameAr,
+      brandNameAr: brandNameAr.trim() || null,
       category,
       drugClassId: resolvedDrugClassId,
       genericDrugId: resolvedGenericDrugId,
@@ -1588,10 +2245,10 @@ function AdminProductEditorForm({
       route,
       packSize,
       marketStatus,
-      registrationStatus,
-      registrationNumber,
-      registrationAuthority,
-      registrationExpiresOn,
+      registrationStatus: 'not_recorded',
+      registrationNumber: '',
+      registrationAuthority: '',
+      registrationExpiresOn: '',
       approvedIndications,
       usualAdultDose,
       contraindications,
@@ -1800,6 +2457,16 @@ function AdminProductEditorForm({
           />
         </Field>
 
+        <Field label="Brand / Trade Name (AR)">
+          <input
+            type="text"
+            dir="rtl"
+            value={brandNameAr}
+            onChange={(e) => setBrandNameAr(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
         <Field label="Category">
           <select
             value={category}
@@ -1949,59 +2616,6 @@ function AdminProductEditorForm({
             )}
           </select>
         </Field>
-
-        <Field label="Registration Status">
-          <select
-            value={registrationStatus}
-            onChange={(e) =>
-              setRegistrationStatus(
-                e.target.value as ProductRegistrationStatus
-              )
-            }
-            className={inputClass}
-          >
-            {(
-              Object.keys(
-                REGISTRATION_STATUS_LABELS
-              ) as ProductRegistrationStatus[]
-            ).map((rs) => (
-              <option key={rs} value={rs}>
-                {REGISTRATION_STATUS_LABELS[rs]}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        {registrationStatus !== 'not_recorded' && (
-          <>
-            <Field label="Registration Number">
-              <input
-                type="text"
-                required
-                value={registrationNumber}
-                onChange={(e) => setRegistrationNumber(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
-            <Field label="Registration Authority">
-              <input
-                type="text"
-                required
-                value={registrationAuthority}
-                onChange={(e) => setRegistrationAuthority(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
-            <Field label="Registration Expiry">
-              <input
-                type="date"
-                value={registrationExpiresOn}
-                onChange={(e) => setRegistrationExpiresOn(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
-          </>
-        )}
       </div>
 
       {/* Clinical Monograph Fields */}
@@ -2115,19 +2729,11 @@ function AdminProductEditorForm({
         </button>
         <button
           type="button"
-          className={secondaryButtonClass}
+          className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 transition-colors"
           disabled={busy}
           onClick={() => void handleSave(false)}
         >
           {busy ? 'Saving…' : 'Save as Draft'}
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void handleSave(true)}
-          className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2.5 transition-colors"
-        >
-          {busy ? 'Publishing…' : 'Save & Publish to Doctor Catalog'}
         </button>
       </div>
     </section>
@@ -2157,7 +2763,7 @@ function AdminProductInspector({
   const [archiveReason, setArchiveReason] = useState('');
   const [restoreReason, setRestoreReason] = useState('');
   const [restoreDestination, setRestoreDestination] =
-    useState<ProductStatus>('published');
+    useState<ProductStatus>('draft');
 
   const market = product.market;
   const enClinical = product.marketTranslations.en;
@@ -2178,25 +2784,12 @@ function AdminProductInspector({
               ? ` Added to the catalog: ${createdTaxonomy.join(', ')}.`
               : '';
           await onSuccess(
-            (status === 'published'
-              ? 'Product updated and published to the Official Doctor Catalog.'
-              : `Product updated (${STATUS_LABELS[status]}).`) + addedMsg
+            `Product updated (${STATUS_LABELS[status]}).` + addedMsg
           );
         }}
       />
     );
   }
-
-  const handlePublish = async () => {
-    setBusy(true);
-    const res = await publishProduct(client, product);
-    setBusy(false);
-    if (!res.ok) {
-      onError(res.message, res.reasons);
-      return;
-    }
-    await onSuccess('Product published to the Official Doctor Catalog.');
-  };
 
   const handleRequestChanges = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2279,6 +2872,11 @@ function AdminProductInspector({
           <h2 className="text-2xl font-semibold text-[#F2F5F8] mt-1">
             {product.brandNameEn}
           </h2>
+          {product.brandNameAr && (
+            <div dir="rtl" className="text-sm text-[#B8C3CC] mt-0.5">
+              {product.brandNameAr}
+            </div>
+          )}
           <div className="text-xs text-[#5DB4F2] mt-1">
             {product.companyName}
           </div>
@@ -2292,16 +2890,6 @@ function AdminProductInspector({
           >
             Edit Product Details
           </button>
-          {product.status !== 'published' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void handlePublish()}
-              className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
-            >
-              {busy ? 'Publishing…' : 'Publish to Doctor Catalog'}
-            </button>
-          )}
         </div>
       </div>
 
@@ -2470,24 +3058,6 @@ function AdminProductInspector({
               <InspectCell
                 label="Market Status"
                 value={MARKET_STATUS_LABELS[market.marketStatus]}
-              />
-              <InspectCell
-                label="Registration Status"
-                value={REGISTRATION_STATUS_LABELS[market.registrationStatus]}
-              />
-              <InspectCell
-                label="Registration Number"
-                value={market.registrationNumber ?? '—'}
-                mono
-              />
-              <InspectCell
-                label="Registration Authority"
-                value={market.registrationAuthority ?? '—'}
-              />
-              <InspectCell
-                label="Registration Expiry"
-                value={market.registrationExpiresOn ?? '—'}
-                mono
               />
             </>
           )}

@@ -14,11 +14,13 @@ import {
   invokeAiFindCompanyProducts,
   invokeAiSuggestCompanies,
   loadProductAiDraft,
+  loadProductDetail,
   parsePublishChecklistErrors,
   rpcAdminArchiveCompany,
   rpcAdminEnsureGenericDrug,
   rpcAdminEnsureSpecialties,
   rpcAdminSaveAiProductDraft,
+  searchCatalogProducts,
   type CatalogProduct,
   type TaxonomyItem,
 } from './catalog';
@@ -586,6 +588,286 @@ describe('fetchAllPages and fetchInChunksPaged', () => {
       [0, 999],
       [1000, 1999],
       [2000, 2999],
+    ]);
+  });
+});
+
+describe('searchCatalogProducts and loadProductDetail', () => {
+  it('calls search_catalog_products RPC with trimmed filters and normalizes total_count', async () => {
+    const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const client = {
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        rpcCalls.push({ fn, args });
+        return {
+          data: [
+            {
+              product_id: 'prod-42',
+              brand_name_en: 'Pentasa 500 mg',
+              brand_name_ar: 'بنتاسا 500 ملغ',
+              generic_name_en: 'Mesalazine',
+              company_id: 'comp-ferring',
+              company_name: 'Ferring Pharmaceuticals',
+              drug_class_name_en: 'Aminosalicylates',
+              category: 'prescription_drug',
+              strength: '500 mg',
+              dosage_form: 'Prolonged-release tablet',
+              published_at: '2026-11-01T10:00:00Z',
+              total_count: '134',
+            },
+          ],
+          error: null,
+        };
+      },
+    } as unknown as SupabaseClient;
+
+    const res = await searchCatalogProducts(client, {
+      query: '  pentasa  ',
+      companyId: ' comp-ferring ',
+      specialtyId: '',
+      limit: 20,
+      offset: 0,
+    });
+
+    expect(rpcCalls).toEqual([
+      {
+        fn: 'search_catalog_products',
+        args: {
+          p_query: 'pentasa',
+          p_company_id: 'comp-ferring',
+          p_specialty_id: null,
+          p_limit: 20,
+          p_offset: 0,
+        },
+      },
+    ]);
+    expect(res).toEqual({
+      ok: true,
+      data: {
+        totalCount: 134,
+        rows: [
+          {
+            productId: 'prod-42',
+            brandNameEn: 'Pentasa 500 mg',
+            brandNameAr: 'بنتاسا 500 ملغ',
+            genericNameEn: 'Mesalazine',
+            companyId: 'comp-ferring',
+            companyName: 'Ferring Pharmaceuticals',
+            drugClassNameEn: 'Aminosalicylates',
+            category: 'prescription_drug',
+            strength: '500 mg',
+            dosageForm: 'Prolonged-release tablet',
+            publishedAt: '2026-11-01T10:00:00Z',
+            totalCount: 134,
+          },
+        ],
+      },
+    });
+  });
+
+  it('loads a single product detail with .eq(product_id, id) queries without loading all products', async () => {
+    const eqCalls: Array<{ table: string; column: string; value: unknown }> = [];
+    const inCalls: Array<{ table: string; column: string; values: unknown[] }> = [];
+
+    const client = {
+      from: (table: string) => ({
+        select: () => ({
+          eq: (column: string, value: unknown) => {
+            eqCalls.push({ table, column, value });
+            if (table === 'products') {
+              return {
+                maybeSingle: async () => ({
+                  data: {
+                    id: 'prod-42',
+                    company_id: 'comp-ferring',
+                    generic_drug_id: 'gen-mesa',
+                    drug_class_id: 'class-asa',
+                    category: 'prescription_drug',
+                    status: 'published',
+                    submitted_at: '2026-11-01T08:00:00Z',
+                    reviewed_at: '2026-11-01T10:00:00Z',
+                    review_reason: null,
+                    created_at: '2026-11-01T07:00:00Z',
+                    updated_at: '2026-11-01T10:00:00Z',
+                  },
+                  error: null,
+                }),
+              };
+            }
+            if (table === 'companies') {
+              return {
+                maybeSingle: async () => ({
+                  data: {
+                    id: 'comp-ferring',
+                    company_name: 'Ferring Pharmaceuticals',
+                    status: 'verified',
+                  },
+                  error: null,
+                }),
+              };
+            }
+            if (table === 'product_translations') {
+              return Promise.resolve({
+                data: [
+                  {
+                    product_id: 'prod-42',
+                    locale: 'en',
+                    brand_name: 'Pentasa 500 mg',
+                  },
+                  {
+                    product_id: 'prod-42',
+                    locale: 'ar',
+                    brand_name: 'بنتاسا 500 ملغ',
+                  },
+                ],
+                error: null,
+              });
+            }
+            if (table === 'product_markets') {
+              return Promise.resolve({
+                data: [
+                  {
+                    id: 'mkt-42',
+                    product_id: 'prod-42',
+                    strength: '500 mg',
+                    dosage_form: 'Prolonged-release tablet',
+                    route: 'Oral',
+                    pack_size: '100 tablets',
+                    market_status: 'marketed_in_iraq',
+                    registration_status: 'not_recorded',
+                    registration_number: null,
+                    registration_authority: null,
+                    registration_expires_on: null,
+                  },
+                ],
+                error: null,
+              });
+            }
+            if (table === 'product_market_translations') {
+              return Promise.resolve({
+                data: [
+                  {
+                    product_market_id: 'mkt-42',
+                    locale: 'en',
+                    storage_conditions: 'Do not store above 25°C.',
+                    approved_indications: 'Ulcerative colitis and Crohn disease.',
+                    usualAdultDose: undefined,
+                    usual_adult_dose: 'Up to 4 g daily in divided doses.',
+                    contraindications: 'Severe renal or hepatic impairment.',
+                    common_adverse_effects: 'Headache, diarrhoea, nausea.',
+                  },
+                ],
+                error: null,
+              });
+            }
+            if (table === 'product_specialties') {
+              return Promise.resolve({
+                data: [{ product_id: 'prod-42', specialty_id: 'spec-gastro' }],
+                error: null,
+              });
+            }
+            if (table === 'drug_class_translations') {
+              return Promise.resolve({
+                data: [
+                  {
+                    drug_class_id: 'class-asa',
+                    locale: 'en',
+                    name: 'Aminosalicylates',
+                  },
+                ],
+                error: null,
+              });
+            }
+            if (table === 'generic_drug_translations') {
+              return Promise.resolve({
+                data: [
+                  {
+                    generic_drug_id: 'gen-mesa',
+                    locale: 'en',
+                    name: 'Mesalazine',
+                  },
+                ],
+                error: null,
+              });
+            }
+            if (table === 'product_media') {
+              return Promise.resolve({ data: [], error: null });
+            }
+            if (table === 'product_brochures') {
+              return Promise.resolve({ data: [], error: null });
+            }
+            if (table === 'product_search_keywords') {
+              return Promise.resolve({
+                data: [
+                  {
+                    product_id: 'prod-42',
+                    locale: 'en',
+                    keyword: '5-ASA',
+                    keyword_type: 'synonym',
+                  },
+                ],
+                error: null,
+              });
+            }
+            return Promise.resolve({ data: [], error: null });
+          },
+          in: (column: string, values: unknown[]) => {
+            inCalls.push({ table, column, values });
+            if (table === 'specialty_translations') {
+              return Promise.resolve({
+                data: [
+                  {
+                    specialty_id: 'spec-gastro',
+                    locale: 'en',
+                    name: 'Gastroenterology',
+                  },
+                ],
+                error: null,
+              });
+            }
+            return Promise.resolve({ data: [], error: null });
+          },
+        }),
+      }),
+    } as unknown as SupabaseClient;
+
+    const res = await loadProductDetail(client, ' prod-42 ');
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.data.id).toBe('prod-42');
+      expect(res.data.brandNameEn).toBe('Pentasa 500 mg');
+      expect(res.data.brandNameAr).toBe('بنتاسا 500 ملغ');
+      expect(res.data.genericNameEn).toBe('Mesalazine');
+      expect(res.data.drugClassNameEn).toBe('Aminosalicylates');
+      expect(res.data.companyName).toBe('Ferring Pharmaceuticals');
+      expect(res.data.specialtyNamesEn).toEqual(['Gastroenterology']);
+      expect(res.data.market?.strength).toBe('500 mg');
+      expect(res.data.marketTranslations.en?.approvedIndications).toBe(
+        'Ulcerative colitis and Crohn disease.'
+      );
+      expect(res.data.searchKeywords).toEqual(['5-ASA']);
+    }
+
+    expect(eqCalls).toContainEqual({
+      table: 'product_translations',
+      column: 'product_id',
+      value: 'prod-42',
+    });
+    expect(eqCalls).toContainEqual({
+      table: 'product_markets',
+      column: 'product_id',
+      value: 'prod-42',
+    });
+    expect(eqCalls).toContainEqual({
+      table: 'product_market_translations',
+      column: 'product_market_id',
+      value: 'mkt-42',
+    });
+    expect(inCalls).toEqual([
+      {
+        table: 'specialty_translations',
+        column: 'specialty_id',
+        values: ['spec-gastro'],
+      },
     ]);
   });
 });

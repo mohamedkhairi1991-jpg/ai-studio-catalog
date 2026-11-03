@@ -55,6 +55,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (speed fix 2: server-side doctor search)
+- **What changed:**
+  - Updated `src/components/DoctorCatalog.tsx` to stop using `loadCatalogBundle` and instead query `search_catalog_products` (`p_limit: 20`, `p_offset`) with a 300 ms search debounce, stale-response cancellation, `"Showing X of Y"`, `"Load more"`, verified company / active specialty filters (`loadVerifiedCompanies` and `loadSpecialtiesCatalog`), and the `"No published products match your search."` empty state.
+  - Added `loadProductDetail(client, productId)` and `searchCatalogProducts(client, input)` in `src/lib/catalog.ts` (with unit tests in `src/lib/catalog.test.ts`) so selecting a product loads only that single product's clinical and presentation records via `.eq('product_id', id)` queries, with registration number/status fields omitted from the doctor detail view.
+- **Why:** Doctors now fetch one 20-row page of search results and one product detail on demand instead of downloading the entire catalog on login.
+- **Next for Claude:** Review and merge the synced PR from `ai-studio-catalog`.
+
 ### 2026-11-02 — Claude (speed fix 2 backend: doctor search)
 - **New RPC `public.search_catalog_products(query, company, specialty, limit, offset)`** —
   live (migration `20261102193305_doctor_catalog_search.sql`), 12 pgTAP tests.

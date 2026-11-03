@@ -25,7 +25,7 @@ import {
   type ProductStatus,
 } from '../lib/catalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
-import { BrandLogo, Field, buttonClass, inputClass, secondaryButtonClass } from './ui';
+import { BrandLogo, Field, LegalFooter, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
   client: SupabaseClient;
@@ -444,6 +444,7 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
           </div>
         )}
       </main>
+      <LegalFooter />
     </div>
   );
 }

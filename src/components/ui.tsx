@@ -44,15 +44,112 @@ export function BrandLogo({ className = 'text-lg' }: { className?: string }) {
   );
 }
 
+export function LegalFooter({ className = '' }: { className?: string }) {
+  const goTo = (target: '/privacy' | '/terms') => {
+    if (window.location.hash === `#${target}`) {
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    } else {
+      window.location.hash = target;
+    }
+  };
+
+  return (
+    <footer
+      className={`border-t border-[#304451] py-3 px-4 text-xs text-[#B8C3CC] flex items-center justify-center gap-3 ${className}`}
+    >
+      <a
+        href="#/privacy"
+        onClick={(e) => {
+          e.preventDefault();
+          goTo('/privacy');
+        }}
+        className="text-[#5DB4F2] hover:underline"
+      >
+        Privacy
+      </a>
+      <span className="text-[#304451]" aria-hidden="true">
+        ·
+      </span>
+      <a
+        href="#/terms"
+        onClick={(e) => {
+          e.preventDefault();
+          goTo('/terms');
+        }}
+        className="text-[#5DB4F2] hover:underline"
+      >
+        Terms
+      </a>
+    </footer>
+  );
+}
+
+export function TermsAcceptanceCheckbox({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  const goTo = (target: '/privacy' | '/terms') => {
+    if (window.location.hash === `#${target}`) {
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    } else {
+      window.location.hash = target;
+    }
+  };
+
+  return (
+    <label className="flex items-start gap-2.5 text-xs text-[#B8C3CC] cursor-pointer select-none">
+      <input
+        type="checkbox"
+        required
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#304451] bg-[#1F2D38] accent-[#1769AA]"
+      />
+      <span>
+        I have read and accept the{' '}
+        <a
+          href="#/terms"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            goTo('/terms');
+          }}
+          className="text-[#5DB4F2] hover:underline"
+        >
+          Terms of Use
+        </a>{' '}
+        and the{' '}
+        <a
+          href="#/privacy"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            goTo('/privacy');
+          }}
+          className="text-[#5DB4F2] hover:underline"
+        >
+          Privacy Policy
+        </a>
+      </span>
+    </label>
+  );
+}
+
 export function Screen({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
-    <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex items-center justify-center p-4">
-      <div className={`w-full ${wide ? 'max-w-3xl' : 'max-w-md'} bg-[#263744] border border-[#304451] rounded-lg p-6 space-y-4`}>
-        <h1 className="text-xl font-semibold">
-          <BrandLogo className="text-xl" />
-        </h1>
-        {children}
+    <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col justify-between p-4">
+      <div className="flex-1 flex items-center justify-center py-4">
+        <div className={`w-full ${wide ? 'max-w-3xl' : 'max-w-md'} bg-[#263744] border border-[#304451] rounded-lg p-6 space-y-4`}>
+          <h1 className="text-xl font-semibold">
+            <BrandLogo className="text-xl" />
+          </h1>
+          {children}
+        </div>
       </div>
+      <LegalFooter />
     </div>
   );
 }

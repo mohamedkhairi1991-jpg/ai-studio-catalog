@@ -13,7 +13,7 @@ import {
   type DoctorSearchRow,
   type TaxonomyItem,
 } from '../lib/catalog';
-import { BrandLogo, inputClass, secondaryButtonClass } from './ui';
+import { BrandLogo, LegalFooter, inputClass, secondaryButtonClass } from './ui';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -411,6 +411,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           </div>
         )}
       </main>
+      <LegalFooter />
     </div>
   );
 }

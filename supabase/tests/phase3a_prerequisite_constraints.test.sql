@@ -112,6 +112,7 @@ select throws_ok(
     update public.healthcare_professionals
     set
       verification_status = 'approved',
+      specialty_id = null,
       reviewed_by = (
         select id from public.profiles
         where auth_user_id = '41000000-0000-4000-8000-000000000001'
@@ -121,7 +122,7 @@ select throws_ok(
   $$,
   '23514',
   null,
-  'approval without license is rejected'
+  'approval without a specialty is rejected'
 );
 
 select throws_ok(

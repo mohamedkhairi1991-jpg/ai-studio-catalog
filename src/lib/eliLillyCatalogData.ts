@@ -4,7 +4,6 @@ const LILLY_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url
 
 interface CompactLillyDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toLillyProductDraft(item: CompactLillyDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   // =========================================================================
   {
     brandName: 'Humalog KwikPen 100 units/mL',
-    brandNameAr: 'هيومالوغ كويكبن 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Rapid-Acting Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -78,7 +75,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humalog KwikPen 200 units/mL',
-    brandNameAr: 'هيومالوغ كويكبن 200 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Rapid-Acting Insulin Analogues (Concentrated)',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -101,7 +97,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humalog 100 units/mL Cartridge',
-    brandNameAr: 'هيومالوغ 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Rapid-Acting Insulin Analogues',
     dosageForm: 'Solution for injection in cartridge',
@@ -124,7 +119,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humalog 100 units/mL Vial',
-    brandNameAr: 'هيومالوغ 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Rapid-Acting Insulin Analogues',
     dosageForm: 'Solution for injection in vial',
@@ -147,7 +141,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humalog Mix25 KwikPen 100 units/mL',
-    brandNameAr: 'هيومالوغ ميكس 25 كويكبن 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (25% Soluble / 75% Protamine)',
     dosageForm: 'Suspension for injection in pre-filled pen (KwikPen)',
@@ -170,7 +163,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humalog Mix25 100 units/mL Cartridge',
-    brandNameAr: 'هيومالوغ ميكس 25 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (25% Soluble / 75% Protamine)',
     dosageForm: 'Suspension for injection in cartridge',
@@ -193,7 +185,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humalog Mix50 KwikPen 100 units/mL',
-    brandNameAr: 'هيومالوغ ميكس 50 كويكبن 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (50% Soluble / 50% Protamine)',
     dosageForm: 'Suspension for injection in pre-filled pen (KwikPen)',
@@ -216,7 +207,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humalog Mix50 100 units/mL Cartridge',
-    brandNameAr: 'هيومالوغ ميكس 50 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Biphasic (Premixed) Insulin Analogues (50% Soluble / 50% Protamine)',
     dosageForm: 'Suspension for injection in cartridge',
@@ -239,7 +229,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Lyumjev KwikPen 100 units/mL',
-    brandNameAr: 'ليومجيف كويكبن 100 وحدة/مل',
     genericName: 'Insulin lispro',
     drugClassNameEn: 'Ultra-Rapid-Acting Mealtime Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -262,7 +251,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Abasaglar KwikPen 100 units/mL',
-    brandNameAr: 'أباساغلار كويكبن 100 وحدة/مل',
     genericName: 'Insulin glargine',
     drugClassNameEn: 'Long-Acting Basal Insulin Analogues',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -285,7 +273,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humulin R 100 units/mL Vial',
-    brandNameAr: 'هيومولين آر 100 وحدة/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Short-Acting Regular Human Insulins (rDNA)',
     dosageForm: 'Solution for injection in vial',
@@ -308,7 +295,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humulin R 100 units/mL Cartridge',
-    brandNameAr: 'هيومولين آر 100 وحدة/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Short-Acting Regular Human Insulins (rDNA)',
     dosageForm: 'Solution for injection in cartridge',
@@ -331,7 +317,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humulin N 100 units/mL Vial',
-    brandNameAr: 'هيومولين إن 100 وحدة/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Intermediate-Acting Isophane (NPH) Human Insulins',
     dosageForm: 'Suspension for injection in vial',
@@ -354,7 +339,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humulin N KwikPen 100 units/mL',
-    brandNameAr: 'هيومولين إن كويكبن 100 وحدة/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Intermediate-Acting Isophane (NPH) Human Insulins',
     dosageForm: 'Suspension for injection in pre-filled pen (KwikPen)',
@@ -377,7 +361,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humulin 70/30 100 units/mL Vial',
-    brandNameAr: 'هيومولين 70/30 100 وحدة/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Biphasic (Premixed) Human Insulins (70% Isophane / 30% Soluble)',
     dosageForm: 'Suspension for injection in vial',
@@ -400,7 +383,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Humulin 70/30 KwikPen 100 units/mL',
-    brandNameAr: 'هيومولين 70/30 كويكبن 100 وحدة/مل',
     genericName: 'Insulin human',
     drugClassNameEn: 'Biphasic (Premixed) Human Insulins (70% Isophane / 30% Soluble)',
     dosageForm: 'Suspension for injection in pre-filled pen (KwikPen)',
@@ -427,7 +409,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   // =========================================================================
   {
     brandName: 'Trulicity 0.75 mg/0.5 mL',
-    brandNameAr: 'تروليسيتي 0.75 ملغم/0.5 مل',
     genericName: 'Dulaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -450,7 +431,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Trulicity 1.5 mg/0.5 mL',
-    brandNameAr: 'تروليسيتي 1.5 ملغم/0.5 مل',
     genericName: 'Dulaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -473,7 +453,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Trulicity 3 mg/0.5 mL',
-    brandNameAr: 'تروليسيتي 3 ملغم/0.5 مل',
     genericName: 'Dulaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -496,7 +475,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Trulicity 4.5 mg/0.5 mL',
-    brandNameAr: 'تروليسيتي 4.5 ملغم/0.5 مل',
     genericName: 'Dulaglutide',
     drugClassNameEn: 'Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -519,7 +497,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Mounjaro KwikPen 2.5 mg',
-    brandNameAr: 'مونجارو كويكبن 2.5 ملغم',
     genericName: 'Tirzepatide',
     drugClassNameEn: 'Dual GIP and GLP-1 Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -542,7 +519,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Mounjaro KwikPen 5 mg',
-    brandNameAr: 'مونجارو كويكبن 5 ملغم',
     genericName: 'Tirzepatide',
     drugClassNameEn: 'Dual GIP and GLP-1 Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -565,7 +541,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Mounjaro KwikPen 7.5 mg',
-    brandNameAr: 'مونجارو كويكبن 7.5 ملغم',
     genericName: 'Tirzepatide',
     drugClassNameEn: 'Dual GIP and GLP-1 Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -588,7 +563,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Mounjaro KwikPen 10 mg',
-    brandNameAr: 'مونجارو كويكبن 10 ملغم',
     genericName: 'Tirzepatide',
     drugClassNameEn: 'Dual GIP and GLP-1 Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -611,7 +585,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Mounjaro KwikPen 12.5 mg',
-    brandNameAr: 'مونجارو كويكبن 12.5 ملغم',
     genericName: 'Tirzepatide',
     drugClassNameEn: 'Dual GIP and GLP-1 Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -634,7 +607,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Mounjaro KwikPen 15 mg',
-    brandNameAr: 'مونجارو كويكبن 15 ملغم',
     genericName: 'Tirzepatide',
     drugClassNameEn: 'Dual GIP and GLP-1 Receptor Agonists',
     dosageForm: 'Solution for injection in pre-filled pen (KwikPen)',
@@ -661,7 +633,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   // =========================================================================
   {
     brandName: 'Cialis 5 mg',
-    brandNameAr: 'سياليس 5 ملغم',
     genericName: 'Tadalafil',
     drugClassNameEn: 'Phosphodiesterase Type 5 (PDE5) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -684,7 +655,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Cialis 10 mg',
-    brandNameAr: 'سياليس 10 ملغم',
     genericName: 'Tadalafil',
     drugClassNameEn: 'Phosphodiesterase Type 5 (PDE5) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -707,7 +677,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Cialis 20 mg',
-    brandNameAr: 'سياليس 20 ملغم',
     genericName: 'Tadalafil',
     drugClassNameEn: 'Phosphodiesterase Type 5 (PDE5) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -730,7 +699,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Cymbalta 30 mg',
-    brandNameAr: 'سيمبالتا 30 ملغم',
     genericName: 'Duloxetine',
     drugClassNameEn: 'Serotonin-Noradrenaline Reuptake Inhibitors (SNRIs)',
     dosageForm: 'Hard gastro-resistant capsule',
@@ -753,7 +721,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Cymbalta 60 mg',
-    brandNameAr: 'سيمبالتا 60 ملغم',
     genericName: 'Duloxetine',
     drugClassNameEn: 'Serotonin-Noradrenaline Reuptake Inhibitors (SNRIs)',
     dosageForm: 'Hard gastro-resistant capsule',
@@ -776,7 +743,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Emgality 120 mg',
-    brandNameAr: 'إمغاليتي 120 ملغم',
     genericName: 'Galcanezumab',
     drugClassNameEn: 'Anti-CGRP Monoclonal Antibodies (Migraine Prophylaxis)',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -799,7 +765,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Olumiant 2 mg',
-    brandNameAr: 'أولوميانت 2 ملغم',
     genericName: 'Baricitinib',
     drugClassNameEn: 'Janus Kinase (JAK1/JAK2) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -822,7 +787,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Olumiant 4 mg',
-    brandNameAr: 'أولوميانت 4 ملغم',
     genericName: 'Baricitinib',
     drugClassNameEn: 'Janus Kinase (JAK1/JAK2) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -845,7 +809,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Taltz 80 mg',
-    brandNameAr: 'تالتز 80 ملغم',
     genericName: 'Ixekizumab',
     drugClassNameEn: 'Interleukin-17A (IL-17A) Antagonist Monoclonal Antibodies',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -868,7 +831,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Forsteo 20 mcg/80 mcL',
-    brandNameAr: 'فورستيو 20 ميكروغرام/80 ميكرولتر',
     genericName: 'Teriparatide',
     drugClassNameEn: 'Recombinant Parathyroid Hormone (rhPTH 1-34) Osteoanabolic Agents',
     dosageForm: 'Solution for injection in pre-filled pen',
@@ -895,7 +857,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   // =========================================================================
   {
     brandName: 'Verzenios 50 mg',
-    brandNameAr: 'فيرزينيوس 50 ملغم',
     genericName: 'Abemaciclib',
     drugClassNameEn: 'Cyclin-Dependent Kinase 4 and 6 (CDK4/6) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -918,7 +879,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Verzenios 100 mg',
-    brandNameAr: 'فيرزينيوس 100 ملغم',
     genericName: 'Abemaciclib',
     drugClassNameEn: 'Cyclin-Dependent Kinase 4 and 6 (CDK4/6) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -941,7 +901,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Verzenios 150 mg',
-    brandNameAr: 'فيرزينيوس 150 ملغم',
     genericName: 'Abemaciclib',
     drugClassNameEn: 'Cyclin-Dependent Kinase 4 and 6 (CDK4/6) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -964,7 +923,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Alimta 100 mg',
-    brandNameAr: 'أليمتا 100 ملغم',
     genericName: 'Pemetrexed',
     drugClassNameEn: 'Multi-Targeted Antifolate Antineoplastic Agents',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -987,7 +945,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Alimta 500 mg',
-    brandNameAr: 'أليمتا 500 ملغم',
     genericName: 'Pemetrexed',
     drugClassNameEn: 'Multi-Targeted Antifolate Antineoplastic Agents',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -1010,7 +967,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Cyramza 100 mg/10 mL',
-    brandNameAr: 'سيرامزا 100 ملغم/10 مل',
     genericName: 'Ramucirumab',
     drugClassNameEn: 'Anti-VEGFR2 Monoclonal Antibodies (Angiogenesis Inhibitors)',
     dosageForm: 'Concentrate for solution for infusion',
@@ -1033,7 +989,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Cyramza 500 mg/50 mL',
-    brandNameAr: 'سيرامزا 500 ملغم/50 مل',
     genericName: 'Ramucirumab',
     drugClassNameEn: 'Anti-VEGFR2 Monoclonal Antibodies (Angiogenesis Inhibitors)',
     dosageForm: 'Concentrate for solution for infusion',
@@ -1056,7 +1011,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Retsevmo 40 mg',
-    brandNameAr: 'ريتسيفمو 40 ملغم',
     genericName: 'Selpercatinib',
     drugClassNameEn: 'Selective RET Receptor Tyrosine Kinase Inhibitors',
     dosageForm: 'Hard capsule',
@@ -1079,7 +1033,6 @@ const LILLY_COMPACT_PRODUCTS: CompactLillyDrug[] = [
   },
   {
     brandName: 'Retsevmo 80 mg',
-    brandNameAr: 'ريتسيفمو 80 ملغم',
     genericName: 'Selpercatinib',
     drugClassNameEn: 'Selective RET Receptor Tyrosine Kinase Inhibitors',
     dosageForm: 'Hard capsule',

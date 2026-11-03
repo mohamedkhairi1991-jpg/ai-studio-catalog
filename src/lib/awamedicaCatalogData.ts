@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_AWAMEDICA: CompactDrug[] = [
   // 1. AwaZitro 500 mg (Azithromycin — Awamedica)
   {
     brandName: 'AwaZitro 500 mg',
-    brandNameAr: 'أوازيترو 500 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) systemic antibacterial (ATC J01FA10)',
@@ -57,7 +55,6 @@ const RAW_AWAMEDICA: CompactDrug[] = [
   // 2. Atorvastatin Awa 40 mg (Atorvastatin — Awamedica)
   {
     brandName: 'Atorvastatin Awa 40 mg',
-    brandNameAr: 'أتورفاستاتين أوا 40 ملغ',
     genericName: 'Atorvastatin',
     activeIngredients: ['Atorvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin) lipid-modifying agent (ATC C10AA05)',
@@ -89,7 +86,6 @@ const RAW_AWAMEDICA: CompactDrug[] = [
   // 3. AwaCarvedol 6.25 mg (Carvedilol — Awamedica)
   {
     brandName: 'AwaCarvedol 6.25 mg',
-    brandNameAr: 'أواكارفيدول 6.25 ملغ',
     genericName: 'Carvedilol',
     activeIngredients: ['Carvedilol'],
     drugClass: 'Alpha- and beta-adrenoceptor blocking agent (ATC C07AG02)',
@@ -121,7 +117,6 @@ const RAW_AWAMEDICA: CompactDrug[] = [
   // 4. Mefenamic Awa 250 mg (Mefenamic acid — Awamedica)
   {
     brandName: 'Mefenamic Awa 250 mg',
-    brandNameAr: 'ميفيناميك أوا 250 ملغ',
     genericName: 'Mefenamic acid',
     activeIngredients: ['Mefenamic acid'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID), fenamate derivative (ATC M01AG01)',
@@ -154,7 +149,6 @@ const RAW_AWAMEDICA: CompactDrug[] = [
 export const AWAMEDICA_PRODUCTS: AiProductDraft[] = RAW_AWAMEDICA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

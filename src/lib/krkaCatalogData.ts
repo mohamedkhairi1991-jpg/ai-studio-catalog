@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 1. Atoris (Atorvastatin — KRKA, d.d., Novo mesto)
   {
     brandName: 'Atoris 10 mg',
-    brandNameAr: 'أتوريس 10 ملغ',
     genericName: 'Atorvastatin',
     activeIngredients: ['Atorvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -54,7 +52,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Atoris 20 mg',
-    brandNameAr: 'أتوريس 20 ملغ',
     genericName: 'Atorvastatin',
     activeIngredients: ['Atorvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -83,7 +80,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Atoris 40 mg',
-    brandNameAr: 'أتوريس 40 ملغ',
     genericName: 'Atorvastatin',
     activeIngredients: ['Atorvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -114,7 +110,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 2. Nolpaza (Pantoprazole — KRKA, d.d., Novo mesto)
   {
     brandName: 'Nolpaza 20 mg',
-    brandNameAr: 'نولبازا 20 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (substituted benzimidazole H+/K+-ATPase inhibitor)',
@@ -143,7 +138,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Nolpaza 40 mg',
-    brandNameAr: 'نولبازا 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (substituted benzimidazole H+/K+-ATPase inhibitor)',
@@ -174,7 +168,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 3. Lorista & Lorista H (Losartan & Losartan + Hydrochlorothiazide — KRKA)
   {
     brandName: 'Lorista 50 mg',
-    brandNameAr: 'لوريستا 50 ملغ',
     genericName: 'Losartan',
     activeIngredients: ['Losartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB)',
@@ -203,7 +196,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Lorista 100 mg',
-    brandNameAr: 'لوريستا 100 ملغ',
     genericName: 'Losartan',
     activeIngredients: ['Losartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB)',
@@ -232,7 +224,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Lorista H 50 mg/12.5 mg',
-    brandNameAr: 'لوريستا إتش 50 ملغ/12.5 ملغ',
     genericName: 'Losartan + Hydrochlorothiazide',
     activeIngredients: ['Losartan', 'Hydrochlorothiazide'],
     drugClass: 'Angiotensin II receptor antagonist (ARB) and thiazide diuretic fixed-dose combination',
@@ -263,7 +254,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 4. Enap & Enap-H (Enalapril & Enalapril + Hydrochlorothiazide — KRKA)
   {
     brandName: 'Enap 10 mg',
-    brandNameAr: 'إيناب 10 ملغ',
     genericName: 'Enalapril',
     activeIngredients: ['Enalapril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor',
@@ -292,7 +282,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Enap 20 mg',
-    brandNameAr: 'إيناب 20 ملغ',
     genericName: 'Enalapril',
     activeIngredients: ['Enalapril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor',
@@ -321,7 +310,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Enap-H 10 mg/25 mg',
-    brandNameAr: 'إيناب-إتش 10 ملغ/25 ملغ',
     genericName: 'Enalapril + Hydrochlorothiazide',
     activeIngredients: ['Enalapril', 'Hydrochlorothiazide'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor and thiazide diuretic fixed-dose combination',
@@ -352,7 +340,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 5. Prenessa & Co-Prenessa (Perindopril & Perindopril + Indapamide — KRKA)
   {
     brandName: 'Prenessa 4 mg',
-    brandNameAr: 'برينيسا 4 ملغ',
     genericName: 'Perindopril',
     activeIngredients: ['Perindopril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor',
@@ -381,7 +368,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Prenessa 8 mg',
-    brandNameAr: 'برينيسا 8 ملغ',
     genericName: 'Perindopril',
     activeIngredients: ['Perindopril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor',
@@ -410,7 +396,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Co-Prenessa 4 mg/1.25 mg',
-    brandNameAr: 'كو-برينيسا 4 ملغ/1.25 ملغ',
     genericName: 'Perindopril + Indapamide',
     activeIngredients: ['Perindopril', 'Indapamide'],
     drugClass: 'ACE inhibitor and sulfonamide-like diuretic fixed-dose combination',
@@ -441,7 +426,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 6. Fromilid (Clarithromycin — KRKA)
   {
     brandName: 'Fromilid 500 mg',
-    brandNameAr: 'فروميليد 500 ملغ',
     genericName: 'Clarithromycin',
     activeIngredients: ['Clarithromycin'],
     drugClass: 'Macrolide antibacterial',
@@ -472,7 +456,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 7. Valsacor (Valsartan — KRKA)
   {
     brandName: 'Valsacor 80 mg',
-    brandNameAr: 'فالسأكور 80 ملغ',
     genericName: 'Valsartan',
     activeIngredients: ['Valsartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB)',
@@ -501,7 +484,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Valsacor 160 mg',
-    brandNameAr: 'فالسأكور 160 ملغ',
     genericName: 'Valsartan',
     activeIngredients: ['Valsartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB)',
@@ -532,7 +514,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 8. Roswera (Rosuvastatin — KRKA)
   {
     brandName: 'Roswera 10 mg',
-    brandNameAr: 'روزويرا 10 ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -561,7 +542,6 @@ const RAW_KRKA: CompactDrug[] = [
   },
   {
     brandName: 'Roswera 20 mg',
-    brandNameAr: 'روزويرا 20 ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -592,7 +572,6 @@ const RAW_KRKA: CompactDrug[] = [
   // 9. Tolura (Telmisartan — KRKA, EMA EPAR)
   {
     brandName: 'Tolura 80 mg',
-    brandNameAr: 'تولورا 80 ملغ',
     genericName: 'Telmisartan',
     activeIngredients: ['Telmisartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB)',
@@ -624,7 +603,6 @@ const RAW_KRKA: CompactDrug[] = [
 export const KRKA_PRODUCTS: AiProductDraft[] = RAW_KRKA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

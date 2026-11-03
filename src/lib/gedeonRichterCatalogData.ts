@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 1. Cavinton (Vinpocetine — Gedeon Richter Plc.)
   {
     brandName: 'Cavinton 5 mg',
-    brandNameAr: 'كافينتون 5 ملغ',
     genericName: 'Vinpocetine',
     activeIngredients: ['Vinpocetine'],
     drugClass: 'Cerebral vasodilator and neuroprotective nootropic agent (synthetic eburnamenine derivative)',
@@ -55,7 +53,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   },
   {
     brandName: 'Cavinton Forte 10 mg',
-    brandNameAr: 'كافينتون فورت 10 ملغ',
     genericName: 'Vinpocetine',
     activeIngredients: ['Vinpocetine'],
     drugClass: 'Cerebral vasodilator and neuroprotective nootropic agent (synthetic eburnamenine derivative)',
@@ -87,7 +84,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 2. Mydocalm (Tolperisone — Gedeon Richter Plc.)
   {
     brandName: 'Mydocalm 50 mg',
-    brandNameAr: 'ميدوكالم 50 ملغ',
     genericName: 'Tolperisone',
     activeIngredients: ['Tolperisone'],
     drugClass: 'Centrally acting skeletal muscle relaxant',
@@ -117,7 +113,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   },
   {
     brandName: 'Mydocalm 150 mg',
-    brandNameAr: 'ميدوكالم 150 ملغ',
     genericName: 'Tolperisone',
     activeIngredients: ['Tolperisone'],
     drugClass: 'Centrally acting skeletal muscle relaxant',
@@ -149,7 +144,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 3. Escapelle (Levonorgestrel — Gedeon Richter Plc.)
   {
     brandName: 'Escapelle 1.5 mg',
-    brandNameAr: 'إسكابيل 1.5 ملغ',
     genericName: 'Levonorgestrel',
     activeIngredients: ['Levonorgestrel'],
     drugClass: 'Progestogen emergency contraceptive',
@@ -181,7 +175,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 4. Postinor-2 (Levonorgestrel — Gedeon Richter Plc.)
   {
     brandName: 'Postinor-2 0.75 mg',
-    brandNameAr: 'بوستينور-2 0.75 ملغ',
     genericName: 'Levonorgestrel',
     activeIngredients: ['Levonorgestrel'],
     drugClass: 'Progestogen emergency contraceptive',
@@ -213,7 +206,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 5. Verospiron (Spironolactone — Gedeon Richter Plc.)
   {
     brandName: 'Verospiron 25 mg',
-    brandNameAr: 'فيروسبيرون 25 ملغ',
     genericName: 'Spironolactone',
     activeIngredients: ['Spironolactone'],
     drugClass: 'Aldosterone receptor antagonist (potassium-sparing diuretic)',
@@ -243,7 +235,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   },
   {
     brandName: 'Verospiron 50 mg',
-    brandNameAr: 'فيروسبيرون 50 ملغ',
     genericName: 'Spironolactone',
     activeIngredients: ['Spironolactone'],
     drugClass: 'Aldosterone receptor antagonist (potassium-sparing diuretic)',
@@ -273,7 +264,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   },
   {
     brandName: 'Verospiron 100 mg',
-    brandNameAr: 'فيروسبيرون 100 ملغ',
     genericName: 'Spironolactone',
     activeIngredients: ['Spironolactone'],
     drugClass: 'Aldosterone receptor antagonist (potassium-sparing diuretic)',
@@ -305,7 +295,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 6. Reagila (Cariprazine — Gedeon Richter Plc.)
   {
     brandName: 'Reagila 1.5 mg',
-    brandNameAr: 'رياجيلا 1.5 ملغ',
     genericName: 'Cariprazine',
     activeIngredients: ['Cariprazine'],
     drugClass: 'Atypical antipsychotic (dopamine D3/D2 and serotonin 5-HT1A receptor partial agonist)',
@@ -335,7 +324,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   },
   {
     brandName: 'Reagila 3 mg',
-    brandNameAr: 'رياجيلا 3 ملغ',
     genericName: 'Cariprazine',
     activeIngredients: ['Cariprazine'],
     drugClass: 'Atypical antipsychotic (dopamine D3/D2 and serotonin 5-HT1A receptor partial agonist)',
@@ -367,7 +355,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 7. Ryeqo (Relugolix + Estradiol + Norethisterone — Gedeon Richter Plc.)
   {
     brandName: 'Ryeqo 40 mg/1 mg/0.5 mg',
-    brandNameAr: 'رايكو 40 ملغ/1 ملغ/0.5 ملغ',
     genericName: 'Relugolix + Estradiol + Norethisterone',
     activeIngredients: ['Relugolix', 'Estradiol', 'Norethisterone'],
     drugClass: 'Oral GnRH receptor antagonist with low-dose oestrogen/progestogen add-back therapy',
@@ -399,7 +386,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
   // 8. Terrosa (Teriparatide — Gedeon Richter Plc.)
   {
     brandName: 'Terrosa 20 micrograms/80 microlitres',
-    brandNameAr: 'تيروزا 20 ميكروغرام/80 ميكرولتر',
     genericName: 'Teriparatide',
     activeIngredients: ['Teriparatide'],
     drugClass: 'Parathyroid hormone analogue (recombinant human PTH 1-34 bone formation agent, biosimilar)',
@@ -432,7 +418,6 @@ const RAW_GEDEON_RICHTER: CompactDrug[] = [
 export const GEDEON_RICHTER_PRODUCTS: AiProductDraft[] = RAW_GEDEON_RICHTER.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

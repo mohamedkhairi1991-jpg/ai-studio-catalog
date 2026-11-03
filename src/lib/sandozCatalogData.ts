@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 1. Curam (Amoxicillin + Clavulanic acid — Sandoz GmbH)
   {
     brandName: 'Curam 625 mg',
-    brandNameAr: 'كورام 625 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Beta-lactam antibacterial (penicillin and beta-lactamase inhibitor combination)',
@@ -54,7 +52,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Curam 1000 mg',
-    brandNameAr: 'كورام 1000 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Beta-lactam antibacterial (penicillin and beta-lactamase inhibitor combination)',
@@ -83,7 +80,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Curam 457 mg/5 mL',
-    brandNameAr: 'كورام 457 ملغ/5 مل',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Beta-lactam antibacterial (penicillin and beta-lactamase inhibitor combination)',
@@ -114,7 +110,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 2. Losartan Sandoz (Losartan)
   {
     brandName: 'Losartan Sandoz 50 mg',
-    brandNameAr: 'لوسارتان ساندوز 50 ملغ',
     genericName: 'Losartan',
     activeIngredients: ['Losartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB)',
@@ -143,7 +138,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Losartan Sandoz 100 mg',
-    brandNameAr: 'لوسارتان ساندوز 100 ملغ',
     genericName: 'Losartan',
     activeIngredients: ['Losartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB)',
@@ -174,7 +168,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 3. Zinnat (Cefuroxime — acquired by Sandoz from GSK in 2021)
   {
     brandName: 'Zinnat 250 mg',
-    brandNameAr: 'زينات 250 ملغ',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation cephalosporin antibacterial',
@@ -203,7 +196,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Zinnat 500 mg',
-    brandNameAr: 'زينات 500 ملغ',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation cephalosporin antibacterial',
@@ -232,7 +224,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Zinnat 125 mg/5 mL',
-    brandNameAr: 'زينات 125 ملغ/5 مل',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation cephalosporin antibacterial',
@@ -263,7 +254,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 4. Zinacef (Cefuroxime parenteral — acquired by Sandoz from GSK in 2021)
   {
     brandName: 'Zinacef 750 mg',
-    brandNameAr: 'زيناسيف 750 ملغ',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation parenteral cephalosporin antibacterial',
@@ -292,7 +282,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Zinacef 1.5 g',
-    brandNameAr: 'زيناسيف 1.5 غ',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation parenteral cephalosporin antibacterial',
@@ -323,7 +312,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 5. Fortum (Ceftazidime — acquired by Sandoz from GSK in 2021)
   {
     brandName: 'Fortum 1 g',
-    brandNameAr: 'فورتوم 1 غ',
     genericName: 'Ceftazidime',
     activeIngredients: ['Ceftazidime'],
     drugClass: 'Third-generation antipseudomonal parenteral cephalosporin antibacterial',
@@ -352,7 +340,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Fortum 2 g',
-    brandNameAr: 'فورتوم 2 غ',
     genericName: 'Ceftazidime',
     activeIngredients: ['Ceftazidime'],
     drugClass: 'Third-generation antipseudomonal parenteral cephalosporin antibacterial',
@@ -383,7 +370,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 6. Zarzio (Filgrastim — Sandoz GmbH)
   {
     brandName: 'Zarzio 30 MU/0.5 mL',
-    brandNameAr: 'زارزيو 30 مليون وحدة/0.5 مل',
     genericName: 'Filgrastim',
     activeIngredients: ['Filgrastim'],
     drugClass: 'Recombinant human granulocyte colony-stimulating factor (G-CSF)',
@@ -412,7 +398,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Zarzio 48 MU/0.5 mL',
-    brandNameAr: 'زارزيو 48 مليون وحدة/0.5 مل',
     genericName: 'Filgrastim',
     activeIngredients: ['Filgrastim'],
     drugClass: 'Recombinant human granulocyte colony-stimulating factor (G-CSF)',
@@ -443,7 +428,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 7. Binocrit (Epoetin alfa — Sandoz GmbH)
   {
     brandName: 'Binocrit 4,000 IU/0.4 mL',
-    brandNameAr: 'بينوكريت 4,000 وحدة دولية/0.4 مل',
     genericName: 'Epoetin alfa',
     activeIngredients: ['Epoetin alfa'],
     drugClass: 'Recombinant human erythropoietin (erythropoiesis-stimulating agent, ESA)',
@@ -472,7 +456,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   },
   {
     brandName: 'Binocrit 40,000 IU/1 mL',
-    brandNameAr: 'بينوكريت 40,000 وحدة دولية/1 مل',
     genericName: 'Epoetin alfa',
     activeIngredients: ['Epoetin alfa'],
     drugClass: 'Recombinant human erythropoietin (erythropoiesis-stimulating agent, ESA)',
@@ -503,7 +486,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 8. Omnitrope (Somatropin — Sandoz GmbH)
   {
     brandName: 'Omnitrope 10 mg/1.5 mL',
-    brandNameAr: 'أومنيتروب 10 ملغ/1.5 مل',
     genericName: 'Somatropin',
     activeIngredients: ['Somatropin'],
     drugClass: 'Recombinant human growth hormone (rhGH)',
@@ -534,7 +516,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 9. Hyrimoz (Adalimumab — Sandoz GmbH)
   {
     brandName: 'Hyrimoz 40 mg',
-    brandNameAr: 'هيريموز 40 ملغ',
     genericName: 'Adalimumab',
     activeIngredients: ['Adalimumab'],
     drugClass: 'Recombinant human monoclonal antibody tumour necrosis factor-alpha (TNF-alpha) inhibitor',
@@ -565,7 +546,6 @@ const RAW_SANDOZ: CompactDrug[] = [
   // 10. Rixathon (Rituximab — Sandoz GmbH)
   {
     brandName: 'Rixathon 500 mg/50 mL',
-    brandNameAr: 'ريكساتون 500 ملغ/50 مل',
     genericName: 'Rituximab',
     activeIngredients: ['Rituximab'],
     drugClass: 'Chimeric murine/human anti-CD20 monoclonal antibody',
@@ -597,7 +577,6 @@ const RAW_SANDOZ: CompactDrug[] = [
 export const SANDOZ_PRODUCTS: AiProductDraft[] = RAW_SANDOZ.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

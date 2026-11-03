@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
   // 1. Acretin (Tretinoin — Jamjoom Pharma)
   {
     brandName: 'Acretin 0.025%',
-    brandNameAr: 'أكريتين 0.025%',
     genericName: 'Tretinoin',
     activeIngredients: ['Tretinoin'],
     drugClass: 'Topical retinoid (keratolytic and comedolytic acne vulgaris therapy)',
@@ -55,7 +53,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
   },
   {
     brandName: 'Acretin 0.05%',
-    brandNameAr: 'أكريتين 0.05%',
     genericName: 'Tretinoin',
     activeIngredients: ['Tretinoin'],
     drugClass: 'Topical retinoid (keratolytic and comedolytic acne vulgaris therapy)',
@@ -87,7 +84,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
   // 2. Hyfresh (Sodium hyaluronate — Jamjoom Pharma)
   {
     brandName: 'Hyfresh 0.2%',
-    brandNameAr: 'هايفريش 0.2%',
     genericName: 'Sodium hyaluronate',
     activeIngredients: ['Sodium hyaluronate'],
     drugClass: 'Viscoelastic ophthalmic lubricant (artificial tears)',
@@ -119,7 +115,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
   // 3. Optiflox (Ofloxacin — Jamjoom Pharma)
   {
     brandName: 'Optiflox 0.3%',
-    brandNameAr: 'أوبتيفلوكس 0.3%',
     genericName: 'Ofloxacin',
     activeIngredients: ['Ofloxacin'],
     drugClass: 'Fluoroquinolone ophthalmic antibacterial',
@@ -151,7 +146,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
   // 4. Optidex-T (Tobramycin + Dexamethasone — Jamjoom Pharma)
   {
     brandName: 'Optidex-T 0.3%/0.1%',
-    brandNameAr: 'أوبتيديكس-تي 0.3%/0.1%',
     genericName: 'Tobramycin + Dexamethasone',
     activeIngredients: ['Tobramycin', 'Dexamethasone'],
     drugClass: 'Ophthalmic aminoglycoside antibacterial and corticosteroid combination',
@@ -183,7 +177,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
   // 5. Xolamol (Dorzolamide + Timolol — Jamjoom Pharma)
   {
     brandName: 'Xolamol 20 mg/5 mg per mL',
-    brandNameAr: 'زولامول 20 ملغ/5 ملغ لكل مل',
     genericName: 'Dorzolamide + Timolol',
     activeIngredients: ['Dorzolamide', 'Timolol'],
     drugClass: 'Ophthalmic carbonic anhydrase inhibitor and beta-adrenergic receptor blocker combination',
@@ -215,7 +208,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
   // 6. Dompy (Domperidone — Jamjoom Pharma)
   {
     brandName: 'Dompy 10 mg',
-    brandNameAr: 'دومبي 10 ملغ',
     genericName: 'Domperidone',
     activeIngredients: ['Domperidone'],
     drugClass: 'Peripheral dopamine D2-receptor antagonist (antiemetic and gastroprokinetic)',
@@ -248,7 +240,6 @@ const RAW_JAMJOOM: CompactDrug[] = [
 export const JAMJOOM_PRODUCTS: AiProductDraft[] = RAW_JAMJOOM.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   // 1. Medoclav (Amoxicillin + Clavulanic acid — Medochemie Ltd)
   {
     brandName: 'Medoclav 625 mg',
-    brandNameAr: 'ميدوكلاف 625 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -55,7 +53,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   },
   {
     brandName: 'Medoclav 1 g',
-    brandNameAr: 'ميدوكلاف 1 غ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -87,7 +84,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   // 2. Medoflucon (Fluconazole — Medochemie Ltd)
   {
     brandName: 'Medoflucon 150 mg',
-    brandNameAr: 'ميدوفلوكون 150 ملغ',
     genericName: 'Fluconazole',
     activeIngredients: ['Fluconazole'],
     drugClass: 'Triazole systemic antifungal agent',
@@ -117,7 +113,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   },
   {
     brandName: 'Medoflucon 200 mg',
-    brandNameAr: 'ميدوفلوكون 200 ملغ',
     genericName: 'Fluconazole',
     activeIngredients: ['Fluconazole'],
     drugClass: 'Triazole systemic antifungal agent',
@@ -149,7 +144,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   // 3. Medoprazole (Omeprazole — Medochemie Ltd)
   {
     brandName: 'Medoprazole 20 mg',
-    brandNameAr: 'ميدوبرازول 20 ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -181,7 +175,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   // 4. Medociprin (Ciprofloxacin — Medochemie Ltd)
   {
     brandName: 'Medociprin 500 mg',
-    brandNameAr: 'ميدوسيبرين 500 ملغ',
     genericName: 'Ciprofloxacin',
     activeIngredients: ['Ciprofloxacin'],
     drugClass: 'Fluoroquinolone antibacterial',
@@ -213,7 +206,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   // 5. Axetine (Cefuroxime — Medochemie Ltd)
   {
     brandName: 'Axetine 500 mg',
-    brandNameAr: 'أكسيتين 500 ملغ',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation cephalosporin beta-lactam antibacterial',
@@ -243,7 +235,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   },
   {
     brandName: 'Axetine 750 mg',
-    brandNameAr: 'أكسيتين 750 ملغ',
     genericName: 'Cefuroxime',
     activeIngredients: ['Cefuroxime'],
     drugClass: 'Second-generation cephalosporin beta-lactam antibacterial',
@@ -275,7 +266,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
   // 6. Medopenem (Meropenem — Medochemie Ltd)
   {
     brandName: 'Medopenem 1 g',
-    brandNameAr: 'ميدوبينيم 1 غ',
     genericName: 'Meropenem',
     activeIngredients: ['Meropenem'],
     drugClass: 'Carbapenem beta-lactam antibacterial',
@@ -308,7 +298,6 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
 export const MEDOCHEMIE_PRODUCTS: AiProductDraft[] = RAW_MEDOCHEMIE.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_TEVA: CompactDrug[] = [
   // 1. Sumamed (Azithromycin — Pliva / Teva Pharmaceutical Industries Ltd.)
   {
     brandName: 'Sumamed 250 mg',
-    brandNameAr: 'سوماميد 250 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -55,7 +53,6 @@ const RAW_TEVA: CompactDrug[] = [
   },
   {
     brandName: 'Sumamed 500 mg',
-    brandNameAr: 'سوماميد 500 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -85,7 +82,6 @@ const RAW_TEVA: CompactDrug[] = [
   },
   {
     brandName: 'Sumamed Forte 200 mg/5 mL',
-    brandNameAr: 'سوماميد فورت 200 ملغ/5 مل',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -117,7 +113,6 @@ const RAW_TEVA: CompactDrug[] = [
   // 2. Copaxone (Glatiramer acetate — Teva GmbH)
   {
     brandName: 'Copaxone 20 mg/mL',
-    brandNameAr: 'كوبكسون 20 ملغ/مل',
     genericName: 'Glatiramer acetate',
     activeIngredients: ['Glatiramer acetate'],
     drugClass: 'Immunomodulating polypeptide disease-modifying therapy for multiple sclerosis',
@@ -147,7 +142,6 @@ const RAW_TEVA: CompactDrug[] = [
   },
   {
     brandName: 'Copaxone 40 mg/mL',
-    brandNameAr: 'كوبكسون 40 ملغ/مل',
     genericName: 'Glatiramer acetate',
     activeIngredients: ['Glatiramer acetate'],
     drugClass: 'Immunomodulating polypeptide disease-modifying therapy for multiple sclerosis',
@@ -179,7 +173,6 @@ const RAW_TEVA: CompactDrug[] = [
   // 3. Ajovy (Fremanezumab — Teva GmbH)
   {
     brandName: 'Ajovy 225 mg',
-    brandNameAr: 'أجوفي 225 ملغ',
     genericName: 'Fremanezumab',
     activeIngredients: ['Fremanezumab'],
     drugClass: 'Humanised anti-CGRP (calcitonin gene-related peptide) monoclonal antibody',
@@ -211,7 +204,6 @@ const RAW_TEVA: CompactDrug[] = [
   // 4. Azilect (Rasagiline — Teva B.V.)
   {
     brandName: 'Azilect 1 mg',
-    brandNameAr: 'أزيليكت 1 ملغ',
     genericName: 'Rasagiline',
     activeIngredients: ['Rasagiline'],
     drugClass: 'Selective irreversible monoamine oxidase-B (MAO-B) inhibitor',
@@ -243,7 +235,6 @@ const RAW_TEVA: CompactDrug[] = [
   // 5. Lonquex (Lipegfilgrastim — Teva B.V.)
   {
     brandName: 'Lonquex 6 mg',
-    brandNameAr: 'لونكويكس 6 ملغ',
     genericName: 'Lipegfilgrastim',
     activeIngredients: ['Lipegfilgrastim'],
     drugClass: 'Long-acting glycoPEGylated recombinant human granulocyte colony-stimulating factor (G-CSF)',
@@ -275,7 +266,6 @@ const RAW_TEVA: CompactDrug[] = [
   // 6. DuoResp Spiromax (Budesonide + Formoterol — Teva Pharma B.V.)
   {
     brandName: 'DuoResp Spiromax 160 micrograms/4.5 micrograms',
-    brandNameAr: 'ديوريسب سبيروماكس 160 ميكروغرام/4.5 ميكروغرام',
     genericName: 'Budesonide + Formoterol',
     activeIngredients: ['Budesonide', 'Formoterol'],
     drugClass: 'Inhaled corticosteroid (ICS) and long-acting beta2-agonist (LABA) fixed-dose combination',
@@ -305,7 +295,6 @@ const RAW_TEVA: CompactDrug[] = [
   },
   {
     brandName: 'DuoResp Spiromax 320 micrograms/9 micrograms',
-    brandNameAr: 'ديوريسب سبيروماكس 320 ميكروغرام/9 ميكروغرام',
     genericName: 'Budesonide + Formoterol',
     activeIngredients: ['Budesonide', 'Formoterol'],
     drugClass: 'Inhaled corticosteroid (ICS) and long-acting beta2-agonist (LABA) fixed-dose combination',
@@ -338,7 +327,6 @@ const RAW_TEVA: CompactDrug[] = [
 export const TEVA_PRODUCTS: AiProductDraft[] = RAW_TEVA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

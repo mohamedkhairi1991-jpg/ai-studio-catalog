@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_BILIM_ILAC: CompactDrug[] = [
   // 1. Klamoks BID 1000 mg (Amoxicillin + Clavulanic acid — Bilim Ilac)
   {
     brandName: 'Klamoks BID 1000 mg',
-    brandNameAr: 'كلاموكس بيد 1000 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin antibacterial plus beta-lactamase inhibitor combination (ATC J01CR02)',
@@ -57,7 +55,6 @@ const RAW_BILIM_ILAC: CompactDrug[] = [
   // 2. Zespira 10 mg (Montelukast — Bilim Ilac)
   {
     brandName: 'Zespira 10 mg',
-    brandNameAr: 'زيسبيرا 10 ملغ',
     genericName: 'Montelukast',
     activeIngredients: ['Montelukast'],
     drugClass: 'Selective leukotriene receptor antagonist (CysLT1) (ATC R03DC03)',
@@ -89,7 +86,6 @@ const RAW_BILIM_ILAC: CompactDrug[] = [
   // 3. Raneks 20 mg (Rabeprazole — Bilim Ilac)
   {
     brandName: 'Raneks 20 mg',
-    brandNameAr: 'رانيكس 20 ملغ',
     genericName: 'Rabeprazole',
     activeIngredients: ['Rabeprazole'],
     drugClass: 'Proton pump inhibitor (PPI) gastric acid secretion inhibitor (ATC A02BC04)',
@@ -121,7 +117,6 @@ const RAW_BILIM_ILAC: CompactDrug[] = [
   // 4. Glifix 30 mg (Pioglitazone — Bilim Ilac)
   {
     brandName: 'Glifix 30 mg',
-    brandNameAr: 'غليفيكس 30 ملغ',
     genericName: 'Pioglitazone',
     activeIngredients: ['Pioglitazone'],
     drugClass: 'Thiazolidinedione (PPAR-gamma agonist) oral antihyperglycaemic agent (ATC A10BG03)',
@@ -154,7 +149,6 @@ const RAW_BILIM_ILAC: CompactDrug[] = [
 export const BILIM_ILAC_PRODUCTS: AiProductDraft[] = RAW_BILIM_ILAC.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

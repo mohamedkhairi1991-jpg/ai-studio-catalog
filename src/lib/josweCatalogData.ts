@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_JOSWE: CompactDrug[] = [
   // 1. Arbiten (Valsartan — JOSWE Medical)
   {
     brandName: 'Arbiten 80 mg',
-    brandNameAr: 'أربيتين 80 ملغ',
     genericName: 'Valsartan',
     activeIngredients: ['Valsartan'],
     drugClass: 'Angiotensin II receptor blocker (ARB)',
@@ -55,7 +53,6 @@ const RAW_JOSWE: CompactDrug[] = [
   },
   {
     brandName: 'Arbiten 160 mg',
-    brandNameAr: 'أربيتين 160 ملغ',
     genericName: 'Valsartan',
     activeIngredients: ['Valsartan'],
     drugClass: 'Angiotensin II receptor blocker (ARB)',
@@ -87,7 +84,6 @@ const RAW_JOSWE: CompactDrug[] = [
   // 2. Corteza (Rosuvastatin — JOSWE Medical)
   {
     brandName: 'Corteza 10 mg',
-    brandNameAr: 'كورتيزا 10 ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -117,7 +113,6 @@ const RAW_JOSWE: CompactDrug[] = [
   },
   {
     brandName: 'Corteza 20 mg',
-    brandNameAr: 'كورتيزا 20 ملغ',
     genericName: 'Rosuvastatin',
     activeIngredients: ['Rosuvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -149,7 +144,6 @@ const RAW_JOSWE: CompactDrug[] = [
   // 3. B-Cor (Bisoprolol — JOSWE Medical)
   {
     brandName: 'B-Cor 5 mg',
-    brandNameAr: 'بي-كور 5 ملغ',
     genericName: 'Bisoprolol',
     activeIngredients: ['Bisoprolol'],
     drugClass: 'Cardioselective beta-1 adrenergic receptor blocker',
@@ -181,7 +175,6 @@ const RAW_JOSWE: CompactDrug[] = [
   // 4. Clovex (Clopidogrel — JOSWE Medical)
   {
     brandName: 'Clovex 75 mg',
-    brandNameAr: 'كلوفيكس 75 ملغ',
     genericName: 'Clopidogrel',
     activeIngredients: ['Clopidogrel'],
     drugClass: 'P2Y12 adenosine diphosphate (ADP)-receptor antagonist (antiplatelet agent)',
@@ -213,7 +206,6 @@ const RAW_JOSWE: CompactDrug[] = [
   // 5. Evox (Levofloxacin — JOSWE Medical)
   {
     brandName: 'Evox 500 mg',
-    brandNameAr: 'إيفوكس 500 ملغ',
     genericName: 'Levofloxacin',
     activeIngredients: ['Levofloxacin'],
     drugClass: 'Fluoroquinolone antibacterial',
@@ -246,7 +238,6 @@ const RAW_JOSWE: CompactDrug[] = [
 export const JOSWE_PRODUCTS: AiProductDraft[] = RAW_JOSWE.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

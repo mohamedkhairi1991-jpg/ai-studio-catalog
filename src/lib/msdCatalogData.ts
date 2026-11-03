@@ -4,7 +4,6 @@ const MSD_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }
 
 interface CompactMsdDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toMsdProductDraft(item: CompactMsdDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   // =========================================================================
   {
     brandName: 'Januvia 25 mg',
-    brandNameAr: 'جانوفيا 25 ملغم',
     genericName: 'Sitagliptin',
     drugClassNameEn: 'Dipeptidyl Peptidase-4 (DPP-4) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -77,7 +74,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Januvia 50 mg',
-    brandNameAr: 'جانوفيا 50 ملغم',
     genericName: 'Sitagliptin',
     drugClassNameEn: 'Dipeptidyl Peptidase-4 (DPP-4) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -99,7 +95,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Januvia 100 mg',
-    brandNameAr: 'جانوفيا 100 ملغم',
     genericName: 'Sitagliptin',
     drugClassNameEn: 'Dipeptidyl Peptidase-4 (DPP-4) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -121,7 +116,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Janumet 50 mg/500 mg',
-    brandNameAr: 'جانوميت 50 ملغم / 500 ملغم',
     genericName: 'Sitagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -143,7 +137,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Janumet 50 mg/850 mg',
-    brandNameAr: 'جانوميت 50 ملغم / 850 ملغم',
     genericName: 'Sitagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -165,7 +158,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Janumet 50 mg/1000 mg',
-    brandNameAr: 'جانوميت 50 ملغم / 1000 ملغم',
     genericName: 'Sitagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -187,7 +179,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Janumet XR 50 mg/500 mg',
-    brandNameAr: 'جانوميت إكس آر 50 ملغم / 500 ملغم',
     genericName: 'Sitagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Extended-Release Biguanide Combinations',
     dosageForm: 'Prolonged-release tablet',
@@ -209,7 +200,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Janumet XR 50 mg/1000 mg',
-    brandNameAr: 'جانوميت إكس آر 50 ملغم / 1000 ملغم',
     genericName: 'Sitagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Extended-Release Biguanide Combinations',
     dosageForm: 'Prolonged-release tablet',
@@ -231,7 +221,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Janumet XR 100 mg/1000 mg',
-    brandNameAr: 'جانوميت إكس آر 100 ملغم / 1000 ملغم',
     genericName: 'Sitagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor & Extended-Release Biguanide Combinations',
     dosageForm: 'Prolonged-release tablet',
@@ -253,7 +242,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Steglatro 5 mg',
-    brandNameAr: 'ستيجلاترو 5 ملغم',
     genericName: 'Ertugliflozin',
     drugClassNameEn: 'Sodium-Glucose Co-Transporter 2 (SGLT2) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -275,7 +263,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Steglatro 15 mg',
-    brandNameAr: 'ستيجلاترو 15 ملغم',
     genericName: 'Ertugliflozin',
     drugClassNameEn: 'Sodium-Glucose Co-Transporter 2 (SGLT2) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -297,7 +284,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Segluromet 2.5 mg/1000 mg',
-    brandNameAr: 'سيجلوروميت 2.5 ملغم / 1000 ملغم',
     genericName: 'Ertugliflozin + Metformin',
     drugClassNameEn: 'SGLT2 Inhibitor & Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -319,7 +305,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Segluromet 7.5 mg/1000 mg',
-    brandNameAr: 'سيجلوروميت 7.5 ملغم / 1000 ملغم',
     genericName: 'Ertugliflozin + Metformin',
     drugClassNameEn: 'SGLT2 Inhibitor & Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -341,7 +326,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Steglujan 5 mg/100 mg',
-    brandNameAr: 'ستيجلوجان 5 ملغم / 100 ملغم',
     genericName: 'Ertugliflozin + Sitagliptin',
     drugClassNameEn: 'SGLT2 Inhibitor & DPP-4 Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -363,7 +347,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Steglujan 15 mg/100 mg',
-    brandNameAr: 'ستيجلوجان 15 ملغم / 100 ملغم',
     genericName: 'Ertugliflozin + Sitagliptin',
     drugClassNameEn: 'SGLT2 Inhibitor & DPP-4 Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -389,7 +372,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   // =========================================================================
   {
     brandName: 'Invanz 1 g',
-    brandNameAr: 'إنفانز 1 غم',
     genericName: 'Ertapenem',
     drugClassNameEn: 'Carbapenem Antibacterials',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -411,7 +393,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Tienam 500 mg/500 mg',
-    brandNameAr: 'تينام 500 ملغم / 500 ملغم',
     genericName: 'Imipenem + Cilastatin',
     drugClassNameEn: 'Carbapenem & Renal Dehydropeptidase Inhibitor Combinations',
     dosageForm: 'Powder for solution for infusion',
@@ -433,7 +414,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Zerbaxa 1 g/0.5 g',
-    brandNameAr: 'زيرباكسا 1 غم / 0.5 غم',
     genericName: 'Ceftolozane + Tazobactam',
     drugClassNameEn: 'Antipseudomonal Cephalosporin & Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -455,7 +435,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Recarbrio 500 mg/500 mg/250 mg',
-    brandNameAr: 'ريكاربريو 500 ملغم / 500 ملغم / 250 ملغم',
     genericName: 'Imipenem + Cilastatin + Relebactam',
     drugClassNameEn: 'Carbapenem, Dehydropeptidase Inhibitor & Diazabicyclooctane Beta-Lactamase Inhibitor Combinations',
     dosageForm: 'Powder for solution for infusion',
@@ -477,7 +456,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Sivextro 200 mg',
-    brandNameAr: 'سيفيكسترو 200 ملغم',
     genericName: 'Tedizolid',
     drugClassNameEn: 'Oxazolidinone Antibacterials',
     dosageForm: 'Film-coated tablet',
@@ -499,7 +477,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Cubicin 350 mg',
-    brandNameAr: 'كوبيسين 350 ملغم',
     genericName: 'Daptomycin',
     drugClassNameEn: 'Cyclic Lipopeptide Antibacterials',
     dosageForm: 'Powder for solution for injection or infusion',
@@ -521,7 +498,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Cubicin 500 mg',
-    brandNameAr: 'كوبيسين 500 ملغم',
     genericName: 'Daptomycin',
     drugClassNameEn: 'Cyclic Lipopeptide Antibacterials',
     dosageForm: 'Powder for solution for injection or infusion',
@@ -543,7 +519,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Dificlir 200 mg',
-    brandNameAr: 'ديفيكلير 200 ملغم',
     genericName: 'Fidaxomicin',
     drugClassNameEn: 'Macrocyclic Antibacterials (Narrow-Spectrum Anti-Clostridioides difficile)',
     dosageForm: 'Film-coated tablet',
@@ -565,7 +540,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Zinplava 1000 mg/40 mL',
-    brandNameAr: 'زينبلافا 1000 ملغم / 40 مل',
     genericName: 'Bezlotoxumab',
     drugClassNameEn: 'Anti-Clostridioides difficile Toxin B Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -587,7 +561,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Cancidas 50 mg',
-    brandNameAr: 'كانسيداس 50 ملغم',
     genericName: 'Caspofungin',
     drugClassNameEn: 'Echinocandin Antifungals',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -609,7 +582,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Cancidas 70 mg',
-    brandNameAr: 'كانسيداس 70 ملغم',
     genericName: 'Caspofungin',
     drugClassNameEn: 'Echinocandin Antifungals',
     dosageForm: 'Powder for concentrate for solution for infusion',
@@ -631,7 +603,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Noxafil 100 mg',
-    brandNameAr: 'نوكسافيل 100 ملغم',
     genericName: 'Posaconazole',
     drugClassNameEn: 'Broad-Spectrum Triazole Antifungals',
     dosageForm: 'Gastro-resistant tablet',
@@ -653,7 +624,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Noxafil 40 mg/mL',
-    brandNameAr: 'نوكسافيل 40 ملغم / مل',
     genericName: 'Posaconazole',
     drugClassNameEn: 'Broad-Spectrum Triazole Antifungals',
     dosageForm: 'Oral suspension',
@@ -675,7 +645,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Noxafil 300 mg',
-    brandNameAr: 'نوكسافيل 300 ملغم',
     genericName: 'Posaconazole',
     drugClassNameEn: 'Broad-Spectrum Triazole Antifungals',
     dosageForm: 'Concentrate for solution for infusion',
@@ -697,7 +666,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Prevymis 240 mg',
-    brandNameAr: 'بريفيمايس 240 ملغم',
     genericName: 'Letermovir',
     drugClassNameEn: 'CMV DNA Terminase Complex Antiviral Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -719,7 +687,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Prevymis 480 mg',
-    brandNameAr: 'بريفيمايس 480 ملغم',
     genericName: 'Letermovir',
     drugClassNameEn: 'CMV DNA Terminase Complex Antiviral Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -741,7 +708,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Isentress 400 mg',
-    brandNameAr: 'إيزنتريس 400 ملغم',
     genericName: 'Raltegravir',
     drugClassNameEn: 'HIV Integrase Strand Transfer Inhibitors (INSTIs)',
     dosageForm: 'Film-coated tablet',
@@ -763,7 +729,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Isentress 600 mg',
-    brandNameAr: 'إيزنتريس 600 ملغم',
     genericName: 'Raltegravir',
     drugClassNameEn: 'HIV Integrase Strand Transfer Inhibitors (INSTIs)',
     dosageForm: 'Film-coated tablet',
@@ -785,7 +750,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Pifeltro 100 mg',
-    brandNameAr: 'بيفيلترو 100 ملغم',
     genericName: 'Doravirine',
     drugClassNameEn: 'Non-Nucleoside Reverse Transcriptase Inhibitors (NNRTIs)',
     dosageForm: 'Film-coated tablet',
@@ -807,7 +771,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Delstrigo 100 mg/300 mg/245 mg',
-    brandNameAr: 'ديلستريغو 100 ملغم / 300 ملغم / 245 ملغم',
     genericName: 'Doravirine + Lamivudine + Tenofovir',
     drugClassNameEn: 'Single-Tablet HIV Antiretroviral Combinations (NNRTI + 2 NRTIs)',
     dosageForm: 'Film-coated tablet',
@@ -829,7 +792,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Zepatier 50 mg/100 mg',
-    brandNameAr: 'زيباتير 50 ملغم / 100 ملغم',
     genericName: 'Elbasvir + Grazoprevir',
     drugClassNameEn: 'Direct-Acting Antivirals for Hepatitis C (NS5A Inhibitor + NS3/4A Protease Inhibitor)',
     dosageForm: 'Film-coated tablet',
@@ -855,7 +817,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   // =========================================================================
   {
     brandName: 'Bridion 200 mg/2 mL',
-    brandNameAr: 'بريديون 200 ملغم / 2 مل',
     genericName: 'Sugammadex',
     drugClassNameEn: 'Selective Relaxant Binding Agents (Neuromuscular Blockade Reversal)',
     dosageForm: 'Solution for injection',
@@ -877,7 +838,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Bridion 500 mg/5 mL',
-    brandNameAr: 'بريديون 500 ملغم / 5 مل',
     genericName: 'Sugammadex',
     drugClassNameEn: 'Selective Relaxant Binding Agents (Neuromuscular Blockade Reversal)',
     dosageForm: 'Solution for injection',
@@ -899,7 +859,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Verquvo 2.5 mg',
-    brandNameAr: 'فيركوفو 2.5 ملغم',
     genericName: 'Vericiguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators',
     dosageForm: 'Film-coated tablet',
@@ -921,7 +880,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Verquvo 5 mg',
-    brandNameAr: 'فيركوفو 5 ملغم',
     genericName: 'Vericiguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators',
     dosageForm: 'Film-coated tablet',
@@ -943,7 +901,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Verquvo 10 mg',
-    brandNameAr: 'فيركوفو 10 ملغم',
     genericName: 'Vericiguat',
     drugClassNameEn: 'Soluble Guanylate Cyclase (sGC) Stimulators',
     dosageForm: 'Film-coated tablet',
@@ -965,7 +922,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Winrevair 45 mg',
-    brandNameAr: 'وينريفير 45 ملغم',
     genericName: 'Sotatercept',
     drugClassNameEn: 'Activin Signaling Inhibitors (Pulmonary Arterial Hypertension)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -991,7 +947,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   // =========================================================================
   {
     brandName: 'Keytruda 100 mg/4 mL',
-    brandNameAr: 'كيترودا 100 ملغم / 4 مل',
     genericName: 'Pembrolizumab',
     drugClassNameEn: 'Anti-PD-1 Immune Checkpoint Inhibitor Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -1013,7 +968,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Welireg 40 mg',
-    brandNameAr: 'ويليريغ 40 ملغم',
     genericName: 'Belzutifan',
     drugClassNameEn: 'Hypoxia-Inducible Factor-2 Alpha (HIF-2α) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -1035,7 +989,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Temodal 20 mg',
-    brandNameAr: 'تيمودال 20 ملغم',
     genericName: 'Temozolomide',
     drugClassNameEn: 'Imidazotetrazine Alkylating Antineoplastic Agents',
     dosageForm: 'Hard capsule',
@@ -1057,7 +1010,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Temodal 100 mg',
-    brandNameAr: 'تيمودال 100 ملغم',
     genericName: 'Temozolomide',
     drugClassNameEn: 'Imidazotetrazine Alkylating Antineoplastic Agents',
     dosageForm: 'Hard capsule',
@@ -1079,7 +1031,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Temodal 250 mg',
-    brandNameAr: 'تيمودال 250 ملغم',
     genericName: 'Temozolomide',
     drugClassNameEn: 'Imidazotetrazine Alkylating Antineoplastic Agents',
     dosageForm: 'Hard capsule',
@@ -1101,7 +1052,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Emend 125 mg + 80 mg',
-    brandNameAr: 'إيمند 125 ملغم + 80 ملغم',
     genericName: 'Aprepitant',
     drugClassNameEn: 'Neurokinin-1 (NK1) Receptor Antagonist Antiemetics',
     dosageForm: 'Hard capsule',
@@ -1123,7 +1073,6 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
   },
   {
     brandName: 'Ivemend 150 mg',
-    brandNameAr: 'إيفيمند 150 ملغم',
     genericName: 'Fosaprepitant',
     drugClassNameEn: 'Parenteral Neurokinin-1 (NK1) Receptor Antagonist Antiemetics',
     dosageForm: 'Powder for solution for infusion',

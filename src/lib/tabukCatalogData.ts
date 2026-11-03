@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_TABUK: CompactDrug[] = [
   // 1. Tabuvan (Valsartan — Tabuk Pharmaceutical Manufacturing Co.)
   {
     brandName: 'Tabuvan 80 mg',
-    brandNameAr: 'تابوفان 80 ملغ',
     genericName: 'Valsartan',
     activeIngredients: ['Valsartan'],
     drugClass: 'Angiotensin II receptor blocker (ARB)',
@@ -55,7 +53,6 @@ const RAW_TABUK: CompactDrug[] = [
   },
   {
     brandName: 'Tabuvan 160 mg',
-    brandNameAr: 'تابوفان 160 ملغ',
     genericName: 'Valsartan',
     activeIngredients: ['Valsartan'],
     drugClass: 'Angiotensin II receptor blocker (ARB)',
@@ -87,7 +84,6 @@ const RAW_TABUK: CompactDrug[] = [
   // 2. Co-Tabuvan (Valsartan + Hydrochlorothiazide — Tabuk Pharmaceutical Manufacturing Co.)
   {
     brandName: 'Co-Tabuvan 80 mg/12.5 mg',
-    brandNameAr: 'كو-تابوفان 80 ملغ/12.5 ملغ',
     genericName: 'Valsartan + Hydrochlorothiazide',
     activeIngredients: ['Valsartan', 'Hydrochlorothiazide'],
     drugClass: 'Angiotensin II receptor blocker (ARB) and thiazide diuretic fixed-dose combination',
@@ -117,7 +113,6 @@ const RAW_TABUK: CompactDrug[] = [
   },
   {
     brandName: 'Co-Tabuvan 160 mg/12.5 mg',
-    brandNameAr: 'كو-تابوفان 160 ملغ/12.5 ملغ',
     genericName: 'Valsartan + Hydrochlorothiazide',
     activeIngredients: ['Valsartan', 'Hydrochlorothiazide'],
     drugClass: 'Angiotensin II receptor blocker (ARB) and thiazide diuretic fixed-dose combination',
@@ -149,7 +144,6 @@ const RAW_TABUK: CompactDrug[] = [
   // 3. Toprazole (Pantoprazole — Tabuk Pharmaceutical Manufacturing Co.)
   {
     brandName: 'Toprazole 20 mg',
-    brandNameAr: 'توبرازول 20 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -179,7 +173,6 @@ const RAW_TABUK: CompactDrug[] = [
   },
   {
     brandName: 'Toprazole 40 mg',
-    brandNameAr: 'توبرازول 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -211,7 +204,6 @@ const RAW_TABUK: CompactDrug[] = [
   // 4. Divido (Diclofenac — Tabuk Pharmaceutical Manufacturing Co.)
   {
     brandName: 'Divido 75 mg',
-    brandNameAr: 'ديفيدو 75 ملغ',
     genericName: 'Diclofenac',
     activeIngredients: ['Diclofenac'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, dual-release phenylacetic acid derivative)',
@@ -244,7 +236,6 @@ const RAW_TABUK: CompactDrug[] = [
 export const TABUK_PRODUCTS: AiProductDraft[] = RAW_TABUK.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

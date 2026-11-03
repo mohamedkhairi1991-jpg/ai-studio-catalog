@@ -2007,7 +2007,8 @@ export interface AiDraftSource {
 export interface AiProductDraft {
   found: boolean;
   brandName: string;
-  brandNameAr: string | null;
+  /** Not used: the catalog is English-only. */
+  brandNameAr?: string | null;
   category: ProductCategory | null;
   genericName: string | null;
   activeIngredients: string[];

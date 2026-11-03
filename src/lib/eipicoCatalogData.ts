@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_EIPICO: CompactDrug[] = [
   // 1. Flumox (Amoxicillin + Flucloxacillin — EIPICO)
   {
     brandName: 'Flumox 500 mg',
-    brandNameAr: 'فلوموكس 500 ملغ',
     genericName: 'Amoxicillin + Flucloxacillin',
     activeIngredients: ['Amoxicillin', 'Flucloxacillin'],
     drugClass: 'Broad-spectrum aminopenicillin and penicillinase-resistant isoxazolyl penicillin combination',
@@ -57,7 +55,6 @@ const RAW_EIPICO: CompactDrug[] = [
   // 2. Epicephin (Ceftriaxone — EIPICO)
   {
     brandName: 'Epicephin 1 g',
-    brandNameAr: 'إيبيسيفين 1 غ',
     genericName: 'Ceftriaxone',
     activeIngredients: ['Ceftriaxone'],
     drugClass: 'Third-generation parenteral cephalosporin beta-lactam antibacterial',
@@ -89,7 +86,6 @@ const RAW_EIPICO: CompactDrug[] = [
   // 3. Cefotax (Cefotaxime — EIPICO)
   {
     brandName: 'Cefotax 1 g',
-    brandNameAr: 'سيفوتاكس 1 غ',
     genericName: 'Cefotaxime',
     activeIngredients: ['Cefotaxime'],
     drugClass: 'Third-generation parenteral cephalosporin beta-lactam antibacterial',
@@ -121,7 +117,6 @@ const RAW_EIPICO: CompactDrug[] = [
   // 4. Epirazole (Omeprazole — EIPICO)
   {
     brandName: 'Epirazole 20 mg',
-    brandNameAr: 'إيبيرازول 20 ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -153,7 +148,6 @@ const RAW_EIPICO: CompactDrug[] = [
   // 5. Epigent (Gentamicin — EIPICO)
   {
     brandName: 'Epigent 80 mg/2 mL',
-    brandNameAr: 'إيبيجنت 80 ملغ/2 مل',
     genericName: 'Gentamicin',
     activeIngredients: ['Gentamicin'],
     drugClass: 'Aminoglycoside parenteral bactericidal antibacterial',
@@ -186,7 +180,6 @@ const RAW_EIPICO: CompactDrug[] = [
 export const EIPICO_PRODUCTS: AiProductDraft[] = RAW_EIPICO.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

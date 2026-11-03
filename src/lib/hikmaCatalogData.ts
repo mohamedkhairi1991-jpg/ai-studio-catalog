@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_HIKMA: CompactDrug[] = [
   // 1. Amoclan (Amoxicillin + Clavulanic acid — Hikma Pharmaceuticals PLC)
   {
     brandName: 'Amoclan 625 mg',
-    brandNameAr: 'أموكلان 625 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -55,7 +53,6 @@ const RAW_HIKMA: CompactDrug[] = [
   },
   {
     brandName: 'Amoclan BID 1000 mg',
-    brandNameAr: 'أموكلان بي آي دي 1000 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -85,7 +82,6 @@ const RAW_HIKMA: CompactDrug[] = [
   },
   {
     brandName: 'Amoclan Forte 457 mg/5 mL',
-    brandNameAr: 'أموكلان فورت 457 ملغ/5 مل',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
@@ -117,7 +113,6 @@ const RAW_HIKMA: CompactDrug[] = [
   // 2. Suprax (Cefixime — Hikma Pharmaceuticals PLC)
   {
     brandName: 'Suprax 400 mg',
-    brandNameAr: 'سوبراكس 400 ملغ',
     genericName: 'Cefixime',
     activeIngredients: ['Cefixime'],
     drugClass: 'Third-generation oral cephalosporin beta-lactam antibacterial',
@@ -147,7 +142,6 @@ const RAW_HIKMA: CompactDrug[] = [
   },
   {
     brandName: 'Suprax 100 mg/5 mL',
-    brandNameAr: 'سوبراكس 100 ملغ/5 مل',
     genericName: 'Cefixime',
     activeIngredients: ['Cefixime'],
     drugClass: 'Third-generation oral cephalosporin beta-lactam antibacterial',
@@ -179,7 +173,6 @@ const RAW_HIKMA: CompactDrug[] = [
   // 3. Omnicef (Cefdinir — Hikma Pharmaceuticals PLC)
   {
     brandName: 'Omnicef 300 mg',
-    brandNameAr: 'أومنيسيف 300 ملغ',
     genericName: 'Cefdinir',
     activeIngredients: ['Cefdinir'],
     drugClass: 'Third-generation oral cephalosporin beta-lactam antibacterial',
@@ -209,7 +202,6 @@ const RAW_HIKMA: CompactDrug[] = [
   },
   {
     brandName: 'Omnicef 125 mg/5 mL',
-    brandNameAr: 'أومنيسيف 125 ملغ/5 مل',
     genericName: 'Cefdinir',
     activeIngredients: ['Cefdinir'],
     drugClass: 'Third-generation oral cephalosporin beta-lactam antibacterial',
@@ -241,7 +233,6 @@ const RAW_HIKMA: CompactDrug[] = [
   // 4. Zomax (Azithromycin — Hikma Pharmaceuticals PLC)
   {
     brandName: 'Zomax 500 mg',
-    brandNameAr: 'زوماكس 500 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -271,7 +262,6 @@ const RAW_HIKMA: CompactDrug[] = [
   },
   {
     brandName: 'Zomax 200 mg/5 mL',
-    brandNameAr: 'زوماكس 200 ملغ/5 مل',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -303,7 +293,6 @@ const RAW_HIKMA: CompactDrug[] = [
   // 5. Rofenac (Diclofenac — Hikma Pharmaceuticals PLC)
   {
     brandName: 'Rofenac 50 mg',
-    brandNameAr: 'روفيناك 50 ملغ',
     genericName: 'Diclofenac',
     activeIngredients: ['Diclofenac'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, phenylacetic acid derivative)',
@@ -336,7 +325,6 @@ const RAW_HIKMA: CompactDrug[] = [
 export const HIKMA_PRODUCTS: AiProductDraft[] = RAW_HIKMA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

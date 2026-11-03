@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 1. Fucidin Cream 2% (Fusidic acid)
   {
     brandName: 'Fucidin Cream 2%',
-    brandNameAr: 'فيوسيدين 2%',
     genericName: 'Fusidic acid',
     activeIngredients: ['Fusidic acid'],
     drugClass: 'Topical antibacterial (fusidane antibiotic)',
@@ -56,7 +54,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 2. Fucidin Ointment 2% (Fusidic acid — sodium fusidate)
   {
     brandName: 'Fucidin Ointment 2%',
-    brandNameAr: 'فيوسيدين 2%',
     genericName: 'Fusidic acid',
     activeIngredients: ['Fusidic acid'],
     drugClass: 'Topical antibacterial (fusidane antibiotic)',
@@ -87,7 +84,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 3. Fucidin 250 mg Tablet (Fusidic acid — sodium fusidate)
   {
     brandName: 'Fucidin 250 mg',
-    brandNameAr: 'فيوسيدين 250 ملغ',
     genericName: 'Fusidic acid',
     activeIngredients: ['Fusidic acid'],
     drugClass: 'Systemic antibacterial (steroid-structure fusidane antibiotic)',
@@ -118,7 +114,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 4. Fucicort (Fusidic acid + Betamethasone)
   {
     brandName: 'Fucicort 2% / 0.1%',
-    brandNameAr: 'فيوسيكورت 2% / 0.1%',
     genericName: 'Fusidic acid + Betamethasone',
     activeIngredients: ['Fusidic acid', 'Betamethasone'],
     drugClass: 'Potent topical corticosteroid (Group III) and antibacterial combination',
@@ -149,7 +144,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 5. Fucidin H (Fusidic acid + Hydrocortisone)
   {
     brandName: 'Fucidin H 2% / 1%',
-    brandNameAr: 'فيوسيدين إتش 2% / 1%',
     genericName: 'Fusidic acid + Hydrocortisone',
     activeIngredients: ['Fusidic acid', 'Hydrocortisone'],
     drugClass: 'Mild topical corticosteroid (Group I) and antibacterial combination',
@@ -180,7 +174,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 6. Fucithalmic (Fusidic acid)
   {
     brandName: 'Fucithalmic 1%',
-    brandNameAr: 'فيوسيثالميك 1%',
     genericName: 'Fusidic acid',
     activeIngredients: ['Fusidic acid'],
     drugClass: 'Ophthalmic antibacterial (viscous carbomer sustained-release eye drops)',
@@ -211,7 +204,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 7. Daivobet Ointment & Gel (Calcipotriol + Betamethasone)
   {
     brandName: 'Daivobet Ointment 50 mcg/g + 0.5 mg/g',
-    brandNameAr: 'دايفوبيت 50 ميكروغرام/غ + 0.5 ملغ/غ',
     genericName: 'Calcipotriol + Betamethasone',
     activeIngredients: ['Calcipotriol', 'Betamethasone'],
     drugClass: 'Antipsoriatic vitamin D3 analogue and potent corticosteroid (Group III) combination',
@@ -240,7 +232,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Daivobet Gel 50 mcg/g + 0.5 mg/g',
-    brandNameAr: 'دايفوبيت 50 ميكروغرام/غ + 0.5 ملغ/غ',
     genericName: 'Calcipotriol + Betamethasone',
     activeIngredients: ['Calcipotriol', 'Betamethasone'],
     drugClass: 'Antipsoriatic vitamin D3 analogue and potent corticosteroid (Group III) combination',
@@ -271,7 +262,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 8. Enstilar (Calcipotriol + Betamethasone cutaneous foam)
   {
     brandName: 'Enstilar 50 mcg/g + 0.5 mg/g',
-    brandNameAr: 'إنستيلار 50 ميكروغرام/غ + 0.5 ملغ/غ',
     genericName: 'Calcipotriol + Betamethasone',
     activeIngredients: ['Calcipotriol', 'Betamethasone'],
     drugClass: 'Antipsoriatic vitamin D3 analogue and potent corticosteroid supersaturated cutaneous foam',
@@ -302,7 +292,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 9. Xamiol (Calcipotriol + Betamethasone scalp gel)
   {
     brandName: 'Xamiol 50 mcg/g + 0.5 mg/g',
-    brandNameAr: 'زاميول 50 ميكروغرام/غ + 0.5 ملغ/غ',
     genericName: 'Calcipotriol + Betamethasone',
     activeIngredients: ['Calcipotriol', 'Betamethasone'],
     drugClass: 'Antipsoriatic vitamin D3 analogue and potent corticosteroid scalp gel',
@@ -333,7 +322,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 10. Daivonex (Calcipotriol)
   {
     brandName: 'Daivonex 50 mcg/g',
-    brandNameAr: 'دايفونيكس 50 ميكروغرام/غ',
     genericName: 'Calcipotriol',
     activeIngredients: ['Calcipotriol'],
     drugClass: 'Topical antipsoriatic vitamin D3 analogue',
@@ -364,7 +352,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 11. Innohep (Tinzaparin)
   {
     brandName: 'Innohep 3,500 IU/0.35 mL',
-    brandNameAr: 'إنوهيب 3,500 وحدة دولية/0.35 مل',
     genericName: 'Tinzaparin',
     activeIngredients: ['Tinzaparin'],
     drugClass: 'Antithrombotic agent (low molecular weight heparin)',
@@ -393,7 +380,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Innohep 4,500 IU/0.45 mL',
-    brandNameAr: 'إنوهيب 4,500 وحدة دولية/0.45 مل',
     genericName: 'Tinzaparin',
     activeIngredients: ['Tinzaparin'],
     drugClass: 'Antithrombotic agent (low molecular weight heparin)',
@@ -422,7 +408,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Innohep 10,000 IU/0.5 mL',
-    brandNameAr: 'إنوهيب 10,000 وحدة دولية/0.5 مل',
     genericName: 'Tinzaparin',
     activeIngredients: ['Tinzaparin'],
     drugClass: 'Antithrombotic agent (low molecular weight heparin)',
@@ -451,7 +436,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Innohep 14,000 IU/0.7 mL',
-    brandNameAr: 'إنوهيب 14,000 وحدة دولية/0.7 مل',
     genericName: 'Tinzaparin',
     activeIngredients: ['Tinzaparin'],
     drugClass: 'Antithrombotic agent (low molecular weight heparin)',
@@ -480,7 +464,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Innohep 18,000 IU/0.9 mL',
-    brandNameAr: 'إنوهيب 18,000 وحدة دولية/0.9 مل',
     genericName: 'Tinzaparin',
     activeIngredients: ['Tinzaparin'],
     drugClass: 'Antithrombotic agent (low molecular weight heparin)',
@@ -511,7 +494,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 12. Adtralza (Tralokinumab)
   {
     brandName: 'Adtralza 150 mg',
-    brandNameAr: 'أدترالزا 150 ملغ',
     genericName: 'Tralokinumab',
     activeIngredients: ['Tralokinumab'],
     drugClass: 'Human IgG4 monoclonal antibody interleukin-13 (IL-13) antagonist',
@@ -540,7 +522,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Adtralza 300 mg',
-    brandNameAr: 'أدترالزا 300 ملغ',
     genericName: 'Tralokinumab',
     activeIngredients: ['Tralokinumab'],
     drugClass: 'Human IgG4 monoclonal antibody interleukin-13 (IL-13) antagonist',
@@ -571,7 +552,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   // 13. Protopic (Tacrolimus — LEO Pharma A/S MAH)
   {
     brandName: 'Protopic 0.03%',
-    brandNameAr: 'بروتوبك 0.03%',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Topical calcineurin inhibitor (immunomodulator for atopic dermatitis)',
@@ -600,7 +580,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Protopic 0.1%',
-    brandNameAr: 'بروتوبك 0.1%',
     genericName: 'Tacrolimus',
     activeIngredients: ['Tacrolimus'],
     drugClass: 'Topical calcineurin inhibitor (immunomodulator for atopic dermatitis)',
@@ -632,7 +611,6 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
 export const LEO_PHARMA_PRODUCTS: AiProductDraft[] = RAW_LEO_PHARMA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

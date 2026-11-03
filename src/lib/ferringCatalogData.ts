@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 1. Pentasa (Mesalazine)
   {
     brandName: 'Pentasa 500 mg',
-    brandNameAr: 'بينتاسا 500 ملغ',
     genericName: 'Mesalazine',
     activeIngredients: ['Mesalazine'],
     drugClass: 'Intestinal anti-inflammatory agent (aminosalicylate / 5-ASA)',
@@ -54,7 +52,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Pentasa 1 g Tablet',
-    brandNameAr: 'بينتاسا 1 غ',
     genericName: 'Mesalazine',
     activeIngredients: ['Mesalazine'],
     drugClass: 'Intestinal anti-inflammatory agent (aminosalicylate / 5-ASA)',
@@ -83,7 +80,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Pentasa Sachet 2 g',
-    brandNameAr: 'بينتاسا 2 غ',
     genericName: 'Mesalazine',
     activeIngredients: ['Mesalazine'],
     drugClass: 'Intestinal anti-inflammatory agent (aminosalicylate / 5-ASA)',
@@ -112,7 +108,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Pentasa Suppository 1 g',
-    brandNameAr: 'بينتاسا 1 غ',
     genericName: 'Mesalazine',
     activeIngredients: ['Mesalazine'],
     drugClass: 'Intestinal anti-inflammatory agent (rectal aminosalicylate / 5-ASA)',
@@ -143,7 +138,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 2. Minirin & Minirin Melt (Desmopressin)
   {
     brandName: 'Minirin 0.1 mg',
-    brandNameAr: 'مينيرين 0.1 ملغ',
     genericName: 'Desmopressin',
     activeIngredients: ['Desmopressin'],
     drugClass: 'Synthetic vasopressin analogue (selective V2-receptor agonist / antidiuretic hormone)',
@@ -172,7 +166,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Minirin 0.2 mg',
-    brandNameAr: 'مينيرين 0.2 ملغ',
     genericName: 'Desmopressin',
     activeIngredients: ['Desmopressin'],
     drugClass: 'Synthetic vasopressin analogue (selective V2-receptor agonist / antidiuretic hormone)',
@@ -201,7 +194,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Minirin Melt 60 mcg',
-    brandNameAr: 'مينيرين ميلت 60 ميكروغرام',
     genericName: 'Desmopressin',
     activeIngredients: ['Desmopressin'],
     drugClass: 'Synthetic vasopressin analogue (selective V2-receptor agonist / antidiuretic hormone)',
@@ -230,7 +222,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Minirin Melt 120 mcg',
-    brandNameAr: 'مينيرين ميلت 120 ميكروغرام',
     genericName: 'Desmopressin',
     activeIngredients: ['Desmopressin'],
     drugClass: 'Synthetic vasopressin analogue (selective V2-receptor agonist / antidiuretic hormone)',
@@ -261,7 +252,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 3. Menopur (Menotropin)
   {
     brandName: 'Menopur 75 IU',
-    brandNameAr: 'مينوبور 75 وحدة دولية',
     genericName: 'Menotropin',
     activeIngredients: ['Menotropin'],
     drugClass: 'Human menopausal gonadotropin (highly purified hMG providing 75 IU FSH + 75 IU LH activity)',
@@ -290,7 +280,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Menopur 600 IU',
-    brandNameAr: 'مينوبور 600 وحدة دولية',
     genericName: 'Menotropin',
     activeIngredients: ['Menotropin'],
     drugClass: 'Human menopausal gonadotropin (highly purified multidose hMG)',
@@ -319,7 +308,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Menopur 1200 IU',
-    brandNameAr: 'مينوبور 1200 وحدة دولية',
     genericName: 'Menotropin',
     activeIngredients: ['Menotropin'],
     drugClass: 'Human menopausal gonadotropin (highly purified multidose hMG)',
@@ -350,7 +338,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 4. Gonapeptyl (Triptorelin)
   {
     brandName: 'Gonapeptyl 0.1 mg',
-    brandNameAr: 'غونابيبتيل 0.1 ملغ',
     genericName: 'Triptorelin',
     activeIngredients: ['Triptorelin'],
     drugClass: 'Gonadotropin-releasing hormone (GnRH) agonist',
@@ -379,7 +366,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Gonapeptyl Depot 3.75 mg',
-    brandNameAr: 'غونابيبتيل ديبو 3.75 ملغ',
     genericName: 'Triptorelin',
     activeIngredients: ['Triptorelin'],
     drugClass: 'Sustained-release gonadotropin-releasing hormone (GnRH) agonist',
@@ -410,7 +396,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 5. Firmagon (Degarelix)
   {
     brandName: 'Firmagon 80 mg',
-    brandNameAr: 'فيرماغون 80 ملغ',
     genericName: 'Degarelix',
     activeIngredients: ['Degarelix'],
     drugClass: 'Selective gonadotropin-releasing hormone (GnRH) antagonist (blocker)',
@@ -439,7 +424,6 @@ const RAW_FERRING: CompactDrug[] = [
   },
   {
     brandName: 'Firmagon 120 mg',
-    brandNameAr: 'فيرماغون 120 ملغ',
     genericName: 'Degarelix',
     activeIngredients: ['Degarelix'],
     drugClass: 'Selective gonadotropin-releasing hormone (GnRH) antagonist (blocker)',
@@ -470,7 +454,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 6. Rekovelle (Follitropin delta)
   {
     brandName: 'Rekovelle 72 mcg/2.16 mL',
-    brandNameAr: 'ريكوفيل 72 ميكروغرام/2.16 مل',
     genericName: 'Follitropin delta',
     activeIngredients: ['Follitropin delta'],
     drugClass: 'Human cell-line derived recombinant follicle-stimulating hormone (rFSH)',
@@ -501,7 +484,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 7. Propess (Dinoprostone)
   {
     brandName: 'Propess 10 mg',
-    brandNameAr: 'بروبيس 10 ملغ',
     genericName: 'Dinoprostone',
     activeIngredients: ['Dinoprostone'],
     drugClass: 'Prostaglandin E2 (PGE2) controlled-release vaginal delivery system for cervical ripening',
@@ -532,7 +514,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 8. Glypressin (Terlipressin)
   {
     brandName: 'Glypressin 1 mg',
-    brandNameAr: 'غليبريسين 1 ملغ',
     genericName: 'Terlipressin',
     activeIngredients: ['Terlipressin'],
     drugClass: 'Synthetic triglycyl-lysine vasopressin analogue (splanchnic vasoconstrictor)',
@@ -563,7 +544,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 9. Picoprep (Sodium picosulfate + Magnesium oxide + Citric acid)
   {
     brandName: 'Picoprep 10 mg / 3.5 g / 12 g',
-    brandNameAr: 'بيكوبريب 10 ملغ / 3.5 غ / 12 غ',
     genericName: 'Sodium picosulfate + Magnesium oxide + Citric acid',
     activeIngredients: ['Sodium picosulfate', 'Magnesium oxide', 'Citric acid'],
     drugClass: 'Contact stimulant laxative and osmotic laxative bowel cleansing combination',
@@ -594,7 +574,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 10. Tractocile (Atosiban)
   {
     brandName: 'Tractocile 37.5 mg/5 mL',
-    brandNameAr: 'تراكتوسيل 37.5 ملغ/5 مل',
     genericName: 'Atosiban',
     activeIngredients: ['Atosiban'],
     drugClass: 'Selective oxytocin and vasopressin V1a receptor antagonist (tocolytic)',
@@ -625,7 +604,6 @@ const RAW_FERRING: CompactDrug[] = [
   // 11. Pabal (Carbetocin)
   {
     brandName: 'Pabal 100 mcg/mL',
-    brandNameAr: 'بابال 100 ميكروغرام/مل',
     genericName: 'Carbetocin',
     activeIngredients: ['Carbetocin'],
     drugClass: 'Long-acting synthetic oxytocin agonist (uterotonic)',
@@ -657,7 +635,6 @@ const RAW_FERRING: CompactDrug[] = [
 export const FERRING_PRODUCTS: AiProductDraft[] = RAW_FERRING.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

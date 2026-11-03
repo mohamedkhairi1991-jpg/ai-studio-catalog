@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   // 1. Helicid (Omeprazole — Zentiva, k.s.)
   {
     brandName: 'Helicid 20 mg',
-    brandNameAr: 'هيليسيد 20 ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -55,7 +53,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   },
   {
     brandName: 'Helicid 40 mg',
-    brandNameAr: 'هيليسيد 40 ملغ',
     genericName: 'Omeprazole',
     activeIngredients: ['Omeprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -87,7 +84,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   // 2. Agen (Amlodipine — Zentiva, k.s.)
   {
     brandName: 'Agen 5 mg',
-    brandNameAr: 'أجين 5 ملغ',
     genericName: 'Amlodipine',
     activeIngredients: ['Amlodipine'],
     drugClass: 'Dihydropyridine calcium channel blocker',
@@ -117,7 +113,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   },
   {
     brandName: 'Agen 10 mg',
-    brandNameAr: 'أجين 10 ملغ',
     genericName: 'Amlodipine',
     activeIngredients: ['Amlodipine'],
     drugClass: 'Dihydropyridine calcium channel blocker',
@@ -149,7 +144,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   // 3. Torvacard (Atorvastatin — Zentiva, k.s.)
   {
     brandName: 'Torvacard 10 mg',
-    brandNameAr: 'تورفاكارد 10 ملغ',
     genericName: 'Atorvastatin',
     activeIngredients: ['Atorvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -179,7 +173,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   },
   {
     brandName: 'Torvacard 20 mg',
-    brandNameAr: 'تورفاكارد 20 ملغ',
     genericName: 'Atorvastatin',
     activeIngredients: ['Atorvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -209,7 +202,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   },
   {
     brandName: 'Torvacard 40 mg',
-    brandNameAr: 'تورفاكارد 40 ملغ',
     genericName: 'Atorvastatin',
     activeIngredients: ['Atorvastatin'],
     drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
@@ -241,7 +233,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   // 4. Zodac (Cetirizine — Zentiva, k.s.)
   {
     brandName: 'Zodac 10 mg',
-    brandNameAr: 'زوداك 10 ملغ',
     genericName: 'Cetirizine',
     activeIngredients: ['Cetirizine'],
     drugClass: 'Second-generation selective peripheral histamine H1-receptor antagonist',
@@ -273,7 +264,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   // 5. Lozap (Losartan — Zentiva, k.s.)
   {
     brandName: 'Lozap 50 mg',
-    brandNameAr: 'لوزاب 50 ملغ',
     genericName: 'Losartan',
     activeIngredients: ['Losartan'],
     drugClass: 'Angiotensin II receptor blocker (ARB)',
@@ -303,7 +293,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   },
   {
     brandName: 'Lozap 100 mg',
-    brandNameAr: 'لوزاب 100 ملغ',
     genericName: 'Losartan',
     activeIngredients: ['Losartan'],
     drugClass: 'Angiotensin II receptor blocker (ARB)',
@@ -335,7 +324,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   // 6. Lozap H (Losartan + Hydrochlorothiazide — Zentiva, k.s.)
   {
     brandName: 'Lozap H 50 mg/12.5 mg',
-    brandNameAr: 'لوزاب إتش 50 ملغ/12.5 ملغ',
     genericName: 'Losartan + Hydrochlorothiazide',
     activeIngredients: ['Losartan', 'Hydrochlorothiazide'],
     drugClass: 'Angiotensin II receptor blocker (ARB) and thiazide diuretic fixed-dose combination',
@@ -367,7 +355,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
   // 7. Clopidogrel Zentiva (Clopidogrel — Zentiva, k.s.)
   {
     brandName: 'Clopidogrel Zentiva 75 mg',
-    brandNameAr: 'كلوبيدوغريل زينتيفا 75 ملغ',
     genericName: 'Clopidogrel',
     activeIngredients: ['Clopidogrel'],
     drugClass: 'P2Y12 adenosine diphosphate (ADP)-receptor antagonist (antiplatelet agent)',
@@ -400,7 +387,6 @@ const RAW_ZENTIVA: CompactDrug[] = [
 export const ZENTIVA_PRODUCTS: AiProductDraft[] = RAW_ZENTIVA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_AL_KINDI: CompactDrug[] = [
   // 1. Azithrokindin 500 mg (Azithromycin — Al-Kindi)
   {
     brandName: 'Azithrokindin 500 mg',
-    brandNameAr: 'أزيثروكيندين 500 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) systemic antibacterial (ATC J01FA10)',
@@ -57,7 +55,6 @@ const RAW_AL_KINDI: CompactDrug[] = [
   // 2. Amlodepen 5 mg (Amlodipine — Al-Kindi)
   {
     brandName: 'Amlodepen 5 mg',
-    brandNameAr: 'أملوديبين الكندي 5 ملغ',
     genericName: 'Amlodipine',
     activeIngredients: ['Amlodipine'],
     drugClass: 'Dihydropyridine calcium channel blocker antihypertensive and antianginal (ATC C08CA01)',
@@ -89,7 +86,6 @@ const RAW_AL_KINDI: CompactDrug[] = [
   // 3. Lyrikine 75 mg (Pregabalin — Al-Kindi)
   {
     brandName: 'Lyrikine 75 mg',
-    brandNameAr: 'ليريكين 75 ملغ',
     genericName: 'Pregabalin',
     activeIngredients: ['Pregabalin'],
     drugClass: 'Gamma-aminobutyric acid (GABA) analogue antiepileptic and neuropathic pain agent (ATC N03AX16)',
@@ -121,7 +117,6 @@ const RAW_AL_KINDI: CompactDrug[] = [
   // 4. Calcium-Kindi 500 mg (Calcium carbonate — Al-Kindi)
   {
     brandName: 'Calcium-Kindi 500 mg',
-    brandNameAr: 'كالسيوم الكندي 500 ملغ',
     genericName: 'Calcium carbonate',
     activeIngredients: ['Calcium carbonate'],
     drugClass: 'Calcium mineral supplement and oral phosphate binder (ATC A12AA04)',
@@ -154,7 +149,6 @@ const RAW_AL_KINDI: CompactDrug[] = [
 export const AL_KINDI_PRODUCTS: AiProductDraft[] = RAW_AL_KINDI.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

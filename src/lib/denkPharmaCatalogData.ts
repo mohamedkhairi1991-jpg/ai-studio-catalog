@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 1. Amoxi-Denk (Amoxicillin — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Amoxi-Denk 500 mg',
-    brandNameAr: 'أموكسي-دنك 500 ملغ',
     genericName: 'Amoxicillin',
     activeIngredients: ['Amoxicillin'],
     drugClass: 'Broad-spectrum aminopenicillin beta-lactam antibacterial',
@@ -55,7 +53,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Amoxi-Denk 1000 mg',
-    brandNameAr: 'أموكسي-دنك 1000 ملغ',
     genericName: 'Amoxicillin',
     activeIngredients: ['Amoxicillin'],
     drugClass: 'Broad-spectrum aminopenicillin beta-lactam antibacterial',
@@ -87,7 +84,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 2. Panto-Denk (Pantoprazole — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Panto-Denk 20 mg',
-    brandNameAr: 'بانتو-دنك 20 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -117,7 +113,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Panto-Denk 40 mg',
-    brandNameAr: 'بانتو-دنك 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
@@ -149,7 +144,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 3. Azithro-Denk (Azithromycin — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Azithro-Denk 250 mg',
-    brandNameAr: 'أزيثرو-دنك 250 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -179,7 +173,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Azithro-Denk 500 mg',
-    brandNameAr: 'أزيثرو-دنك 500 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) antibacterial',
@@ -211,7 +204,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 4. Captopril Denk (Captopril — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Captopril Denk 25 mg',
-    brandNameAr: 'كابتوبريل دنك 25 ملغ',
     genericName: 'Captopril',
     activeIngredients: ['Captopril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor',
@@ -243,7 +235,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 5. Amlo-Denk (Amlodipine — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Amlo-Denk 5 mg',
-    brandNameAr: 'أملو-دنك 5 ملغ',
     genericName: 'Amlodipine',
     activeIngredients: ['Amlodipine'],
     drugClass: 'Dihydropyridine calcium channel blocker',
@@ -273,7 +264,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Amlo-Denk 10 mg',
-    brandNameAr: 'أملو-دنك 10 ملغ',
     genericName: 'Amlodipine',
     activeIngredients: ['Amlodipine'],
     drugClass: 'Dihydropyridine calcium channel blocker',
@@ -305,7 +295,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 6. Losar-Denk (Losartan — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Losar-Denk 50 mg',
-    brandNameAr: 'لوسار-دنك 50 ملغ',
     genericName: 'Losartan',
     activeIngredients: ['Losartan'],
     drugClass: 'Angiotensin II receptor blocker (ARB)',
@@ -337,7 +326,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 7. Cipro-Denk (Ciprofloxacin — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Cipro-Denk 500 mg',
-    brandNameAr: 'سيبرو-دنك 500 ملغ',
     genericName: 'Ciprofloxacin',
     activeIngredients: ['Ciprofloxacin'],
     drugClass: 'Fluoroquinolone antibacterial',
@@ -369,7 +357,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   // 8. Metformin Denk (Metformin — Denk Pharma GmbH & Co. KG)
   {
     brandName: 'Metformin Denk 500 mg',
-    brandNameAr: 'ميتفورمين دنك 500 ملغ',
     genericName: 'Metformin',
     activeIngredients: ['Metformin'],
     drugClass: 'Biguanide oral antihyperglycaemic agent',
@@ -399,7 +386,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Metformin Denk 850 mg',
-    brandNameAr: 'ميتفورمين دنك 850 ملغ',
     genericName: 'Metformin',
     activeIngredients: ['Metformin'],
     drugClass: 'Biguanide oral antihyperglycaemic agent',
@@ -429,7 +415,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
   },
   {
     brandName: 'Metformin Denk 1000 mg',
-    brandNameAr: 'ميتفورمين دنك 1000 ملغ',
     genericName: 'Metformin',
     activeIngredients: ['Metformin'],
     drugClass: 'Biguanide oral antihyperglycaemic agent',
@@ -462,7 +447,6 @@ const RAW_DENK_PHARMA: CompactDrug[] = [
 export const DENK_PHARMA_PRODUCTS: AiProductDraft[] = RAW_DENK_PHARMA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

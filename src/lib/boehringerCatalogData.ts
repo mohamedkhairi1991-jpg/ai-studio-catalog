@@ -4,7 +4,6 @@ const BI_SRC = (title: string, url: string): AiDraftSource[] => [{ title, url }]
 
 interface CompactBoehringerDrug {
   brandName: string;
-  brandNameAr: string;
   category?: 'prescription_drug' | 'otc_drug' | 'dietary_supplement';
   genericName: string;
   drugClassNameEn: string;
@@ -26,7 +25,6 @@ function toBoehringerProductDraft(item: CompactBoehringerDrug): AiProductDraft {
   return {
     found: true,
     brandName: item.brandName,
-    brandNameAr: item.brandNameAr,
     category: item.category ?? 'prescription_drug',
     genericName: item.genericName,
     activeIngredients: item.genericName.split(' + ').map((s) => s.trim()),
@@ -55,7 +53,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   // =========================================================================
   {
     brandName: 'Jardiance 10 mg',
-    brandNameAr: 'جارديانس 10 ملغم',
     genericName: 'Empagliflozin',
     drugClassNameEn: 'Sodium-Glucose Co-Transporter 2 (SGLT2) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -78,7 +75,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Jardiance 25 mg',
-    brandNameAr: 'جارديانس 25 ملغم',
     genericName: 'Empagliflozin',
     drugClassNameEn: 'Sodium-Glucose Co-Transporter 2 (SGLT2) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -101,7 +97,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Synjardy 5 mg/850 mg',
-    brandNameAr: 'سينجاردي 5 ملغم/850 ملغم',
     genericName: 'Empagliflozin + Metformin',
     drugClassNameEn: 'SGLT2 Inhibitor and Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -124,7 +119,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Synjardy 5 mg/1000 mg',
-    brandNameAr: 'سينجاردي 5 ملغم/1000 ملغم',
     genericName: 'Empagliflozin + Metformin',
     drugClassNameEn: 'SGLT2 Inhibitor and Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -147,7 +141,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Synjardy 12.5 mg/850 mg',
-    brandNameAr: 'سينجاردي 12.5 ملغم/850 ملغم',
     genericName: 'Empagliflozin + Metformin',
     drugClassNameEn: 'SGLT2 Inhibitor and Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -170,7 +163,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Synjardy 12.5 mg/1000 mg',
-    brandNameAr: 'سينجاردي 12.5 ملغم/1000 ملغم',
     genericName: 'Empagliflozin + Metformin',
     drugClassNameEn: 'SGLT2 Inhibitor and Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -193,7 +185,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Glyxambi 10 mg/5 mg',
-    brandNameAr: 'غليكسامبي 10 ملغم/5 ملغم',
     genericName: 'Empagliflozin + Linagliptin',
     drugClassNameEn: 'SGLT2 Inhibitor and DPP-4 Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -216,7 +207,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Glyxambi 25 mg/5 mg',
-    brandNameAr: 'غليكسامبي 25 ملغم/5 ملغم',
     genericName: 'Empagliflozin + Linagliptin',
     drugClassNameEn: 'SGLT2 Inhibitor and DPP-4 Inhibitor Combinations',
     dosageForm: 'Film-coated tablet',
@@ -239,7 +229,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Trajenta 5 mg',
-    brandNameAr: 'تراجينتا 5 ملغم',
     genericName: 'Linagliptin',
     drugClassNameEn: 'Dipeptidyl Peptidase-4 (DPP-4) Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -262,7 +251,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Jentadueto 2.5 mg/850 mg',
-    brandNameAr: 'جينتادويتو 2.5 ملغم/850 ملغم',
     genericName: 'Linagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor and Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -285,7 +273,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Jentadueto 2.5 mg/1000 mg',
-    brandNameAr: 'جينتادويتو 2.5 ملغم/1000 ملغم',
     genericName: 'Linagliptin + Metformin',
     drugClassNameEn: 'DPP-4 Inhibitor and Biguanide Combinations',
     dosageForm: 'Film-coated tablet',
@@ -312,7 +299,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   // =========================================================================
   {
     brandName: 'Micardis 40 mg',
-    brandNameAr: 'ميكارديس 40 ملغم',
     genericName: 'Telmisartan',
     drugClassNameEn: 'Angiotensin II Receptor Blockers (ARBs)',
     dosageForm: 'Tablet',
@@ -335,7 +321,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Micardis 80 mg',
-    brandNameAr: 'ميكارديس 80 ملغم',
     genericName: 'Telmisartan',
     drugClassNameEn: 'Angiotensin II Receptor Blockers (ARBs)',
     dosageForm: 'Tablet',
@@ -358,7 +343,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'MicardisPlus 40 mg/12.5 mg',
-    brandNameAr: 'ميكارديس بلس 40 ملغم/12.5 ملغم',
     genericName: 'Telmisartan + Hydrochlorothiazide',
     drugClassNameEn: 'Angiotensin II Receptor Blocker and Thiazide Diuretic Combinations',
     dosageForm: 'Tablet',
@@ -381,7 +365,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'MicardisPlus 80 mg/12.5 mg',
-    brandNameAr: 'ميكارديس بلس 80 ملغم/12.5 ملغم',
     genericName: 'Telmisartan + Hydrochlorothiazide',
     drugClassNameEn: 'Angiotensin II Receptor Blocker and Thiazide Diuretic Combinations',
     dosageForm: 'Tablet',
@@ -404,7 +387,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'MicardisPlus 80 mg/25 mg',
-    brandNameAr: 'ميكارديس بلس 80 ملغم/25 ملغم',
     genericName: 'Telmisartan + Hydrochlorothiazide',
     drugClassNameEn: 'Angiotensin II Receptor Blocker and Thiazide Diuretic Combinations',
     dosageForm: 'Tablet',
@@ -427,7 +409,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Twynsta 40 mg/5 mg',
-    brandNameAr: 'توينستا 40 ملغم/5 ملغم',
     genericName: 'Telmisartan + Amlodipine',
     drugClassNameEn: 'Angiotensin II Receptor Blocker and Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -450,7 +431,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Twynsta 40 mg/10 mg',
-    brandNameAr: 'توينستا 40 ملغم/10 ملغم',
     genericName: 'Telmisartan + Amlodipine',
     drugClassNameEn: 'Angiotensin II Receptor Blocker and Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -473,7 +453,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Twynsta 80 mg/5 mg',
-    brandNameAr: 'توينستا 80 ملغم/5 ملغم',
     genericName: 'Telmisartan + Amlodipine',
     drugClassNameEn: 'Angiotensin II Receptor Blocker and Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -496,7 +475,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Twynsta 80 mg/10 mg',
-    brandNameAr: 'توينستا 80 ملغم/10 ملغم',
     genericName: 'Telmisartan + Amlodipine',
     drugClassNameEn: 'Angiotensin II Receptor Blocker and Calcium Channel Blocker Combinations',
     dosageForm: 'Tablet',
@@ -519,7 +497,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Pradaxa 75 mg',
-    brandNameAr: 'براداكسا 75 ملغم',
     genericName: 'Dabigatran etexilate',
     drugClassNameEn: 'Direct Oral Thrombin Inhibitors (DOACs)',
     dosageForm: 'Hard capsule',
@@ -542,7 +519,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Pradaxa 110 mg',
-    brandNameAr: 'براداكسا 110 ملغم',
     genericName: 'Dabigatran etexilate',
     drugClassNameEn: 'Direct Oral Thrombin Inhibitors (DOACs)',
     dosageForm: 'Hard capsule',
@@ -565,7 +541,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Pradaxa 150 mg',
-    brandNameAr: 'براداكسا 150 ملغم',
     genericName: 'Dabigatran etexilate',
     drugClassNameEn: 'Direct Oral Thrombin Inhibitors (DOACs)',
     dosageForm: 'Hard capsule',
@@ -588,7 +563,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Praxbind 2.5 g/50 mL',
-    brandNameAr: 'براكسبايند 2.5 غم/50 مل',
     genericName: 'Idarucizumab',
     drugClassNameEn: 'Specific Reversal Agents for Dabigatran (Humanised Monoclonal Antibody Fragments)',
     dosageForm: 'Solution for injection / infusion',
@@ -611,7 +585,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Actilyse 20 mg',
-    brandNameAr: 'أكتيليز 20 ملغم',
     genericName: 'Alteplase',
     drugClassNameEn: 'Recombinant Tissue Plasminogen Activators (Fibrinolytics / Thrombolytics)',
     dosageForm: 'Powder and solvent for solution for injection and infusion',
@@ -634,7 +607,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Actilyse 50 mg',
-    brandNameAr: 'أكتيليز 50 ملغم',
     genericName: 'Alteplase',
     drugClassNameEn: 'Recombinant Tissue Plasminogen Activators (Fibrinolytics / Thrombolytics)',
     dosageForm: 'Powder and solvent for solution for injection and infusion',
@@ -657,7 +629,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Metalyse 5000 U (25 mg)',
-    brandNameAr: 'ميتاليز 5000 وحدة (25 ملغم)',
     genericName: 'Tenecteplase',
     drugClassNameEn: 'Fibrin-Specific Recombinant Plasminogen Activators (Thrombolytics)',
     dosageForm: 'Powder for solution for injection',
@@ -680,7 +651,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Metalyse 10000 U (50 mg)',
-    brandNameAr: 'ميتاليز 10000 وحدة (50 ملغم)',
     genericName: 'Tenecteplase',
     drugClassNameEn: 'Fibrin-Specific Recombinant Plasminogen Activators (Thrombolytics)',
     dosageForm: 'Powder and solvent for solution for injection',
@@ -707,7 +677,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   // =========================================================================
   {
     brandName: 'Spiriva HandiHaler 18 mcg',
-    brandNameAr: 'سبيريفا هانديهيلر 18 ميكروغرام',
     genericName: 'Tiotropium',
     drugClassNameEn: 'Long-Acting Muscarinic Antagonists (LAMAs)',
     dosageForm: 'Inhalation powder, hard capsule',
@@ -730,7 +699,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Spiriva Respimat 2.5 mcg',
-    brandNameAr: 'سبيريفا ريسبيمات 2.5 ميكروغرام',
     genericName: 'Tiotropium',
     drugClassNameEn: 'Long-Acting Muscarinic Antagonists (LAMAs)',
     dosageForm: 'Solution for inhalation (Respimat soft mist inhaler)',
@@ -753,7 +721,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Spiolto Respimat 2.5 mcg/2.5 mcg',
-    brandNameAr: 'سبيولتو ريسبيمات 2.5 ميكروغرام/2.5 ميكروغرام',
     genericName: 'Tiotropium + Olodaterol',
     drugClassNameEn: 'Long-Acting Muscarinic Antagonist and Long-Acting Beta-2 Agonist (LAMA/LABA) Combinations',
     dosageForm: 'Solution for inhalation (Respimat soft mist inhaler)',
@@ -776,7 +743,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Atrovent 20 mcg/actuation Inhaler',
-    brandNameAr: 'أتروفنت 20 ميكروغرام/بخاخ',
     genericName: 'Ipratropium',
     drugClassNameEn: 'Short-Acting Muscarinic Antagonists (SAMAs)',
     dosageForm: 'Pressurised inhalation, solution (MDI)',
@@ -799,7 +765,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Atrovent 250 mcg/mL Nebuliser Solution',
-    brandNameAr: 'أتروفنت 250 ميكروغرام/مل',
     genericName: 'Ipratropium',
     drugClassNameEn: 'Short-Acting Muscarinic Antagonists (SAMAs)',
     dosageForm: 'Nebuliser solution',
@@ -822,7 +787,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Berodual N 20 mcg/50 mcg Inhaler',
-    brandNameAr: 'بيرودوال إن 20 ميكروغرام/50 ميكروغرام',
     genericName: 'Ipratropium + Fenoterol',
     drugClassNameEn: 'Short-Acting Muscarinic Antagonist and Beta-2 Agonist (SAMA/SABA) Combinations',
     dosageForm: 'Pressurised inhalation, solution (MDI)',
@@ -845,7 +809,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Berodual 0.25 mg/0.5 mg per mL Nebuliser Solution',
-    brandNameAr: 'بيرودوال 0.25 ملغم/0.5 ملغم لكل مل',
     genericName: 'Ipratropium + Fenoterol',
     drugClassNameEn: 'Short-Acting Muscarinic Antagonist and Beta-2 Agonist (SAMA/SABA) Combinations',
     dosageForm: 'Solution for nebulisation',
@@ -868,7 +831,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Ofev 100 mg',
-    brandNameAr: 'أوفيف 100 ملغم',
     genericName: 'Nintedanib',
     drugClassNameEn: 'Intracellular Tyrosine Kinase Inhibitors (Antifibrotic Agents)',
     dosageForm: 'Soft capsule',
@@ -891,7 +853,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Ofev 150 mg',
-    brandNameAr: 'أوفيف 150 ملغم',
     genericName: 'Nintedanib',
     drugClassNameEn: 'Intracellular Tyrosine Kinase Inhibitors (Antifibrotic Agents)',
     dosageForm: 'Soft capsule',
@@ -918,7 +879,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   // =========================================================================
   {
     brandName: 'Giotrif 20 mg',
-    brandNameAr: 'جيوتريف 20 ملغم',
     genericName: 'Afatinib',
     drugClassNameEn: 'Irreversible ErbB Family (EGFR/HER2/ErbB4) Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -941,7 +901,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Giotrif 30 mg',
-    brandNameAr: 'جيوتريف 30 ملغم',
     genericName: 'Afatinib',
     drugClassNameEn: 'Irreversible ErbB Family (EGFR/HER2/ErbB4) Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -964,7 +923,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Giotrif 40 mg',
-    brandNameAr: 'جيوتريف 40 ملغم',
     genericName: 'Afatinib',
     drugClassNameEn: 'Irreversible ErbB Family (EGFR/HER2/ErbB4) Tyrosine Kinase Inhibitors',
     dosageForm: 'Film-coated tablet',
@@ -987,7 +945,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Vargatef 150 mg',
-    brandNameAr: 'فارغاتيف 150 ملغم',
     genericName: 'Nintedanib',
     drugClassNameEn: 'Triple Angiokinase (VEGFR/FGFR/PDGFR) Inhibitors',
     dosageForm: 'Soft capsule',
@@ -1010,7 +967,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Spevigo 450 mg/7.5 mL',
-    brandNameAr: 'سبيفيغو 450 ملغم/7.5 مل',
     genericName: 'Spesolimab',
     drugClassNameEn: 'Anti-Interleukin-36 Receptor (IL-36R) Monoclonal Antibodies',
     dosageForm: 'Concentrate for solution for infusion',
@@ -1033,7 +989,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Sifrol 0.18 mg',
-    brandNameAr: 'سيفرول 0.18 ملغم',
     genericName: 'Pramipexole',
     drugClassNameEn: 'Non-Ergot Dopamine Receptor Agonists',
     dosageForm: 'Tablet',
@@ -1056,7 +1011,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Sifrol 0.7 mg',
-    brandNameAr: 'سيفرول 0.7 ملغم',
     genericName: 'Pramipexole',
     drugClassNameEn: 'Non-Ergot Dopamine Receptor Agonists',
     dosageForm: 'Tablet',
@@ -1079,7 +1033,6 @@ const BOEHRINGER_COMPACT_PRODUCTS: CompactBoehringerDrug[] = [
   },
   {
     brandName: 'Sifrol 1.05 mg Prolonged-Release',
-    brandNameAr: 'سيفرول 1.05 ملغم ممتد المفعول',
     genericName: 'Pramipexole',
     drugClassNameEn: 'Non-Ergot Dopamine Receptor Agonists (Once-Daily Prolonged-Release)',
     dosageForm: 'Prolonged-release tablet',

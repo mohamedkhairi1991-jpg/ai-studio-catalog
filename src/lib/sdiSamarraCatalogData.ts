@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
   // 1. Samapril 20 mg (Enalapril — SDI Samarra)
   {
     brandName: 'Samapril 20 mg',
-    brandNameAr: 'سامابريل 20 ملغ',
     genericName: 'Enalapril',
     activeIngredients: ['Enalapril'],
     drugClass: 'Angiotensin-converting enzyme (ACE) inhibitor antihypertensive (ATC C09AA02)',
@@ -46,7 +44,7 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
     specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
     sources: [
       {
-        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Official Product Directory Page 18 (سامابريل 20 ملغ)',
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Official Product Directory Page 18 (Samapril 20 mg)',
         url: 'https://sdi.industry.gov.iq/public/index.php/show/product?page=18',
       },
     ],
@@ -57,7 +55,6 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
   // 2. Valiapam 5 mg (Diazepam — SDI Samarra)
   {
     brandName: 'Valiapam 5 mg',
-    brandNameAr: 'فاليابام 5 ملغ',
     genericName: 'Diazepam',
     activeIngredients: ['Diazepam'],
     drugClass: 'Long-acting benzodiazepine anxiolytic, anticonvulsant, and skeletal muscle relaxant (ATC N05BA01)',
@@ -78,7 +75,7 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
     specialties: ['Psychiatry', 'Neurology', 'Internal Medicine'],
     sources: [
       {
-        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Official Product Directory Page 18 (فالياپام 5 ملغ)',
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Official Product Directory Page 18 (Valiapam 5 mg)',
         url: 'https://sdi.industry.gov.iq/public/index.php/show/product?page=18',
       },
     ],
@@ -89,7 +86,6 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
   // 3. Dapoxin 10 mg (Dapagliflozin — SDI Samarra)
   {
     brandName: 'Dapoxin 10 mg',
-    brandNameAr: 'دابوكسين 10 ملغ',
     genericName: 'Dapagliflozin',
     activeIngredients: ['Dapagliflozin'],
     drugClass: 'Sodium-glucose co-transporter 2 (SGLT2) inhibitor (ATC A10BK01)',
@@ -121,7 +117,6 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
   // 4. Linagliptin SDI 5 mg (Linagliptin — SDI Samarra)
   {
     brandName: 'Linagliptin SDI 5 mg',
-    brandNameAr: 'ليناغليبتين سامراء 5 ملغ',
     genericName: 'Linagliptin',
     activeIngredients: ['Linagliptin'],
     drugClass: 'Dipeptidyl peptidase-4 (DPP-4) inhibitor oral antihyperglycaemic agent (ATC A10BH05)',
@@ -154,7 +149,6 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
 export const SDI_SAMARRA_PRODUCTS: AiProductDraft[] = RAW_SDI_SAMARRA.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

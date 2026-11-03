@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
   // 1. Protonex (Pantoprazole — Abdi Ibrahim)
   {
     brandName: 'Protonex 40 mg',
-    brandNameAr: 'بروتونكس 40 ملغ',
     genericName: 'Pantoprazole',
     activeIngredients: ['Pantoprazole'],
     drugClass: 'Proton pump inhibitor (PPI) gastric acid secretion inhibitor (ATC A02BC02)',
@@ -57,7 +55,6 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
   // 2. Onceair (Montelukast — Abdi Ibrahim)
   {
     brandName: 'Onceair 10 mg',
-    brandNameAr: 'وانس إير 10 ملغ',
     genericName: 'Montelukast',
     activeIngredients: ['Montelukast'],
     drugClass: 'Selective leukotriene receptor antagonist (CysLT1) (ATC R03DC03)',
@@ -89,7 +86,6 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
   // 3. Cetryn (Cetirizine — Abdi Ibrahim)
   {
     brandName: 'Cetryn 10 mg',
-    brandNameAr: 'سيترين 10 ملغ',
     genericName: 'Cetirizine',
     activeIngredients: ['Cetirizine'],
     drugClass: 'Second-generation selective peripheral H1-receptor antagonist antihistamine (ATC R06AE07)',
@@ -121,7 +117,6 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
   // 4. Parkyn (Pramipexole — Abdi Ibrahim)
   {
     brandName: 'Parkyn 1 mg',
-    brandNameAr: 'باركين 1 ملغ',
     genericName: 'Pramipexole',
     activeIngredients: ['Pramipexole'],
     drugClass: 'Non-ergot dopamine D2/D3 receptor agonist antiparkinsonian agent (ATC N04BC05)',
@@ -153,7 +148,6 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
   // 5. Pixart (Pioglitazone — Abdi Ibrahim)
   {
     brandName: 'Pixart 30 mg',
-    brandNameAr: 'بيكسارت 30 ملغ',
     genericName: 'Pioglitazone',
     activeIngredients: ['Pioglitazone'],
     drugClass: 'Thiazolidinedione (PPAR-gamma agonist) oral antihyperglycaemic agent (ATC A10BG03)',
@@ -186,7 +180,6 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
 export const ABDI_IBRAHIM_PRODUCTS: AiProductDraft[] = RAW_ABDI_IBRAHIM.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

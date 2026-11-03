@@ -2,7 +2,6 @@ import type { AiDraftSource, AiProductDraft } from './catalog';
 
 interface CompactDrug {
   brandName: string;
-  brandNameAr: string;
   genericName: string;
   activeIngredients: string[];
   drugClass: string;
@@ -25,7 +24,6 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
   // 1. Amoklavin BID 1000 mg (Amoxicillin + Clavulanic acid — Deva Holding)
   {
     brandName: 'Amoklavin BID 1000 mg',
-    brandNameAr: 'أموكلافين بيد 1000 ملغ',
     genericName: 'Amoxicillin + Clavulanic acid',
     activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
     drugClass: 'Penicillin antibacterial plus beta-lactamase inhibitor combination (ATC J01CR02)',
@@ -57,7 +55,6 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
   // 2. Azitro 500 mg (Azithromycin — Deva Holding)
   {
     brandName: 'Azitro 500 mg',
-    brandNameAr: 'أزيترو 500 ملغ',
     genericName: 'Azithromycin',
     activeIngredients: ['Azithromycin'],
     drugClass: 'Macrolide (azalide) systemic antibacterial (ATC J01FA10)',
@@ -89,7 +86,6 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
   // 3. Candexil 16 mg (Candesartan — Deva Holding)
   {
     brandName: 'Candexil 16 mg',
-    brandNameAr: 'كانديكسيل 16 ملغ',
     genericName: 'Candesartan',
     activeIngredients: ['Candesartan'],
     drugClass: 'Angiotensin II receptor antagonist (ARB) antihypertensive (ATC C09CA06)',
@@ -121,7 +117,6 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
   // 4. Dikloron 50 mg (Diclofenac — Deva Holding)
   {
     brandName: 'Dikloron 50 mg',
-    brandNameAr: 'ديكلورون 50 ملغ',
     genericName: 'Diclofenac',
     activeIngredients: ['Diclofenac'],
     drugClass: 'Non-steroidal anti-inflammatory drug (NSAID), acetic acid derivative (ATC M01AB05)',
@@ -154,7 +149,6 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
 export const DEVA_HOLDING_PRODUCTS: AiProductDraft[] = RAW_DEVA_HOLDING.map((d) => ({
   found: true,
   brandName: d.brandName,
-  brandNameAr: d.brandNameAr,
   category: d.category ?? 'prescription_drug',
   genericName: d.genericName,
   activeIngredients: d.activeIngredients,

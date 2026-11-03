@@ -58,6 +58,10 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (Viatris catalog dataset — 28 products)
+- **What changed:** Created `src/lib/viatrisCatalogData.ts` exporting `VIATRIS_PRODUCTS` (28 established Upjohn/Mylan products marketed by Viatris in Iraq and the Middle East: Lipitor 10/20/40/80 mg, Norvasc 5/10 mg, Caduet 5/10 mg and 10/20 mg, Lopid 600 mg, Cardura XL 4 mg, Viagra 50/100 mg, Lyrica 75/150/300 mg, Dilantin 100 mg, Zoloft 50/100 mg, Xanax 0.5 mg, Xanax XR 1 mg, Effexor XR 75/150 mg, Celebrex 100/200 mg, Medrol 4/16 mg, Ponstan Forte 500 mg, and Feldene 20 mg) and registered `viatris` in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Verification:** English only, no prices or registration numbers, only the 16 allowed specialty names, and specific product SmPC/EPAR/FDA label URLs. `npm run lint`, `npm test`, and `npm run build` all pass.
+
 ### 2026-11-03 — Google AI Studio (Doctor self sign-up, specialty home page, standalone drug page)
 - **Doctor sign-up without admin approval (`src/lib/onboarding.ts`, `src/components/AuthGate.tsx`, `src/components/Onboarding.tsx`):**
   - Updated the sign-up form with Email, Password, Full name (optional), Phone number (required), Medical specialty (required dropdown of active specialties sorted A–Z), and the Terms/Privacy checkbox; removed licence number, workplace, and "wait for admin verification" text.

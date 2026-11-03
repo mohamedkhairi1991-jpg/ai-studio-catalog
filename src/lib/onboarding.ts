@@ -33,7 +33,22 @@ export interface DoctorForm {
 export interface SignUpCredentialsInput {
   email: string;
   password: string;
+  fullName?: string;
+  phone: string;
+  specialtyId: string;
   acceptedTerms: boolean;
+}
+
+export interface DoctorSelfSignupInput {
+  fullName?: string;
+  phone: string;
+  specialtyId: string;
+}
+
+export interface DoctorProfileSummary {
+  fullName: string;
+  phone: string;
+  specialtyId: string;
 }
 
 export interface CompanyForm {
@@ -76,6 +91,8 @@ export interface PendingCompany {
 // to offer company self-signup again; the company form and RPCs are kept.
 export const COMPANY_SELF_SIGNUP_ENABLED = false;
 
+const PHONE_RE = /^\+?[0-9][0-9 ()-]{5,}$/;
+
 // ---------- Pure helpers (unit tested) ----------
 export function onboardingStep(state: OnboardingState): OnboardingStep {
   if (state.professional) {
@@ -99,10 +116,40 @@ export function validateSignUpInput(input: SignUpCredentialsInput): string | nul
   if (input.password.length < 8) {
     return 'Password must be at least 8 characters.';
   }
+  const fullName = input.fullName?.trim() ?? '';
+  if (fullName.length > 120) {
+    return 'The name is too long.';
+  }
+  const phone = input.phone.trim();
+  if (!phone) {
+    return 'Phone number is required.';
+  }
+  if (phone.length > 30 || !PHONE_RE.test(phone)) {
+    return 'Enter a valid phone number.';
+  }
+  if (!input.specialtyId.trim()) {
+    return 'Choose your medical specialty.';
+  }
   if (!input.acceptedTerms) {
     return 'You must accept the Terms of Use and the Privacy Policy.';
   }
   return null;
+}
+
+export function validateDoctorSelfSignupForm(input: DoctorSelfSignupInput): string[] {
+  const errors: string[] = [];
+  const fullName = input.fullName?.trim() ?? '';
+  if (fullName.length > 120) errors.push('The name is too long.');
+  const phone = input.phone.trim();
+  if (!phone) {
+    errors.push('Phone number is required.');
+  } else if (phone.length > 30 || !PHONE_RE.test(phone)) {
+    errors.push('Enter a valid phone number.');
+  }
+  if (!input.specialtyId.trim()) {
+    errors.push('Choose your medical specialty.');
+  }
+  return errors;
 }
 
 // Mirrors the database constraints so users get a clear message before the server rejects.
@@ -132,21 +179,71 @@ export function validateCompanyForm(form: CompanyForm): string[] {
 type Result = { ok: true } | { ok: false; message: string };
 const fail = (message: string): Result => ({ ok: false, message });
 
+export async function doctorSelfSignup(
+  client: SupabaseClient,
+  input: DoctorSelfSignupInput
+): Promise<Result> {
+  const errors = validateDoctorSelfSignupForm(input);
+  if (errors.length > 0) return fail(errors.join(' '));
+  const { error } = await client.rpc('doctor_self_signup', {
+    p_full_name: blankToNull(input.fullName ?? ''),
+    p_phone: input.phone.trim(),
+    p_specialty_id: input.specialtyId.trim(),
+  });
+  return error ? fail(error.message) : { ok: true };
+}
+
+export async function loadDoctorProfileSummary(
+  client: SupabaseClient,
+  authUserId: string
+): Promise<DoctorProfileSummary> {
+  const { data: profile } = await client
+    .from('profiles')
+    .select('id,full_name,phone')
+    .eq('auth_user_id', authUserId)
+    .maybeSingle<{ id: string; full_name: string | null; phone: string | null }>();
+  if (!profile) {
+    return { fullName: '', phone: '', specialtyId: '' };
+  }
+  const { data: pro } = await client
+    .from('healthcare_professionals')
+    .select('specialty_id')
+    .eq('profile_id', profile.id)
+    .maybeSingle<{ specialty_id: string | null }>();
+  return {
+    fullName: profile.full_name ?? '',
+    phone: profile.phone ?? '',
+    specialtyId: pro?.specialty_id ?? '',
+  };
+}
+
 export async function submitSignUpWithConsent(
   client: SupabaseClient,
   input: SignUpCredentialsInput
-): Promise<Result> {
+): Promise<Result & { sessionCreated?: boolean }> {
   const problem = validateSignUpInput(input);
   if (problem) return fail(problem);
-  const { error } = await client.auth.signUp({
+  const metadata = {
+    full_name: blankToNull(input.fullName ?? ''),
+    phone: input.phone.trim(),
+    specialty_id: input.specialtyId.trim(),
+  };
+  const { data, error } = await client.auth.signUp({
     email: input.email.trim().toLowerCase(),
     password: input.password,
     options:
       typeof window === 'undefined'
-        ? undefined
-        : { emailRedirectTo: window.location.origin + import.meta.env.BASE_URL },
+        ? { data: metadata }
+        : {
+            emailRedirectTo: window.location.origin + import.meta.env.BASE_URL,
+            data: metadata,
+          },
   });
-  return error ? fail(error.message) : { ok: true };
+  if (error) return fail(error.message);
+  return {
+    ok: true,
+    sessionCreated: Boolean((data as { session?: unknown } | null)?.session),
+  };
 }
 
 export async function loadOnboardingState(client: SupabaseClient, authUserId: string): Promise<OnboardingState | null> {

@@ -147,6 +147,37 @@ export interface DoctorSearchRow {
   totalCount: number;
 }
 
+export interface DoctorHomeSuggestion {
+  productId: string;
+  brandNameEn: string;
+  genericNameEn: string | null;
+  companyId: string;
+  companyName: string;
+  drugClassNameEn: string | null;
+  category: ProductCategory;
+  strength: string | null;
+  dosageForm: string | null;
+  specialtyId: string;
+  specialtyName: string;
+}
+
+export function parseProductRoute(hashOrRoute: string): string | null {
+  const cleaned = hashOrRoute.replace(/^#/, '').trim();
+  const match = cleaned.match(/^\/?product\/([^/?#]+)\/?$/i);
+  if (!match) return null;
+  try {
+    const decoded = decodeURIComponent(match[1]).trim();
+    return decoded.length > 0 ? decoded : null;
+  } catch {
+    const raw = match[1].trim();
+    return raw.length > 0 ? raw : null;
+  }
+}
+
+export function buildProductRouteHash(productId: string): string {
+  return `#/product/${encodeURIComponent(productId.trim())}`;
+}
+
 export interface SearchCatalogProductsInput {
   query?: string | null;
   companyId?: string | null;
@@ -792,6 +823,49 @@ export async function searchCatalogProducts(
 
   const totalCount = rows.length > 0 ? rows[0].totalCount : 0;
   return { ok: true, data: { rows, totalCount } };
+}
+
+export async function loadDoctorHomeSuggestions(
+  client: SupabaseClient,
+  limit = 2
+): Promise<RpcResult<DoctorHomeSuggestion[]>> {
+  const { data, error } = await client.rpc('doctor_home_suggestions', {
+    p_limit: limit,
+  });
+
+  if (error) {
+    return { ok: false, message: formatRpcError(error) };
+  }
+
+  const rawRows = (data ?? []) as Array<{
+    product_id: string;
+    brand_name_en: string | null;
+    generic_name_en: string | null;
+    company_id: string;
+    company_name: string | null;
+    drug_class_name_en: string | null;
+    category: ProductCategory;
+    strength: string | null;
+    dosage_form: string | null;
+    specialty_id: string;
+    specialty_name: string | null;
+  }>;
+
+  const rows: DoctorHomeSuggestion[] = rawRows.map((row) => ({
+    productId: row.product_id,
+    brandNameEn: row.brand_name_en ?? 'Untitled Product',
+    genericNameEn: row.generic_name_en ?? null,
+    companyId: row.company_id,
+    companyName: row.company_name ?? 'Company',
+    drugClassNameEn: row.drug_class_name_en ?? null,
+    category: row.category,
+    strength: row.strength ?? null,
+    dosageForm: row.dosage_form ?? null,
+    specialtyId: row.specialty_id,
+    specialtyName: row.specialty_name ?? 'Medical Specialty',
+  }));
+
+  return { ok: true, data: rows };
 }
 
 export async function loadProductDetail(

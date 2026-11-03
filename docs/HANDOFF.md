@@ -58,6 +58,10 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (Organon catalog dataset — 24 products)
+- **What changed:** Created `src/lib/organonCatalogData.ts` exporting `ORGANON_PRODUCTS` (24 products: Cozaar 50/100 mg, Hyzaar 50/12.5 mg, Ezetrol 10 mg, Atozet 10/20 mg, Zocor 20 mg, Singulair 10 mg, Singulair Paediatric 5 mg and 4 mg chewable, Nasonex 50 mcg/actuation, Fosamax Once Weekly 70 mg, Arcoxia 60/90/120 mg, Proscar 5 mg, Propecia 1 mg, Elocon 0.1% Cream, Diprosalic Ointment, Marvelon, Mercilon, Nexplanon 68 mg, NuvaRing, Puregon 300 IU/0.36 mL, and Orgalutran 0.25 mg/0.5 mL) and registered `organon` in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Verification:** English only, no prices or registration numbers, only the 16 allowed specialty names, and source URLs using EMA EPAR pages (`puregon`, `orgalutran`) or UK eMC brand search URLs (`https://www.medicines.org.uk/emc/search?q=<Brand>`). `npm run lint`, `npm test`, and `npm run build` all pass.
+
 ### 2026-11-03 — Google AI Studio (Viatris catalog dataset — 28 products)
 - **What changed:** Created `src/lib/viatrisCatalogData.ts` exporting `VIATRIS_PRODUCTS` (28 established Upjohn/Mylan products marketed by Viatris in Iraq and the Middle East: Lipitor 10/20/40/80 mg, Norvasc 5/10 mg, Caduet 5/10 mg and 10/20 mg, Lopid 600 mg, Cardura XL 4 mg, Viagra 50/100 mg, Lyrica 75/150/300 mg, Dilantin 100 mg, Zoloft 50/100 mg, Xanax 0.5 mg, Xanax XR 1 mg, Effexor XR 75/150 mg, Celebrex 100/200 mg, Medrol 4/16 mg, Ponstan Forte 500 mg, and Feldene 20 mg) and registered `viatris` in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
 - **Verification:** English only, no prices or registration numbers, only the 16 allowed specialty names, and specific product SmPC/EPAR/FDA label URLs. `npm run lint`, `npm test`, and `npm run build` all pass.

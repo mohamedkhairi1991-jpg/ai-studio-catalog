@@ -58,6 +58,7 @@ import { AWAMEDICA_PRODUCTS } from './awamedicaCatalogData';
 import { AL_KINDI_PRODUCTS } from './alKindiCatalogData';
 import { NDI_PRODUCTS } from './ndiCatalogData';
 import { VIATRIS_PRODUCTS } from './viatrisCatalogData';
+import { ORGANON_PRODUCTS } from './organonCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -2145,6 +2146,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Global pharmaceutical company (Pittsburgh, USA) formed from Mylan and Pfizer Upjohn; markets established brands such as Lipitor, Norvasc, Lyrica, Celebrex and Viagra outside the US.',
     products: VIATRIS_PRODUCTS,
+  },
+  {
+    key: 'organon',
+    companyName: 'Organon',
+    legalName: 'Organon & Co.',
+    websiteUrl: 'https://www.organon.com',
+    description:
+      "Global healthcare company (Jersey City, USA) spun off from MSD in 2021, focused on women's health and established brands such as Cozaar, Singulair, Ezetrol, Fosamax and Nasonex.",
+    products: ORGANON_PRODUCTS,
   },
 ];
 

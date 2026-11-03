@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import {
   AuditLogEntry,
   DrugClass,
@@ -16,7 +16,7 @@ import {
   INITIAL_SPECIALTIES,
   INITIAL_USERS,
 } from '../data/seedData';
-import { SupportedLocale, TranslationStrings, translations } from '../l10n';
+import { TranslationStrings, translations } from '../l10n';
 
 interface ReadinessResult {
   isValid: boolean;
@@ -25,7 +25,6 @@ interface ReadinessResult {
 
 interface CatalogContextType {
   currentUser: UserProfile | null;
-  locale: SupportedLocale;
   t: TranslationStrings;
   products: ProductDetail[];
   specialties: ProductSpecialty[];
@@ -36,7 +35,6 @@ interface CatalogContextType {
   
   // Navigation & User
   switchUser: (user: UserProfile) => void;
-  setLocale: (locale: SupportedLocale) => void;
   navigateToPortal: (portal: 'doctor' | 'company' | 'admin' | 'auth') => void;
   signOut: () => void;
   signIn: (email: string) => boolean;
@@ -64,7 +62,6 @@ const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(INITIAL_USERS[0]); // Demo Doctor
-  const [locale, setLocaleState] = useState<SupportedLocale>('en');
   const [products, setProducts] = useState<ProductDetail[]>(INITIAL_PRODUCTS);
   const [specialties] = useState<ProductSpecialty[]>(INITIAL_SPECIALTIES);
   const [drugClasses] = useState<DrugClass[]>(INITIAL_DRUG_CLASSES);
@@ -72,17 +69,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
   const [currentPortal, setCurrentPortal] = useState<'doctor' | 'company' | 'admin' | 'auth'>('doctor');
 
-  // Handle document direction for RTL
-  useEffect(() => {
-    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = locale;
-  }, [locale]);
-
-  const setLocale = (newLocale: SupportedLocale) => {
-    setLocaleState(newLocale);
-  };
-
-  const t = translations[locale];
+  const t = translations.en;
 
   const switchUser = (user: UserProfile) => {
     setCurrentUser(user);
@@ -390,7 +377,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <CatalogContext.Provider
       value={{
         currentUser,
-        locale,
         t,
         products,
         specialties,
@@ -399,7 +385,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         auditLogs,
         currentPortal,
         switchUser,
-        setLocale,
         navigateToPortal: setCurrentPortal,
         signOut,
         signIn,

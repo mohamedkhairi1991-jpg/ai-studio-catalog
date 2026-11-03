@@ -117,7 +117,7 @@ export const AdminCatalogReviewView: React.FC = () => {
       <div className="bg-[#263744] border border-[#51616D] rounded-xl p-6 sm:p-8 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            <div className="flex items-center space-x-2">
               <span className="text-[11px] font-bold bg-[#123F68] text-[#5DB4F2] border border-[#46718F] px-2.5 py-0.5 rounded-full flex items-center space-x-1">
                 <Lock className="w-3 h-3" />
                 <span>Catalog Administration Queue</span>
@@ -134,7 +134,7 @@ export const AdminCatalogReviewView: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-[#1F2D38] border border-[#51616D] px-4 py-3 rounded-lg flex items-center space-x-3 rtl:space-x-reverse shrink-0">
+          <div className="bg-[#1F2D38] border border-[#51616D] px-4 py-3 rounded-lg flex items-center space-x-3 shrink-0">
             <ShieldCheck className="w-8 h-8 text-[#38C976]" />
             <div>
               <div className="text-xs font-semibold text-[#F2F5F8]">Full Catalog Authority</div>
@@ -144,7 +144,7 @@ export const AdminCatalogReviewView: React.FC = () => {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex items-center space-x-2 rtl:space-x-reverse overflow-x-auto pt-2 border-t border-[#51616D]">
+        <div className="flex items-center space-x-2 overflow-x-auto pt-2 border-t border-[#51616D]">
           {(
             [
               { status: 'submitted', label: 'In Review Queue', color: 'text-[#F59E0B]' },
@@ -160,7 +160,7 @@ export const AdminCatalogReviewView: React.FC = () => {
               <button
                 key={item.status}
                 onClick={() => setActiveTab(item.status)}
-                className={`flex items-center space-x-2 rtl:space-x-reverse px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
                   isSelected
                     ? 'bg-[#1769AA] text-white shadow-sm'
                     : 'bg-[#304451] text-[#B8C3CC] hover:bg-[#1F2D38]'
@@ -182,7 +182,7 @@ export const AdminCatalogReviewView: React.FC = () => {
 
       {notification && (
         <div
-          className={`p-4 rounded-lg text-xs font-semibold flex items-center space-x-2 rtl:space-x-reverse ${
+          className={`p-4 rounded-lg text-xs font-semibold flex items-center space-x-2 ${
             notification.type === 'success'
               ? 'bg-[#193D2D] border border-[#2F8F5C] text-[#38C976]'
               : 'bg-[#4B2528] border border-[#A9474E] text-[#FF7272]'
@@ -249,7 +249,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     <p className="text-xs text-[#5DB4F2] font-medium">
                       {product.genericDrugName || 'No generic'} &bull; {product.drugClassName}
                     </p>
-                    <p className="text-xs text-[#B8C3CC] mt-1 flex items-center space-x-1.5 rtl:space-x-reverse">
+                    <p className="text-xs text-[#B8C3CC] mt-1 flex items-center space-x-1.5">
                       <Building className="w-3.5 h-3.5" />
                       <span>{product.companyName}</span>
                     </p>
@@ -273,7 +273,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                 <div className="mt-5 pt-3 border-t border-[#51616D]">
                   <button
                     onClick={() => handleOpenReview(product)}
-                    className="w-full bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1.5 rtl:space-x-reverse"
+                    className="w-full bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1.5"
                   >
                     <FileText className="w-4 h-4" />
                     <span>Review & Take Action</span>
@@ -292,7 +292,7 @@ export const AdminCatalogReviewView: React.FC = () => {
             {/* Header */}
             <div className="sticky top-0 bg-[#263744] border-b border-[#51616D] p-5 flex items-start justify-between z-10">
               <div>
-                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <div className="flex items-center space-x-2">
                   <span className="text-[11px] font-bold bg-[#123F68] text-[#5DB4F2] border border-[#46718F] px-2.5 py-0.5 rounded-full">
                     ADMINISTRATIVE DECISION DESK
                   </span>
@@ -321,7 +321,7 @@ export const AdminCatalogReviewView: React.FC = () => {
               {/* Official 12-point Pre-publication Checklist Inspector */}
               <div className="bg-[#1F2D38] border border-[#51616D] rounded-lg p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-[#F2F5F8] flex items-center space-x-2 rtl:space-x-reverse">
+                  <h3 className="text-sm font-bold text-[#F2F5F8] flex items-center space-x-2">
                     <ShieldCheck className="w-4 h-4 text-[#5DB4F2]" />
                     <span>Statutory Pre-Publication Readiness Check</span>
                   </h3>
@@ -339,11 +339,11 @@ export const AdminCatalogReviewView: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[12px]">
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     <span className="text-[#F2F5F8]">Verified Iraqi Pharmaceutical Company</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.brandNameEn ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -351,7 +351,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">English Brand Name Translation</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.drugClassId ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -359,7 +359,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Therapeutic Drug Class Assigned</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.genericDrugId ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -367,7 +367,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Generic / Scientific Entity Valid</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.specialtyIds.length > 0 ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -375,7 +375,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">At Least 1 Medical Specialty Mapped</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.marketStatus === 'marketed_in_iraq' ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -383,7 +383,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Designated "Marketed in Iraq"</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.indicationsEn && selectedProduct.usualAdultDoseEn ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -391,7 +391,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Clinical Indications & Adult Dosing</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.contraindicationsEn && selectedProduct.commonAdverseEffectsEn ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -399,7 +399,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Contraindications & Adverse Reactions</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.productImages.length > 0 ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -407,7 +407,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Pill / Formulation Image Attached</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.packageImages.length > 0 ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -415,7 +415,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Official Package Box Image Attached</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     {selectedProduct.brochures.length > 0 ? (
                       <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     ) : (
@@ -423,7 +423,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                     )}
                     <span className="text-[#F2F5F8]">Verified PDF Monograph File</span>
                   </div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse p-2 bg-[#263744] rounded">
+                  <div className="flex items-center space-x-2 p-2 bg-[#263744] rounded">
                     <CheckCircle2 className="w-4 h-4 text-[#38C976] shrink-0" />
                     <span className="text-[#F2F5F8]">Kimadia Registration Review</span>
                   </div>
@@ -474,7 +474,7 @@ export const AdminCatalogReviewView: React.FC = () => {
 
             {/* Modal Decision Actions Footer */}
             <div className="border-t border-[#51616D] p-5 bg-[#263744] flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+              <div className="flex items-center space-x-2">
                 {selectedProduct.status === 'published' ? (
                   <button
                     onClick={() => setIsHideModalOpen(true)}
@@ -504,7 +504,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+              <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setSelectedProduct(null)}
                   className="bg-[#304451] hover:bg-[#51616D] text-[#F2F5F8] text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
@@ -548,7 +548,7 @@ export const AdminCatalogReviewView: React.FC = () => {
           <div className="bg-[#263744] border border-[#A56F0B] rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#F59E0B] flex items-center space-x-2 rtl:space-x-reverse">
+                <h3 className="text-lg font-bold text-[#F59E0B] flex items-center space-x-2">
                   <AlertTriangle className="w-5 h-5" />
                   <span>Request Product Corrections</span>
                 </h3>
@@ -579,7 +579,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 rtl:space-x-reverse">
+              <div className="flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setIsRequestChangesModalOpen(false)}
@@ -605,7 +605,7 @@ export const AdminCatalogReviewView: React.FC = () => {
           <div className="bg-[#263744] border border-[#A9474E] rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#FF7272] flex items-center space-x-2 rtl:space-x-reverse">
+                <h3 className="text-lg font-bold text-[#FF7272] flex items-center space-x-2">
                   <EyeOff className="w-5 h-5" />
                   <span>Hide Product from Official Catalog</span>
                 </h3>
@@ -636,7 +636,7 @@ export const AdminCatalogReviewView: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 rtl:space-x-reverse">
+              <div className="flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setIsHideModalOpen(false)}

@@ -359,14 +359,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         <span className="font-medium text-sm text-[#F2F5F8]">
                           {row.brandNameEn}
                         </span>
-                        {row.brandNameAr && (
-                          <span
-                            dir="rtl"
-                            className="text-xs text-[#B8C3CC] shrink-0"
-                          >
-                            {row.brandNameAr}
-                          </span>
-                        )}
                       </div>
 
                       <div className="text-xs text-[#5DB4F2] mt-0.5">
@@ -435,11 +427,6 @@ function DoctorProductDetail({ product }: { product: CatalogProduct }) {
           <h2 className="text-2xl font-semibold text-[#F2F5F8]">
             {product.brandNameEn}
           </h2>
-          {product.brandNameAr && (
-            <div dir="rtl" className="text-sm text-[#B8C3CC] mt-0.5">
-              {product.brandNameAr}
-            </div>
-          )}
           <p className="text-sm text-[#5DB4F2] mt-1">
             {product.genericNameEn ?? 'Dietary Supplement'} ·{' '}
             {product.drugClassNameEn}

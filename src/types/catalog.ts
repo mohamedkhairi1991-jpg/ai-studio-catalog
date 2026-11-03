@@ -49,7 +49,6 @@ export interface TaxonomyItem {
   id: string;
   code: string;
   nameEn: string;
-  nameAr?: string;
   descriptionEn: string;
   isActive: boolean;
 }
@@ -94,7 +93,7 @@ export interface ProductBrochureRecord {
   id: string;
   productMarketId: string;
   productId: string;
-  locale: 'en' | 'ar';
+  locale: 'en';
   title: string;
   bucketId: 'catalog-brochures';
   storagePath: string;
@@ -136,7 +135,6 @@ export interface ProductRecord {
   category: ProductCategory;
   status: ProductLifecycleStatus;
   brandNameEn: string;
-  brandNameAr?: string;
   specialtyIds: string[];
   iraqMarket: ProductMarketRecord;
   media: ProductMediaRecord[];

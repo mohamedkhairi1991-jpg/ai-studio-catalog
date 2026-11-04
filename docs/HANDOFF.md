@@ -58,6 +58,10 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-04 — Google AI Studio (Lundbeck catalog dataset — 18 products)
+- **What changed:** Created `src/lib/lundbeckCatalogData.ts` exporting `LUNDBECK_PRODUCTS` (18 real Lundbeck products: Cipralex 10 mg and 20 mg, Brintellix 10 mg and 20 mg, Deanxit 0.5 mg / 10 mg, Ebixa 10 mg and 20 mg, Azilect 1 mg, Abilify Maintena 400 mg, Rexulti 1 mg and 2 mg, Clopixol 10 mg and 25 mg, Clopixol Depot 200 mg / mL, Fluanxol 0.5 mg and 1 mg, Fluanxol Depot 20 mg / mL, and Vyepti 100 mg) and registered `lundbeck` in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
+- **Verification:** English only, no prices or registration numbers, only existing specialty names, and verified EMA EPAR (`brintellix`, `ebixa`, `azilect`, `abilify-maintena`, `vyepti`), UK eMC search (`Cipralex`, `Clopixol`, `Fluanxol`), DailyMed search (`Rexulti`), or Drugs.com international monograph (`deanxit`) source URLs. `npm run lint`, `npm test`, and `npm run build` all pass.
+
 ### 2026-11-04 — Google AI Studio (IBSA catalog dataset — 14 products)
 - **What changed:** Created `src/lib/ibsaCatalogData.ts` exporting `IBSA_PRODUCTS` (14 real IBSA products: Meriofert 75 IU and 150 IU, Fostimon 75 IU and 150 IU, Choriomon 5000 IU, Lubion 25 mg, Prontogest 100 mg / 2 mL, Tirosint 25 mcg, 50 mcg, and 100 mcg soft capsules, Flector Tissugel 180 mg Medicated Plaster, Flector EP 1% Gel, and Condrosulf 400 mg and 800 mg) and registered `ibsa` in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
 - **Verification:** English only, no prices or registration numbers, only existing specialty names, and official UK eMC search (`https://www.medicines.org.uk/emc/search?q=<Brand>`), DailyMed search (`https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=<Brand>`), or IBSA therapeutic portfolio source URLs. `npm run lint`, `npm test`, and `npm run build` all pass.

@@ -1237,4 +1237,3 @@ function MonographSection({ title, body }: { title: string; body: string }) {
     </div>
   );
 }
-

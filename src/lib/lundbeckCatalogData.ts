@@ -184,32 +184,6 @@ const LUNDBECK_COMPACT_PRODUCTS: CompactLundbeckDrug[] = [
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/ebixa',
   },
   {
-    brandName: 'Azilect 1 mg',
-    genericName: 'Rasagiline',
-    drugClassNameEn: 'Selective Irreversible Monoamine Oxidase-B (MAO-B) Inhibitor',
-    dosageForm: 'Tablet',
-    strength: '1 mg',
-    route: 'Oral',
-    packSize: '28 tablets',
-    indications:
-      'Treatment of idiopathic Parkinson’s disease (PD) in adults as monotherapy (without levodopa) or as adjunct therapy (with levodopa) in patients with end-of-dose fluctuations.',
-    adultDosage:
-      '1 mg once daily orally, with or without food, either as monotherapy or as adjunct therapy to levodopa.',
-    contraindications:
-      'Hypersensitivity to rasagiline or any excipient; concomitant treatment with other monoamine oxidase (MAO) inhibitors (including medicinal and natural products without prescription such as St. John’s Wort) or pethidine (at least 14 days must elapse between discontinuation of rasagiline and initiation of MAOIs or pethidine); severe hepatic impairment.',
-    sideEffects:
-      'Headache, dyskinesia (when used as adjunct to levodopa), orthostatic hypotension, falls, nausea, vomiting, constipation, dry mouth, arthralgia, musculoskeletal pain, neck pain, depression, hallucinations, influenza-like illness.',
-    storageConditions:
-      'Do not store above 25°C.',
-    specialties: ['Neurology', 'Internal Medicine'],
-    sourceTitle: 'Azilect (Rasagiline) — European Medicines Agency EPAR Product Information (Lundbeck / Teva)',
-    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/azilect',
-  },
-
-  // =========================================================================
-  // SCHIZOPHRENIA & PSYCHOTIC DISORDERS (ATYPICAL & TYPICAL ANTIPSYCHOTICS)
-  // =========================================================================
-  {
     brandName: 'Abilify Maintena 400 mg',
     genericName: 'Aripiprazole',
     drugClassNameEn: 'Long-Acting Injectable Atypical Antipsychotic',

@@ -59,6 +59,7 @@ import { AL_KINDI_PRODUCTS } from './alKindiCatalogData';
 import { NDI_PRODUCTS } from './ndiCatalogData';
 import { VIATRIS_PRODUCTS } from './viatrisCatalogData';
 import { ORGANON_PRODUCTS } from './organonCatalogData';
+import { IBSA_PRODUCTS } from './ibsaCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -2155,6 +2156,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       "Global healthcare company (Jersey City, USA) spun off from MSD in 2021, focused on women's health and established brands such as Cozaar, Singulair, Ezetrol, Fosamax and Nasonex.",
     products: ORGANON_PRODUCTS,
+  },
+  {
+    key: 'ibsa',
+    companyName: 'IBSA',
+    legalName: 'IBSA Institut Biochimique SA',
+    websiteUrl: 'https://www.ibsagroup.com',
+    description:
+      'Swiss pharmaceutical company (Lugano, Switzerland) specialised in reproductive medicine, endocrinology, pain and inflammation, and dermatology, using soft-gel, patch and injectable technologies.',
+    products: IBSA_PRODUCTS,
   },
 ];
 

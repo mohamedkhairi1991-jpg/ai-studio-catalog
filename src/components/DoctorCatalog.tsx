@@ -138,7 +138,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     const seq = ++suggestionsReqSeqRef.current;
     setSuggestionsLoading(true);
     setSuggestionsError(null);
-    const res = await loadDoctorHomeSuggestions(client, 2);
+    // First load shows today's pair; each Refresh asks for another pair.
+    const res = await loadDoctorHomeSuggestions(client, 2, seq - 1);
     if (seq !== suggestionsReqSeqRef.current) return;
     if (!res.ok) {
       setSuggestionsError(res.message);

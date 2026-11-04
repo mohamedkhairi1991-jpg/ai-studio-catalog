@@ -1,6 +1,6 @@
 begin;
 
-select plan(14);
+select plan(15);
 
 -- Fixtures --------------------------------------------------------------------
 -- 77..01 administrator, 77..02 new user who signs up as a doctor, 77..03 plain user
@@ -134,6 +134,13 @@ select is(
   (select array_agg(product_id order by product_id) from public.doctor_home_suggestions()),
   (select array_agg(product_id order by product_id) from public.doctor_home_suggestions()),
   'the suggested pair is the same within a day'
+);
+
+select is(
+  (select count(*) from public.doctor_home_suggestions(2, 7)
+   where specialty_name = 'Selfsign Cardiology'),
+  2::bigint,
+  'Refresh (another seed) still gives two drugs of the doctor''s specialty'
 );
 
 select lives_ok(

@@ -58,6 +58,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-04 — Claude (review of AI Studio UX update; Refresh fix)
+- Reviewed AI Studio's DoctorCatalog / AdminCatalogReview update (bookmarks,
+  share, recent, clickable generic/company, next company with drafts, draft
+  filters): good; tests and build pass; browser storage is guarded.
+- **Fix:** the home "Refresh" button showed the same pair all day. Database
+  (migration `suggestions_refresh_seed`): `doctor_home_suggestions(p_limit,
+  p_seed default 0)`; seed 0 = today's pair, any other value = another pair.
+  The client passes 0 on first load and 1, 2, 3… on each Refresh.
+
 ### 2026-11-03 — Google AI Studio (DoctorCatalog & AdminCatalogReview UX enhancements)
 - **DoctorCatalog (`src/components/DoctorCatalog.tsx`, `src/lib/catalog.ts`):**
   - Made the **Generic Name** and **Company** on `#/product/<id>` clickable to immediately search/filter other Iraq-marketed products with the same active ingredient or manufacturer.

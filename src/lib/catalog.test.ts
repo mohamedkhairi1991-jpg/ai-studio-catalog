@@ -1061,7 +1061,7 @@ describe('Admin Review Drafts helpers', () => {
 
     const res = await loadDoctorHomeSuggestions(client, 2);
     expect(rpcCalls).toEqual([
-      { fn: 'doctor_home_suggestions', args: { p_limit: 2 } },
+      { fn: 'doctor_home_suggestions', args: { p_limit: 2, p_seed: 0 } },
     ]);
     expect(res).toEqual({
       ok: true,

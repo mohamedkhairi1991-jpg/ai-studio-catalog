@@ -827,10 +827,13 @@ export async function searchCatalogProducts(
 
 export async function loadDoctorHomeSuggestions(
   client: SupabaseClient,
-  limit = 2
+  limit = 2,
+  seed = 0
 ): Promise<RpcResult<DoctorHomeSuggestion[]>> {
+  // seed 0 = today's pair; Refresh passes 1, 2, 3... for another pair.
   const { data, error } = await client.rpc('doctor_home_suggestions', {
     p_limit: limit,
+    p_seed: seed,
   });
 
   if (error) {

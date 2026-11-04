@@ -60,6 +60,7 @@ import { NDI_PRODUCTS } from './ndiCatalogData';
 import { VIATRIS_PRODUCTS } from './viatrisCatalogData';
 import { ORGANON_PRODUCTS } from './organonCatalogData';
 import { IBSA_PRODUCTS } from './ibsaCatalogData';
+import { LUNDBECK_PRODUCTS } from './lundbeckCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -2165,6 +2166,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       'Swiss pharmaceutical company (Lugano, Switzerland) specialised in reproductive medicine, endocrinology, pain and inflammation, and dermatology, using soft-gel, patch and injectable technologies.',
     products: IBSA_PRODUCTS,
+  },
+  {
+    key: 'lundbeck',
+    companyName: 'Lundbeck',
+    legalName: 'H. Lundbeck A/S',
+    websiteUrl: 'https://www.lundbeck.com',
+    description:
+      "Danish pharmaceutical company (Copenhagen, Denmark) focused on brain health: depression, schizophrenia, Alzheimer's disease, Parkinson's disease and migraine.",
+    products: LUNDBECK_PRODUCTS,
   },
 ];
 

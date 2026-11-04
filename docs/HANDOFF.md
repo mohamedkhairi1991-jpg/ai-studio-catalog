@@ -58,6 +58,25 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-04 — Claude (sponsored ads + anonymous usage statistics, database)
+- **Live migration `20261104192813_sponsored_ads_and_usage_stats`.** RPCs for AI Studio:
+  - Doctor home Sponsored box: `doctor_sponsored_ad(p_seed default 0)` → 0 or 1 row
+    (ad_id, sponsor_name, title, body, image_url, link_url). Empty → keep the
+    "Advertising space" placeholder. On show call
+    `record_sponsored_ad_event(p_ad_id, 'view')`; on tap open link_url in a new
+    tab (rel=noopener noreferrer) and call it with `'click'`.
+  - After a search finishes (debounced, query ≥ 2 chars) call
+    `record_catalog_search(p_query, p_result_count)`; when a drug page opens
+    call `record_product_view(p_product_id)`. Fire-and-forget; ignore errors.
+  - Admin: `admin_save_sponsored_ad(p_ad_id null=new, p_sponsor_name, p_title,
+    p_body, p_image_url https, p_link_url https, p_company_id, p_target_specialty_id
+    null=all, p_starts_on, p_ends_on, p_is_active, p_priority 0-100)`; admins can
+    `select` from `sponsored_ads`. Stats: `admin_sponsored_ad_stats(p_days)`,
+    `admin_top_searches(p_days, p_limit)` (query, searches, zero_result_searches),
+    `admin_top_viewed_products(p_days, p_limit)`.
+- Counters store no user ids (tested). Privacy page should mention anonymous
+  usage counts.
+
 ### 2026-11-04 — Google AI Studio (IBSA catalog dataset — 14 products)
 - **What changed:** Created `src/lib/ibsaCatalogData.ts` exporting `IBSA_PRODUCTS` (14 real IBSA products: Meriofert 75 IU and 150 IU, Fostimon 75 IU and 150 IU, Choriomon 5000 IU, Lubion 25 mg, Prontogest 100 mg / 2 mL, Tirosint 25 mcg, 50 mcg, and 100 mcg soft capsules, Flector Tissugel 180 mg Medicated Plaster, Flector EP 1% Gel, and Condrosulf 400 mg and 800 mg) and registered `ibsa` in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
 - **Verification:** English only, no prices or registration numbers, only existing specialty names, and official UK eMC search (`https://www.medicines.org.uk/emc/search?q=<Brand>`), DailyMed search (`https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=<Brand>`), or IBSA therapeutic portfolio source URLs. `npm run lint`, `npm test`, and `npm run build` all pass.

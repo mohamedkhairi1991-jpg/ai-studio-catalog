@@ -132,8 +132,8 @@ const IBSA_COMPACT_PRODUCTS: CompactIbsaDrug[] = [
     storageConditions:
       'Do not store above 25°C. Protect from light. Use immediately after reconstitution.',
     specialties: ['Obstetrics & Gynecology', 'Endocrinology', 'Urology'],
-    sourceTitle: 'Choriomon 5000 IU Powder and Solvent for Solution for Injection — IBSA Reproductive Medicine Monograph',
-    sourceUrl: 'https://www.ibsagroup.com/products/fertility.html',
+    sourceTitle: 'Choriomon (chorionic gonadotrophin) — Drugs.com international monograph',
+    sourceUrl: 'https://www.drugs.com/international/choriomon.html',
   },
   {
     brandName: 'Lubion 25 mg',
@@ -157,32 +157,6 @@ const IBSA_COMPACT_PRODUCTS: CompactIbsaDrug[] = [
     sourceTitle: 'Lubion 25 mg Solution for Injection — UK eMC SmPC (IBSA)',
     sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Lubion',
   },
-  {
-    brandName: 'Prontogest 100 mg / 2 mL',
-    genericName: 'Progesterone',
-    drugClassNameEn: 'Progestogen',
-    dosageForm: 'Solution for injection',
-    strength: '100 mg / 2 mL',
-    route: 'Intramuscular',
-    packSize: '3 ampoules x 2 mL',
-    indications:
-      'Luteal phase support in assisted reproductive technology (ART) cycles; threatened or recurrent miscarriage due to proven luteal phase insufficiency; secondary amenorrhoea and dysfunctional uterine bleeding due to progesterone deficiency.',
-    adultDosage:
-      'Administered by deep intramuscular injection: 50 mg to 100 mg daily or 100 mg every 2–3 days depending on clinical indication and serum progesterone response.',
-    contraindications:
-      'Hypersensitivity to progesterone or oily excipients (ethyl oleate / benzyl benzoate); undiagnosed vaginal bleeding; severe hepatic impairment; active or past arterial or venous thromboembolic disorders; known or suspected hormone-sensitive malignancies of the breast or genital tract; missed or incomplete abortion.',
-    sideEffects:
-      'Injection site pain, induration or sterile abscess, somnolence, dizziness, headache, breast tenderness,fluid retention, breakthrough bleeding, nausea.',
-    storageConditions:
-      'Store below 25°C in the original package to protect from light.',
-    specialties: ['Obstetrics & Gynecology', 'Endocrinology'],
-    sourceTitle: 'Prontogest 100 mg / 2 mL Solution for Injection — IBSA Fertility Portfolio',
-    sourceUrl: 'https://www.ibsagroup.com/products/fertility.html',
-  },
-
-  // =========================================================================
-  // ENDOCRINOLOGY (THYROID — SOFT CAPSULES)
-  // =========================================================================
   {
     brandName: 'Tirosint 25 mcg',
     genericName: 'Levothyroxine sodium',
@@ -294,8 +268,8 @@ const IBSA_COMPACT_PRODUCTS: CompactIbsaDrug[] = [
     storageConditions:
       'Store below 25°C.',
     specialties: ['Orthopedics', 'Rheumatology', 'General Practice / Family Medicine'],
-    sourceTitle: 'Flector EP 1% Gel — IBSA Pain & Inflammation Portfolio',
-    sourceUrl: 'https://www.ibsagroup.com/products/pain-and-inflammation.html',
+    sourceTitle: 'Flector EP Gel (diclofenac epolamine) — Swiss product information',
+    sourceUrl: 'https://medikamio.com/de-ch/medikamente/flector-ep-gel/pil',
   },
   {
     brandName: 'Condrosulf 400 mg',
@@ -316,8 +290,8 @@ const IBSA_COMPACT_PRODUCTS: CompactIbsaDrug[] = [
     storageConditions:
       'Store below 25°C in the original blister package to protect from moisture.',
     specialties: ['Orthopedics', 'Rheumatology', 'General Practice / Family Medicine'],
-    sourceTitle: 'Condrosulf 400 mg Capsules — IBSA Osteoarthritis Portfolio',
-    sourceUrl: 'https://www.ibsagroup.com/products/osteoarthritis.html',
+    sourceTitle: 'Condrosulf (chondroitin sulfate) — Swiss Compendium product information',
+    sourceUrl: 'https://compendium.ch/mpro/mnr/1892/html/fr',
   },
   {
     brandName: 'Condrosulf 800 mg',
@@ -338,8 +312,8 @@ const IBSA_COMPACT_PRODUCTS: CompactIbsaDrug[] = [
     storageConditions:
       'Store below 25°C in the original package to protect from moisture.',
     specialties: ['Orthopedics', 'Rheumatology', 'General Practice / Family Medicine'],
-    sourceTitle: 'Condrosulf 800 mg Tablets — IBSA Osteoarthritis Portfolio',
-    sourceUrl: 'https://www.ibsagroup.com/products/osteoarthritis.html',
+    sourceTitle: 'Condrosulf (chondroitin sulfate) — Swiss Compendium product information',
+    sourceUrl: 'https://compendium.ch/mpro/mnr/1892/html/fr',
   },
 ];
 

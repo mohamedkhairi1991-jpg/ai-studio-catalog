@@ -7,9 +7,12 @@ import {
   STATUS_LABELS,
   extractAiDraftSources,
   filterProductsByStatus,
+  filterReviewDraftProducts,
   findMatchingTaxonomyOption,
+  findNextCompanyWithDrafts,
   getCompanyProductCounts,
   getProductSourceWarning,
+  getReviewDraftSourceCounts,
   invokeAiDraftProduct,
   loadCatalogBundle,
   loadCompanyAiDraftSources,
@@ -34,6 +37,7 @@ import {
   type ProductCategory,
   type ProductStatus,
   type PublishCheckedSummary,
+  type ReviewDraftSourceFilter,
   type StoredProductAiDraft,
 } from '../lib/catalog';
 import { listCities, listCountries, type Option } from '../lib/onboarding';
@@ -340,6 +344,15 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
       (p) =>
         p.companyId === companyFilterId &&
         (p.status === 'draft' || p.status === 'changes_requested')
+    );
+  }, [bundle, companyFilterId]);
+
+  const nextCompanyWithDrafts = useMemo(() => {
+    if (!bundle || companyFilterId === 'all') return null;
+    return findNextCompanyWithDrafts(
+      bundle.companies,
+      bundle.products,
+      companyFilterId
     );
   }, [bundle, companyFilterId]);
 
@@ -945,6 +958,22 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                      {nextCompanyWithDrafts && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCompanyFilterId(nextCompanyWithDrafts.company.id);
+                            setCompanySubView('review_drafts');
+                            setSelectedId(null);
+                            clearFeedback();
+                          }}
+                          title={`Jump to ${nextCompanyWithDrafts.company.companyName} (${nextCompanyWithDrafts.drafts} drafts)`}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium border bg-[#1F2D38] border-[#304451] text-[#F59E0B] hover:border-[#F59E0B] transition-colors"
+                        >
+                          Next with drafts: {nextCompanyWithDrafts.company.companyName} (
+                          {nextCompanyWithDrafts.drafts}) →
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => {
@@ -1183,6 +1212,10 @@ function CompanyReviewDraftsView({
   const [archiveReason, setArchiveReason] = useState('');
   const [archivingBusy, setArchivingBusy] = useState(false);
 
+  const [draftQuery, setDraftQuery] = useState('');
+  const [draftSourceFilter, setDraftSourceFilter] =
+    useState<ReviewDraftSourceFilter>('all');
+
   const [extraSourcesByProduct, setExtraSourcesByProduct] = useState<
     Record<string, AiDraftSource[]>
   >({});
@@ -1211,6 +1244,20 @@ function CompanyReviewDraftsView({
     const validIds = new Set(draftProducts.map((p) => p.id));
     setCheckedIds((prev) => prev.filter((id) => validIds.has(id)));
   }, [draftProducts]);
+
+  const sourceCounts = useMemo(
+    () => getReviewDraftSourceCounts(draftProducts, extraSourcesByProduct),
+    [draftProducts, extraSourcesByProduct]
+  );
+
+  const visibleDraftProducts = useMemo(
+    () =>
+      filterReviewDraftProducts(draftProducts, extraSourcesByProduct, {
+        query: draftQuery,
+        sourceFilter: draftSourceFilter,
+      }),
+    [draftProducts, extraSourcesByProduct, draftQuery, draftSourceFilter]
+  );
 
   const editingProduct = useMemo(
     () => draftProducts.find((p) => p.id === editingProductId) ?? null,
@@ -1260,14 +1307,16 @@ function CompanyReviewDraftsView({
     );
   }
 
-  const allSelected =
-    draftProducts.length > 0 && checkedIds.length === draftProducts.length;
+  const visibleIds = visibleDraftProducts.map((p) => p.id);
+  const allVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => checkedIds.includes(id));
 
   const toggleSelectAll = () => {
-    if (allSelected) {
-      setCheckedIds([]);
+    if (allVisibleSelected) {
+      const visibleSet = new Set(visibleIds);
+      setCheckedIds((prev) => prev.filter((id) => !visibleSet.has(id)));
     } else {
-      setCheckedIds(draftProducts.map((p) => p.id));
+      setCheckedIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
     }
   };
 
@@ -1344,35 +1393,83 @@ function CompanyReviewDraftsView({
 
   return (
     <div className="space-y-4">
-      {/* Review Toolbar: Select all + Publish checked (N) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <label className="inline-flex items-center gap-2 text-xs font-medium text-[#F2F5F8] cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={allSelected}
-              disabled={draftProducts.length === 0 || publishing}
-              onChange={toggleSelectAll}
-              className="accent-[#1769AA] h-4 w-4"
-            />
-            <span>Select all ({draftProducts.length})</span>
-          </label>
-          <span className="text-xs text-[#B8C3CC]">
-            Check each product against its official source before publishing.
-          </span>
-        </div>
+      {/* Review Toolbar: Search, Source Filter, Select all + Publish checked (N) */}
+      <div className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3">
+        {draftProducts.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border-b border-[#304451] pb-3">
+            <div className="flex-1 max-w-md">
+              <input
+                type="search"
+                aria-label="Search company drafts"
+                value={draftQuery}
+                onChange={(e) => setDraftQuery(e.target.value)}
+                placeholder="Search drafts by brand, generic, or class…"
+                className={inputClass}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(
+                [
+                  {
+                    key: 'all' as const,
+                    label: `All (${sourceCounts.all})`,
+                  },
+                  {
+                    key: 'ready' as const,
+                    label: `Ready — valid source (${sourceCounts.ready})`,
+                  },
+                  {
+                    key: 'warnings' as const,
+                    label: `Has warnings (${sourceCounts.warnings})`,
+                  },
+                ]
+              ).map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setDraftSourceFilter(tab.key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    draftSourceFilter === tab.key
+                      ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                      : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <button
-          type="button"
-          disabled={checkedIds.length === 0 || publishing}
-          onClick={() => {
-            setPublishSummary(null);
-            setConfirmingPublishIds(checkedIds);
-          }}
-          className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
-        >
-          Publish checked ({checkedIds.length})
-        </button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="inline-flex items-center gap-2 text-xs font-medium text-[#F2F5F8] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                disabled={visibleDraftProducts.length === 0 || publishing}
+                onChange={toggleSelectAll}
+                className="accent-[#1769AA] h-4 w-4"
+              />
+              <span>Select all ({visibleDraftProducts.length})</span>
+            </label>
+            <span className="text-xs text-[#B8C3CC]">
+              Check each product against its official source before publishing.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            disabled={checkedIds.length === 0 || publishing}
+            onClick={() => {
+              setPublishSummary(null);
+              setConfirmingPublishIds(checkedIds);
+            }}
+            className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
+          >
+            Publish checked ({checkedIds.length})
+          </button>
+        </div>
       </div>
 
       {/* Confirmation prompt before publishing */}
@@ -1462,9 +1559,18 @@ function CompanyReviewDraftsView({
             All products for this company have been reviewed or archived.
           </p>
         </div>
+      ) : visibleDraftProducts.length === 0 ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-2">
+          <div className="text-base font-medium text-[#F2F5F8]">
+            No drafts match your current filter
+          </div>
+          <p className="text-xs text-[#B8C3CC]">
+            Adjust the search box or switch the source filter above.
+          </p>
+        </div>
       ) : (
         <div className="space-y-4">
-          {draftProducts.map((product) => {
+          {visibleDraftProducts.map((product) => {
             const isChecked = checkedIds.includes(product.id);
             const market = product.market;
             const enClinical = product.marketTranslations.en;

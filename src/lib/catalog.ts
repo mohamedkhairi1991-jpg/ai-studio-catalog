@@ -827,10 +827,13 @@ export async function searchCatalogProducts(
 
 export async function loadDoctorHomeSuggestions(
   client: SupabaseClient,
-  limit = 2
+  limit = 2,
+  seed = 0
 ): Promise<RpcResult<DoctorHomeSuggestion[]>> {
+  // seed 0 = today's pair; Refresh passes 1, 2, 3... for another pair.
   const { data, error } = await client.rpc('doctor_home_suggestions', {
     p_limit: limit,
+    p_seed: seed,
   });
 
   if (error) {
@@ -2657,4 +2660,176 @@ export async function rpcAdminArchiveCompany(
 
   if (error) return { ok: false, message: formatRpcError(error) };
   return { ok: true, data: undefined };
+}
+
+export interface SavedOrRecentDrugItem {
+  productId: string;
+  brandNameEn: string;
+  genericNameEn: string | null;
+  strength: string | null;
+  dosageForm: string | null;
+  companyName: string;
+}
+
+export const SAVED_DOCTOR_DRUGS_STORAGE_KEY = 'pharmaty.doctor.savedDrugs.v1';
+export const RECENT_DOCTOR_DRUGS_STORAGE_KEY = 'pharmaty.doctor.recentDrugs.v1';
+const MAX_RECENT_DOCTOR_DRUGS = 8;
+
+function readDrugItemsFromStorage(key: string): SavedOrRecentDrugItem[] {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return [];
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item): item is SavedOrRecentDrugItem =>
+          Boolean(
+            item &&
+              typeof item === 'object' &&
+              typeof (item as SavedOrRecentDrugItem).productId === 'string' &&
+              (item as SavedOrRecentDrugItem).productId.trim() &&
+              typeof (item as SavedOrRecentDrugItem).brandNameEn === 'string'
+          )
+      )
+      .map((item) => ({
+        productId: item.productId.trim(),
+        brandNameEn: item.brandNameEn.trim(),
+        genericNameEn:
+          typeof item.genericNameEn === 'string' && item.genericNameEn.trim()
+            ? item.genericNameEn.trim()
+            : null,
+        strength:
+          typeof item.strength === 'string' && item.strength.trim()
+            ? item.strength.trim()
+            : null,
+        dosageForm:
+          typeof item.dosageForm === 'string' && item.dosageForm.trim()
+            ? item.dosageForm.trim()
+            : null,
+        companyName:
+          typeof item.companyName === 'string' ? item.companyName.trim() : '',
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function writeDrugItemsToStorage(
+  key: string,
+  items: SavedOrRecentDrugItem[]
+): void {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    window.localStorage.setItem(key, JSON.stringify(items));
+  } catch {
+    // Ignore storage quota or private mode errors
+  }
+}
+
+export function loadSavedDoctorDrugs(): SavedOrRecentDrugItem[] {
+  return readDrugItemsFromStorage(SAVED_DOCTOR_DRUGS_STORAGE_KEY);
+}
+
+export function toggleSavedDoctorDrug(
+  item: SavedOrRecentDrugItem
+): SavedOrRecentDrugItem[] {
+  const current = loadSavedDoctorDrugs();
+  const exists = current.some((d) => d.productId === item.productId);
+  const next = exists
+    ? current.filter((d) => d.productId !== item.productId)
+    : [item, ...current];
+  writeDrugItemsToStorage(SAVED_DOCTOR_DRUGS_STORAGE_KEY, next);
+  return next;
+}
+
+export function loadRecentDoctorDrugs(): SavedOrRecentDrugItem[] {
+  return readDrugItemsFromStorage(RECENT_DOCTOR_DRUGS_STORAGE_KEY);
+}
+
+export function recordRecentDoctorDrug(
+  item: SavedOrRecentDrugItem
+): SavedOrRecentDrugItem[] {
+  const current = loadRecentDoctorDrugs().filter(
+    (d) => d.productId !== item.productId
+  );
+  const next = [item, ...current].slice(0, MAX_RECENT_DOCTOR_DRUGS);
+  writeDrugItemsToStorage(RECENT_DOCTOR_DRUGS_STORAGE_KEY, next);
+  return next;
+}
+
+export function clearRecentDoctorDrugs(): SavedOrRecentDrugItem[] {
+  writeDrugItemsToStorage(RECENT_DOCTOR_DRUGS_STORAGE_KEY, []);
+  return [];
+}
+
+export type ReviewDraftSourceFilter = 'all' | 'ready' | 'warnings';
+
+export function getReviewDraftSourceCounts(
+  products: CatalogProduct[],
+  extraSourcesByProduct: Record<string, AiDraftSource[]> = {}
+): { all: number; ready: number; warnings: number } {
+  let ready = 0;
+  let warnings = 0;
+  for (const product of products) {
+    const sources = extractAiDraftSources(product.aiSources ?? [], {
+      sources: extraSourcesByProduct[product.id] ?? [],
+    });
+    if (getProductSourceWarning(sources) === null) {
+      ready++;
+    } else {
+      warnings++;
+    }
+  }
+  return { all: products.length, ready, warnings };
+}
+
+export function filterReviewDraftProducts(
+  products: CatalogProduct[],
+  extraSourcesByProduct: Record<string, AiDraftSource[]> = {},
+  options: { query?: string; sourceFilter?: ReviewDraftSourceFilter } = {}
+): CatalogProduct[] {
+  const q = (options.query ?? '').trim().toLowerCase();
+  const sourceFilter = options.sourceFilter ?? 'all';
+
+  return products.filter((product) => {
+    const sources = extractAiDraftSources(product.aiSources ?? [], {
+      sources: extraSourcesByProduct[product.id] ?? [],
+    });
+    const warning = getProductSourceWarning(sources);
+    if (sourceFilter === 'ready' && warning !== null) return false;
+    if (sourceFilter === 'warnings' && warning === null) return false;
+
+    if (!q) return true;
+    const fields = [
+      product.brandNameEn,
+      product.genericNameEn ?? '',
+      product.drugClassNameEn,
+      product.market?.strength ?? '',
+      product.market?.dosageForm ?? '',
+    ];
+    return fields.some((val) => val.toLowerCase().includes(q));
+  });
+}
+
+export function findNextCompanyWithDrafts(
+  companies: CompanySummary[],
+  products: CatalogProduct[],
+  currentCompanyId: string
+): { company: CompanySummary; drafts: number } | null {
+  if (companies.length === 0) return null;
+  const startIndex = companies.findIndex((c) => c.id === currentCompanyId);
+  const total = companies.length;
+
+  for (let offset = 1; offset <= total; offset++) {
+    const idx = startIndex >= 0 ? (startIndex + offset) % total : offset - 1;
+    const candidate = companies[idx];
+    if (!candidate || candidate.id === currentCompanyId) continue;
+    const counts = getCompanyProductCounts(products, candidate.id);
+    if (counts.drafts > 0) {
+      return { company: candidate, drafts: counts.drafts };
+    }
+  }
+  return null;
 }

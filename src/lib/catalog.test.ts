@@ -9,10 +9,13 @@ import {
   fetchInChunksPaged,
   filterDoctorProducts,
   filterProductsByStatus,
+  filterReviewDraftProducts,
   findMatchingTaxonomyOption,
+  findNextCompanyWithDrafts,
   formatRpcError,
   getCompanyProductCounts,
   getProductSourceWarning,
+  getReviewDraftSourceCounts,
   invokeAiDraftProduct,
   invokeAiFindCompanyProducts,
   invokeAiSuggestCompanies,
@@ -29,6 +32,7 @@ import {
   rpcAdminSaveAiProductDraft,
   searchCatalogProducts,
   type CatalogProduct,
+  type CompanySummary,
   type TaxonomyItem,
 } from './catalog';
 
@@ -1057,7 +1061,7 @@ describe('Admin Review Drafts helpers', () => {
 
     const res = await loadDoctorHomeSuggestions(client, 2);
     expect(rpcCalls).toEqual([
-      { fn: 'doctor_home_suggestions', args: { p_limit: 2 } },
+      { fn: 'doctor_home_suggestions', args: { p_limit: 2, p_seed: 0 } },
     ]);
     expect(res).toEqual({
       ok: true,
@@ -1089,6 +1093,90 @@ describe('Admin Review Drafts helpers', () => {
           specialtyName: 'Cardiology',
         },
       ],
+    });
+  });
+
+  it('filters review drafts by source readiness and search query and finds next company with drafts', () => {
+    const drafts = [
+      sampleProduct({
+        id: 'd1',
+        companyId: 'c1',
+        status: 'draft',
+        brandNameEn: 'Cozaar 50 mg',
+        genericNameEn: 'Losartan',
+        drugClassNameEn: 'Angiotensin II Receptor Blockers',
+        aiSources: [
+          {
+            title: 'UK eMC — Cozaar',
+            url: 'https://www.medicines.org.uk/emc/search?q=Cozaar',
+          },
+        ],
+      }),
+      sampleProduct({
+        id: 'd2',
+        companyId: 'c1',
+        status: 'draft',
+        brandNameEn: 'Singulair 10 mg',
+        genericNameEn: 'Montelukast',
+        drugClassNameEn: 'Leukotriene Receptor Antagonists',
+        aiSources: [{ title: 'Organon Home', url: 'https://www.organon.com/' }],
+      }),
+      sampleProduct({
+        id: 'd3',
+        companyId: 'c1',
+        status: 'changes_requested',
+        brandNameEn: 'Arcoxia 90 mg',
+        genericNameEn: 'Etoricoxib',
+        drugClassNameEn: 'COX-2 Inhibitors',
+        aiSources: [],
+      }),
+    ];
+
+    expect(getReviewDraftSourceCounts(drafts)).toEqual({
+      all: 3,
+      ready: 1,
+      warnings: 2,
+    });
+
+    expect(
+      filterReviewDraftProducts(drafts, {}, { sourceFilter: 'ready' }).map(
+        (p) => p.id
+      )
+    ).toEqual(['d1']);
+
+    expect(
+      filterReviewDraftProducts(drafts, {}, { sourceFilter: 'warnings' }).map(
+        (p) => p.id
+      )
+    ).toEqual(['d2', 'd3']);
+
+    expect(
+      filterReviewDraftProducts(
+        drafts,
+        {},
+        { query: 'montelukast', sourceFilter: 'all' }
+      ).map((p) => p.id)
+    ).toEqual(['d2']);
+
+    const companies: CompanySummary[] = [
+      { id: 'c1', companyName: 'Organon', status: 'verified' },
+      { id: 'c2', companyName: 'Pfizer', status: 'verified' },
+      { id: 'c3', companyName: 'Viatris', status: 'verified' },
+    ];
+    const allProducts = [
+      ...drafts,
+      sampleProduct({ id: 'p1', companyId: 'c2', status: 'published' }),
+      sampleProduct({ id: 'v1', companyId: 'c3', status: 'draft' }),
+      sampleProduct({ id: 'v2', companyId: 'c3', status: 'draft' }),
+    ];
+
+    expect(findNextCompanyWithDrafts(companies, allProducts, 'c1')).toEqual({
+      company: companies[2],
+      drafts: 2,
+    });
+    expect(findNextCompanyWithDrafts(companies, allProducts, 'c3')).toEqual({
+      company: companies[0],
+      drafts: 3,
     });
   });
 });

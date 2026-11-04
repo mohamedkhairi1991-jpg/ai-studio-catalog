@@ -1,20 +1,27 @@
 import React, { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { Bookmark, Check, Power, RefreshCw, Share2, User, X } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AccessResult } from '../lib/access';
 import {
   CATEGORY_LABELS,
   MARKET_STATUS_LABELS,
   buildProductRouteHash,
+  clearRecentDoctorDrugs,
   loadDoctorHomeSuggestions,
   loadProductDetail,
+  loadRecentDoctorDrugs,
+  loadSavedDoctorDrugs,
   loadSpecialtiesCatalog,
   loadVerifiedCompanies,
   parseProductRoute,
+  recordRecentDoctorDrug,
   searchCatalogProducts,
+  toggleSavedDoctorDrug,
   type CatalogProduct,
   type CompanySummary,
   type DoctorHomeSuggestion,
   type DoctorSearchRow,
+  type SavedOrRecentDrugItem,
   type TaxonomyItem,
 } from '../lib/catalog';
 import {
@@ -81,6 +88,16 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
 
+  // Saved & Recently Viewed drugs (local on device)
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [savedDrugs, setSavedDrugs] = useState<SavedOrRecentDrugItem[]>(() =>
+    loadSavedDoctorDrugs()
+  );
+  const [recentDrugs, setRecentDrugs] = useState<SavedOrRecentDrugItem[]>(() =>
+    loadRecentDoctorDrugs()
+  );
+  const [linkCopied, setLinkCopied] = useState(false);
+
   // My profile state
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileFullName, setProfileFullName] = useState('');
@@ -111,6 +128,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     const onHashChange = () => {
       const nextProductId = parseProductRoute(window.location.hash);
       setActiveProductId(nextProductId);
+      setLinkCopied(false);
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
@@ -120,7 +138,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     const seq = ++suggestionsReqSeqRef.current;
     setSuggestionsLoading(true);
     setSuggestionsError(null);
-    const res = await loadDoctorHomeSuggestions(client, 2);
+    // First load shows today's pair; each Refresh asks for another pair.
+    const res = await loadDoctorHomeSuggestions(client, 2, seq - 1);
     if (seq !== suggestionsReqSeqRef.current) return;
     if (!res.ok) {
       setSuggestionsError(res.message);
@@ -285,12 +304,23 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         setSelectedProduct(null);
       } else {
         setSelectedProduct(res.data);
+        setRecentDrugs(
+          recordRecentDoctorDrug({
+            productId: res.data.id,
+            brandNameEn: res.data.brandNameEn,
+            genericNameEn: res.data.genericNameEn,
+            strength: res.data.market?.strength ?? null,
+            dosageForm: res.data.market?.dosageForm ?? null,
+            companyName: res.data.companyName,
+          })
+        );
       }
       setDetailLoading(false);
     });
   }, [client, activeProductId]);
 
   const openProductPage = (productId: string) => {
+    setSavedOpen(false);
     const targetHash = buildProductRouteHash(productId);
     if (window.location.hash === targetHash) {
       setActiveProductId(productId);
@@ -304,6 +334,84 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
   const handleBackToCatalog = () => {
     window.location.hash = '/catalog';
+  };
+
+  const handleGoHome = () => {
+    setQuery('');
+    setDebouncedQuery('');
+    setCompanyId('');
+    setSpecialtyId('');
+    setProfileOpen(false);
+    setSavedOpen(false);
+    setActiveProductId(null);
+    if (typeof window !== 'undefined' && window.location.hash !== '#/catalog') {
+      window.location.hash = '/catalog';
+    }
+  };
+
+  const handleSearchByGeneric = (genericName: string) => {
+    const clean = genericName.trim();
+    if (!clean || clean === '—') return;
+    setCompanyId('');
+    setSpecialtyId('');
+    setQuery(clean);
+    setDebouncedQuery(clean);
+    setActiveProductId(null);
+    window.location.hash = '/catalog';
+  };
+
+  const handleFilterByCompany = (targetCompanyId: string, companyName: string) => {
+    setSpecialtyId('');
+    if (companies.some((c) => c.id === targetCompanyId)) {
+      setQuery('');
+      setDebouncedQuery('');
+      setCompanyId(targetCompanyId);
+    } else {
+      setCompanyId('');
+      setQuery(companyName);
+      setDebouncedQuery(companyName);
+    }
+    setActiveProductId(null);
+    window.location.hash = '/catalog';
+  };
+
+  const handleToggleSaveProduct = (product: CatalogProduct) => {
+    setSavedDrugs(
+      toggleSavedDoctorDrug({
+        productId: product.id,
+        brandNameEn: product.brandNameEn,
+        genericNameEn: product.genericNameEn,
+        strength: product.market?.strength ?? null,
+        dosageForm: product.market?.dosageForm ?? null,
+        companyName: product.companyName,
+      })
+    );
+  };
+
+  const handleShareProductLink = async (product: CatalogProduct) => {
+    if (typeof window === 'undefined') return;
+    const shareUrl = window.location.href;
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        await navigator.share({
+          title: `${product.brandNameEn} — Pharmaty`,
+          text: `${product.brandNameEn} (${product.genericNameEn ?? 'Clinical Monograph'})`,
+          url: shareUrl,
+        });
+        return;
+      }
+    } catch {
+      // Fall back to clipboard copy if share sheet was dismissed or unsupported
+    }
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        setLinkCopied(true);
+        window.setTimeout(() => setLinkCopied(false), 2000);
+      }
+    } catch {
+      // Ignore clipboard permission errors
+    }
   };
 
   const handleSaveProfile = async (e: FormEvent) => {
@@ -330,39 +438,77 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     specialties.find((s) => s.id === profileSpecialtyId)?.nameEn ||
     'Your specialty';
 
+  const isSelectedProductSaved = Boolean(
+    selectedProduct &&
+      savedDrugs.some((item) => item.productId === selectedProduct.id)
+  );
+
   return (
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
       {/* Clean Modern Header */}
       <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <BrandLogo />
-            <span className="h-4 w-px bg-[#304451] hidden sm:inline" />
-            <span className="text-sm text-[#B8C3CC] hidden sm:inline">
-              Official Catalog
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-xs text-[#B8C3CC] hidden md:inline">
-              {access.email}
-            </span>
+          <div className="flex items-center">
             <button
               type="button"
-              className={secondaryButtonClass}
+              onClick={handleGoHome}
+              aria-label="Pharmaty home"
+              title="Return to home"
+              className="rounded-md focus:outline-none focus:ring-2 focus:ring-[#5DB4F2]/50 transition-opacity hover:opacity-90"
+            >
+              <BrandLogo />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Saved and recent medicines"
+              aria-expanded={savedOpen}
+              title="Saved and recent medicines"
+              className={`relative rounded-md border p-2 transition-colors ${
+                savedOpen
+                  ? 'border-[#5DB4F2] bg-[#1F2D38] text-[#5DB4F2]'
+                  : 'border-[#304451] text-[#F2F5F8] hover:bg-[#304451]'
+              }`}
               onClick={() => {
-                setProfileOpen((v) => !v);
-                setProfileNotice(null);
+                setSavedOpen((v) => !v);
+                setProfileOpen(false);
               }}
             >
-              My profile
+              <Bookmark className="w-4 h-4" aria-hidden="true" />
+              {savedDrugs.length > 0 && (
+                <span className="ml-1 text-[11px] font-mono tabular-nums text-[#5DB4F2]">
+                  {savedDrugs.length}
+                </span>
+              )}
             </button>
             <button
               type="button"
-              className={secondaryButtonClass}
+              aria-label="My profile"
+              aria-expanded={profileOpen}
+              title="My profile"
+              className={`rounded-md border p-2 transition-colors ${
+                profileOpen
+                  ? 'border-[#5DB4F2] bg-[#1F2D38] text-[#5DB4F2]'
+                  : 'border-[#304451] text-[#F2F5F8] hover:bg-[#304451]'
+              }`}
+              onClick={() => {
+                setProfileOpen((v) => !v);
+                setSavedOpen(false);
+                setProfileNotice(null);
+              }}
+            >
+              <User className="w-4 h-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              aria-label="Sign out"
+              title="Sign out"
+              className="rounded-md border border-[#304451] p-2 text-[#F2F5F8] hover:bg-[#304451] hover:text-[#FF7272] transition-colors"
               onClick={onSignOut}
             >
-              Sign out
+              <Power className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -370,6 +516,114 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
       {/* Main Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+        {/* Saved & Recently Viewed Drawer */}
+        {savedOpen && (
+          <section className="rounded-xl bg-[#263744] border border-[#304451] p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#304451] pb-3">
+              <div>
+                <h2 className="text-base font-semibold text-[#F2F5F8]">
+                  Saved & recently viewed
+                </h2>
+                <p className="text-xs text-[#B8C3CC] mt-0.5">
+                  Quick access to medicines saved or opened on this device.
+                </p>
+              </div>
+              <button
+                type="button"
+                className={secondaryButtonClass}
+                onClick={() => setSavedOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Saved Medicines */}
+              <div className="space-y-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-[#5DB4F2]">
+                  Saved medicines ({savedDrugs.length})
+                </div>
+                {savedDrugs.length === 0 ? (
+                  <p className="text-xs text-[#B8C3CC] rounded-lg bg-[#1F2D38] border border-[#304451] p-3">
+                    No saved medicines yet. Open any product and tap Save to bookmark it here.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-[#304451] rounded-lg bg-[#1F2D38] border border-[#304451] overflow-hidden">
+                    {savedDrugs.map((item) => (
+                      <div
+                        key={item.productId}
+                        className="flex items-center justify-between gap-2 px-3 py-2.5"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => openProductPage(item.productId)}
+                          className="text-left flex-1 min-w-0"
+                        >
+                          <div className="text-xs font-semibold text-[#F2F5F8] truncate hover:text-[#5DB4F2]">
+                            {item.brandNameEn}
+                          </div>
+                          <div className="text-xs text-[#B8C3CC] truncate">
+                            {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Remove ${item.brandNameEn} from saved`}
+                          onClick={() => setSavedDrugs(toggleSavedDoctorDrug(item))}
+                          className="text-xs text-[#B8C3CC] hover:text-[#FF7272] px-1.5 py-1"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Recently Viewed */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                    Recently viewed ({recentDrugs.length})
+                  </span>
+                  {recentDrugs.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setRecentDrugs(clearRecentDoctorDrugs())}
+                      className="text-xs text-[#5DB4F2] hover:underline"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {recentDrugs.length === 0 ? (
+                  <p className="text-xs text-[#B8C3CC] rounded-lg bg-[#1F2D38] border border-[#304451] p-3">
+                    Medicines you open will appear here for quick reference.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-[#304451] rounded-lg bg-[#1F2D38] border border-[#304451] overflow-hidden">
+                    {recentDrugs.map((item) => (
+                      <button
+                        key={item.productId}
+                        type="button"
+                        onClick={() => openProductPage(item.productId)}
+                        className="w-full text-left px-3 py-2.5 hover:bg-[#263744] transition-colors"
+                      >
+                        <div className="text-xs font-semibold text-[#F2F5F8] truncate">
+                          {item.brandNameEn}
+                        </div>
+                        <div className="text-xs text-[#B8C3CC] truncate">
+                          {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* My Profile Drawer / Card */}
         {profileOpen && (
           <section className="rounded-xl bg-[#263744] border border-[#304451] p-5 space-y-4">
@@ -378,7 +632,12 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 <h2 className="text-base font-semibold text-[#F2F5F8]">
                   My profile
                 </h2>
-                <p className="text-xs text-[#B8C3CC]">
+                {access.email && (
+                  <p className="text-xs text-[#5DB4F2] mt-0.5">
+                    {access.email}
+                  </p>
+                )}
+                <p className="text-xs text-[#B8C3CC] mt-0.5">
                   Update your phone number and medical specialty.
                 </p>
               </div>
@@ -461,7 +720,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         {/* Standalone Drug Page (#/product/<id>) */}
         {activeProductId ? (
           <div className="space-y-4">
-            <div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={handleBackToCatalog}
@@ -469,6 +728,41 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               >
                 ← Back
               </button>
+
+              {selectedProduct && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleSaveProduct(selectedProduct)}
+                    aria-pressed={isSelectedProductSaved}
+                    className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      isSelectedProductSaved
+                        ? 'border-[#5DB4F2] bg-[#1769AA]/30 text-[#5DB4F2]'
+                        : 'border-[#304451] text-[#F2F5F8] hover:bg-[#304451]'
+                    }`}
+                  >
+                    <Bookmark className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>{isSelectedProductSaved ? 'Saved' : 'Save'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleShareProductLink(selectedProduct)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[#304451] px-3 py-1.5 text-xs font-medium text-[#F2F5F8] hover:bg-[#304451] transition-colors"
+                  >
+                    {linkCopied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#38C976]" aria-hidden="true" />
+                        <span className="text-[#38C976]">Link copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>Share</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
             {detailError && (
@@ -481,7 +775,11 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               </div>
             ) : (
               selectedProduct && (
-                <DoctorProductDetail product={selectedProduct} />
+                <DoctorProductDetail
+                  product={selectedProduct}
+                  onSearchGeneric={handleSearchByGeneric}
+                  onFilterCompany={handleFilterByCompany}
+                />
               )
             )}
           </div>
@@ -490,8 +788,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             {error && <CatalogBanner tone="error">{error}</CatalogBanner>}
 
             {/* Top Search & Filter Toolbar */}
-            <section className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex-1">
+            <section className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+              <div className="relative flex-1">
                 <input
                   id="doctor-catalog-search"
                   type="search"
@@ -499,42 +797,58 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by brand, generic name, or company"
-                  className={inputClass}
+                  className={`${inputClass} ${query ? 'pr-9' : ''}`}
                 />
+                {query && (
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    title="Clear search"
+                    onClick={() => {
+                      setQuery('');
+                      setDebouncedQuery('');
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-[#B8C3CC] hover:text-[#F2F5F8] transition-colors"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                )}
               </div>
 
-              <div className="sm:w-56">
-                <select
-                  id="doctor-catalog-company"
-                  aria-label="Filter by company"
-                  value={companyId}
-                  onChange={(e) => setCompanyId(e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">All companies</option>
-                  {companies.map((comp) => (
-                    <option key={comp.id} value={comp.id}>
-                      {comp.companyName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3">
+                <div className="sm:w-52">
+                  <select
+                    id="doctor-catalog-company"
+                    aria-label="Filter by company"
+                    value={companyId}
+                    onChange={(e) => setCompanyId(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">All companies</option>
+                    {companies.map((comp) => (
+                      <option key={comp.id} value={comp.id}>
+                        {comp.companyName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="sm:w-56">
-                <select
-                  id="doctor-catalog-specialty"
-                  aria-label="Filter by specialty"
-                  value={specialtyId}
-                  onChange={(e) => setSpecialtyId(e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">All specialties</option>
-                  {specialties.map((spec) => (
-                    <option key={spec.id} value={spec.id}>
-                      {spec.nameEn}
-                    </option>
-                  ))}
-                </select>
+                <div className="sm:w-52">
+                  <select
+                    id="doctor-catalog-specialty"
+                    aria-label="Filter by specialty"
+                    value={specialtyId}
+                    onChange={(e) => setSpecialtyId(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">All specialties</option>
+                    {specialties.map((spec) => (
+                      <option key={spec.id} value={spec.id}>
+                        {spec.nameEn}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {isSearchingOrFiltering && (
@@ -546,7 +860,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     setCompanyId('');
                     setSpecialtyId('');
                   }}
-                  className="text-xs font-medium text-[#5DB4F2] hover:underline px-2 py-2 shrink-0"
+                  className="text-xs font-medium text-[#5DB4F2] hover:underline px-2 py-1.5 shrink-0 self-end sm:self-center"
                 >
                   Reset
                 </button>
@@ -558,10 +872,26 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               <div className="space-y-6">
                 {/* Section a: For your specialty */}
                 <section className="space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <h2 className="text-base font-semibold text-[#F2F5F8]">
                       For your specialty: {doctorSpecialtyName}
                     </h2>
+                    <button
+                      type="button"
+                      aria-label="Refresh specialty suggestions"
+                      title="Refresh suggestions"
+                      disabled={suggestionsLoading}
+                      onClick={() => void loadSuggestions()}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-[#304451] px-2.5 py-1 text-xs text-[#B8C3CC] hover:text-[#F2F5F8] hover:bg-[#304451] disabled:opacity-50 transition-colors"
+                    >
+                      <RefreshCw
+                        className={`w-3.5 h-3.5 ${
+                          suggestionsLoading ? 'animate-spin' : ''
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span>Refresh</span>
+                    </button>
                   </div>
 
                   {suggestionsError && (
@@ -722,7 +1052,15 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   );
 }
 
-function DoctorProductDetail({ product }: { product: CatalogProduct }) {
+function DoctorProductDetail({
+  product,
+  onSearchGeneric,
+  onFilterCompany,
+}: {
+  product: CatalogProduct;
+  onSearchGeneric: (genericName: string) => void;
+  onFilterCompany: (companyId: string, companyName: string) => void;
+}) {
   const market = product.market;
   const enClinical = product.marketTranslations.en;
 
@@ -735,12 +1073,32 @@ function DoctorProductDetail({ product }: { product: CatalogProduct }) {
             {product.brandNameEn}
           </h2>
           <p className="text-sm text-[#5DB4F2] mt-1">
-            {product.genericNameEn ?? 'Dietary Supplement'} ·{' '}
-            {product.drugClassNameEn}
+            {product.genericNameEn ? (
+              <button
+                type="button"
+                onClick={() => onSearchGeneric(product.genericNameEn!)}
+                title="View all products with this generic ingredient"
+                className="text-[#5DB4F2] hover:underline text-left font-medium"
+              >
+                {product.genericNameEn}
+              </button>
+            ) : (
+              'Dietary Supplement'
+            )}{' '}
+            · {product.drugClassNameEn}
           </p>
         </div>
         <div className="text-right">
-          <div className="text-xs text-[#B8C3CC]">{product.companyName}</div>
+          <button
+            type="button"
+            onClick={() =>
+              onFilterCompany(product.companyId, product.companyName)
+            }
+            title="View all products from this company"
+            className="text-xs text-[#5DB4F2] hover:underline font-medium"
+          >
+            {product.companyName}
+          </button>
           <div className="text-xs font-medium text-[#38C976] mt-0.5">
             {CATEGORY_LABELS[product.category]}
           </div>
@@ -749,9 +1107,25 @@ function DoctorProductDetail({ product }: { product: CatalogProduct }) {
 
       {/* Specification Table */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
-        <SpecItem label="Generic Name" value={product.genericNameEn ?? '—'} />
+        <SpecItem
+          label="Generic Name"
+          value={product.genericNameEn ?? '—'}
+          onClick={
+            product.genericNameEn
+              ? () => onSearchGeneric(product.genericNameEn!)
+              : undefined
+          }
+          actionTitle="Search other brands with this generic name"
+        />
         <SpecItem label="Drug Class" value={product.drugClassNameEn} />
-        <SpecItem label="Company" value={product.companyName} />
+        <SpecItem
+          label="Company"
+          value={product.companyName}
+          onClick={() =>
+            onFilterCompany(product.companyId, product.companyName)
+          }
+          actionTitle="View all products from this company"
+        />
         <SpecItem
           label="Specialties"
           value={
@@ -818,22 +1192,37 @@ function SpecItem({
   value,
   mono,
   tone = 'neutral',
+  onClick,
+  actionTitle,
 }: {
   label: string;
   value: string;
   mono?: boolean;
   tone?: 'neutral' | 'success';
+  onClick?: () => void;
+  actionTitle?: string;
 }) {
   return (
     <div className="border-b border-[#304451]/60 pb-3">
       <div className="text-xs text-[#B8C3CC]">{label}</div>
-      <div
-        className={`text-sm mt-1 ${
-          mono ? 'font-mono tabular-nums' : 'font-medium'
-        } ${tone === 'success' ? 'text-[#38C976]' : 'text-[#F2F5F8]'}`}
-      >
-        {value}
-      </div>
+      {onClick ? (
+        <button
+          type="button"
+          onClick={onClick}
+          title={actionTitle}
+          className="text-sm mt-1 font-medium text-[#5DB4F2] hover:underline text-left"
+        >
+          {value}
+        </button>
+      ) : (
+        <div
+          className={`text-sm mt-1 ${
+            mono ? 'font-mono tabular-nums' : 'font-medium'
+          } ${tone === 'success' ? 'text-[#38C976]' : 'text-[#F2F5F8]'}`}
+        >
+          {value}
+        </div>
+      )}
     </div>
   );
 }

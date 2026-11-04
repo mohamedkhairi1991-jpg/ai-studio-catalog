@@ -58,6 +58,20 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-03 — Google AI Studio (DoctorCatalog & AdminCatalogReview UX enhancements)
+- **DoctorCatalog (`src/components/DoctorCatalog.tsx`, `src/lib/catalog.ts`):**
+  - Made the **Generic Name** and **Company** on `#/product/<id>` clickable to immediately search/filter other Iraq-marketed products with the same active ingredient or manufacturer.
+  - Placed **Company** and **Specialty** filters in a compact 2-column grid on mobile screens (`grid-cols-2`), added an inline clear (`×`) button inside the search bar, and made the top-left **Pharmaty** logo clickable to return home (`#/catalog` with filters reset).
+  - Added a `"Refresh"` button for specialty home suggestions, a `"Save"` (`Bookmark`) and `"Share"` (`Share2` / copy link) bar on `#/product/<id>`, and a header `Bookmark` drawer for locally saved and recently viewed medicines (`localStorage`) while keeping the default home screen strictly limited to the 2 specialty drugs + Sponsored box.
+- **AdminCatalogReview (`src/components/AdminCatalogReview.tsx`, `src/lib/catalog.ts`):**
+  - Added a `"Next with drafts: <Company> (<N>) →"` button in the company header to jump directly to the next company with remaining drafts.
+  - Added a draft search input and source-readiness filter buttons (`All`, `Ready — valid source`, `Has warnings`) inside `CompanyReviewDraftsView`, with `"Select all"` targeting the visible filtered drafts.
+- **Verification:** Added unit tests in `src/lib/catalog.test.ts`; `npm run lint`, `npm test`, and `npm run build` all pass.
+
+### 2026-11-03 — Google AI Studio (DoctorCatalog header simplification)
+- **What changed:** Simplified the top header in `src/components/DoctorCatalog.tsx` per owner request: removed the `"Official Catalog"` subtitle and user email from the top bar, replaced `"My profile"` and `"Sign out"` text buttons with compact `User` and `Power` icon buttons (preserving `aria-label` and `title` accessibility attributes), and displayed the signed-in doctor's email inside the `"My profile"` drawer.
+- **Verification:** `npm run lint`, `npm test`, and `npm run build` all pass.
+
 ### 2026-11-03 — Google AI Studio (Organon catalog dataset — 24 products)
 - **What changed:** Created `src/lib/organonCatalogData.ts` exporting `ORGANON_PRODUCTS` (24 products: Cozaar 50/100 mg, Hyzaar 50/12.5 mg, Ezetrol 10 mg, Atozet 10/20 mg, Zocor 20 mg, Singulair 10 mg, Singulair Paediatric 5 mg and 4 mg chewable, Nasonex 50 mcg/actuation, Fosamax Once Weekly 70 mg, Arcoxia 60/90/120 mg, Proscar 5 mg, Propecia 1 mg, Elocon 0.1% Cream, Diprosalic Ointment, Marvelon, Mercilon, Nexplanon 68 mg, NuvaRing, Puregon 300 IU/0.36 mL, and Orgalutran 0.25 mg/0.5 mL) and registered `organon` in `CHAT_CURATED_COMPANIES` in `src/lib/chatCatalogData.ts`.
 - **Verification:** English only, no prices or registration numbers, only the 16 allowed specialty names, and source URLs using EMA EPAR pages (`puregon`, `orgalutran`) or UK eMC brand search URLs (`https://www.medicines.org.uk/emc/search?q=<Brand>`). `npm run lint`, `npm test`, and `npm run build` all pass.

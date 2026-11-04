@@ -61,6 +61,7 @@ import { VIATRIS_PRODUCTS } from './viatrisCatalogData';
 import { ORGANON_PRODUCTS } from './organonCatalogData';
 import { IBSA_PRODUCTS } from './ibsaCatalogData';
 import { LUNDBECK_PRODUCTS } from './lundbeckCatalogData';
+import { UCB_PRODUCTS } from './ucbCatalogData';
 
 export interface CuratedCompanyEntry {
   key: string;
@@ -2175,6 +2176,15 @@ export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [
     description:
       "Danish pharmaceutical company (Copenhagen, Denmark) focused on brain health: depression, schizophrenia, Alzheimer's disease, Parkinson's disease and migraine.",
     products: LUNDBECK_PRODUCTS,
+  },
+  {
+    key: 'ucb',
+    companyName: 'UCB',
+    legalName: 'UCB S.A.',
+    websiteUrl: 'https://www.ucb.com',
+    description:
+      'Belgian biopharmaceutical company (Brussels, Belgium) focused on neurology and immunology: epilepsy (Keppra, Vimpat, Briviact), Parkinson\'s disease (Neupro), inflammatory diseases (Cimzia) and allergy (Xyzal).',
+    products: UCB_PRODUCTS,
   },
 ];
 

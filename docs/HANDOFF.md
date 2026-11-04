@@ -58,6 +58,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-05 — Claude (UCB company data)
+- New `src/lib/ucbCatalogData.ts` (22 UCB presentations marketed in Iraq: Keppra,
+  Vimpat, Briviact, Neupro, Cimzia, Xyzal, Nootropil) and a `ucb` entry in
+  `CHAT_CURATED_COMPANIES`. Written by Claude because AI Studio returned
+  "Invalid argument" (limit).
+- Sources: exact EMA EPAR pages, or eMC search pages for Xyzal and Nootropil.
+  No guessed eMC numbers or DailyMed setids. Pack sizes that differ by market say so.
+
 ### 2026-11-04 — Claude (robot check on sign-in, sign-up and password reset)
 - Cloudflare Turnstile widget (`src/components/TurnstileWidget.tsx`, `src/lib/captcha.ts`)
   on the AuthGate form; the token is sent as `captchaToken` with signIn, signUp and

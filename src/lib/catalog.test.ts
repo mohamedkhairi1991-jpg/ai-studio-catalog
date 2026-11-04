@@ -20,17 +20,26 @@ import {
   invokeAiFindCompanyProducts,
   invokeAiSuggestCompanies,
   isDomainOnlySourceUrl,
+  loadAdminSponsoredAdStats,
+  loadAdminTopSearches,
+  loadAdminTopViewedProducts,
   loadDoctorHomeSuggestions,
+  loadDoctorSponsoredAd,
   loadProductAiDraft,
   loadProductDetail,
   parseProductRoute,
   parsePublishChecklistErrors,
   publishCheckedProducts,
+  recordCatalogSearchOnce,
+  recordProductView,
+  recordSponsoredAdEvent,
   rpcAdminArchiveCompany,
   rpcAdminEnsureGenericDrug,
   rpcAdminEnsureSpecialties,
   rpcAdminSaveAiProductDraft,
+  rpcAdminSaveSponsoredAd,
   searchCatalogProducts,
+  validateSponsoredAdForm,
   type CatalogProduct,
   type CompanySummary,
   type TaxonomyItem,
@@ -1177,6 +1186,274 @@ describe('Admin Review Drafts helpers', () => {
     expect(findNextCompanyWithDrafts(companies, allProducts, 'c3')).toEqual({
       company: companies[0],
       drafts: 3,
+    });
+  });
+
+  it('validates sponsored ad form input rules', () => {
+    const valid = validateSponsoredAdForm({
+      adId: null,
+      sponsorName: 'AstraZeneca',
+      title: 'Forxiga 10 mg — Heart Failure & CKD Indication',
+      body: 'Approved for symptomatic chronic heart failure and chronic kidney disease in adults.',
+      imageUrl: 'https://www.astrazeneca.com/banner.png',
+      linkUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/forxiga',
+      companyId: 'comp-1',
+      targetSpecialtyId: 'spec-1',
+      startsOn: '2026-11-04',
+      endsOn: '2026-12-31',
+      isActive: true,
+      priority: 50,
+    });
+    expect(valid).toEqual([]);
+
+    const missingRequired = validateSponsoredAdForm({
+      sponsorName: '   ',
+      title: '',
+      body: '',
+      imageUrl: '',
+      linkUrl: '',
+      companyId: null,
+      targetSpecialtyId: null,
+      startsOn: '2026-11-04',
+      endsOn: '',
+      isActive: true,
+      priority: 0,
+    });
+    expect(missingRequired).toContain('Sponsor name is required.');
+    expect(missingRequired).toContain('Title is required.');
+
+    const limitsAndUrls = validateSponsoredAdForm({
+      sponsorName: 'S'.repeat(81),
+      title: 'T'.repeat(81),
+      body: 'B'.repeat(281),
+      imageUrl: 'http://insecure.example.com/ad.png',
+      linkUrl: 'ftp://example.com/doc',
+      companyId: null,
+      targetSpecialtyId: null,
+      startsOn: '2026-11-10',
+      endsOn: '2026-11-04',
+      isActive: true,
+      priority: 120,
+    });
+    expect(limitsAndUrls).toEqual([
+      'Sponsor name must be 80 characters or fewer.',
+      'Title must be 80 characters or fewer.',
+      'Body must be 280 characters or fewer.',
+      'Image URL must start with https:// and contain no spaces.',
+      'Link URL must start with https:// and contain no spaces.',
+      'End date cannot be before start date.',
+      'Priority must be a whole number between 0 and 100.',
+    ]);
+  });
+
+  it('records catalog search only once per final query and ignores queries shorter than 2 characters', async () => {
+    const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const client = {
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        rpcCalls.push({ fn, args });
+        return { data: null, error: null };
+      },
+    } as unknown as SupabaseClient;
+
+    const tracker = { lastQuery: null as string | null };
+
+    // 1-char query is ignored
+    expect(await recordCatalogSearchOnce(client, 'a', 10, tracker)).toBe(false);
+    expect(rpcCalls).toHaveLength(0);
+
+    // First final query >= 2 chars is recorded once
+    expect(await recordCatalogSearchOnce(client, '  Concor  ', 3, tracker)).toBe(
+      true
+    );
+    expect(rpcCalls).toEqual([
+      {
+        fn: 'record_catalog_search',
+        args: { p_query: 'Concor', p_result_count: 3 },
+      },
+    ]);
+
+    // Repeat with same normalized query (e.g. Load more or filter toggle) does not record again
+    expect(await recordCatalogSearchOnce(client, 'concor', 3, tracker)).toBe(
+      false
+    );
+    expect(rpcCalls).toHaveLength(1);
+
+    // Different final query is recorded
+    expect(await recordCatalogSearchOnce(client, 'Entresto', 0, tracker)).toBe(
+      true
+    );
+    expect(rpcCalls).toHaveLength(2);
+    expect(rpcCalls[1]).toEqual({
+      fn: 'record_catalog_search',
+      args: { p_query: 'Entresto', p_result_count: 0 },
+    });
+  });
+
+  it('loads doctor_sponsored_ad, fires ad/product events, saves admin ads, and loads usage stats', async () => {
+    const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const client = {
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        rpcCalls.push({ fn, args });
+        if (fn === 'doctor_sponsored_ad') {
+          return {
+            data: [
+              {
+                ad_id: 'ad-1',
+                sponsor_name: 'AstraZeneca',
+                title: 'Forxiga 10 mg',
+                body: 'SGLT2 inhibitor',
+                image_url: 'https://www.astrazeneca.com/forxiga.png',
+                link_url: 'https://www.ema.europa.eu/en/medicines/human/EPAR/forxiga',
+              },
+            ],
+            error: null,
+          };
+        }
+        if (fn === 'admin_save_sponsored_ad') {
+          return {
+            data: {
+              id: 'ad-1',
+              sponsor_name: 'AstraZeneca',
+              title: 'Forxiga 10 mg',
+              body: 'SGLT2 inhibitor',
+              image_url: 'https://www.astrazeneca.com/forxiga.png',
+              link_url: 'https://www.ema.europa.eu/en/medicines/human/EPAR/forxiga',
+              company_id: 'comp-1',
+              target_specialty_id: null,
+              starts_on: '2026-11-04',
+              ends_on: null,
+              is_active: true,
+              priority: 10,
+              created_at: '2026-11-04T10:00:00Z',
+              updated_at: '2026-11-04T10:00:00Z',
+            },
+            error: null,
+          };
+        }
+        if (fn === 'admin_sponsored_ad_stats') {
+          return {
+            data: [
+              {
+                ad_id: 'ad-1',
+                title: 'Forxiga 10 mg',
+                sponsor_name: 'AstraZeneca',
+                is_active: true,
+                views: 42,
+                clicks: 7,
+              },
+            ],
+            error: null,
+          };
+        }
+        if (fn === 'admin_top_searches') {
+          return {
+            data: [
+              { query: 'ozempic', searches: 12, zero_result_searches: 12 },
+              { query: 'concor', searches: 9, zero_result_searches: 0 },
+            ],
+            error: null,
+          };
+        }
+        if (fn === 'admin_top_viewed_products') {
+          return {
+            data: [
+              {
+                product_id: 'prod-1',
+                brand_name_en: 'Concor 5 mg',
+                company_name: 'Merck',
+                views: 19,
+              },
+            ],
+            error: null,
+          };
+        }
+        return { data: null, error: null };
+      },
+    } as unknown as SupabaseClient;
+
+    const adRes = await loadDoctorSponsoredAd(client, 3);
+    expect(adRes).toEqual({
+      adId: 'ad-1',
+      sponsorName: 'AstraZeneca',
+      title: 'Forxiga 10 mg',
+      body: 'SGLT2 inhibitor',
+      imageUrl: 'https://www.astrazeneca.com/forxiga.png',
+      linkUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/forxiga',
+    });
+
+    await recordSponsoredAdEvent(client, 'ad-1', 'view');
+    await recordSponsoredAdEvent(client, 'ad-1', 'click');
+    await recordProductView(client, 'prod-1');
+
+    const saveRes = await rpcAdminSaveSponsoredAd(client, {
+      adId: null,
+      sponsorName: 'AstraZeneca',
+      title: 'Forxiga 10 mg',
+      body: 'SGLT2 inhibitor',
+      imageUrl: 'https://www.astrazeneca.com/forxiga.png',
+      linkUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/forxiga',
+      companyId: 'comp-1',
+      targetSpecialtyId: null,
+      startsOn: '2026-11-04',
+      endsOn: '',
+      isActive: true,
+      priority: 10,
+    });
+    expect(saveRes).toEqual({
+      ok: true,
+      data: {
+        id: 'ad-1',
+        sponsorName: 'AstraZeneca',
+        title: 'Forxiga 10 mg',
+        body: 'SGLT2 inhibitor',
+        imageUrl: 'https://www.astrazeneca.com/forxiga.png',
+        linkUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/forxiga',
+        companyId: 'comp-1',
+        targetSpecialtyId: null,
+        startsOn: '2026-11-04',
+        endsOn: null,
+        isActive: true,
+        priority: 10,
+        createdAt: '2026-11-04T10:00:00Z',
+        updatedAt: '2026-11-04T10:00:00Z',
+      },
+    });
+
+    const statsRes = await loadAdminSponsoredAdStats(client, 30);
+    expect(statsRes).toEqual({
+      ok: true,
+      data: [
+        {
+          adId: 'ad-1',
+          title: 'Forxiga 10 mg',
+          sponsorName: 'AstraZeneca',
+          isActive: true,
+          views: 42,
+          clicks: 7,
+        },
+      ],
+    });
+
+    const searchesRes = await loadAdminTopSearches(client, 30, 50);
+    expect(searchesRes).toEqual({
+      ok: true,
+      data: [
+        { query: 'ozempic', searches: 12, zeroResultSearches: 12 },
+        { query: 'concor', searches: 9, zeroResultSearches: 0 },
+      ],
+    });
+
+    const viewedRes = await loadAdminTopViewedProducts(client, 30, 50);
+    expect(viewedRes).toEqual({
+      ok: true,
+      data: [
+        {
+          productId: 'prod-1',
+          brandNameEn: 'Concor 5 mg',
+          companyName: 'Merck',
+          views: 19,
+        },
+      ],
     });
   });
 });

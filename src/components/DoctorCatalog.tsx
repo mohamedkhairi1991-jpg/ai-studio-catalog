@@ -8,19 +8,24 @@ import {
   buildProductRouteHash,
   clearRecentDoctorDrugs,
   loadDoctorHomeSuggestions,
+  loadDoctorSponsoredAd,
   loadProductDetail,
   loadRecentDoctorDrugs,
   loadSavedDoctorDrugs,
   loadSpecialtiesCatalog,
   loadVerifiedCompanies,
   parseProductRoute,
+  recordCatalogSearchOnce,
+  recordProductView,
   recordRecentDoctorDrug,
+  recordSponsoredAdEvent,
   searchCatalogProducts,
   toggleSavedDoctorDrug,
   type CatalogProduct,
   type CompanySummary,
   type DoctorHomeSuggestion,
   type DoctorSearchRow,
+  type DoctorSponsoredAd,
   type SavedOrRecentDrugItem,
   type TaxonomyItem,
 } from '../lib/catalog';
@@ -87,6 +92,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [suggestions, setSuggestions] = useState<DoctorHomeSuggestion[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
+  const [sponsoredAd, setSponsoredAd] = useState<DoctorSponsoredAd | null>(null);
 
   // Saved & Recently Viewed drugs (local on device)
   const [savedOpen, setSavedOpen] = useState(false);
@@ -122,6 +128,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const searchReqSeqRef = useRef(0);
   const detailReqSeqRef = useRef(0);
   const suggestionsReqSeqRef = useRef(0);
+  const searchRecordTrackerRef = useRef<{ lastQuery: string | null }>({
+    lastQuery: null,
+  });
+  const viewedAdIdsRef = useRef<Set<string>>(new Set());
 
   // Listen to hashchange so #/product/<id> and phone/browser Back button work seamlessly
   useEffect(() => {
@@ -136,11 +146,16 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
   const loadSuggestions = useCallback(async () => {
     const seq = ++suggestionsReqSeqRef.current;
+    const seed = seq - 1;
     setSuggestionsLoading(true);
     setSuggestionsError(null);
-    // First load shows today's pair; each Refresh asks for another pair.
-    const res = await loadDoctorHomeSuggestions(client, 2, seq - 1);
+    // First load shows today's pair and ad; each Refresh asks for another pair and ad.
+    const [res, ad] = await Promise.all([
+      loadDoctorHomeSuggestions(client, 2, seed),
+      loadDoctorSponsoredAd(client, seed),
+    ]);
     if (seq !== suggestionsReqSeqRef.current) return;
+    setSponsoredAd(ad);
     if (!res.ok) {
       setSuggestionsError(res.message);
       setSuggestions([]);
@@ -199,6 +214,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       filterCompanyId: string,
       filterSpecialtyId: string
     ) => {
+      if (!searchQuery.trim()) {
+        searchRecordTrackerRef.current.lastQuery = null;
+      }
+
       if (!searchQuery.trim() && !filterCompanyId && !filterSpecialtyId) {
         searchReqSeqRef.current++;
         setRows([]);
@@ -231,6 +250,12 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       } else {
         setRows(res.data.rows);
         setTotalCount(res.data.totalCount);
+        void recordCatalogSearchOnce(
+          client,
+          searchQuery,
+          res.data.totalCount,
+          searchRecordTrackerRef.current
+        );
       }
       setLoading(false);
     },
@@ -280,6 +305,19 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     totalCount,
   ]);
 
+  // Record anonymous ad view once per page load when a sponsored ad is displayed on Home
+  useEffect(() => {
+    if (
+      !activeProductId &&
+      !isSearchingOrFiltering &&
+      sponsoredAd?.adId &&
+      !viewedAdIdsRef.current.has(sponsoredAd.adId)
+    ) {
+      viewedAdIdsRef.current.add(sponsoredAd.adId);
+      void recordSponsoredAdEvent(client, sponsoredAd.adId, 'view');
+    }
+  }, [client, activeProductId, isSearchingOrFiltering, sponsoredAd]);
+
   // Load single product detail and scroll to top when activeProductId (#/product/<id>) changes
   useEffect(() => {
     if (!activeProductId) {
@@ -292,6 +330,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
       window.scrollTo(0, 0);
     }
+
+    void recordProductView(client, activeProductId);
 
     const seq = ++detailReqSeqRef.current;
     setDetailLoading(true);
@@ -945,24 +985,17 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   )}
                 </section>
 
-                {/* Section b: Clearly separated Sponsored ad space placeholder */}
+                {/* Section b: Clearly separated Sponsored ad space */}
                 <section
                   aria-label="Sponsored"
                   className="pt-2 border-t border-[#304451]"
                 >
-                  <div className="w-full aspect-video max-h-[320px] rounded-xl border border-[#304451] bg-[#263744]/50 p-4 flex flex-col justify-between">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
-                        Sponsored
-                      </span>
-                    </div>
-                    <div className="flex-1 flex items-center justify-center">
-                      <span className="text-sm text-[#B8C3CC]">
-                        Advertising space
-                      </span>
-                    </div>
-                    <div className="h-4" aria-hidden="true" />
-                  </div>
+                  <SponsoredAdCard
+                    ad={sponsoredAd}
+                    onAdClick={(adId) =>
+                      void recordSponsoredAdEvent(client, adId, 'click')
+                    }
+                  />
                 </section>
               </div>
             ) : (
@@ -1236,4 +1269,89 @@ function MonographSection({ title, body }: { title: string; body: string }) {
       </p>
     </div>
   );
+}
+
+export function SponsoredAdCard({
+  ad,
+  onAdClick,
+}: {
+  ad: DoctorSponsoredAd | null;
+  onAdClick?: (adId: string) => void;
+}) {
+  if (!ad) {
+    return (
+      <div className="w-full aspect-video max-h-[320px] rounded-xl border border-[#304451] bg-[#263744]/50 p-4 flex flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
+            Sponsored
+          </span>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <span className="text-sm text-[#B8C3CC]">Advertising space</span>
+        </div>
+        <div className="h-4" aria-hidden="true" />
+      </div>
+    );
+  }
+
+  const validImageUrl =
+    ad.imageUrl && /^https:\/\/[^ ]+$/.test(ad.imageUrl.trim())
+      ? ad.imageUrl.trim()
+      : null;
+  const validLinkUrl =
+    ad.linkUrl && /^https:\/\/[^ ]+$/.test(ad.linkUrl.trim())
+      ? ad.linkUrl.trim()
+      : null;
+
+  const content = (
+    <div
+      className={`w-full rounded-xl border border-[#304451] bg-[#263744]/70 p-5 space-y-3 transition-colors ${
+        validLinkUrl ? 'hover:border-[#5DB4F2]' : ''
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
+          Sponsored
+        </span>
+        <span className="text-xs font-medium text-[#5DB4F2]">
+          {ad.sponsorName}
+        </span>
+      </div>
+
+      {validImageUrl && (
+        <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-2 flex items-center justify-center">
+          <img
+            src={validImageUrl}
+            alt={ad.title}
+            className="max-h-[200px] w-full object-contain rounded"
+          />
+        </div>
+      )}
+
+      <div className="space-y-1">
+        <div className="text-base font-semibold text-[#F2F5F8]">{ad.title}</div>
+        {ad.body && (
+          <p className="text-xs text-[#B8C3CC] leading-relaxed whitespace-pre-line">
+            {ad.body}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  if (validLinkUrl) {
+    return (
+      <a
+        href={validLinkUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => onAdClick?.(ad.adId)}
+        className="block"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return content;
 }

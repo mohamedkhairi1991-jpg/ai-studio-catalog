@@ -2,7 +2,7 @@ import { BrandLogo, Screen, secondaryButtonClass } from './ui';
 
 export type LegalPageKind = 'privacy' | 'terms';
 
-export const LEGAL_LAST_UPDATED = 'Last updated: 3 November 2026';
+export const LEGAL_LAST_UPDATED = 'Last updated: 4 November 2026';
 
 export function resolveLegalPage(hash: string, pathname: string): LegalPageKind | null {
   const cleanHash = hash.replace(/^#/, '').trim().toLowerCase().replace(/\/+$/, '');
@@ -82,7 +82,7 @@ export const TERMS_OF_USE_SECTIONS: LegalSection[] = [
 export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
   {
     title: '1. What we collect',
-    body: 'We collect your name, email, phone (if given), and the professional details you enter to verify you are a doctor (specialty, licence information, workplace).',
+    body: 'We collect your name, email, phone (if given), and the professional details you enter to verify you are a doctor (specialty, licence information, workplace). We count searches, drug-page views and ad views and clicks without linking them to you, to improve the catalog.',
   },
   {
     title: '2. Why',

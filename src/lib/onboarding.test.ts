@@ -280,8 +280,11 @@ describe('operating model', () => {
     expect(resolveLegalPage('', '/pharmaconnect/privacy')).toBe('privacy');
     expect(resolveLegalPage('', '/pharmaconnect/terms')).toBe('terms');
     expect(resolveLegalPage('#/catalog', '/')).toBeNull();
-    expect(LEGAL_LAST_UPDATED).toBe('Last updated: 3 November 2026');
+    expect(LEGAL_LAST_UPDATED).toBe('Last updated: 4 November 2026');
     expect(TERMS_OF_USE_SECTIONS).toHaveLength(9);
     expect(PRIVACY_POLICY_SECTIONS).toHaveLength(7);
+    expect(PRIVACY_POLICY_SECTIONS[0]?.body).toContain(
+      'We count searches, drug-page views and ad views and clicks without linking them to you, to improve the catalog.'
+    );
   });
 });

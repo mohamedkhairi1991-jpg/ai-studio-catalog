@@ -58,6 +58,16 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-04 — Google AI Studio (sponsored ads + anonymous usage statistics UI)
+- **What changed:**
+  - `src/lib/catalog.ts`: Added RPC helpers and validation (`loadDoctorSponsoredAd`, `recordSponsoredAdEvent`, `recordCatalogSearchOnce`, `recordProductView`, `loadAdminSponsoredAds`, `rpcAdminSaveSponsoredAd`, `loadAdminSponsoredAdStats`, `loadAdminTopSearches`, `loadAdminTopViewedProducts`, `validateSponsoredAdForm`).
+  - `src/components/DoctorCatalog.tsx`: Wired the doctor home Sponsored box to `doctor_sponsored_ad(p_seed)` (updating seed on Refresh and keeping the `"Advertising space"` placeholder when empty), fired `record_sponsored_ad_event` once per page load for `'view'` and on tap for `'click'`, fired `record_catalog_search` once per final debounced search query (`>= 2` chars), and fired `record_product_view` when `#/product/<id>` opens.
+  - `src/components/AdminCatalogReview.tsx`: Added `"Sponsored ads"` and `"Usage"` tabs (`AdminSponsoredAdsView` with 30d views/clicks, create/edit form + validation + live `SponsoredAdCard` preview + Activate/Deactivate toggle; `AdminUsageStatsView` with 7/30/90-day top searches highlighting zero-result queries, most viewed drugs, and ad views/clicks).
+  - `src/components/LegalPages.tsx`: Added the anonymous usage count statement to the Privacy Policy and updated `LEGAL_LAST_UPDATED` to `Last updated: 4 November 2026`.
+  - `src/lib/catalog.test.ts` & `src/lib/onboarding.test.ts`: Added unit tests for `validateSponsoredAdForm`, `recordCatalogSearchOnce`, ad/usage RPC wrappers, and the updated Privacy Policy text.
+- **Validation:** `npm run lint`, `npm test`, and `npm run build` passed.
+- **Next for Claude:** Review and merge the auto-sync PR in `pharmaconnect`.
+
 ### 2026-11-04 — Claude (sponsored ads + anonymous usage statistics, database)
 - **Live migration `20261104192813_sponsored_ads_and_usage_stats`.** RPCs for AI Studio:
   - Doctor home Sponsored box: `doctor_sponsored_ad(p_seed default 0)` → 0 or 1 row

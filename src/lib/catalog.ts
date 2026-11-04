@@ -2833,3 +2833,368 @@ export function findNextCompanyWithDrafts(
   }
   return null;
 }
+
+export interface DoctorSponsoredAd {
+  adId: string;
+  sponsorName: string;
+  title: string;
+  body: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+}
+
+export interface SponsoredAdRecord {
+  id: string;
+  sponsorName: string;
+  title: string;
+  body: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  companyId: string | null;
+  targetSpecialtyId: string | null;
+  startsOn: string | null;
+  endsOn: string | null;
+  isActive: boolean;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SponsoredAdFormInput {
+  adId?: string | null;
+  sponsorName: string;
+  title: string;
+  body?: string | null;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
+  companyId?: string | null;
+  targetSpecialtyId?: string | null;
+  startsOn?: string | null;
+  endsOn?: string | null;
+  isActive?: boolean;
+  priority?: number | string;
+}
+
+export interface AdminSponsoredAdStat {
+  adId: string;
+  title: string;
+  sponsorName: string;
+  isActive: boolean;
+  views: number;
+  clicks: number;
+}
+
+export interface AdminTopSearchRow {
+  query: string;
+  searches: number;
+  zeroResultSearches: number;
+}
+
+export interface AdminTopViewedProductRow {
+  productId: string;
+  brandNameEn: string;
+  companyName: string;
+  views: number;
+}
+
+export function validateSponsoredAdForm(input: SponsoredAdFormInput): string[] {
+  const errors: string[] = [];
+  const sponsor = (input.sponsorName ?? '').trim();
+  const title = (input.title ?? '').trim();
+  const body = (input.body ?? '').trim();
+  const imageUrl = (input.imageUrl ?? '').trim();
+  const linkUrl = (input.linkUrl ?? '').trim();
+  const startsOn = (input.startsOn ?? '').trim();
+  const endsOn = (input.endsOn ?? '').trim();
+  const rawPriority =
+    typeof input.priority === 'string' && input.priority.trim() === ''
+      ? 0
+      : Number(input.priority ?? 0);
+
+  if (!sponsor) {
+    errors.push('Sponsor name is required.');
+  } else if (sponsor.length > 80) {
+    errors.push('Sponsor name must be 80 characters or fewer.');
+  }
+
+  if (!title) {
+    errors.push('Title is required.');
+  } else if (title.length > 80) {
+    errors.push('Title must be 80 characters or fewer.');
+  }
+
+  if (body.length > 280) {
+    errors.push('Body must be 280 characters or fewer.');
+  }
+
+  if (imageUrl && !/^https:\/\/[^ ]+$/.test(imageUrl)) {
+    errors.push('Image URL must start with https:// and contain no spaces.');
+  }
+
+  if (linkUrl && !/^https:\/\/[^ ]+$/.test(linkUrl)) {
+    errors.push('Link URL must start with https:// and contain no spaces.');
+  }
+
+  if (startsOn && endsOn && endsOn < startsOn) {
+    errors.push('End date cannot be before start date.');
+  }
+
+  if (
+    !Number.isFinite(rawPriority) ||
+    !Number.isInteger(rawPriority) ||
+    rawPriority < 0 ||
+    rawPriority > 100
+  ) {
+    errors.push('Priority must be a whole number between 0 and 100.');
+  }
+
+  return errors;
+}
+
+export async function loadDoctorSponsoredAd(
+  client: SupabaseClient,
+  seed = 0
+): Promise<DoctorSponsoredAd | null> {
+  try {
+    const { data, error } = await client.rpc('doctor_sponsored_ad', {
+      p_seed: seed,
+    });
+    if (error || !data) return null;
+    const rows = Array.isArray(data) ? data : [data];
+    const first = rows[0] as
+      | {
+          ad_id?: string;
+          sponsor_name?: string;
+          title?: string;
+          body?: string | null;
+          image_url?: string | null;
+          link_url?: string | null;
+        }
+      | undefined;
+    if (!first?.ad_id || !first.title || !first.sponsor_name) return null;
+    return {
+      adId: first.ad_id,
+      sponsorName: first.sponsor_name,
+      title: first.title,
+      body: first.body ?? null,
+      imageUrl:
+        first.image_url && /^https:\/\/[^ ]+$/.test(first.image_url)
+          ? first.image_url
+          : null,
+      linkUrl:
+        first.link_url && /^https:\/\/[^ ]+$/.test(first.link_url)
+          ? first.link_url
+          : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function recordSponsoredAdEvent(
+  client: SupabaseClient,
+  adId: string,
+  event: 'view' | 'click'
+): Promise<void> {
+  if (!adId || !adId.trim()) return;
+  try {
+    await client.rpc('record_sponsored_ad_event', {
+      p_ad_id: adId.trim(),
+      p_event: event,
+    });
+  } catch {
+    // Fire-and-forget: ignore errors
+  }
+}
+
+export async function recordCatalogSearchOnce(
+  client: SupabaseClient,
+  query: string,
+  resultCount: number,
+  tracker: { lastQuery: string | null }
+): Promise<boolean> {
+  const normalized = (query ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (normalized.length < 2) {
+    if (normalized.length === 0) {
+      tracker.lastQuery = null;
+    }
+    return false;
+  }
+  if (tracker.lastQuery === normalized) {
+    return false;
+  }
+  tracker.lastQuery = normalized;
+  try {
+    await client.rpc('record_catalog_search', {
+      p_query: query.trim().slice(0, 60),
+      p_result_count: Math.max(0, Math.trunc(resultCount)),
+    });
+  } catch {
+    // Fire-and-forget: ignore errors
+  }
+  return true;
+}
+
+export async function recordProductView(
+  client: SupabaseClient,
+  productId: string
+): Promise<void> {
+  if (!productId || !productId.trim()) return;
+  try {
+    await client.rpc('record_product_view', {
+      p_product_id: productId.trim(),
+    });
+  } catch {
+    // Fire-and-forget: ignore errors
+  }
+}
+
+function mapSponsoredAdRow(row: Record<string, unknown>): SponsoredAdRecord {
+  return {
+    id: String(row.id ?? ''),
+    sponsorName: String(row.sponsor_name ?? ''),
+    title: String(row.title ?? ''),
+    body: typeof row.body === 'string' ? row.body : null,
+    imageUrl: typeof row.image_url === 'string' ? row.image_url : null,
+    linkUrl: typeof row.link_url === 'string' ? row.link_url : null,
+    companyId: typeof row.company_id === 'string' ? row.company_id : null,
+    targetSpecialtyId:
+      typeof row.target_specialty_id === 'string'
+        ? row.target_specialty_id
+        : null,
+    startsOn: typeof row.starts_on === 'string' ? row.starts_on : null,
+    endsOn: typeof row.ends_on === 'string' ? row.ends_on : null,
+    isActive: Boolean(row.is_active),
+    priority: Number(row.priority ?? 0),
+    createdAt: String(row.created_at ?? ''),
+    updatedAt: String(row.updated_at ?? ''),
+  };
+}
+
+export async function loadAdminSponsoredAds(
+  client: SupabaseClient
+): Promise<RpcResult<SponsoredAdRecord[]>> {
+  const { data, error } = await client
+    .from('sponsored_ads')
+    .select(
+      'id,sponsor_name,title,body,image_url,link_url,company_id,target_specialty_id,starts_on,ends_on,is_active,priority,created_at,updated_at'
+    )
+    .order('is_active', { ascending: false })
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return { ok: false, message: formatRpcError(error) };
+  }
+  const rows = ((data ?? []) as Array<Record<string, unknown>>).map(
+    mapSponsoredAdRow
+  );
+  return { ok: true, data: rows };
+}
+
+export async function rpcAdminSaveSponsoredAd(
+  client: SupabaseClient,
+  input: SponsoredAdFormInput
+): Promise<RpcResult<SponsoredAdRecord>> {
+  const validationErrors = validateSponsoredAdForm(input);
+  if (validationErrors.length > 0) {
+    return {
+      ok: false,
+      message: validationErrors[0],
+      reasons: validationErrors,
+    };
+  }
+
+  const priority =
+    typeof input.priority === 'string' && input.priority.trim() === ''
+      ? 0
+      : Number(input.priority ?? 0);
+
+  const { data, error } = await client.rpc('admin_save_sponsored_ad', {
+    p_ad_id: trimOrNull(input.adId),
+    p_sponsor_name: input.sponsorName.trim(),
+    p_title: input.title.trim(),
+    p_body: trimOrNull(input.body),
+    p_image_url: trimOrNull(input.imageUrl),
+    p_link_url: trimOrNull(input.linkUrl),
+    p_company_id: trimOrNull(input.companyId),
+    p_target_specialty_id: trimOrNull(input.targetSpecialtyId),
+    p_starts_on: trimOrNull(input.startsOn),
+    p_ends_on: trimOrNull(input.endsOn),
+    p_is_active: input.isActive ?? true,
+    p_priority: priority,
+  });
+
+  if (error) {
+    return { ok: false, message: formatRpcError(error) };
+  }
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | Record<string, unknown>
+    | undefined;
+  if (!row || !row.id) {
+    return { ok: false, message: 'Ad save did not return a record.' };
+  }
+  return { ok: true, data: mapSponsoredAdRow(row) };
+}
+
+export async function loadAdminSponsoredAdStats(
+  client: SupabaseClient,
+  days = 30
+): Promise<RpcResult<AdminSponsoredAdStat[]>> {
+  const { data, error } = await client.rpc('admin_sponsored_ad_stats', {
+    p_days: days,
+  });
+  if (error) {
+    return { ok: false, message: formatRpcError(error) };
+  }
+  const rows = ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    adId: String(r.ad_id ?? ''),
+    title: String(r.title ?? ''),
+    sponsorName: String(r.sponsor_name ?? ''),
+    isActive: Boolean(r.is_active),
+    views: Number(r.views ?? 0),
+    clicks: Number(r.clicks ?? 0),
+  }));
+  return { ok: true, data: rows };
+}
+
+export async function loadAdminTopSearches(
+  client: SupabaseClient,
+  days = 30,
+  limit = 50
+): Promise<RpcResult<AdminTopSearchRow[]>> {
+  const { data, error } = await client.rpc('admin_top_searches', {
+    p_days: days,
+    p_limit: limit,
+  });
+  if (error) {
+    return { ok: false, message: formatRpcError(error) };
+  }
+  const rows = ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    query: String(r.query ?? ''),
+    searches: Number(r.searches ?? 0),
+    zeroResultSearches: Number(r.zero_result_searches ?? 0),
+  }));
+  return { ok: true, data: rows };
+}
+
+export async function loadAdminTopViewedProducts(
+  client: SupabaseClient,
+  days = 30,
+  limit = 50
+): Promise<RpcResult<AdminTopViewedProductRow[]>> {
+  const { data, error } = await client.rpc('admin_top_viewed_products', {
+    p_days: days,
+    p_limit: limit,
+  });
+  if (error) {
+    return { ok: false, message: formatRpcError(error) };
+  }
+  const rows = ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    productId: String(r.product_id ?? ''),
+    brandNameEn: String(r.brand_name_en ?? ''),
+    companyName: String(r.company_name ?? ''),
+    views: Number(r.views ?? 0),
+  }));
+  return { ok: true, data: rows };
+}

@@ -14,6 +14,10 @@ import {
   getProductSourceWarning,
   getReviewDraftSourceCounts,
   invokeAiDraftProduct,
+  loadAdminSponsoredAdStats,
+  loadAdminSponsoredAds,
+  loadAdminTopSearches,
+  loadAdminTopViewedProducts,
   loadCatalogBundle,
   loadCompanyAiDraftSources,
   loadProductAiDraft,
@@ -26,8 +30,13 @@ import {
   rpcAdminHideProduct,
   rpcAdminRequestProductChanges,
   rpcAdminRestoreProduct,
+  rpcAdminSaveSponsoredAd,
   rpcAdminUpdateCompany,
   saveAndPublishCompleteProduct,
+  validateSponsoredAdForm,
+  type AdminSponsoredAdStat,
+  type AdminTopSearchRow,
+  type AdminTopViewedProductRow,
   type AiDraftProductResponse,
   type AiDraftSource,
   type CatalogBundle,
@@ -38,12 +47,13 @@ import {
   type ProductStatus,
   type PublishCheckedSummary,
   type ReviewDraftSourceFilter,
+  type SponsoredAdRecord,
   type StoredProductAiDraft,
 } from '../lib/catalog';
 import { listCities, listCountries, type Option } from '../lib/onboarding';
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
-import { CatalogBanner as Banner } from './DoctorCatalog';
+import { CatalogBanner as Banner, SponsoredAdCard } from './DoctorCatalog';
 import { BrandLogo, Field, LegalFooter, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
@@ -54,7 +64,7 @@ interface Props {
 
 export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [adminView, setAdminView] = useState<
-    'catalog' | 'companies' | 'approvals'
+    'catalog' | 'companies' | 'ads' | 'usage' | 'approvals'
   >('catalog');
   const [companySubView, setCompanySubView] = useState<
     'review_drafts' | 'catalog'
@@ -397,6 +407,34 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 type="button"
                 onClick={() => {
                   setSelectedId(null);
+                  setAdminView('ads');
+                }}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                  adminView === 'ads'
+                    ? 'bg-[#1769AA] text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
+                }`}
+              >
+                Sponsored ads
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedId(null);
+                  setAdminView('usage');
+                }}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                  adminView === 'usage'
+                    ? 'bg-[#1769AA] text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
+                }`}
+              >
+                Usage
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedId(null);
                   setAdminView('approvals');
                 }}
                 className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
@@ -461,7 +499,22 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
           )}
           {notice && <Banner tone="success">{notice}</Banner>}
 
-          {adminView === 'companies' ? (
+          {adminView === 'ads' ? (
+            <AdminSponsoredAdsView
+              client={client}
+              bundle={bundle}
+              onNotice={(msg) => {
+                clearFeedback();
+                setNotice(msg);
+              }}
+              onError={(msg) => setFailure(msg)}
+            />
+          ) : adminView === 'usage' ? (
+            <AdminUsageStatsView
+              client={client}
+              onError={(msg) => setFailure(msg)}
+            />
+          ) : adminView === 'companies' ? (
             <section className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
                 <div>
@@ -3212,5 +3265,806 @@ function InspectCell({
         {value}
       </div>
     </div>
+  );
+}
+
+function AdminSponsoredAdsView({
+  client,
+  bundle,
+  onNotice,
+  onError,
+}: {
+  client: SupabaseClient;
+  bundle: CatalogBundle | null;
+  onNotice: (msg: string) => void;
+  onError: (msg: string) => void;
+}) {
+  const [ads, setAds] = useState<SponsoredAdRecord[]>([]);
+  const [statsById, setStatsById] = useState<Record<string, AdminSponsoredAdStat>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingAdId, setEditingAdId] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
+
+  const [sponsorName, setSponsorName] = useState('');
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [companyId, setCompanyId] = useState('');
+  const [targetSpecialtyId, setTargetSpecialtyId] = useState('');
+  const [startsOn, setStartsOn] = useState(() =>
+    new Date().toISOString().slice(0, 10)
+  );
+  const [endsOn, setEndsOn] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [priority, setPriority] = useState(0);
+
+  const loadAdsData = useCallback(async () => {
+    setLoading(true);
+    const [adsRes, statsRes] = await Promise.all([
+      loadAdminSponsoredAds(client),
+      loadAdminSponsoredAdStats(client, 30),
+    ]);
+    setLoading(false);
+
+    if (!adsRes.ok) {
+      onError(adsRes.message);
+      return;
+    }
+    setAds(adsRes.data);
+
+    if (statsRes.ok) {
+      const map: Record<string, AdminSponsoredAdStat> = {};
+      for (const s of statsRes.data) {
+        map[s.adId] = s;
+      }
+      setStatsById(map);
+    }
+  }, [client, onError]);
+
+  useEffect(() => {
+    void loadAdsData();
+  }, [loadAdsData]);
+
+  const specialtiesMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const s of bundle?.specialties ?? []) {
+      map.set(s.id, s.nameEn);
+    }
+    return map;
+  }, [bundle]);
+
+  const resetForm = () => {
+    setEditingAdId(null);
+    setSponsorName('');
+    setTitle('');
+    setBody('');
+    setImageUrl('');
+    setLinkUrl('');
+    setCompanyId('');
+    setTargetSpecialtyId('');
+    setStartsOn(new Date().toISOString().slice(0, 10));
+    setEndsOn('');
+    setIsActive(true);
+    setPriority(0);
+    setFormErrors([]);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setShowForm(true);
+  };
+
+  const openEditForm = (ad: SponsoredAdRecord) => {
+    setEditingAdId(ad.id);
+    setSponsorName(ad.sponsorName);
+    setTitle(ad.title);
+    setBody(ad.body ?? '');
+    setImageUrl(ad.imageUrl ?? '');
+    setLinkUrl(ad.linkUrl ?? '');
+    setCompanyId(ad.companyId ?? '');
+    setTargetSpecialtyId(ad.targetSpecialtyId ?? '');
+    setStartsOn(ad.startsOn ?? new Date().toISOString().slice(0, 10));
+    setEndsOn(ad.endsOn ?? '');
+    setIsActive(ad.isActive);
+    setPriority(ad.priority);
+    setFormErrors([]);
+    setShowForm(true);
+  };
+
+  const handleSaveAd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const input = {
+      adId: editingAdId,
+      sponsorName,
+      title,
+      body,
+      imageUrl,
+      linkUrl,
+      companyId: companyId || null,
+      targetSpecialtyId: targetSpecialtyId || null,
+      startsOn,
+      endsOn,
+      isActive,
+      priority: Number(priority),
+    };
+
+    const validationErrors = validateSponsoredAdForm(input);
+    if (validationErrors.length > 0) {
+      setFormErrors(validationErrors);
+      return;
+    }
+
+    setFormErrors([]);
+    setSaving(true);
+    const res = await rpcAdminSaveSponsoredAd(client, input);
+    setSaving(false);
+
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+
+    setShowForm(false);
+    resetForm();
+    onNotice(editingAdId ? 'Sponsored ad updated.' : 'Sponsored ad created.');
+    await loadAdsData();
+  };
+
+  const handleToggleActive = async (ad: SponsoredAdRecord) => {
+    setTogglingId(ad.id);
+    const res = await rpcAdminSaveSponsoredAd(client, {
+      adId: ad.id,
+      sponsorName: ad.sponsorName,
+      title: ad.title,
+      body: ad.body ?? '',
+      imageUrl: ad.imageUrl ?? '',
+      linkUrl: ad.linkUrl ?? '',
+      companyId: ad.companyId,
+      targetSpecialtyId: ad.targetSpecialtyId,
+      startsOn: ad.startsOn,
+      endsOn: ad.endsOn ?? '',
+      isActive: !ad.isActive,
+      priority: ad.priority,
+    });
+    setTogglingId(null);
+
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+
+    onNotice(
+      !ad.isActive
+        ? `Activated "${ad.title}".`
+        : `Deactivated "${ad.title}".`
+    );
+    await loadAdsData();
+  };
+
+  return (
+    <section className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
+        <div>
+          <h1 className="text-base font-semibold text-[#F2F5F8]">
+            Sponsored ads ({ads.length})
+          </h1>
+          <p className="text-xs text-[#B8C3CC] mt-0.5">
+            Manage doctor home Sponsored placements, specialty targeting, schedule dates, and 30-day impressions.
+          </p>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => void loadAdsData()}
+            disabled={loading}
+            className={secondaryButtonClass}
+          >
+            Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (showForm) {
+                setShowForm(false);
+                resetForm();
+              } else {
+                openCreateForm();
+              }
+            }}
+            className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-4 py-2 transition-colors"
+          >
+            {showForm ? 'Close Form' : '+ New Sponsored Ad'}
+          </button>
+        </div>
+      </div>
+
+      {showForm && (
+        <form
+          onSubmit={handleSaveAd}
+          className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-5"
+        >
+          <div className="flex items-center justify-between border-b border-[#304451] pb-4">
+            <div>
+              <h2 className="text-base font-semibold text-[#F2F5F8]">
+                {editingAdId ? 'Edit Sponsored Ad' : 'Create Sponsored Ad'}
+              </h2>
+              <p className="text-xs text-[#B8C3CC] mt-0.5">
+                Title and sponsor name are required (max 80 chars). Body max 280 chars. Image and link URLs must start with https://.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+              className={secondaryButtonClass}
+            >
+              Cancel
+            </button>
+          </div>
+
+          {formErrors.length > 0 && (
+            <Banner tone="error">
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                {formErrors.map((err) => (
+                  <li key={err}>{err}</li>
+                ))}
+              </ul>
+            </Banner>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label={`Sponsor Name * (${sponsorName.trim().length}/80)`}>
+                  <input
+                    type="text"
+                    required
+                    maxLength={80}
+                    placeholder="e.g. AstraZeneca"
+                    value={sponsorName}
+                    onChange={(e) => setSponsorName(e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label={`Title * (${title.trim().length}/80)`}>
+                  <input
+                    type="text"
+                    required
+                    maxLength={80}
+                    placeholder="e.g. Forxiga 10 mg Prescribing Update"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+
+              <Field label={`Body (${body.trim().length}/280)`}>
+                <textarea
+                  rows={3}
+                  maxLength={280}
+                  placeholder="Short clinical summary or announcement (max 280 characters)…"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Image URL (https:// only)">
+                  <input
+                    type="url"
+                    placeholder="https://example.com/banner.png"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="Destination Link URL (https:// only)">
+                  <input
+                    type="url"
+                    placeholder="https://www.ema.europa.eu/..."
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Target Specialty">
+                  <select
+                    value={targetSpecialtyId}
+                    onChange={(e) => setTargetSpecialtyId(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">All doctors</option>
+                    {(bundle?.specialties ?? []).map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.nameEn}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Company (optional)">
+                  <select
+                    value={companyId}
+                    onChange={(e) => setCompanyId(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">None</option>
+                    {(bundle?.companies ?? []).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.companyName}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Field label="Start Date *">
+                  <input
+                    type="date"
+                    required
+                    value={startsOn}
+                    onChange={(e) => setStartsOn(e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="End Date (optional)">
+                  <input
+                    type="date"
+                    value={endsOn}
+                    onChange={(e) => setEndsOn(e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="Priority (0–100)">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={priority}
+                    onChange={(e) => setPriority(Number(e.target.value))}
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+
+              <label className="inline-flex items-center gap-2 text-xs text-[#F2F5F8] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="rounded border-[#304451] bg-[#1F2D38] text-[#1769AA]"
+                />
+                Active (eligible to be shown to doctors during scheduled dates)
+              </label>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
+                  className={secondaryButtonClass}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 transition-colors"
+                >
+                  {saving ? 'Saving…' : editingAdId ? 'Save Changes' : 'Create Ad'}
+                </button>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                Card Preview (Doctor Home)
+              </div>
+              <SponsoredAdCard
+                ad={{
+                  adId: editingAdId ?? 'preview',
+                  sponsorName: sponsorName.trim() || 'Sponsor Name',
+                  title: title.trim() || 'Sponsored Ad Title',
+                  body: body.trim() || null,
+                  imageUrl: imageUrl.trim() || null,
+                  linkUrl: linkUrl.trim() || null,
+                }}
+              />
+            </div>
+          </div>
+        </form>
+      )}
+
+      {loading ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+          Loading sponsored ads…
+        </div>
+      ) : ads.length === 0 ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+          No sponsored ads yet. Click “+ New Sponsored Ad” to create one.
+        </div>
+      ) : (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#304451] bg-[#1F2D38]/60 text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                  <th className="py-3 px-4">Title & Sponsor</th>
+                  <th className="py-3 px-4">Target Specialty</th>
+                  <th className="py-3 px-4">Dates</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Priority</th>
+                  <th className="py-3 px-4 text-right">Views (30d)</th>
+                  <th className="py-3 px-4 text-right">Clicks (30d)</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#304451] text-xs">
+                {ads.map((ad) => {
+                  const stat = statsById[ad.id];
+                  const specialtyLabel = ad.targetSpecialtyId
+                    ? specialtiesMap.get(ad.targetSpecialtyId) ?? 'Specialty'
+                    : 'All doctors';
+                  return (
+                    <tr key={ad.id} className="hover:bg-[#1F2D38]/40">
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-[#F2F5F8]">
+                          {ad.title}
+                        </div>
+                        <div className="text-[#B8C3CC] mt-0.5">
+                          {ad.sponsorName}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-[#F2F5F8]">
+                        {specialtyLabel}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[#B8C3CC]">
+                        {ad.startsOn}
+                        {ad.endsOn ? ` → ${ad.endsOn}` : ' → open'}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${
+                            ad.isActive
+                              ? 'bg-[#2E8B57]/20 text-[#2ECC71] border border-[#2E8B57]/40'
+                              : 'bg-[#304451]/60 text-[#B8C3CC] border border-[#304451]'
+                          }`}
+                        >
+                          {ad.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#F2F5F8]">
+                        {ad.priority}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#F2F5F8]">
+                        {stat?.views ?? 0}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#F2F5F8]">
+                        {stat?.clicks ?? 0}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditForm(ad)}
+                            className={secondaryButtonClass}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            disabled={togglingId === ad.id}
+                            onClick={() => void handleToggleActive(ad)}
+                            className={secondaryButtonClass}
+                          >
+                            {togglingId === ad.id
+                              ? 'Saving…'
+                              : ad.isActive
+                              ? 'Deactivate'
+                              : 'Activate'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function AdminUsageStatsView({
+  client,
+  onError,
+}: {
+  client: SupabaseClient;
+  onError: (msg: string) => void;
+}) {
+  const [days, setDays] = useState<7 | 30 | 90>(30);
+  const [loading, setLoading] = useState(true);
+  const [topSearches, setTopSearches] = useState<AdminTopSearchRow[]>([]);
+  const [topProducts, setTopProducts] = useState<AdminTopViewedProductRow[]>([]);
+  const [adStats, setAdStats] = useState<AdminSponsoredAdStat[]>([]);
+
+  const loadUsage = useCallback(
+    async (selectedDays: 7 | 30 | 90) => {
+      setLoading(true);
+      const [searchesRes, productsRes, adsRes] = await Promise.all([
+        loadAdminTopSearches(client, selectedDays, 50),
+        loadAdminTopViewedProducts(client, selectedDays, 50),
+        loadAdminSponsoredAdStats(client, selectedDays),
+      ]);
+      setLoading(false);
+
+      if (!searchesRes.ok) {
+        onError(searchesRes.message);
+        return;
+      }
+      if (!productsRes.ok) {
+        onError(productsRes.message);
+        return;
+      }
+      if (!adsRes.ok) {
+        onError(adsRes.message);
+        return;
+      }
+
+      setTopSearches(searchesRes.data);
+      setTopProducts(productsRes.data);
+      setAdStats(adsRes.data);
+    },
+    [client, onError]
+  );
+
+  useEffect(() => {
+    void loadUsage(days);
+  }, [days, loadUsage]);
+
+  return (
+    <section className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
+        <div>
+          <h1 className="text-base font-semibold text-[#F2F5F8]">
+            Anonymous Usage Statistics
+          </h1>
+          <p className="text-xs text-[#B8C3CC] mt-0.5">
+            Aggregated search queries, drug page views, and sponsored ad performance (no user IDs stored).
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5">
+            {([7, 30, 90] as const).map((period) => (
+              <button
+                key={period}
+                type="button"
+                onClick={() => setDays(period)}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                  days === period
+                    ? 'bg-[#1769AA] text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
+                }`}
+              >
+                Last {period} days
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => void loadUsage(days)}
+            disabled={loading}
+            className={secondaryButtonClass}
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+          Loading usage statistics…
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Top Searches */}
+          <div className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-[#304451] flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-[#F2F5F8]">
+                  Top Searches (Last {days} days)
+                </h2>
+                <p className="text-xs text-[#B8C3CC] mt-0.5">
+                  Highlighted rows had searches with 0 matching products.
+                </p>
+              </div>
+              <span className="text-xs font-mono text-[#B8C3CC]">
+                {topSearches.length} queries
+              </span>
+            </div>
+            {topSearches.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#B8C3CC]">
+                No searches recorded in the last {days} days.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#304451] bg-[#1F2D38]/60 text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                      <th className="py-2.5 px-4">Query</th>
+                      <th className="py-2.5 px-4 text-right">Searches</th>
+                      <th className="py-2.5 px-4 text-right">No result</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#304451] text-xs">
+                    {topSearches.map((row) => {
+                      const hasZeroResults = row.zeroResultSearches > 0;
+                      return (
+                        <tr
+                          key={row.query}
+                          className={
+                            hasZeroResults
+                              ? 'bg-[#F59E0B]/10 hover:bg-[#F59E0B]/15'
+                              : 'hover:bg-[#1F2D38]/40'
+                          }
+                        >
+                          <td className="py-2.5 px-4 font-medium text-[#F2F5F8] flex items-center gap-2">
+                            <span>{row.query}</span>
+                            {hasZeroResults && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40">
+                                No result
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-mono tabular-nums text-[#F2F5F8]">
+                            {row.searches}
+                          </td>
+                          <td
+                            className={`py-2.5 px-4 text-right font-mono tabular-nums font-semibold ${
+                              hasZeroResults ? 'text-[#F59E0B]' : 'text-[#B8C3CC]'
+                            }`}
+                          >
+                            {row.zeroResultSearches}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Most Viewed Drugs */}
+          <div className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-[#304451] flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-[#F2F5F8]">
+                  Most Viewed Drugs (Last {days} days)
+                </h2>
+                <p className="text-xs text-[#B8C3CC] mt-0.5">
+                  Published product pages opened by doctors.
+                </p>
+              </div>
+              <span className="text-xs font-mono text-[#B8C3CC]">
+                {topProducts.length} products
+              </span>
+            </div>
+            {topProducts.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#B8C3CC]">
+                No product views recorded in the last {days} days.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#304451] bg-[#1F2D38]/60 text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                      <th className="py-2.5 px-4">Drug</th>
+                      <th className="py-2.5 px-4">Company</th>
+                      <th className="py-2.5 px-4 text-right">Views</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#304451] text-xs">
+                    {topProducts.map((row) => (
+                      <tr key={row.productId} className="hover:bg-[#1F2D38]/40">
+                        <td className="py-2.5 px-4 font-semibold text-[#F2F5F8]">
+                          {row.brandNameEn}
+                        </td>
+                        <td className="py-2.5 px-4 text-[#B8C3CC]">
+                          {row.companyName}
+                        </td>
+                        <td className="py-2.5 px-4 text-right font-mono tabular-nums text-[#F2F5F8]">
+                          {row.views}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Ad Views and Clicks */}
+          <div className="lg:col-span-2 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
+            <div className="p-4 border-b border-[#304451] flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-[#F2F5F8]">
+                  Sponsored Ad Views & Clicks (Last {days} days)
+                </h2>
+                <p className="text-xs text-[#B8C3CC] mt-0.5">
+                  Impressions and outbound link taps across all sponsored ads.
+                </p>
+              </div>
+              <span className="text-xs font-mono text-[#B8C3CC]">
+                {adStats.length} ads
+              </span>
+            </div>
+            {adStats.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#B8C3CC]">
+                No sponsored ads found.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#304451] bg-[#1F2D38]/60 text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                      <th className="py-2.5 px-4">Title</th>
+                      <th className="py-2.5 px-4">Sponsor</th>
+                      <th className="py-2.5 px-4">Status</th>
+                      <th className="py-2.5 px-4 text-right">Views</th>
+                      <th className="py-2.5 px-4 text-right">Clicks</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#304451] text-xs">
+                    {adStats.map((ad) => (
+                      <tr key={ad.adId} className="hover:bg-[#1F2D38]/40">
+                        <td className="py-2.5 px-4 font-semibold text-[#F2F5F8]">
+                          {ad.title}
+                        </td>
+                        <td className="py-2.5 px-4 text-[#B8C3CC]">
+                          {ad.sponsorName}
+                        </td>
+                        <td className="py-2.5 px-4">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${
+                              ad.isActive
+                                ? 'bg-[#2E8B57]/20 text-[#2ECC71] border border-[#2E8B57]/40'
+                                : 'bg-[#304451]/60 text-[#B8C3CC] border border-[#304451]'
+                            }`}
+                          >
+                            {ad.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-4 text-right font-mono tabular-nums text-[#F2F5F8]">
+                          {ad.views}
+                        </td>
+                        <td className="py-2.5 px-4 text-right font-mono tabular-nums text-[#F2F5F8]">
+                          {ad.clicks}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

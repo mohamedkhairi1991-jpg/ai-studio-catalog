@@ -15,6 +15,8 @@ import { DoctorCatalog } from './DoctorCatalog';
 import { LegalDocumentPage, resolveLegalPage } from './LegalPages';
 import Onboarding from './Onboarding';
 import { Field, Screen, TermsAcceptanceCheckbox, buttonClass, inputClass } from './ui';
+import { TurnstileWidget } from './TurnstileWidget';
+import { CAPTCHA_ENABLED, captchaOptions } from '../lib/captcha';
 
 const ROUTE_FOR: Partial<Record<Audience, string>> = {
   officialCatalog: '/catalog',
@@ -37,6 +39,8 @@ export default function AuthGate() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [specialtyId, setSpecialtyId] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [specialties, setSpecialties] = useState<Option[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -204,7 +208,11 @@ export default function AuthGate() {
     const cleanEmail = email.trim().toLowerCase();
     try {
       if (mode === 'signin') {
-        const { error } = await client.auth.signInWithPassword({ email: cleanEmail, password });
+        const { error } = await client.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+          options: captchaOptions(captchaToken),
+        });
         if (error) setNotice({ tone: 'error', text: 'Sign-in failed. Check your email and password.' });
       } else if (mode === 'signup') {
         const res = await submitSignUpWithConsent(client, {
@@ -214,6 +222,7 @@ export default function AuthGate() {
           phone,
           specialtyId,
           acceptedTerms,
+          captchaToken,
         });
         if (!res.ok) {
           setNotice({ tone: 'error', text: res.message });
@@ -240,6 +249,7 @@ export default function AuthGate() {
       } else {
         const { error } = await client.auth.resetPasswordForEmail(cleanEmail, {
           redirectTo: window.location.origin + import.meta.env.BASE_URL,
+          ...captchaOptions(captchaToken),
         });
         setNotice(
           error
@@ -250,6 +260,9 @@ export default function AuthGate() {
     } finally {
       setBusy(false);
       setPassword('');
+      // A robot-check token works only once: get a fresh one.
+      setCaptchaToken(null);
+      setCaptchaKey((k) => k + 1);
     }
   };
 
@@ -328,6 +341,9 @@ export default function AuthGate() {
             />
           </>
         )}
+        {CAPTCHA_ENABLED && (
+          <TurnstileWidget key={`${mode}-${captchaKey}`} onToken={setCaptchaToken} />
+        )}
         {notice && (
           <p className={`text-sm ${notice.tone === 'error' ? 'text-[#FF7272]' : 'text-[#38C976]'}`}>{notice.text}</p>
         )}
@@ -335,6 +351,7 @@ export default function AuthGate() {
           className={buttonClass}
           disabled={
             busy ||
+            (CAPTCHA_ENABLED && !captchaToken) ||
             (mode === 'signup' &&
               (!acceptedTerms || !phone.trim() || !specialtyId.trim()))
           }

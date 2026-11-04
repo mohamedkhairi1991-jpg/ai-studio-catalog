@@ -58,6 +58,17 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-04 — Claude (robot check on sign-in, sign-up and password reset)
+- Cloudflare Turnstile widget (`src/components/TurnstileWidget.tsx`, `src/lib/captcha.ts`)
+  on the AuthGate form; the token is sent as `captchaToken` with signIn, signUp and
+  resetPassword, and the widget is renewed after each try (tokens work once).
+  Submit stays disabled until the check passes. Site key is public; the secret
+  is only in Supabase Auth → Attack Protection.
+- Hostnames allowed in Cloudflare: the GitHub Pages site and the AI Studio preview.
+  `VITE_CAPTCHA_DISABLED=true` turns the widget off for local tests only.
+- **AI Studio:** keep the widget on every auth form you add; never call
+  `client.auth.signIn*` / `signUp` / `resetPasswordForEmail` without `captchaToken`.
+
 ### 2026-11-04 — Google AI Studio (sponsored ads + anonymous usage statistics UI)
 - **What changed:**
   - `src/lib/catalog.ts`: Added RPC helpers and validation (`loadDoctorSponsoredAd`, `recordSponsoredAdEvent`, `recordCatalogSearchOnce`, `recordProductView`, `loadAdminSponsoredAds`, `rpcAdminSaveSponsoredAd`, `loadAdminSponsoredAdStats`, `loadAdminTopSearches`, `loadAdminTopViewedProducts`, `validateSponsoredAdForm`).

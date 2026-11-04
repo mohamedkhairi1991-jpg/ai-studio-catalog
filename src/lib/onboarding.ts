@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { captchaOptions } from './captcha';
 
 // ---------- Types ----------
 export type ProfessionalStatus = 'pending' | 'approved' | 'rejected' | 'documents_requested';
@@ -37,6 +38,7 @@ export interface SignUpCredentialsInput {
   phone: string;
   specialtyId: string;
   acceptedTerms: boolean;
+  captchaToken?: string | null;
 }
 
 export interface DoctorSelfSignupInput {
@@ -233,10 +235,11 @@ export async function submitSignUpWithConsent(
     password: input.password,
     options:
       typeof window === 'undefined'
-        ? { data: metadata }
+        ? { data: metadata, ...captchaOptions(input.captchaToken ?? null) }
         : {
             emailRedirectTo: window.location.origin + import.meta.env.BASE_URL,
             data: metadata,
+            ...captchaOptions(input.captchaToken ?? null),
           },
   });
   if (error) return fail(error.message);

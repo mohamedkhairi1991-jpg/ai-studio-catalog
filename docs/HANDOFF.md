@@ -58,6 +58,12 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Google AI Studio (Visual design refresh)
+- **Design tokens & typography (`index.html`, `src/index.css`):** Loaded `IBM Plex Sans` (400/500/600, `display=swap`) from Google Fonts; defined Tailwind v4 `@theme` tokens (`background` `#141F28`, `surface` `#1C2B36`, `surface-raised` `#243746`, `border` `#2F4556`, `text` `#F2F6FA`, `text-muted` `#A6B6C4`, `primary` `#1769AA`, `accent` `#5DB4F2`, `success`, `warning`, `danger`, `radius-sm/md/lg`, `shadow-soft`), `tabular-nums` for strengths/counts, and `prefers-reduced-motion` support.
+- **Doctor header, home, search & drug page (`src/components/DoctorCatalog.tsx`):** Sticky translucent header with 44 px tap targets and desktop labels / mobile icons for Saved, Profile, Sign out; time-of-day greeting (`Good morning/afternoon/evening, Dr <first name>`) with specialty chip; search box with embedded search icon and clear button, plus compact rounded filter selects; suggestion cards with hover lift, accent generic name, company chip, chevron, skeleton loading, and ghost Refresh button; slim gradient-bordered Sponsored card; search results with count pill, row dividers, hover highlight, chevron, skeleton rows, and icon empty state; drug monograph page with hero header (amber chip for `Over-the-Counter (OTC)`), quick-facts icon cards, separate clinical section cards with icons and soft red/amber tints for Contraindications and Adverse Effects, and Reference Sources list with external-link icons.
+- **Auth & legal/onboarding screens (`src/components/ui.tsx`, `src/components/AuthGate.tsx`, `src/components/Onboarding.tsx`, `src/components/LegalPages.tsx`):** Centered card with soft radial gradient background, `BrandLogo`, tagline `"Clinical drug reference for doctors in Iraq"`, visible focus rings, and token colours while preserving all logic, routes, RPC calls, `aria-label`s, and the Cloudflare Turnstile widget.
+- **Next for Claude:** Review and merge auto-sync PR; no database or RPC changes needed.
+
 ### 2026-11-06 — Claude (Iraq essentials, batches 2–5)
 - 95 more Iraq-marketed brands loaded and published directly in Supabase (total 127 with
   batch 1): GI, allergy, psychiatry, antibiotics, iron, dermatology (batch 2); oncology,

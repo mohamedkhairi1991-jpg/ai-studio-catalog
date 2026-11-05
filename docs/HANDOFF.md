@@ -58,6 +58,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (Iraq essentials, batch 1)
+- Compared Pharmaty with the Iraqi National Master List of Drugs (NBSD): 579 generic
+  medicines were missing (list sent to the owner as an Excel file).
+- New `src/lib/iraqEssentialsCatalogData.ts`: 32 well-known Iraq-marketed brands for
+  high-priority missing generics (Panadol, Adol, Tramal, Lanoxin, Imuran, Zyloric,
+  Haldol, Prozac, Rifadin, Plaquenil, Zovirax, Tazocin, Neurontin, Xalatan, Esmeron...),
+  grouped by existing company; new company Haleon. Loaded directly in Supabase; not
+  added to `CHAT_CURATED_COMPANIES` (avoids duplicate company entries).
+
 ### 2026-11-05 — Claude (doctor screens: design clean-up)
 - `src/components/DoctorCatalog.tsx`: strengths, forms, pack sizes and counts use the
   normal font (no more code-style monospace); header buttons show "Saved", "Profile",

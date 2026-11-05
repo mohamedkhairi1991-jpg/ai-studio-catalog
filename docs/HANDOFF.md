@@ -58,6 +58,17 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-05 — Claude (doctor screens: design clean-up)
+- `src/components/DoctorCatalog.tsx`: strengths, forms, pack sizes and counts use the
+  normal font (no more code-style monospace); header buttons show "Saved", "Profile",
+  "Sign out" labels on wide screens; drug page shows company and Rx as chips (fixes the
+  misaligned block on phones); drug facts in 2 columns on phones; clinical headings
+  are blue with a left accent line; the empty ad space is a slim dashed banner
+  instead of a tall box.
+- `src/index.css`: hides the browser's own search "x" so only one clear button shows.
+- Done by Claude because AI Studio was frozen/limited. **AI Studio:** pull before
+  your next change and keep these styles.
+
 ### 2026-11-05 — Claude (UCB company data)
 - New `src/lib/ucbCatalogData.ts` (21 UCB presentations marketed in Iraq: Keppra,
   Vimpat, Briviact, Neupro, Cimzia, Xyzal, Nootropil) and a `ucb` entry in

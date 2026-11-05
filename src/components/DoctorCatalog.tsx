@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { Bookmark, Check, Power, RefreshCw, Share2, User, X } from 'lucide-react';
+import { Bookmark, Building2, Check, Power, RefreshCw, Share2, User, X } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AccessResult } from '../lib/access';
 import {
@@ -506,7 +506,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               aria-label="Saved and recent medicines"
               aria-expanded={savedOpen}
               title="Saved and recent medicines"
-              className={`relative rounded-md border p-2 transition-colors ${
+              className={`relative inline-flex items-center gap-1.5 rounded-md border p-2 sm:px-3 transition-colors ${
                 savedOpen
                   ? 'border-[#5DB4F2] bg-[#1F2D38] text-[#5DB4F2]'
                   : 'border-[#304451] text-[#F2F5F8] hover:bg-[#304451]'
@@ -517,8 +517,9 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               }}
             >
               <Bookmark className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline text-sm font-medium">Saved</span>
               {savedDrugs.length > 0 && (
-                <span className="ml-1 text-[11px] font-mono tabular-nums text-[#5DB4F2]">
+                <span className="text-[11px] tabular-nums text-[#5DB4F2]">
                   {savedDrugs.length}
                 </span>
               )}
@@ -528,7 +529,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               aria-label="My profile"
               aria-expanded={profileOpen}
               title="My profile"
-              className={`rounded-md border p-2 transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-md border p-2 sm:px-3 transition-colors ${
                 profileOpen
                   ? 'border-[#5DB4F2] bg-[#1F2D38] text-[#5DB4F2]'
                   : 'border-[#304451] text-[#F2F5F8] hover:bg-[#304451]'
@@ -540,15 +541,17 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               }}
             >
               <User className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline text-sm font-medium">Profile</span>
             </button>
             <button
               type="button"
               aria-label="Sign out"
               title="Sign out"
-              className="rounded-md border border-[#304451] p-2 text-[#F2F5F8] hover:bg-[#304451] hover:text-[#FF7272] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[#304451] p-2 sm:px-3 text-[#F2F5F8] hover:bg-[#304451] hover:text-[#FF7272] transition-colors"
               onClick={onSignOut}
             >
               <Power className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline text-sm font-medium">Sign out</span>
             </button>
           </div>
         </div>
@@ -971,7 +974,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                               {item.genericNameEn ?? 'Dietary Supplement'}
                             </div>
                             {presentation && (
-                              <div className="text-xs text-[#B8C3CC] font-mono tabular-nums mt-2">
+                              <div className="text-xs text-[#B8C3CC] tabular-nums mt-2">
                                 {presentation}
                               </div>
                             )}
@@ -1018,7 +1021,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   <div className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
                     <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
                       <span className="font-medium">Products</span>
-                      <span className="font-mono tabular-nums">
+                      <span className="tabular-nums">
                         Showing {rows.length} of {totalCount}
                       </span>
                     </div>
@@ -1048,7 +1051,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                             </div>
 
                             {presentation && (
-                              <div className="text-xs text-[#B8C3CC] font-mono tabular-nums mt-1">
+                              <div className="text-xs text-[#B8C3CC] tabular-nums mt-1">
                                 {presentation}
                               </div>
                             )}
@@ -1121,25 +1124,26 @@ function DoctorProductDetail({
             · {product.drugClassNameEn}
           </p>
         </div>
-        <div className="text-right">
+        <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end">
           <button
             type="button"
             onClick={() =>
               onFilterCompany(product.companyId, product.companyName)
             }
             title="View all products from this company"
-            className="text-xs text-[#5DB4F2] hover:underline font-medium"
+            className="inline-flex items-center gap-1 rounded-full border border-[#46718F] bg-[#253F51] px-2.5 py-1 text-xs font-medium text-[#5DB4F2] hover:bg-[#304451]"
           >
+            <Building2 className="w-3.5 h-3.5" aria-hidden="true" />
             {product.companyName}
           </button>
-          <div className="text-xs font-medium text-[#38C976] mt-0.5">
+          <span className="inline-flex items-center rounded-full border border-[#2F8F5C] bg-[#193D2D] px-2.5 py-1 text-xs font-medium text-[#38C976]">
             {CATEGORY_LABELS[product.category]}
-          </div>
+          </span>
         </div>
       </div>
 
       {/* Specification Table */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-4 text-sm">
         <SpecItem
           label="Generic Name"
           value={product.genericNameEn ?? '—'}
@@ -1250,7 +1254,7 @@ function SpecItem({
       ) : (
         <div
           className={`text-sm mt-1 ${
-            mono ? 'font-mono tabular-nums' : 'font-medium'
+            mono ? 'tabular-nums' : 'font-medium'
           } ${tone === 'success' ? 'text-[#38C976]' : 'text-[#F2F5F8]'}`}
         >
           {value}
@@ -1262,8 +1266,8 @@ function SpecItem({
 
 function MonographSection({ title, body }: { title: string; body: string }) {
   return (
-    <div className="space-y-1">
-      <div className="text-xs font-medium text-[#B8C3CC]">{title}</div>
+    <div className="space-y-1.5 border-l-2 border-[#1769AA] pl-3">
+      <div className="text-xs font-semibold uppercase tracking-wide text-[#5DB4F2]">{title}</div>
       <p className="text-sm text-[#F2F5F8] whitespace-pre-line leading-relaxed">
         {body}
       </p>
@@ -1280,7 +1284,7 @@ export function SponsoredAdCard({
 }) {
   if (!ad) {
     return (
-      <div className="w-full aspect-video max-h-[320px] rounded-xl border border-[#304451] bg-[#263744]/50 p-4 flex flex-col justify-between">
+      <div className="w-full min-h-[96px] sm:min-h-[112px] rounded-xl border border-dashed border-[#51616D] bg-[#263744]/50 p-4 flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <span className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
             Sponsored

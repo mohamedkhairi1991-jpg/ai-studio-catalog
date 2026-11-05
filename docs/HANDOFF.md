@@ -58,6 +58,19 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (Iraq essentials, batches 2–5)
+- 95 more Iraq-marketed brands loaded and published directly in Supabase (total 127 with
+  batch 1): GI, allergy, psychiatry, antibiotics, iron, dermatology (batch 2); oncology,
+  plasma products, opioids, antiseptics (batch 3); vaccines and anti-D (batch 4);
+  contrast media, glaucoma drops and other essentials (batch 5).
+- New companies: Kenvue, CSL Vifor, Galderma, Bristol Myers Squibb, Baxter, Octapharma,
+  Reckitt, Angelini, Zambon, Dr. Falk Pharma, Mundipharma, CSL Behring, GE HealthCare,
+  Guerbet, Bracco (plus Haleon in batch 1).
+- OTC products now use category `otc_drug` (Panadol, Adol, Otrivin, Imodium, Gaviscon...).
+- Data fix: an inactive duplicate "ENT (Otolaryngology)" specialty (code
+  ent_otolaryngology, 0 products) was renamed so it no longer blocks loading.
+- Repo copy: `src/lib/iraqEssentialsBatch2to5.ts` (exported from product_ai_drafts).
+
 ### 2026-11-06 — Claude (Iraq essentials, batch 1)
 - Compared Pharmaty with the Iraqi National Master List of Drugs (NBSD): 579 generic
   medicines were missing (list sent to the owner as an Excel file).

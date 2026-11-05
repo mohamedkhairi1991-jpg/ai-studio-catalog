@@ -59,7 +59,7 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 ## Log (newest first)
 
 ### 2026-11-05 — Claude (UCB company data)
-- New `src/lib/ucbCatalogData.ts` (22 UCB presentations marketed in Iraq: Keppra,
+- New `src/lib/ucbCatalogData.ts` (21 UCB presentations marketed in Iraq: Keppra,
   Vimpat, Briviact, Neupro, Cimzia, Xyzal, Nootropil) and a `ucb` entry in
   `CHAT_CURATED_COMPANIES`. Written by Claude because AI Studio returned
   "Invalid argument" (limit).

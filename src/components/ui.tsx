@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 
 export const inputClass =
-  'w-full rounded-md bg-[#1F2D38] border border-[#304451] px-3 py-2 text-sm text-[#F2F5F8] focus:outline-none focus:border-[#5DB4F2]';
+  'w-full min-h-[44px] rounded-lg bg-background border border-border px-3.5 py-2.5 text-sm text-text placeholder:text-text-muted/60 transition-colors duration-150 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25';
 export const buttonClass =
-  'w-full rounded-md bg-[#1769AA] hover:bg-[#1E78BA] px-3 py-2 text-sm font-medium text-white disabled:opacity-60';
+  'w-full min-h-[44px] rounded-lg bg-primary hover:bg-primary-hover px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-60';
 export const secondaryButtonClass =
-  'rounded-md border border-[#304451] px-3 py-1.5 text-sm text-[#F2F5F8] hover:bg-[#304451] disabled:opacity-60';
+  'min-h-[40px] rounded-lg border border-border bg-surface hover:bg-surface-raised px-3.5 py-2 text-sm font-medium text-text transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-60';
 
 export function BrandLogo({ className = 'text-lg' }: { className?: string }) {
   return (
@@ -28,7 +28,7 @@ export function BrandLogo({ className = 'text-lg' }: { className?: string }) {
           width="3.8"
           height="18"
           rx="1.9"
-          fill="#F2F5F8"
+          fill="#F2F6FA"
         />
         {/* Symbolic split-capsule loop forming the P bowl with negative-space precision gap */}
         <path
@@ -38,8 +38,8 @@ export function BrandLogo({ className = 'text-lg' }: { className?: string }) {
           strokeLinecap="round"
         />
       </svg>
-      <span className="font-bold text-[#F2F5F8]">harm</span>
-      <span className="font-medium text-[#5DB4F2]">aty</span>
+      <span className="font-semibold text-text">harm</span>
+      <span className="font-medium text-accent">aty</span>
     </span>
   );
 }
@@ -55,7 +55,7 @@ export function LegalFooter({ className = '' }: { className?: string }) {
 
   return (
     <footer
-      className={`border-t border-[#304451] py-3 px-4 text-xs text-[#B8C3CC] flex items-center justify-center gap-3 ${className}`}
+      className={`border-t border-border/80 py-4 px-4 text-xs text-text-muted flex items-center justify-center gap-3 ${className}`}
     >
       <a
         href="#/privacy"
@@ -63,11 +63,11 @@ export function LegalFooter({ className = '' }: { className?: string }) {
           e.preventDefault();
           goTo('/privacy');
         }}
-        className="text-[#5DB4F2] hover:underline"
+        className="text-accent hover:underline transition-colors duration-150"
       >
         Privacy
       </a>
-      <span className="text-[#304451]" aria-hidden="true">
+      <span className="text-border" aria-hidden="true">
         ·
       </span>
       <a
@@ -76,7 +76,7 @@ export function LegalFooter({ className = '' }: { className?: string }) {
           e.preventDefault();
           goTo('/terms');
         }}
-        className="text-[#5DB4F2] hover:underline"
+        className="text-accent hover:underline transition-colors duration-150"
       >
         Terms
       </a>
@@ -100,13 +100,13 @@ export function TermsAcceptanceCheckbox({
   };
 
   return (
-    <label className="flex items-start gap-2.5 text-xs text-[#B8C3CC] cursor-pointer select-none">
+    <label className="flex items-start gap-2.5 text-xs text-text-muted cursor-pointer select-none leading-relaxed">
       <input
         type="checkbox"
         required
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#304451] bg-[#1F2D38] accent-[#1769AA]"
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-border bg-background accent-primary"
       />
       <span>
         I have read and accept the{' '}
@@ -117,7 +117,7 @@ export function TermsAcceptanceCheckbox({
             e.stopPropagation();
             goTo('/terms');
           }}
-          className="text-[#5DB4F2] hover:underline"
+          className="text-accent hover:underline"
         >
           Terms of Use
         </a>{' '}
@@ -129,7 +129,7 @@ export function TermsAcceptanceCheckbox({
             e.stopPropagation();
             goTo('/privacy');
           }}
-          className="text-[#5DB4F2] hover:underline"
+          className="text-accent hover:underline"
         >
           Privacy Policy
         </a>
@@ -140,12 +140,21 @@ export function TermsAcceptanceCheckbox({
 
 export function Screen({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
-    <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col justify-between p-4">
-      <div className="flex-1 flex items-center justify-center py-4">
-        <div className={`w-full ${wide ? 'max-w-3xl' : 'max-w-md'} bg-[#263744] border border-[#304451] rounded-lg p-6 space-y-4`}>
-          <h1 className="text-xl font-semibold">
-            <BrandLogo className="text-xl" />
-          </h1>
+    <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_rgba(23,105,170,0.18)_0%,_transparent_65%)] text-text flex flex-col justify-between p-4 sm:p-6">
+      <div className="flex-1 flex items-center justify-center py-6">
+        <div
+          className={`w-full ${
+            wide ? 'max-w-3xl' : 'max-w-md'
+          } bg-surface/95 backdrop-blur-sm border border-border rounded-2xl shadow-soft p-6 sm:p-8 space-y-5`}
+        >
+          <div className="space-y-1.5 border-b border-border/70 pb-4">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              <BrandLogo className="text-2xl" />
+            </h1>
+            <p className="text-xs text-text-muted">
+              Clinical drug reference for doctors in Iraq
+            </p>
+          </div>
           {children}
         </div>
       </div>
@@ -156,8 +165,8 @@ export function Screen({ children, wide = false }: { children: ReactNode; wide?:
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="block space-y-1">
-      <span className="text-xs text-[#B8C3CC]">{label}</span>
+    <label className="block space-y-1.5">
+      <span className="text-xs font-medium text-text-muted">{label}</span>
       {children}
     </label>
   );
@@ -166,7 +175,7 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 export function Errors({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <ul className="text-sm text-[#FF7272] list-disc pl-5">
+    <ul className="text-sm text-danger list-disc pl-5 space-y-1">
       {items.map((e) => (
         <li key={e}>{e}</li>
       ))}

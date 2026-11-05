@@ -136,7 +136,7 @@ export default function AuthGate() {
   if (!isSupabaseConfigured || !supabase) {
     return (
       <Screen>
-        <p className="text-sm text-[#FF7272]">
+        <p className="text-sm text-danger">
           Configuration error: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are not set. Use only the public
           project URL and the anon/publishable key.
         </p>
@@ -149,7 +149,7 @@ export default function AuthGate() {
   if (loading) {
     return (
       <Screen>
-        <p className="text-sm text-[#B8C3CC]">Loading…</p>
+        <p className="text-sm text-text-muted">Loading…</p>
       </Screen>
     );
   }
@@ -192,8 +192,8 @@ export default function AuthGate() {
     const blocked = BLOCKED_MESSAGE[access.audience];
     return (
       <Screen>
-        <p className="text-sm text-[#B8C3CC]">Signed in as {access.email}</p>
-        {blocked && <p className="text-sm text-[#F59E0B]">{blocked}</p>}
+        <p className="text-sm text-text-muted">Signed in as {access.email}</p>
+        {blocked && <p className="text-sm text-warning">{blocked}</p>}
         <button className={buttonClass} onClick={() => void signOut()}>
           Sign out
         </button>
@@ -268,10 +268,10 @@ export default function AuthGate() {
 
   return (
     <Screen>
-      <form onSubmit={submit} className="space-y-3">
-        <p className="text-sm text-[#B8C3CC]">
+      <form onSubmit={submit} className="space-y-4">
+        <h2 className="text-base font-semibold text-text">
           {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create a doctor account' : 'Reset password'}
-        </p>
+        </h2>
         <Field label="Email">
           <input
             className={inputClass}
@@ -345,7 +345,15 @@ export default function AuthGate() {
           <TurnstileWidget key={`${mode}-${captchaKey}`} onToken={setCaptchaToken} />
         )}
         {notice && (
-          <p className={`text-sm ${notice.tone === 'error' ? 'text-[#FF7272]' : 'text-[#38C976]'}`}>{notice.text}</p>
+          <div
+            className={`rounded-lg border px-3.5 py-2.5 text-sm ${
+              notice.tone === 'error'
+                ? 'border-danger/40 bg-danger/10 text-danger'
+                : 'border-success/40 bg-success/10 text-success'
+            }`}
+          >
+            {notice.text}
+          </div>
         )}
         <button
           className={buttonClass}
@@ -360,9 +368,10 @@ export default function AuthGate() {
           {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send reset link'}
         </button>
       </form>
-      <div className="flex justify-between text-xs text-[#5DB4F2]">
+      <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs font-medium text-accent">
         <button
           type="button"
+          className="py-1.5 hover:underline transition-colors duration-150"
           onClick={() => {
             setMode(mode === 'signin' ? 'signup' : 'signin');
             setNotice(null);
@@ -374,6 +383,7 @@ export default function AuthGate() {
         {mode === 'signin' && (
           <button
             type="button"
+            className="py-1.5 hover:underline transition-colors duration-150"
             onClick={() => {
               setMode('reset');
               setNotice(null);

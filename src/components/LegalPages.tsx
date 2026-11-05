@@ -123,10 +123,10 @@ export function LegalDocumentPage({
 
   return (
     <Screen wide>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#304451] pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div>
-          <h2 className="text-lg font-semibold text-[#F2F5F8]">{title}</h2>
-          <p className="text-xs text-[#B8C3CC] mt-0.5">{LEGAL_LAST_UPDATED}</p>
+          <h2 className="text-lg font-semibold text-text">{title}</h2>
+          <p className="text-xs text-text-muted mt-0.5">{LEGAL_LAST_UPDATED}</p>
         </div>
         <div className="flex items-center gap-2">
           <a
@@ -154,11 +154,11 @@ export function LegalDocumentPage({
 
       <div className="space-y-4 pt-1">
         {sections.map((section) => (
-          <section key={section.title} className="space-y-1">
-            <h3 className="text-sm font-semibold text-[#F2F5F8]">
+          <section key={section.title} className="space-y-1.5">
+            <h3 className="text-sm font-semibold text-text">
               {section.title}
             </h3>
-            <p className="text-sm text-[#B8C3CC] leading-relaxed">
+            <p className="text-sm text-text-muted leading-relaxed">
               {section.body}
             </p>
           </section>
@@ -170,7 +170,7 @@ export function LegalDocumentPage({
 
 export function StandaloneLegalHeader() {
   return (
-    <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/85 backdrop-blur-md">
       <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
         <BrandLogo />
       </div>

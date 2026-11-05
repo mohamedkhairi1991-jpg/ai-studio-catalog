@@ -114,7 +114,7 @@ export default function Onboarding({
   if (loading || !state) {
     return (
       <Screen>
-        <p className="text-sm text-[#B8C3CC]">
+        <p className="text-sm text-text-muted">
           {loading ? 'Loading…' : 'Your profile is not ready yet. Please sign out and sign in again.'}
         </p>
         {!loading && (
@@ -170,7 +170,7 @@ export default function Onboarding({
     await refresh();
   };
 
-  const header = <p className="text-sm text-[#B8C3CC]">Signed in as {email}</p>;
+  const header = <p className="text-sm text-text-muted">Signed in as {email}</p>;
   const footer = (
     <div className="flex gap-2">
       <button className={secondaryButtonClass} onClick={() => void refresh()}>
@@ -239,8 +239,8 @@ export default function Onboarding({
     return (
       <Screen>
         {header}
-        <p className="text-sm text-[#FF7272]">Your doctor account is not active.</p>
-        {state.professional?.reason && <p className="text-sm text-[#B8C3CC]">Reason: {state.professional.reason}</p>}
+        <p className="text-sm text-danger">Your doctor account is not active.</p>
+        {state.professional?.reason && <p className="text-sm text-text-muted">Reason: {state.professional.reason}</p>}
         {footer}
       </Screen>
     );
@@ -250,7 +250,7 @@ export default function Onboarding({
     return (
       <Screen>
         {header}
-        <p className="text-sm text-[#F59E0B]">
+        <p className="text-sm text-warning">
           Your application for {state.company?.name} is under review.
         </p>
         {footer}
@@ -262,8 +262,8 @@ export default function Onboarding({
     return (
       <Screen>
         {header}
-        <p className="text-sm font-medium text-[#F2F5F8]">Complete your doctor profile</p>
-        <p className="text-sm text-[#B8C3CC]">
+        <p className="text-base font-semibold text-text">Complete your doctor profile</p>
+        <p className="text-sm text-text-muted">
           Enter your phone number and medical specialty to open the Iraq pharmaceutical directory.
         </p>
         {doctorFields()}

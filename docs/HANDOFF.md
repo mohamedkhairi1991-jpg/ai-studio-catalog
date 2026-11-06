@@ -58,6 +58,17 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (fix: publishing archived drugs)
+- Bug: "Publish" in a company's **Archived** tab always failed for drugs that had
+  been published before. Restoring now also clears the old submitted / reviewed /
+  published details (`admin_unarchive_product`); the old values stay in the audit
+  log. New pgTAP case covers it.
+- The result message now says the reason per drug ("Still archived: …" or
+  "… (kept as a draft)") instead of always saying "they are now drafts".
+- Drugs of an archived company (e.g. "iraqi", "Tigris Pharma") still need the
+  company restored first.
+- **AI Studio:** small text change in `AdminCatalogReview.tsx`; pull first.
+
 ### 2026-11-06 — Claude (57 clinic-list drugs live, notifications, demo accounts)
 - Reviewed AI Studio `a9fca60` (57 drugs from the owner's clinic list): no
   deleted files, no Cravit, canonical specialty names, real sources. Merged and

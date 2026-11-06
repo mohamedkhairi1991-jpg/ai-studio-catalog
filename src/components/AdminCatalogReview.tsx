@@ -1426,7 +1426,7 @@ function CompanyProductListView({
     setSummary(result);
     if (result.failedCount > 0 && result.publishedCount === 0) {
       onError(
-        'None of the selected drugs could be published. They are now drafts; open the Drafts tab to fix them.'
+        'None of the selected drugs could be published. The reason is shown next to each drug below.'
       );
     }
     const done = new Set(result.results.map((r) => r.id));

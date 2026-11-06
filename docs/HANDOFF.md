@@ -58,6 +58,12 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (Cravit removed from Hikma)
+- Owner decision: Cravit 500 mg and 750 mg are not Hikma products in Iraq
+  (licensed to JPM; Hikma's levofloxacin brand is Matador). Archived both in the
+  database (reason recorded) and removed them from `src/lib/hikmaCatalogData.ts`.
+- **AI Studio:** do not add Cravit under Hikma again. Pull before your next change.
+
 ### 2026-11-06 — Claude (profile page polish)
 - Owner asked me to handle this with AI Studio; the AI Studio tab froze while
   typing, so I made the change myself. `DoctorCatalog.tsx` profile page:

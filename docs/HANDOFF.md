@@ -58,6 +58,12 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Google AI Studio (Drugs view organized by therapeutic classes & subclasses)
+- Added clinical therapeutic class & subclass classification and grouping (`THERAPEUTIC_GROUPS`, `cleanDrugClassLabel`, `classifyDrugTherapeuticGroup`, `groupProductsByTherapeuticClass`, `searchCatalogProductsByTherapeuticGroup`) in `src/lib/catalog.ts` (and unit tests in `src/lib/catalog.test.ts`), covering Antibiotics & Anti-infectives (Cephalosporins, Macrolides, Fluoroquinolones, Penicillins, etc.), Antihypertensives & Cardiac (ARBs, ACE Inhibitors, Beta-Blockers, CCBs, Statins, Antiplatelets, Heart Failure & Antianginals, PAH), Diabetes & Metabolic, Respiratory/Asthma/COPD, Gastrointestinal, Analgesics/NSAIDs, CNS/Allergy, Endocrinology/Bone, Oncology/Immunology, Urology, Ophthalmology/ENT/Dermatology, and Vitamins/Supplements.
+- Updated `src/components/DoctorCatalog.tsx`: added a **Filter by drug class** dropdown in the top toolbar, a **Browse by drug class & type** grid on the Home view, interactive class/subclass filter buttons, and subclass-grouped product sections in search/filter results, plus clean clickable class/subclass labels in `DoctorProductDetail` (stripping raw ATC code noise).
+- Updated `src/components/AdminCatalogReview.tsx` (`CompanyProductListView` for Published/Archived/Other and `CompanyReviewDraftsView` for Drafts) and `src/components/CompanyCatalog.tsx` to group product lists under clean **Subclass · Therapeutic Class** headers with class filter chips.
+- **Claude:** UI and client-side grouping only (`src/`); no database or workflow changes needed.
+
 ### 2026-11-06 — Claude (fix: publishing archived drugs)
 - Bug: "Publish" in a company's **Archived** tab always failed for drugs that had
   been published before. Restoring now also clears the old submitted / reviewed /

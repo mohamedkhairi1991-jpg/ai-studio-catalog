@@ -6,7 +6,9 @@ import {
   MARKET_STATUS_LABELS,
   REGISTRATION_STATUS_LABELS,
   STATUS_LABELS,
+  cleanDrugClassLabel,
   filterProductsByStatus,
+  groupProductsByTherapeuticClass,
   loadCatalogBundle,
   rpcArchiveOwnProduct,
   rpcCreateProductDraft,
@@ -372,55 +374,77 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Product List */}
+            {/* Product List grouped by Drug Subclass */}
             <div className="lg:col-span-4 rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
               <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
-                <span className="font-medium">Products</span>
+                <span className="font-medium">Products by Subclass</span>
                 <span className="font-mono tabular-nums">
                   {filteredProducts.length}
                 </span>
               </div>
 
               <div className="divide-y divide-[#304451] max-h-[700px] overflow-y-auto">
-                {filteredProducts.map((product) => {
-                  const isSelected = selectedProduct?.id === product.id;
-                  return (
-                    <button
-                      key={product.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedId(product.id);
-                        setError(null);
-                        setNotice(null);
-                      }}
-                      className={`w-full text-left px-4 py-3.5 transition-colors ${
-                        isSelected
-                          ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
-                          : 'hover:bg-[#1F2D38]/50'
-                      }`}
+                {groupProductsByTherapeuticClass(filteredProducts, (p) => ({
+                  brandNameEn: p.brandNameEn,
+                  genericNameEn: p.genericNameEn,
+                  drugClassNameEn: p.drugClassNameEn,
+                  category: p.category,
+                })).map((grp) =>
+                  grp.subclasses.map((sub) => (
+                    <div
+                      key={`${grp.groupKey}-${sub.subclassLabel}`}
+                      className="divide-y divide-[#304451]/70"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium text-sm text-[#F2F5F8]">
-                          {product.brandNameEn}
+                      <div className="px-4 py-2 bg-[#1F2D38]/80 flex items-center justify-between gap-2 text-xs">
+                        <span className="font-semibold text-[#F2F5F8] truncate">
+                          {sub.subclassLabel}
                         </span>
-                        <StatusText status={product.status} />
+                        <span className="font-mono text-[#B8C3CC] tabular-nums shrink-0">
+                          {sub.items.length}
+                        </span>
                       </div>
+                      {sub.items.map((product) => {
+                        const isSelected = selectedProduct?.id === product.id;
+                        return (
+                          <button
+                            key={product.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedId(product.id);
+                              setError(null);
+                              setNotice(null);
+                            }}
+                            className={`w-full text-left px-4 py-3.5 transition-colors ${
+                              isSelected
+                                ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
+                                : 'hover:bg-[#1F2D38]/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-medium text-sm text-[#F2F5F8]">
+                                {product.brandNameEn}
+                              </span>
+                              <StatusText status={product.status} />
+                            </div>
 
-                      <div className="text-xs text-[#B8C3CC] mt-1">
-                        {product.market
-                          ? `${product.market.strength} · ${product.market.dosageForm}`
-                          : product.drugClassNameEn}
-                      </div>
+                            <div className="text-xs text-[#B8C3CC] mt-1 truncate">
+                              {product.market
+                                ? `${product.market.strength} · ${product.market.dosageForm}`
+                                : cleanDrugClassLabel(product.drugClassNameEn)}
+                            </div>
 
-                      {product.status === 'changes_requested' &&
-                        product.reviewReason && (
-                          <div className="mt-2 rounded bg-[#F59E0B]/10 border border-[#F59E0B]/40 px-2.5 py-1.5 text-xs text-[#F59E0B]">
-                            {product.reviewReason}
-                          </div>
-                        )}
-                    </button>
-                  );
-                })}
+                            {product.status === 'changes_requested' &&
+                              product.reviewReason && (
+                                <div className="mt-2 rounded bg-[#F59E0B]/10 border border-[#F59E0B]/40 px-2.5 py-1.5 text-xs text-[#F59E0B]">
+                                  {product.reviewReason}
+                                </div>
+                              )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 

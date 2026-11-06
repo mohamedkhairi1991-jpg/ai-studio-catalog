@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   AlertOctagon,
   AlertTriangle,
@@ -30,8 +30,11 @@ import type { AccessResult } from '../lib/access';
 import {
   CATEGORY_LABELS,
   MARKET_STATUS_LABELS,
+  THERAPEUTIC_GROUPS,
   buildProductRouteHash,
+  classifyDrugTherapeuticGroup,
   clearRecentDoctorDrugs,
+  groupProductsByTherapeuticClass,
   loadDoctorHomeSuggestions,
   loadDoctorSponsoredAd,
   loadProductDetail,
@@ -45,6 +48,7 @@ import {
   recordRecentDoctorDrug,
   recordSponsoredAdEvent,
   searchCatalogProducts,
+  searchCatalogProductsByTherapeuticGroup,
   toggleSavedDoctorDrug,
   type CatalogProduct,
   type CompanySummary,
@@ -53,6 +57,7 @@ import {
   type DoctorSponsoredAd,
   type SavedOrRecentDrugItem,
   type TaxonomyItem,
+  type TherapeuticGroupKey,
 } from '../lib/catalog';
 import {
   doctorSelfSignup,
@@ -124,6 +129,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [companyId, setCompanyId] = useState('');
   const [specialtyId, setSpecialtyId] = useState('');
+  const [therapeuticGroup, setTherapeuticGroup] = useState<
+    TherapeuticGroupKey | ''
+  >('');
+  const [selectedSubclass, setSelectedSubclass] = useState('');
 
   const [rows, setRows] = useState<DoctorSearchRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -260,20 +269,30 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   }, [query]);
 
   const isSearchingOrFiltering = Boolean(
-    query.trim() || debouncedQuery.trim() || companyId || specialtyId
+    query.trim() ||
+      debouncedQuery.trim() ||
+      companyId ||
+      specialtyId ||
+      therapeuticGroup
   );
 
   const runSearch = useCallback(
     async (
       searchQuery: string,
       filterCompanyId: string,
-      filterSpecialtyId: string
+      filterSpecialtyId: string,
+      filterGroup: TherapeuticGroupKey | ''
     ) => {
       if (!searchQuery.trim()) {
         searchRecordTrackerRef.current.lastQuery = null;
       }
 
-      if (!searchQuery.trim() && !filterCompanyId && !filterSpecialtyId) {
+      if (
+        !searchQuery.trim() &&
+        !filterCompanyId &&
+        !filterSpecialtyId &&
+        !filterGroup
+      ) {
         searchReqSeqRef.current++;
         setRows([]);
         setTotalCount(0);
@@ -286,13 +305,20 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       setLoading(true);
       setError(null);
 
-      const res = await searchCatalogProducts(client, {
-        query: searchQuery,
-        companyId: filterCompanyId || null,
-        specialtyId: filterSpecialtyId || null,
-        limit: PAGE_SIZE,
-        offset: 0,
-      });
+      const res = filterGroup
+        ? await searchCatalogProductsByTherapeuticGroup(client, {
+            groupKey: filterGroup,
+            query: searchQuery,
+            companyId: filterCompanyId || null,
+            specialtyId: filterSpecialtyId || null,
+          })
+        : await searchCatalogProducts(client, {
+            query: searchQuery,
+            companyId: filterCompanyId || null,
+            specialtyId: filterSpecialtyId || null,
+            limit: PAGE_SIZE,
+            offset: 0,
+          });
 
       if (seq !== searchReqSeqRef.current) {
         return;
@@ -318,11 +344,19 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   );
 
   useEffect(() => {
-    void runSearch(debouncedQuery, companyId, specialtyId);
-  }, [runSearch, debouncedQuery, companyId, specialtyId]);
+    setSelectedSubclass('');
+    void runSearch(debouncedQuery, companyId, specialtyId, therapeuticGroup);
+  }, [runSearch, debouncedQuery, companyId, specialtyId, therapeuticGroup]);
 
   const handleLoadMore = useCallback(async () => {
-    if (loading || loadingMore || rows.length >= totalCount) return;
+    if (
+      therapeuticGroup ||
+      loading ||
+      loadingMore ||
+      rows.length >= totalCount
+    ) {
+      return;
+    }
     const seq = searchReqSeqRef.current;
     setLoadingMore(true);
     setError(null);
@@ -357,6 +391,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     loadingMore,
     rows.length,
     specialtyId,
+    therapeuticGroup,
     totalCount,
   ]);
 
@@ -436,6 +471,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setDebouncedQuery('');
     setCompanyId('');
     setSpecialtyId('');
+    setTherapeuticGroup('');
+    setSelectedSubclass('');
     setProfileOpen(false);
     setSavedOpen(false);
     setActiveProductId(null);
@@ -449,6 +486,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     if (!clean || clean === '—') return;
     setCompanyId('');
     setSpecialtyId('');
+    setTherapeuticGroup('');
+    setSelectedSubclass('');
     setQuery(clean);
     setDebouncedQuery(clean);
     setActiveProductId(null);
@@ -457,6 +496,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
   const handleFilterByCompany = (targetCompanyId: string, companyName: string) => {
     setSpecialtyId('');
+    setTherapeuticGroup('');
+    setSelectedSubclass('');
     if (companies.some((c) => c.id === targetCompanyId)) {
       setQuery('');
       setDebouncedQuery('');
@@ -469,6 +510,48 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setActiveProductId(null);
     window.location.hash = '/catalog';
   };
+
+  const handleFilterByClass = (
+    groupKey: TherapeuticGroupKey,
+    subclassLabel?: string
+  ) => {
+    setTherapeuticGroup(groupKey);
+    setSelectedSubclass(subclassLabel ?? '');
+    setActiveProductId(null);
+    window.location.hash = '/catalog';
+  };
+
+  const groupedClasses = useMemo(
+    () =>
+      groupProductsByTherapeuticClass(rows, (row) => ({
+        brandNameEn: row.brandNameEn,
+        genericNameEn: row.genericNameEn,
+        drugClassNameEn: row.drugClassNameEn,
+        category: row.category,
+      })),
+    [rows]
+  );
+
+  const allSubclasses = useMemo(() => {
+    const list: Array<{
+      groupKey: TherapeuticGroupKey;
+      groupLabel: string;
+      shortGroupLabel: string;
+      subclassLabel: string;
+      items: DoctorSearchRow[];
+    }> = [];
+    for (const grp of groupedClasses) {
+      for (const sub of grp.subclasses) {
+        list.push(sub);
+      }
+    }
+    return list;
+  }, [groupedClasses]);
+
+  const visibleSubclasses = useMemo(() => {
+    if (!selectedSubclass) return allSubclasses;
+    return allSubclasses.filter((s) => s.subclassLabel === selectedSubclass);
+  }, [allSubclasses, selectedSubclass]);
 
   const handleToggleSaveProduct = (product: CatalogProduct) => {
     setSavedDrugs(
@@ -1045,6 +1128,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   product={selectedProduct}
                   onSearchGeneric={handleSearchByGeneric}
                   onFilterCompany={handleFilterByCompany}
+                  onFilterClass={handleFilterByClass}
                 />
               )
             )}
@@ -1065,7 +1149,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             </div>
 
             {/* Top Search & Filter Toolbar */}
-            <section className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+            <section className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5 sm:gap-3">
               <div className="relative flex-1">
                 <Search
                   className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
@@ -1098,8 +1182,30 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5">
-                <div className="sm:w-48">
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:items-center gap-2 sm:gap-2.5">
+                <div className="lg:w-52">
+                  <select
+                    id="doctor-catalog-class"
+                    aria-label="Filter by drug class"
+                    value={therapeuticGroup}
+                    onChange={(e) => {
+                      setTherapeuticGroup(
+                        e.target.value as TherapeuticGroupKey | ''
+                      );
+                      setSelectedSubclass('');
+                    }}
+                    className={`${inputClass} min-h-[46px] bg-surface py-2 text-xs sm:text-sm`}
+                  >
+                    <option value="">All drug classes</option>
+                    {THERAPEUTIC_GROUPS.map((group) => (
+                      <option key={group.key} value={group.key}>
+                        {group.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="lg:w-44">
                   <select
                     id="doctor-catalog-company"
                     aria-label="Filter by company"
@@ -1116,7 +1222,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   </select>
                 </div>
 
-                <div className="sm:w-48">
+                <div className="lg:w-44">
                   <select
                     id="doctor-catalog-specialty"
                     aria-label="Filter by specialty"
@@ -1142,8 +1248,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     setDebouncedQuery('');
                     setCompanyId('');
                     setSpecialtyId('');
+                    setTherapeuticGroup('');
+                    setSelectedSubclass('');
                   }}
-                  className="min-h-[40px] text-xs font-medium text-accent hover:underline px-2.5 py-1.5 shrink-0 self-end sm:self-center"
+                  className="min-h-[40px] text-xs font-medium text-accent hover:underline px-2.5 py-1.5 shrink-0 self-end lg:self-center"
                 >
                   Reset
                 </button>
@@ -1211,6 +1319,11 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         const presentation = [item.strength, item.dosageForm]
                           .filter(Boolean)
                           .join(' · ');
+                        const classified = classifyDrugTherapeuticGroup(
+                          item.drugClassNameEn,
+                          item.genericNameEn,
+                          item.category
+                        );
                         return (
                           <a
                             key={item.productId}
@@ -1222,8 +1335,13 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                             className="group flex items-center justify-between gap-3 rounded-2xl bg-surface border border-border hover:border-accent/60 hover:-translate-y-0.5 hover:shadow-soft p-5 transition-all duration-150"
                           >
                             <div className="min-w-0 flex-1 space-y-1.5">
-                              <div className="font-semibold text-base text-text group-hover:text-accent transition-colors duration-150 truncate">
-                                {item.brandNameEn}
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="font-semibold text-base text-text group-hover:text-accent transition-colors duration-150 truncate">
+                                  {item.brandNameEn}
+                                </div>
+                                <span className="shrink-0 text-xs font-medium text-text-muted">
+                                  {classified.subclassLabel}
+                                </span>
                               </div>
                               <div className="text-sm font-medium text-accent truncate">
                                 {item.genericNameEn ?? 'Dietary Supplement'}
@@ -1251,7 +1369,42 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   )}
                 </section>
 
-                {/* Section b: Clearly separated Sponsored ad space */}
+                {/* Section b: Browse by Therapeutic Class / Subclass */}
+                <section className="space-y-3 pt-2 border-t border-border/80">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h2 className="text-base font-semibold text-text">
+                      Browse by drug class &amp; type
+                    </h2>
+                    <span className="text-xs text-text-muted">
+                      Select a therapeutic group to view its subclasses
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {THERAPEUTIC_GROUPS.map((group) => (
+                      <button
+                        key={group.key}
+                        type="button"
+                        onClick={() => handleFilterByClass(group.key)}
+                        className="group flex items-center justify-between gap-3 rounded-xl bg-surface border border-border hover:border-accent/60 hover:bg-surface-raised/50 px-4 py-3.5 text-left transition-all duration-150"
+                      >
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="text-sm font-semibold text-text group-hover:text-accent transition-colors truncate">
+                            {group.label}
+                          </div>
+                          <div className="text-xs text-text-muted truncate">
+                            {group.examples}
+                          </div>
+                        </div>
+                        <ChevronRight
+                          className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-150"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Section c: Clearly separated Sponsored ad space */}
                 <section
                   aria-label="Sponsored"
                   className="pt-3 border-t border-border/80"
@@ -1306,60 +1459,167 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     </p>
                   </div>
                 ) : (
-                  <div className="rounded-2xl bg-surface border border-border shadow-soft overflow-hidden">
-                    <div className="px-4 sm:px-5 py-3 border-b border-border flex items-center justify-between text-xs text-text-muted">
-                      <span className="font-semibold uppercase tracking-wider">
-                        Products
-                      </span>
-                      <span className="inline-flex items-center rounded-full bg-surface-raised border border-border px-2.5 py-0.5 text-xs font-medium text-text tabular-nums">
-                        Showing {rows.length} of {totalCount}
-                      </span>
-                    </div>
-                    <div className="divide-y divide-border">
-                      {rows.map((row) => {
-                        const presentation = [row.strength, row.dosageForm]
-                          .filter(Boolean)
-                          .join(' · ');
-                        return (
-                          <a
-                            key={row.productId}
-                            href={buildProductRouteHash(row.productId)}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              openProductPage(row.productId);
-                            }}
-                            className="group flex items-center justify-between gap-3 w-full text-left px-4 sm:px-5 py-3.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                  <div className="space-y-4">
+                    {/* Summary + Therapeutic Class / Subclass Filter Bar */}
+                    <div className="rounded-2xl bg-surface border border-border shadow-soft p-4 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted">
+                        <span className="font-semibold uppercase tracking-wider text-text">
+                          {therapeuticGroup
+                            ? THERAPEUTIC_GROUPS.find(
+                                (g) => g.key === therapeuticGroup
+                              )?.label ?? 'Products'
+                            : 'Products by Drug Class & Subclass'}
+                        </span>
+                        <span className="inline-flex items-center rounded-full bg-surface-raised border border-border px-2.5 py-0.5 text-xs font-medium text-text tabular-nums">
+                          Showing {rows.length} of {totalCount}
+                        </span>
+                      </div>
+
+                      {/* Therapeutic Class quick-switch when results span multiple classes */}
+                      {groupedClasses.length > 1 && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border/70">
+                          <span className="text-xs text-text-muted mr-1">
+                            Class:
+                          </span>
+                          {groupedClasses.map((grp) => (
+                            <button
+                              key={grp.groupKey}
+                              type="button"
+                              onClick={() => handleFilterByClass(grp.groupKey)}
+                              className="px-2.5 py-1 rounded-md text-xs font-medium bg-surface-raised border border-border text-text-muted hover:text-text hover:border-accent/60 transition-colors tabular-nums"
+                            >
+                              {grp.groupLabel} ({grp.totalCount})
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Subclass Filter Bar */}
+                      {allSubclasses.length > 1 && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border/70">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSubclass('')}
+                            className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors tabular-nums ${
+                              selectedSubclass === ''
+                                ? 'bg-primary border-accent text-text'
+                                : 'bg-background/60 border-border text-text-muted hover:text-text'
+                            }`}
                           >
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-baseline justify-between gap-2">
-                                <span className="font-semibold text-sm sm:text-[15px] text-text group-hover:text-accent transition-colors duration-150 truncate">
-                                  {row.brandNameEn}
-                                </span>
-                              </div>
+                            All subclasses ({rows.length})
+                          </button>
+                          {allSubclasses.map((sub) => {
+                            const active =
+                              selectedSubclass === sub.subclassLabel;
+                            return (
+                              <button
+                                key={`${sub.groupKey}-${sub.subclassLabel}`}
+                                type="button"
+                                onClick={() =>
+                                  setSelectedSubclass(
+                                    active ? '' : sub.subclassLabel
+                                  )
+                                }
+                                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors tabular-nums ${
+                                  active
+                                    ? 'bg-primary border-accent text-text'
+                                    : 'bg-background/60 border-border text-text-muted hover:text-text'
+                                }`}
+                              >
+                                {sub.subclassLabel} ({sub.items.length})
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
 
-                              <div className="text-xs sm:text-sm font-medium text-accent mt-0.5 truncate">
-                                {row.genericNameEn ?? 'Dietary Supplement'}
-                              </div>
-
-                              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
-                                {presentation && (
-                                  <span className="tabular-nums">{presentation}</span>
-                                )}
-                                {presentation && <span aria-hidden="true">·</span>}
-                                <span className="truncate">{row.companyName}</span>
-                              </div>
+                    {/* Grouped Subclass Sections */}
+                    <div className="space-y-4">
+                      {visibleSubclasses.map((sub) => (
+                        <div
+                          key={`${sub.groupKey}-${sub.subclassLabel}`}
+                          className="rounded-2xl bg-surface border border-border shadow-soft overflow-hidden"
+                        >
+                          <div className="px-4 sm:px-5 py-2.5 bg-surface-raised/60 border-b border-border flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-2 min-w-0">
+                              <h3 className="text-xs sm:text-sm font-semibold text-text">
+                                {sub.subclassLabel}
+                              </h3>
+                              <span
+                                className="text-xs text-text-muted"
+                                aria-hidden="true"
+                              >
+                                ·
+                              </span>
+                              <span className="text-xs text-text-muted">
+                                {sub.groupLabel}
+                              </span>
                             </div>
-                            <ChevronRight
-                              className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-150"
-                              aria-hidden="true"
-                            />
-                          </a>
-                        );
-                      })}
+                            <span className="text-xs font-medium text-text-muted tabular-nums">
+                              {sub.items.length}{' '}
+                              {sub.items.length === 1 ? 'drug' : 'drugs'}
+                            </span>
+                          </div>
+
+                          <div className="divide-y divide-border">
+                            {sub.items.map((row) => {
+                              const presentation = [
+                                row.strength,
+                                row.dosageForm,
+                              ]
+                                .filter(Boolean)
+                                .join(' · ');
+                              return (
+                                <a
+                                  key={row.productId}
+                                  href={buildProductRouteHash(row.productId)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    openProductPage(row.productId);
+                                  }}
+                                  className="group flex items-center justify-between gap-3 w-full text-left px-4 sm:px-5 py-3.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-baseline justify-between gap-2">
+                                      <span className="font-semibold text-sm sm:text-[15px] text-text group-hover:text-accent transition-colors duration-150 truncate">
+                                        {row.brandNameEn}
+                                      </span>
+                                    </div>
+
+                                    <div className="text-xs sm:text-sm font-medium text-accent mt-0.5 truncate">
+                                      {row.genericNameEn ??
+                                        'Dietary Supplement'}
+                                    </div>
+
+                                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+                                      {presentation && (
+                                        <span className="tabular-nums">
+                                          {presentation}
+                                        </span>
+                                      )}
+                                      {presentation && (
+                                        <span aria-hidden="true">·</span>
+                                      )}
+                                      <span className="truncate">
+                                        {row.companyName}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <ChevronRight
+                                    className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-150"
+                                    aria-hidden="true"
+                                  />
+                                </a>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     {rows.length < totalCount && (
-                      <div className="p-3.5 border-t border-border bg-background/40 text-center">
+                      <div className="p-3.5 rounded-2xl border border-border bg-surface text-center">
                         <button
                           type="button"
                           onClick={() => void handleLoadMore()}
@@ -1386,14 +1646,21 @@ function DoctorProductDetail({
   product,
   onSearchGeneric,
   onFilterCompany,
+  onFilterClass,
 }: {
   product: CatalogProduct;
   onSearchGeneric: (genericName: string) => void;
   onFilterCompany: (companyId: string, companyName: string) => void;
+  onFilterClass: (groupKey: TherapeuticGroupKey, subclass?: string) => void;
 }) {
   const market = product.market;
   const enClinical = product.marketTranslations.en;
   const sources = product.aiSources ?? [];
+  const classified = classifyDrugTherapeuticGroup(
+    product.drugClassNameEn,
+    product.genericNameEn,
+    product.category
+  );
 
   const categoryChipStyle =
     product.category === 'otc_drug'
@@ -1425,7 +1692,16 @@ function DoctorProductDetail({
                 <span className="text-accent font-medium">Dietary Supplement</span>
               )}{' '}
               <span aria-hidden="true">·</span>{' '}
-              <span>{product.drugClassNameEn}</span>
+              <button
+                type="button"
+                onClick={() =>
+                  onFilterClass(classified.groupKey, classified.subclassLabel)
+                }
+                title="View all drugs in this therapeutic subclass"
+                className="hover:text-accent hover:underline text-left"
+              >
+                {classified.groupLabel} — {classified.subclassLabel}
+              </button>
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end shrink-0">

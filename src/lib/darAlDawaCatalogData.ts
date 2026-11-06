@@ -72,7 +72,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: insomnia, dysgeusia, headache, taste perversion, diarrhoea, vomiting, dyspepsia, nausea, abdominal pain, abnormal liver function test, rash, hyperhidrosis.',
     storage:
       'Store below 30°C in a dry place Protected from light.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Gastroenterology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Gastroenterology', 'Internal Medicine'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Claridar (clarithromycin) Official Product Portfolio',
@@ -225,7 +225,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: headache, dizziness, vertigo, nausea, vomiting, diarrhoea, dyspepsia, abdominal pain, flatulence, anorexia, increased transaminases, rash.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics and Gynecology'],
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics & Gynecology'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Diclogesic (diclofenac sodium) Official Product Portfolio',
@@ -312,7 +312,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: nausea, diarrhoea. Uncommon: headache, dizziness, vomiting, abdominal pain, elevated transaminases, rash, arthralgia. Class warnings: tendinitis and tendon rupture, peripheral neuropathy, QT prolongation.',
     storage:
       'Store below 30°C in a dry place in the original package.',
-    specialties: ['Infectious Diseases', 'Urology', 'Orthopedics', 'Pulmonology', 'ENT'],
+    specialties: ['Infectious Diseases', 'Urology', 'Orthopedics', 'Pulmonology', 'ENT (Otolaryngology)'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Ciprodar 750 mg Official Product Portfolio',
@@ -341,7 +341,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: insomnia, dysgeusia, headache, diarrhoea, vomiting, dyspepsia, nausea, abdominal pain, abnormal liver function test, rash, hyperhidrosis.',
     storage:
       'Store below 30°C in a dry place, protected from light.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Internal Medicine'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Claridar 250 mg Official Product Portfolio',
@@ -370,7 +370,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: diarrhoea, vomiting, abdominal pain, dyspepsia, dysgeusia, headache, rash.',
     storage:
       'Dry granules: store below 30°C. Reconstituted suspension: store below 25°C (do not refrigerate) and use within 14 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Claridar Paediatric Suspension Official Product Portfolio',
@@ -516,7 +516,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: dizziness, headache, dyspepsia, elevated AST/ALT, rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Moxiclav (amoxicillin / clavulanic acid) Official Product Portfolio',
@@ -545,7 +545,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: headache, dizziness, dyspepsia, elevated hepatic transaminases, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Moxiclav 1 g Official Product Portfolio',
@@ -574,7 +574,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis, diaper dermatitis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Moxiclav Forte Oral Suspension Official Product Portfolio',

@@ -41,7 +41,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: dizziness, headache, indigestion, elevated AST/ALT, skin rash, pruritus, urticaria. Rare/Very rare: reversible leukopenia and thrombocytopenia, antibiotic-associated colitis, cholestatic jaundice, hepatitis, severe cutaneous adverse reactions (SJS, TEN, DRESS, AGEP).',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Medochemie Ltd — Medoclav (amoxicillin / clavulanic acid) Official Product Information',
@@ -70,7 +70,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: headache, dizziness, dyspepsia, elevated hepatic transaminases, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Medochemie Ltd — Medoclav (amoxicillin / clavulanic acid) Official Product Information',
@@ -101,7 +101,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Common: headache, abdominal pain, vomiting, diarrhoea, nausea, increased alanine aminotransferase, aspartate aminotransferase, and blood alkaline phosphatase, rash. Uncommon: anaemia, decreased appetite, insomnia, somnolence, dizziness, paraesthesia, dysgeusia, vertigo, constipation, dyspepsia, flatulence, dry mouth, cholestasis, jaundice, pruritus, urticaria, myalgia, fatigue, QT prolongation.',
     storage:
       'Store below 25°C in the original package to protect from light and moisture.',
-    specialties: ['Infectious Diseases', 'Obstetrics and Gynecology', 'Dermatology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Obstetrics & Gynecology', 'Dermatology', 'Internal Medicine'],
     sources: [
       {
         title: 'Medochemie Ltd — Medoflucon (fluconazole) Official Product Information',
@@ -223,7 +223,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Common: Candida overgrowth, eosinophilia, headache, dizziness, diarrhoea, nausea, abdominal pain, transient increases in hepatic enzyme levels.',
     storage:
       'Store below 25°C in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Medochemie Ltd — Axetine (cefuroxime) Official Product Information',
@@ -312,7 +312,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'Medochemie Ltd — Medoclav Forte Oral Suspension Official Product Information',
@@ -399,7 +399,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Common: Candida overgrowth, eosinophilia, headache, dizziness, diarrhoea, nausea, abdominal pain, transient increases in hepatic enzyme levels.',
     storage:
       'Store below 25°C in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Medochemie Ltd — Axetine 250 mg Official Product Information',
@@ -486,7 +486,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Very common: diarrhoea. Common: headache, vomiting, abdominal pain, nausea. Uncommon: dizziness, dysgeusia, palpitations, rash, pruritus, QT prolongation.',
     storage:
       'Store below 25°C in a dry place.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Dermatology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Dermatology', 'Internal Medicine'],
     sources: [
       {
         title: 'Medochemie Ltd — Anti-Infectives Portfolio (Medomicin / azithromycin)',
@@ -515,7 +515,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
       'Common: diarrhoea, nausea, vomiting, dyspepsia, maculopapular rash, urticaria, eosinophilia. Rare: serum sickness-like reaction (erythema multiforme, rashes, and arthralgia/arthritis).',
     storage:
       'Store below 25°C in a dry place, protected from light.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Urology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology', 'Internal Medicine'],
     sources: [
       {
         title: 'Medochemie Ltd — Medoklor (cefaclor) Official Product Information',

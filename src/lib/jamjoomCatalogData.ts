@@ -312,7 +312,7 @@ const RAW_JAMJOOM: CompactDrug[] = [
       'Common: eye pain, eye irritation, dry eye, abnormal sensation in eyes, headache, dysgeusia, nasal dryness, fatigue.',
     storage:
       'Store below 30°C. Discard 28 days after first opening.',
-    specialties: ['Ophthalmology', 'Allergy and Immunology'],
+    specialties: ['Ophthalmology', 'Allergy & Immunology'],
     sources: [
       {
         title: 'Jamjoom Pharmaceuticals Factory Co. — Ophthalmology Portfolio (Olopat 0.1% Eye Drops)',
@@ -341,7 +341,7 @@ const RAW_JAMJOOM: CompactDrug[] = [
       'Uncommon: blurred vision, dry eye, foreign body sensation, ocular hyperaemia, eyelid margin crusting, headache, dysgeusia.',
     storage:
       'Store below 30°C. Discard 28 days after first opening.',
-    specialties: ['Ophthalmology', 'Allergy and Immunology'],
+    specialties: ['Ophthalmology', 'Allergy & Immunology'],
     sources: [
       {
         title: 'Jamjoom Pharmaceuticals Factory Co. — Ophthalmology Portfolio (Olopat Forte 0.2% Eye Drops)',

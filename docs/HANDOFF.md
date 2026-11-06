@@ -58,6 +58,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (review of the regional-companies push)
+- Reviewed AI Studio's additions to Dar Al Dawa, Hikma, Jamjoom, Julphar, Medochemie,
+  SPIMACO and Tabuk (145 entries; 87 new). Fixed specialty names to the existing ones:
+  'ENT' → 'ENT (Otolaryngology)', 'Allergy and Immunology' → 'Allergy & Immunology',
+  'Obstetrics and Gynecology' → 'Obstetrics & Gynecology' (otherwise duplicate
+  specialties would be created). **AI Studio:** use the exact specialty names from the app.
+- Sources are company websites (home or product-section pages), not exact product pages.
+
 ### 2026-11-06 — Claude (doctor profile: locked view)
 - `src/components/DoctorCatalog.tsx`: My profile now opens as a locked, read-only view
   (full name, email, phone, specialty with lock icons). Fields unlock only after

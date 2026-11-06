@@ -41,7 +41,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: dizziness, headache, indigestion, elevated AST/ALT, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Branded Anti-Infectives Portfolio (Amoclan: amoxicillin / clavulanate potassium)',
@@ -70,7 +70,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: headache, dizziness, dyspepsia, elevated hepatic transaminases, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Branded Anti-Infectives Portfolio (Amoclan BID 1000 mg)',
@@ -99,7 +99,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis, diaper dermatitis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C in a dry place. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Branded Anti-Infectives Portfolio (Amoclan Forte Oral Suspension)',
@@ -130,7 +130,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: diarrhoea, soft stools. Uncommon: headache, dizziness, abdominal pain, indigestion, nausea, vomiting, flatulence, reversible elevation of hepatic enzymes, skin rash, pruritus, urticaria. Rare/Very rare: pseudomembranous colitis, eosinophilia, leukopenia, severe cutaneous adverse reactions (SJS, TEN, DRESS), acute renal failure / tubulointerstitial nephritis.',
     storage:
       'Store below 25°C in a dry place in the original package.',
-    specialties: ['Infectious Diseases', 'Urology', 'Pulmonology', 'ENT', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Urology', 'Pulmonology', 'ENT (Otolaryngology)', 'Internal Medicine'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Suprax (cefixime) Official Prescribing Information',
@@ -159,7 +159,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: diarrhoea, loose stools. Uncommon: abdominal pain, nausea, vomiting, flatulence, headache, dizziness, skin rash, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C. Reconstituted suspension: store below 25°C (do not refrigerate or freeze) and discard unused portion after 14 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology', 'Urology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology', 'Urology'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Suprax (cefixime) Oral Suspension Official Prescribing Information',
@@ -190,7 +190,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: diarrhoea, vaginal moniliasis, nausea, headache, abdominal pain. Uncommon: rash, dyspepsia, flatulence, vomiting, abnormal stools, anorexia, constipation, dizziness, insomnia, pruritus. Non-pathological reddish discoloration of stools may occur if co-administered with iron-containing products.',
     storage:
       'Store below 25°C in a dry place.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Dermatology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Dermatology', 'Internal Medicine'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Omnicef (cefdinir) Branded Anti-Infectives Portfolio',
@@ -219,7 +219,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: diarrhoea, rash, diaper dermatitis, vomiting, abdominal pain. Note: non-bloody reddish stools may occur with concurrent iron-fortified infant formula or iron supplements.',
     storage:
       'Dry powder: store below 25°C. Reconstituted suspension: store at controlled room temperature (below 25°C) and discard unused portion after 10 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Dermatology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Dermatology'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Omnicef (cefdinir) Oral Suspension Portfolio',
@@ -250,7 +250,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Very common: diarrhoea. Common: headache, vomiting, abdominal pain, nausea. Uncommon: dizziness, dysgeusia, palpitations, gastritis, flatulence, rash, pruritus, QT prolongation.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Dermatology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Dermatology', 'Internal Medicine'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Zomax (azithromycin) Branded Anti-Infectives Portfolio',
@@ -279,7 +279,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: diarrhoea, abdominal pain, nausea, vomiting, headache, rash.',
     storage:
       'Dry powder: store below 30°C. Reconstituted suspension: store below 25°C and discard unused portion after 5–10 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Zomax (azithromycin) Oral Suspension Portfolio',
@@ -310,7 +310,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: headache, dizziness, vertigo, nausea, vomiting, diarrhoea, dyspepsia, abdominal pain, flatulence, decreased appetite, increased transaminases, rash. Rare/Very rare: gastritis, gastrointestinal haemorrhage, peptic ulcer/perforation, oedema, hypertension, arterial thrombotic events, asthma/bronchospasm, acute kidney injury, SJS/TEN.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics and Gynecology'],
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics & Gynecology'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Rofenac (diclofenac sodium) Branded Portfolio',
@@ -397,7 +397,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Common: diarrhoea, soft stools. Uncommon: headache, dizziness, abdominal pain, dyspepsia, nausea, vomiting, flatulence, reversible hepatic enzyme elevations, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package.',
-    specialties: ['Infectious Diseases', 'Urology', 'Pulmonology', 'ENT', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Urology', 'Pulmonology', 'ENT (Otolaryngology)', 'Internal Medicine'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Suprax 200 mg (cefixime) Official Prescribing Information',
@@ -426,7 +426,7 @@ const RAW_HIKMA: CompactDrug[] = [
       'Very common: diarrhoea. Common: headache, vomiting, abdominal pain, nausea. Uncommon: dizziness, dysgeusia, palpitations, rash, pruritus, QT prolongation.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Dermatology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Dermatology', 'Internal Medicine'],
     sources: [
       {
         title: 'Hikma Pharmaceuticals PLC — Zomax 250 mg (azithromycin) Branded Anti-Infectives Portfolio',

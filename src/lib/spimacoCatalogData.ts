@@ -41,7 +41,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: dizziness, headache, indigestion, elevated AST/ALT, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Klavox (amoxicillin / clavulanate potassium) Official Product Portfolio',
@@ -70,7 +70,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: headache, dizziness, dyspepsia, elevated hepatic transaminases, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Klavox 1 g Official Product Portfolio',
@@ -99,7 +99,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis, diaper dermatitis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C in a dry place. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Klavox Oral Suspension Official Product Portfolio',
@@ -130,7 +130,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Very common: diarrhoea. Common: headache, vomiting, abdominal pain, nausea. Uncommon: dizziness, dysgeusia, palpitations, gastritis, flatulence, rash, pruritus, QT prolongation.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Dermatology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Dermatology', 'Internal Medicine'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Zimax (azithromycin) Official Product Portfolio',
@@ -159,7 +159,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Very common: diarrhoea. Common: headache, nausea, vomiting, abdominal pain. Uncommon: dizziness, dysgeusia, palpitations, rash, pruritus, QT prolongation.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Dermatology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Dermatology', 'Internal Medicine'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Zimax 500 mg Official Product Portfolio',
@@ -221,7 +221,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: dyspepsia, heartburn, abdominal pain, nausea, vomiting, flatulence, diarrhoea, constipation, headache, dizziness, rash.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics and Gynecology'],
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics & Gynecology'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Sapofen (ibuprofen) Official Product Portfolio',
@@ -279,7 +279,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis, diaper dermatitis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Klavox 228.5 mg/5 mL Oral Suspension Official Product Portfolio',
@@ -308,7 +308,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: diarrhoea, abdominal pain, nausea, vomiting, headache, rash.',
     storage:
       'Dry powder: store below 30°C. Reconstituted suspension: store below 25°C and discard unused portion after 10 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Zimax 200 mg/5 mL Oral Suspension Official Product Portfolio',
@@ -366,7 +366,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: nausea, diarrhoea. Uncommon: headache, dizziness, vomiting, abdominal pain, elevated transaminases, rash, arthralgia. Class warnings: tendinitis and tendon rupture, peripheral neuropathy, QT prolongation.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Infectious Diseases', 'Urology', 'Orthopedics', 'Pulmonology', 'ENT'],
+    specialties: ['Infectious Diseases', 'Urology', 'Orthopedics', 'Pulmonology', 'ENT (Otolaryngology)'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Cipromax 750 mg Official Product Portfolio',
@@ -482,7 +482,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: headache, somnolence, increased appetite, insomnia, fatigue.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Allergy and Immunology', 'Dermatology', 'ENT', 'Internal Medicine'],
+    specialties: ['Allergy & Immunology', 'Dermatology', 'ENT (Otolaryngology)', 'Internal Medicine'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Lorine (loratadine) Official Product Portfolio',
@@ -511,7 +511,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: headache, nervousness, fatigue, somnolence.',
     storage:
       'Store below 30°C, protected from light.',
-    specialties: ['Pediatrics', 'Allergy and Immunology', 'Dermatology', 'ENT'],
+    specialties: ['Pediatrics', 'Allergy & Immunology', 'Dermatology', 'ENT (Otolaryngology)'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Lorine Syrup Official Product Portfolio',
@@ -569,7 +569,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: Candida overgrowth, eosinophilia, headache, dizziness, diarrhoea, nausea, abdominal pain, transient increases in hepatic enzyme levels.',
     storage:
       'Store below 25°C in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Cefutil (cefuroxime axetil 500 mg) Official Product Portfolio',
@@ -598,7 +598,7 @@ const RAW_SPIMACO: CompactDrug[] = [
       'Common: insomnia, dysgeusia, headache, diarrhoea, vomiting, dyspepsia, nausea, abdominal pain, abnormal liver function test, rash, hyperhidrosis.',
     storage:
       'Store below 30°C in a dry place, protected from light.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Gastroenterology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Gastroenterology', 'Internal Medicine'],
     sources: [
       {
         title: 'SPIMACO Addwaeih — Clarimax (clarithromycin 500 mg) Official Product Portfolio',

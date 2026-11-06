@@ -41,7 +41,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: dizziness, headache, indigestion, elevated AST/ALT, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — General Medicines Portfolio (Julmentin)',
@@ -70,7 +70,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: headache, dizziness, dyspepsia, elevated hepatic transaminases, skin rash, pruritus, urticaria.',
     storage:
       'Store below 25°C in a dry place in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — General Medicines Portfolio (Julmentin 1 g)',
@@ -99,7 +99,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis, diaper dermatitis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C in a dry place. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — General Medicines Portfolio (Julmentin Forte)',
@@ -130,7 +130,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Common: diarrhoea, nausea, skin rash. Uncommon: vomiting, urticaria, pruritus.',
     storage:
       'Store below 25°C in a dry place in the original package.',
-    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — General Medicines Portfolio (Julphamox)',
@@ -161,7 +161,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Common: dyspepsia, heartburn, abdominal pain, nausea, vomiting, flatulence, diarrhoea, constipation, dizziness, headache, skin rash. Uncommon/Rare: gastritis, peptic ulcer, gastrointestinal perforation or haemorrhage, oedema, hypertension, bronchospasm, acute renal impairment.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics and Gynecology'],
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics & Gynecology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — Pain & Inflammation Portfolio (Profinal / Ibuprofen)',
@@ -281,7 +281,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Generally well tolerated; rare local hypersensitivity or mild transient contact irritation in patients allergic to sesame oil.',
     storage:
       'Store below 25°C in a cool, dry place.',
-    specialties: ['Dermatology', 'General Surgery', 'Plastic Surgery', 'Obstetrics and Gynecology'],
+    specialties: ['Dermatology', 'General Surgery', 'Plastic Surgery', 'Obstetrics & Gynecology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — Wound & Burn Care Portfolio (MEBO Ointment)',
@@ -310,7 +310,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Common: diarrhoea, nausea, skin rash. Uncommon: vomiting, urticaria, pruritus.',
     storage:
       'Dry powder: store below 25°C. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 14 days.',
-    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — General Medicines Portfolio (Julphamox Suspension)',
@@ -428,7 +428,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Common: headache, dizziness, vertigo, nausea, vomiting, diarrhoea, dyspepsia, abdominal pain, flatulence, elevated transaminases, skin rash.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics and Gynecology'],
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics & Gynecology'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — Pain & Inflammation Portfolio (Julflam 50 mg)',
@@ -573,7 +573,7 @@ const RAW_JULPHAR: CompactDrug[] = [
       'Common: superinfections due to resistant bacteria or fungi, headache, dizziness, QT prolongation in patients with hypokalaemia, nausea, vomiting, gastrointestinal and abdominal pain, diarrhoea, increase in transaminases.',
     storage:
       'Store below 25°C in the original package to protect from moisture.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Internal Medicine'],
     sources: [
       {
         title: 'Julphar (Gulf Pharmaceutical Industries) — Anti-Infectives Portfolio (Moxiflox 400 mg)',

@@ -134,7 +134,7 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
       'Nasopharyngitis, cough, hypoglycaemia (when combined with metformin plus sulphonylurea or insulin), elevated lipase. Uncommon/Rare: hypersensitivity, angioedema, urticaria, acute pancreatitis, bullous pemphigoid.',
     storage:
       'Store below 30°C in the original package.',
-    specialties: ['Endocrinology & Diabetes', 'Internal Medicine'],
+    specialties: ['Endocrinology', 'Internal Medicine'],
     sources: [
       {
         title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Official Product & Agency List PDF (Linagliptin SDI 5 mg)',
@@ -143,6 +143,174 @@ const RAW_SDI_SAMARRA: CompactDrug[] = [
     ],
     notes:
       'Official SDI Samarra product directory data. Each film-coated tablet contains 5 mg linagliptin (INN base: Linagliptin).',
+  },
+  {
+    brandName: 'Asthmasam 2 mg',
+    genericName: 'Salbutamol',
+    activeIngredients: ['Salbutamol sulfate'],
+    drugClass: 'Selective Short-Acting Beta2-Adrenoceptor Agonists (SABA)',
+    strength: '2 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 20 or 30 tablets',
+    indications:
+      'Symptomatic relief and prevention of bronchospasm in bronchial asthma, chronic bronchitis, and other reversible obstructive airway diseases when inhalation therapy is unsuitable.',
+    dose:
+      'Adults: 2 mg to 4 mg orally 3 or 4 times daily (start with 2 mg three or four times daily in elderly or beta-agonist-sensitive patients).',
+    contraindications:
+      'Hypersensitivity to salbutamol or any excipient. Non-intravenous formulations must not be used to arrest uncomplicated premature labour or threatened abortion.',
+    adverseEffects:
+      'Fine skeletal muscle tremor (especially hands), tachycardia, palpitations, headache, peripheral vasodilation, muscle cramps, hypokalaemia (with high doses).',
+    storage: 'Store below 30°C in a dry place protected from light.',
+    specialties: ['Pulmonology', 'Internal Medicine', 'Pediatrics', 'General Practice / Family Medicine'],
+    sources: [
+      {
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Respiratory Portfolio (Asthmasam)',
+        url: 'https://www.sdi.industry.gov.iq',
+      },
+    ],
+    notes:
+      'Official SDI Samarra respiratory portfolio data. Each tablet contains salbutamol sulfate equivalent to 2 mg salbutamol.',
+  },
+  {
+    brandName: 'Asthmasam 4 mg',
+    genericName: 'Salbutamol',
+    activeIngredients: ['Salbutamol sulfate'],
+    drugClass: 'Selective Short-Acting Beta2-Adrenoceptor Agonists (SABA)',
+    strength: '4 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 20 or 30 tablets',
+    indications:
+      'Relief of reversible bronchospasm in bronchial asthma and chronic obstructive bronchitis in adults when inhaled bronchodilators cannot be used effectively.',
+    dose:
+      'Adults: One 4 mg tablet orally 3 or 4 times daily (up to a maximum of 8 mg three or four times daily if required and tolerated).',
+    contraindications:
+      'Hypersensitivity to salbutamol or any excipient.',
+    adverseEffects:
+      'Fine tremor, palpitations, sinus tachycardia, headache, muscle cramps, hypokalaemia.',
+    storage: 'Store below 30°C in a dry place protected from light.',
+    specialties: ['Pulmonology', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sources: [
+      {
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Respiratory Portfolio (Asthmasam 4 mg)',
+        url: 'https://www.sdi.industry.gov.iq',
+      },
+    ],
+    notes:
+      'Official SDI Samarra respiratory portfolio data. Each tablet contains salbutamol sulfate equivalent to 4 mg salbutamol.',
+  },
+  {
+    brandName: 'Samilin Syrup',
+    genericName: 'Diphenhydramine hydrochloride + Ammonium chloride',
+    activeIngredients: ['Diphenhydramine hydrochloride', 'Ammonium chloride'],
+    drugClass: 'Antihistamine & Expectorant Cough Mixtures',
+    strength: '13.5 mg / 131.5 mg per 5 mL',
+    dosageForm: 'Syrup',
+    route: 'Oral',
+    packSize: '1 bottle (100 mL or 120 mL)',
+    indications:
+      'Symptomatic relief of cough and upper respiratory tract congestion associated with acute bronchitis, common cold, and allergic respiratory conditions.',
+    dose:
+      'Adults and adolescents (≥12 years): 5 to 10 mL (1 to 2 teaspoons) orally 3 times daily.',
+    contraindications:
+      'Hypersensitivity to diphenhydramine or any excipient; acute asthma attack; narrow-angle glaucoma; symptomatic prostatic hypertrophy or urinary retention; concomitant monoamine oxidase inhibitors (MAOIs); severe hepatic or renal impairment.',
+    adverseEffects:
+      'Drowsiness, sedation, dizziness, dry mouth, nose and throat, blurred vision, thickened bronchial secretions, gastrointestinal upset.',
+    storage: 'Store below 30°C in a tightly closed bottle, protected from light.',
+    specialties: ['Pulmonology', 'General Practice / Family Medicine', 'Internal Medicine', 'ENT (Otolaryngology)'],
+    sources: [
+      {
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Respiratory Syrups Portfolio (Samilin)',
+        url: 'https://www.sdi.industry.gov.iq',
+      },
+    ],
+    notes:
+      'Official SDI Samarra cough/expectorant syrup formulation.',
+  },
+  {
+    brandName: 'Sedilar 15 mg Tablet (Sidlar)',
+    genericName: 'Dextromethorphan hydrobromide',
+    activeIngredients: ['Dextromethorphan hydrobromide'],
+    drugClass: 'Centrally Acting Non-Opioid Antitussives (Cough Suppressants)',
+    strength: '15 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 20 tablets',
+    indications:
+      'Symptomatic relief of unproductive (dry, irritating, hacky) cough due to throat or bronchial irritation.',
+    dose:
+      'Adults and adolescents (≥12 years): 15 to 30 mg (1 to 2 tablets) orally 3 to 4 times daily as needed; maximum 120 mg in 24 hours.',
+    contraindications:
+      'Hypersensitivity to dextromethorphan; concomitant use with or within 14 days of monoamine oxidase inhibitors (MAOIs), SSRIs, or linezolid (risk of serotonin syndrome); respiratory failure, acute asthma, or productive cough with copious mucus.',
+    adverseEffects:
+      'Dizziness, drowsiness, nausea, gastrointestinal discomfort, excitation or confusion at high doses.',
+    storage: 'Store below 30°C in a dry place.',
+    specialties: ['Pulmonology', 'General Practice / Family Medicine', 'Internal Medicine', 'ENT (Otolaryngology)'],
+    sources: [
+      {
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Antitussive Portfolio (Sedilar)',
+        url: 'https://www.sdi.industry.gov.iq',
+      },
+    ],
+    notes:
+      'Official SDI Samarra antitussive tablet (commonly written clinically as Sidlar / Sedilar 15 mg).',
+  },
+  {
+    brandName: 'Sedilar Syrup (Sidlar Syrup)',
+    genericName: 'Dextromethorphan hydrobromide',
+    activeIngredients: ['Dextromethorphan hydrobromide'],
+    drugClass: 'Centrally Acting Non-Opioid Antitussives (Cough Suppressants)',
+    strength: '15 mg / 5 mL',
+    dosageForm: 'Syrup',
+    route: 'Oral',
+    packSize: '1 bottle (100 mL)',
+    indications:
+      'Symptomatic suppression of non-productive dry cough in adults and children aged 6 years and older.',
+    dose:
+      'Adults and adolescents (≥12 years): 5 to 10 mL (15 to 30 mg) orally 3 times daily (maximum 4 doses in 24 hours).',
+    contraindications:
+      'Hypersensitivity to dextromethorphan; concomitant MAOIs or serotonergic drugs within 14 days; chronic productive cough, bronchial asthma, or respiratory insufficiency.',
+    adverseEffects:
+      'Mild drowsiness, dizziness, nausea, vomiting, abdominal discomfort.',
+    storage: 'Store below 30°C in the original bottle.',
+    specialties: ['Pulmonology', 'General Practice / Family Medicine', 'Internal Medicine', 'Pediatrics'],
+    sources: [
+      {
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Antitussive Portfolio (Sedilar Syrup)',
+        url: 'https://www.sdi.industry.gov.iq',
+      },
+    ],
+    notes:
+      'Official SDI Samarra dry cough suppressant syrup (commonly written clinically as Sidlar Syrup).',
+  },
+  {
+    brandName: 'Tussilar 15 mg Tablet',
+    genericName: 'Dextromethorphan hydrobromide',
+    activeIngredients: ['Dextromethorphan hydrobromide'],
+    drugClass: 'Centrally Acting Non-Opioid Antitussives (Cough Suppressants)',
+    strength: '15 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 20 tablets',
+    indications:
+      'Symptomatic relief of dry, non-productive irritating cough.',
+    dose:
+      'Adults and adolescents (≥12 years): One to two 15 mg tablets orally 3 to 4 times daily as needed (maximum 120 mg/day).',
+    contraindications:
+      'Hypersensitivity to dextromethorphan; concomitant MAOIs within 14 days; respiratory failure, asthma, or productive cough.',
+    adverseEffects:
+      'Drowsiness, dizziness, nausea, mild gastrointestinal upset.',
+    storage: 'Store below 30°C in a dry place.',
+    specialties: ['Pulmonology', 'General Practice / Family Medicine', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'State Company for Drugs Industry and Medical Appliances (SDI Samarra) — Tussilar 15 mg (dextromethorphan)',
+        url: 'https://www.sdi.industry.gov.iq',
+      },
+    ],
+    notes:
+      'Official SDI Samarra dextromethorphan 15 mg tablet presentation.',
   },
 ];
 

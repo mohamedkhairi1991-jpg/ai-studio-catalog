@@ -1092,6 +1092,69 @@ const MSD_COMPACT_PRODUCTS: CompactMsdDrug[] = [
     sourceTitle: 'Ivemend (fosaprepitant) — EMA Official EPAR & SmPC',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/ivemend',
   },
+  {
+    brandName: 'Periactin 4 mg',
+    genericName: 'Cyproheptadine',
+    drugClassNameEn: 'First-Generation Piperidine H1-Antihistamines & Serotonin Antagonists',
+    dosageForm: 'Tablet',
+    strength: '4 mg',
+    route: 'Oral',
+    packSize: '20 or 30 tablets',
+    indications:
+      'Symptomatic relief of perennial and seasonal allergic rhinitis, vasomotor rhinitis, allergic conjunctivitis, mild uncomplicated allergic skin manifestations of urticaria and angioedema, cold urticaria, and dermatographism; also used clinically for appetite stimulation in underweight/anorexic patients and migraine prophylaxis.',
+    adultDosage:
+      'Adults: Usual initial dose is 4 mg orally three times daily, adjusted according to response (usual therapeutic range 4 to 20 mg/day; maximum 0.5 mg/kg/day or 32 mg/day).',
+    contraindications:
+      'Hypersensitivity to cyproheptadine or any excipient; newborn or premature infants; breastfeeding mothers; concomitant monoamine oxidase inhibitor (MAOI) therapy; angle-closure glaucoma, stenosing peptic ulcer, symptomatic prostatic hypertrophy, bladder neck obstruction, or pyloroduodenal obstruction; elderly, debilitated patients.',
+    sideEffects:
+      'Drowsiness, sedation, dizziness, disturbed coordination, dry mouth, nose and throat, increased appetite, weight gain, thickened bronchial secretions, urinary retention, blurred vision.',
+    storageConditions: 'Store below 30°C in the original package.',
+    specialties: ['Allergy & Immunology', 'Internal Medicine', 'Dermatology', 'Pediatrics', 'General Practice / Family Medicine'],
+    sourceTitle: 'Periactin 4 mg Tablets (cyproheptadine hydrochloride) — UK eMC & DailyMed Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Periactin',
+  },
+  {
+    brandName: 'Tryptizol 10 mg',
+    genericName: 'Amitriptyline',
+    drugClassNameEn: 'Tricyclic Antidepressants (TCAs) & Neuropathic Pain Modulators',
+    dosageForm: 'Film-coated tablet',
+    strength: '10 mg',
+    route: 'Oral',
+    packSize: '28 or 30 film-coated tablets',
+    indications:
+      'Treatment of major depressive disorder in adults, neuropathic pain in adults, prophylactic treatment of chronic tension-type headache and migraine in adults, and nocturnal enuresis in children aged 6 years and above when organic pathology has been excluded.',
+    adultDosage:
+      'Neuropathic pain & headache/migraine prophylaxis: Initiate at 10 mg to 25 mg orally once daily in the evening (at bedtime), titrated gradually by 10–25 mg every 3–7 days as tolerated (usual maintenance 25–75 mg at night). Major depressive disorder: initiate at 25 mg twice daily (50 mg/day), titrated up to 150 mg/day.',
+    contraindications:
+      'Hypersensitivity to amitriptyline; recent myocardial infarction, any degree of heart block or disorders of cardiac rhythm, and coronary artery insufficiency; concomitant treatment with monoamine oxidase inhibitors (MAOIs — wait at least 14 days); severe liver disease; children under 6 years.',
+    sideEffects:
+      'Somnolence, dizziness, headache, tremor, anticholinergic effects (dry mouth, blurred vision, accommodation disorder, constipation, urinary retention, tachycardia), orthostatic hypotension, QT prolongation, weight gain, fatigue, confusional state in the elderly.',
+    storageConditions: 'Store below 25°C in the original package.',
+    specialties: ['Psychiatry', 'Neurology', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sourceTitle: 'Amitriptyline 10 mg Film-Coated Tablets (Tryptizol) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Amitriptyline+10+mg',
+  },
+  {
+    brandName: 'Tryptizol 25 mg',
+    genericName: 'Amitriptyline',
+    drugClassNameEn: 'Tricyclic Antidepressants (TCAs) & Neuropathic Pain Modulators',
+    dosageForm: 'Film-coated tablet',
+    strength: '25 mg',
+    route: 'Oral',
+    packSize: '28 or 30 film-coated tablets',
+    indications:
+      'Treatment of major depressive disorder in adults, neuropathic pain, chronic tension-type headache prophylaxis, and migraine prophylaxis in adults.',
+    adultDosage:
+      'Neuropathic pain & migraine prophylaxis: 25 mg to 75 mg orally once daily in the evening/bedtime (following initial titration from 10–25 mg at night). Major depressive disorder: 50 to 150 mg/day orally (in divided doses or as a single bedtime dose).',
+    contraindications:
+      'Hypersensitivity to amitriptyline; recent myocardial infarction, cardiac conduction block or arrhythmia, coronary insufficiency; concomitant MAOIs; severe hepatic impairment.',
+    sideEffects:
+      'Dry mouth, sedation/drowsiness, dizziness, constipation, blurred vision, urinary retention, sinus tachycardia, postural hypotension, weight gain, ECG QT prolongation.',
+    storageConditions: 'Store below 25°C in the original package.',
+    specialties: ['Psychiatry', 'Neurology', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sourceTitle: 'Amitriptyline 25 mg Film-Coated Tablets (Tryptizol) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Amitriptyline+25+mg',
+  },
 ];
 
 export const MSD_PRODUCTS: AiProductDraft[] = MSD_COMPACT_PRODUCTS.map(toMsdProductDraft);

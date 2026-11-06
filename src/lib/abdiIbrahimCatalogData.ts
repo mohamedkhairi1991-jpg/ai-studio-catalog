@@ -165,7 +165,7 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
       'Fluid retention and peripheral oedema, weight gain, upper respiratory tract infection, visual disturbance (macular oedema), hypoesthesia, bone fractures (particularly in women), congestive heart failure (especially when combined with insulin), elevated hepatic enzymes.',
     storage:
       'Store below 25°C in the original package to protect from moisture.',
-    specialties: ['Endocrinology & Diabetes', 'Internal Medicine'],
+    specialties: ['Endocrinology', 'Internal Medicine'],
     sources: [
       {
         title: 'Abdi İbrahim İlaç San. ve Tic. A.Ş. — Official Product Portfolio & KÜB (Pixart 30 mg Tablet)',
@@ -174,6 +174,62 @@ const RAW_ABDI_IBRAHIM: CompactDrug[] = [
     ],
     notes:
       'Official Abdi İbrahim KÜB (SmPC) data. Each tablet contains pioglitazone hydrochloride equivalent to 30 mg pioglitazone base (INN base: Pioglitazone).',
+  },
+  {
+    brandName: 'Pixart 15 mg',
+    genericName: 'Pioglitazone',
+    activeIngredients: ['Pioglitazone'],
+    drugClass: 'Thiazolidinedione (PPAR-gamma agonist) oral antihyperglycaemic agent (ATC A10BG03)',
+    strength: '15 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 tablets in blisters',
+    indications:
+      'Second- or third-line treatment of type 2 diabetes mellitus in adults as monotherapy or in combination with metformin, a sulphonylurea, or insulin.',
+    dose:
+      'Adults: Initiate at 15 mg or 30 mg orally once daily with or without food; may be titrated in increments up to 45 mg once daily.',
+    contraindications:
+      'Hypersensitivity to pioglitazone; cardiac failure or history of cardiac failure (NYHA stages I to IV); hepatic impairment; diabetic ketoacidosis; current or history of bladder cancer; uninvestigated macroscopic haematuria.',
+    adverseEffects:
+      'Fluid retention and peripheral oedema, weight gain, upper respiratory tract infection, visual disturbance, bone fractures, congestive heart failure.',
+    storage: 'Store below 25°C in the original package to protect from moisture.',
+    specialties: ['Endocrinology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Abdi İbrahim İlaç San. ve Tic. A.Ş. — Official Product Portfolio & KÜB (Pixart 15 mg Tablet)',
+        url: 'https://www.abdiibrahim.com.tr',
+      },
+    ],
+    notes:
+      'Official Abdi İbrahim KÜB (SmPC) data. Each tablet contains pioglitazone hydrochloride equivalent to 15 mg pioglitazone base.',
+  },
+  {
+    brandName: 'Risonel 50 mcg/actuation Nasal Spray',
+    genericName: 'Mometasone furoate',
+    activeIngredients: ['Mometasone furoate'],
+    drugClass: 'Intranasal Corticosteroids',
+    strength: '50 mcg / actuation',
+    dosageForm: 'Nasal spray, suspension',
+    route: 'Nasal',
+    packSize: '1 bottle (140 actuations)',
+    indications:
+      'Symptomatic treatment of seasonal allergic or perennial rhinitis in adults and children aged 3 years and older, and treatment of nasal polyps in adults aged 18 years and older.',
+    dose:
+      'Allergic rhinitis in adults and adolescents (≥12 years): Two actuations (50 mcg/actuation; total 200 mcg) in each nostril once daily (may be reduced to 1 spray in each nostril once daily for maintenance, or increased to a maximum of 2 sprays in each nostril twice daily if symptoms are inadequately controlled). Nasal polyps in adults: 2 actuations in each nostril once daily, increased to twice daily after 5–6 weeks if needed.',
+    contraindications:
+      'Hypersensitivity to mometasone furoate or any excipient; untreated localized infection involving the nasal mucosa (such as herpes simplex); recent nasal surgery or nasal trauma until healing has occurred.',
+    adverseEffects:
+      'Epistaxis, pharyngitis, nasal burning, nasal irritation, nasal ulceration, headache, upper respiratory tract infection, blurred vision.',
+    storage: 'Do not store above 25°C. Do not freeze.',
+    specialties: ['ENT (Otolaryngology)', 'Allergy & Immunology', 'Pulmonology', 'General Practice / Family Medicine'],
+    sources: [
+      {
+        title: 'Abdi İbrahim İlaç San. ve Tic. A.Ş. — Official Product Portfolio & KÜB (Risonel 50 mcg Nasal Spray)',
+        url: 'https://www.abdiibrahim.com.tr',
+      },
+    ],
+    notes:
+      'Official Abdi İbrahim KÜB (SmPC) data. Each metered actuation delivers 50 micrograms of mometasone furoate (as monohydrate).',
   },
 ];
 

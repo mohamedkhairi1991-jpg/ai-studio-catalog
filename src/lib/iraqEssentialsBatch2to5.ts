@@ -1693,9 +1693,74 @@ export const IRAQ_ESSENTIALS_BATCH_2_5: Record<string, AiProductDraft[]> = {
       "activeIngredients": [
         "Oxycodone hydrochloride"
       ]
+    },
+    {
+      "found": true,
+      "notes": "Iraq-marketed brand added to cover a medicine on the Iraqi clinic respiratory reference list. Clinical text follows the reference SmPC/label; check the local leaflet.",
+      "route": "Oral",
+      "sources": [
+        {
+          "url": "https://www.medicines.org.uk/emc/search?q=Phyllocontin%20Continus",
+          "title": "Phyllocontin Continus 225 mg (aminophylline) — UK eMC SmPC search (Mundipharma)"
+        }
+      ],
+      "category": "prescription_drug",
+      "clinical": {
+        "usualAdultDose": "Usually 225 mg (1 tablet) twice daily initially, increased after 1 week to 450 mg (2 tablets) twice daily according to clinical response and serum theophylline concentration. Swallow whole; do not chew or crush.",
+        "contraindications": "Hypersensitivity to xanthines or ethylenediamine; acute porphyria; concomitant use with ephedrine in children.",
+        "storageConditions": "Store below 25°C in a dry place.",
+        "approvedIndications": "Treatment and prophylaxis of reversible bronchospasm associated with bronchial asthma, chronic bronchitis and COPD.",
+        "commonAdverseEffects": "Nausea, gastric irritation, headache, insomnia, tremor, palpitations and tachycardia; arrhythmias or seizures at toxic serum theophylline concentrations."
+      },
+      "packSize": "56 prolonged-release tablets",
+      "strength": "225 mg",
+      "brandName": "Phylocontin Continus 225 mg Tablets",
+      "drugClass": "Methylxanthine bronchodilator (prolonged-release)",
+      "dosageForm": "Prolonged-release tablet",
+      "genericName": "Aminophylline hydrate",
+      "specialties": [
+        "Pulmonology",
+        "Internal Medicine",
+        "General Practice / Family Medicine"
+      ],
+      "activeIngredients": [
+        "Aminophylline hydrate"
+      ]
     }
   ],
   "Novartis": [
+    {
+      "found": true,
+      "notes": "Iraq-marketed brand added to cover corticosteroid + antibiotic eye drops on the Iraqi clinic reference list. Clinical text follows the reference SmPC/label; check the local leaflet.",
+      "route": "Ocular",
+      "sources": [
+        {
+          "url": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Tobradex",
+          "title": "Tobradex (tobramycin / dexamethasone) — DailyMed label search"
+        }
+      ],
+      "category": "prescription_drug",
+      "clinical": {
+        "usualAdultDose": "Instill 1 or 2 drops into the conjunctival sac(s) every 4 to 6 hours. During the initial 24 to 48 hours, the dosage may be safely increased to 1 or 2 drops every 2 hours.",
+        "contraindications": "Epithelial herpes simplex keratitis (dendritic keratitis), vaccinia, varicella and other viral diseases of the cornea and conjunctiva; mycobacterial or fungal ocular infections; hypersensitivity to any component.",
+        "storageConditions": "Store between 8°C and 27°C; shake well before use.",
+        "approvedIndications": "Steroid-responsive inflammatory ocular conditions for which a corticosteroid is indicated and where superficial bacterial ocular infection or a risk of bacterial ocular infection exists.",
+        "commonAdverseEffects": "Transient ocular burning or stinging, conjunctival hyperemia, lid itching or swelling; elevated intraocular pressure, cataract formation and delayed wound healing with prolonged use."
+      },
+      "packSize": "5 mL dropper bottle",
+      "strength": "0.3% / 0.1% (3 mg/mL + 1 mg/mL)",
+      "brandName": "Tobradex Eye Drops",
+      "drugClass": "Ophthalmic aminoglycoside antibiotic + corticosteroid combination",
+      "dosageForm": "Eye drops, suspension",
+      "genericName": "Tobramycin + Dexamethasone",
+      "specialties": [
+        "Ophthalmology"
+      ],
+      "activeIngredients": [
+        "Tobramycin",
+        "Dexamethasone"
+      ]
+    },
     {
       "found": true,
       "notes": "Iraq-marketed brand added to cover a medicine on the Iraqi National Master List. Clinical text follows the reference SmPC/label; check the local leaflet.",

@@ -1390,6 +1390,69 @@ const PFIZER_COMPACT_PRODUCTS: CompactPfizerDrug[] = [
     sourceTitle: 'Camptosar (irinotecan injection) — FDA Official Prescribing Information',
     sourceUrl: 'https://www.accessdata.fda.gov/drugsatfda_docs/label/2014/020571s048lbl.pdf',
   },
+  {
+    brandName: 'Cortef 10 mg',
+    genericName: 'Hydrocortisone',
+    drugClassNameEn: 'Glucocorticoids (Systemic Corticosteroids)',
+    dosageForm: 'Tablet',
+    strength: '10 mg',
+    route: 'Oral',
+    packSize: '100 tablets',
+    indications:
+      'Physiologic glucocorticoid replacement therapy in primary or secondary adrenocortical insufficiency (Addison disease, hypopituitarism) and congenital adrenal hyperplasia; also indicated in endocrine, rheumatic, collagen, dermatologic, allergic, respiratory, hematologic, and gastrointestinal corticosteroid-responsive disorders.',
+    adultDosage:
+      'Adrenal insufficiency replacement: typically 15 to 25 mg/day orally divided into 2 or 3 doses (e.g., 10 mg on waking and 5 mg in the early afternoon, or 10 mg + 5 mg + 5 mg) to mimic diurnal cortisol secretion; increase dose 2- to 3-fold during intercurrent febrile illness, trauma, or stress. Anti-inflammatory/immunosuppressive dosing: 20 to 240 mg/day depending on disease severity.',
+    contraindications:
+      'Systemic fungal infections and known hypersensitivity to hydrocortisone or any excipient (no absolute contraindications in life-threatening adrenal crisis/replacement therapy). Administration of live or live-attenuated vaccines is contraindicated in patients receiving immunosuppressive corticosteroid doses.',
+    sideEffects:
+      'Fluid and sodium retention, hypertension, potassium loss, Cushingoid state, weight gain, hyperglycaemia, peptic ulceration, osteoporosis, vertebral compression fractures, myopathy, insomnia, mood swings, impaired wound healing, increased susceptibility to infection, adrenal suppression after prolonged supraphysiologic dosing.',
+    storageConditions: 'Store at controlled room temperature 20°C to 25°C.',
+    specialties: ['Endocrinology', 'Internal Medicine', 'Rheumatology', 'Allergy & Immunology'],
+    sourceTitle: 'Cortef (hydrocortisone tablets) — DailyMed Official Prescribing Information (Pfizer)',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Cortef',
+  },
+  {
+    brandName: 'Cortef 20 mg',
+    genericName: 'Hydrocortisone',
+    drugClassNameEn: 'Glucocorticoids (Systemic Corticosteroids)',
+    dosageForm: 'Tablet',
+    strength: '20 mg',
+    route: 'Oral',
+    packSize: '100 tablets',
+    indications:
+      'Replacement therapy in primary or secondary adrenocortical insufficiency and congenital adrenal hyperplasia, as well as systemic corticosteroid therapy in inflammatory, allergic, autoimmune, and hematologic conditions.',
+    adultDosage:
+      'Replacement therapy: 15 to 30 mg/day in 2 or 3 divided doses (with the largest dose taken upon awakening). Stress dosing: double or triple the daily oral dose during acute illness or fever. Do not discontinue abruptly after prolonged therapy.',
+    contraindications:
+      'Systemic fungal infections; hypersensitivity to hydrocortisone or any excipient.',
+    sideEffects:
+      'Sodium and fluid retention, hypertension, hypokalaemia, hyperglycaemia, Cushingoid features, osteoporosis, peptic ulceration, myopathy, cataract/glaucoma, and hypothalamic-pituitary-adrenal (HPA) axis suppression.',
+    storageConditions: 'Store at controlled room temperature 20°C to 25°C.',
+    specialties: ['Endocrinology', 'Internal Medicine', 'Rheumatology', 'Allergy & Immunology'],
+    sourceTitle: 'Cortef (hydrocortisone tablets) — DailyMed Official Prescribing Information (Pfizer)',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Cortef',
+  },
+  {
+    brandName: 'Methotrexate 2.5 mg Tablets',
+    genericName: 'Methotrexate',
+    drugClassNameEn: 'Folic Acid Analogue Antimetabolites & Disease-Modifying Antirheumatic Drugs (DMARDs)',
+    dosageForm: 'Tablet',
+    strength: '2.5 mg',
+    route: 'Oral',
+    packSize: '28 or 100 tablets',
+    indications:
+      'Active rheumatoid arthritis in adult patients; polyarthritic forms of severe, active juvenile idiopathic arthritis; severe recalcitrant disabling psoriasis and severe psoriatic arthritis in adults; mild to moderate Crohn disease; and maintenance treatment of acute lymphoblastic leukaemia (ALL) and other neoplastic diseases.',
+    adultDosage:
+      'Rheumatoid arthritis & psoriasis (ONCE WEEKLY ONLY — accidental daily administration can result in fatal toxicity): Recommended initial dose is 7.5 mg once weekly orally, titrated gradually according to response up to 15–20 mg once weekly (maximum 25 mg/week), with folic acid 5 mg supplementation on a separate day of the week.',
+    contraindications:
+      'Hypersensitivity to methotrexate; severe hepatic impairment or alcoholism; severe renal impairment (CrCl < 30 mL/min); pre-existing blood dyscrasias (bone marrow hypoplasia, leukopenia, thrombocytopenia, significant anaemia); severe acute or chronic infections; stomatitis or active gastrointestinal ulceration; pregnancy and breastfeeding; concurrent live vaccines.',
+    sideEffects:
+      'Stomatitis, dyspepsia, nausea, loss of appetite, abdominal pain, elevated transaminases (ALT/AST), leukopenia, anaemia, thrombocytopenia, headache, fatigue, drowsiness, alopecia, rash, and potentially serious hepatotoxicity, bone marrow suppression, or interstitial pneumonitis.',
+    storageConditions: 'Do not store above 25°C. Keep in the outer carton to protect from light.',
+    specialties: ['Rheumatology', 'Dermatology', 'Oncology', 'Hematology', 'Gastroenterology', 'Internal Medicine'],
+    sourceTitle: 'Methotrexate 2.5 mg Tablets — UK eMC & DailyMed SmPC Search (Pfizer)',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Methotrexate+2.5+mg',
+  },
 ];
 
 export const PFIZER_PRODUCTS: AiProductDraft[] = PFIZER_COMPACT_PRODUCTS.map(toPfizerProductDraft);

@@ -616,6 +616,174 @@ const RAW_HIKMA: CompactDrug[] = [
     notes:
       'Official Hikma Pharmaceuticals PLC SmPC data. Each hard capsule contains 200 mg celecoxib.',
   },
+  {
+    brandName: 'Matador 500 mg',
+    genericName: 'Levofloxacin',
+    activeIngredients: ['Levofloxacin'],
+    drugClass: 'Fluoroquinolone Antibacterials',
+    strength: '500 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 5 or 7 film-coated tablets',
+    indications:
+      'Treatment of bacterial infections in adults caused by levofloxacin-susceptible microorganisms: acute bacterial sinusitis, acute exacerbation of chronic obstructive pulmonary disease, community-acquired pneumonia, complicated skin and soft tissue infections, acute pyelonephritis and complicated urinary tract infections, and chronic bacterial prostatitis.',
+    dose:
+      'Adults with normal renal function (CrCl > 50 mL/min): 500 mg orally once daily (or 500 mg twice daily in severe CAP or complicated skin/soft tissue infections) for 7 to 14 days (28 days in chronic bacterial prostatitis). Separate by at least 2 hours from iron, zinc, magnesium/aluminium antacids, or sucralfate.',
+    contraindications:
+      'Hypersensitivity to levofloxacin or other quinolones; epilepsy; history of tendon disorders related to fluoroquinolone administration; children or growing adolescents; pregnancy and breastfeeding.',
+    adverseEffects:
+      'Insomnia, headache, dizziness, diarrhoea, vomiting, nausea, elevated hepatic enzymes (ALT/AST); rare tendinitis and tendon rupture, peripheral neuropathy, QT prolongation, dysglycaemia.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Infectious Diseases', 'Pulmonology', 'Urology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Hikma Pharmaceuticals PLC — Branded Anti-Infectives Portfolio (Matador / Levofloxacin)',
+        url: 'https://www.hikma.com/what-we-do/branded/',
+      },
+    ],
+    notes:
+      'Official Hikma Pharmaceuticals PLC MENA anti-infectives portfolio data. Each film-coated tablet contains levofloxacin hemihydrate equivalent to 500 mg levofloxacin.',
+  },
+  {
+    brandName: 'Matador 750 mg',
+    genericName: 'Levofloxacin',
+    activeIngredients: ['Levofloxacin'],
+    drugClass: 'Fluoroquinolone Antibacterials',
+    strength: '750 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 5 film-coated tablets',
+    indications:
+      'High-dose short-course therapy for community-acquired pneumonia, acute bacterial sinusitis, complicated urinary tract infections, acute pyelonephritis, and complicated skin and soft tissue infections in adults.',
+    dose:
+      'Adults with CrCl > 50 mL/min: 750 mg orally once daily for 5 days (community-acquired pneumonia, acute bacterial sinusitis, cUTI/acute pyelonephritis) or 7 to 14 days (complicated skin and soft tissue infections).',
+    contraindications:
+      'Hypersensitivity to levofloxacin or other quinolones; epilepsy; history of fluoroquinolone-associated tendon disorders; children or growing adolescents; pregnancy and breastfeeding.',
+    adverseEffects:
+      'Insomnia, headache, dizziness, nausea, diarrhoea, vomiting, elevated liver enzymes; class warnings include tendinitis/tendon rupture, peripheral neuropathy, CNS effects, and QT prolongation.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Infectious Diseases', 'Pulmonology', 'Urology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Hikma Pharmaceuticals PLC — Branded Anti-Infectives Portfolio (Matador 750 mg)',
+        url: 'https://www.hikma.com/what-we-do/branded/',
+      },
+    ],
+    notes:
+      'Official Hikma Pharmaceuticals PLC MENA anti-infectives portfolio data. Each film-coated tablet contains levofloxacin hemihydrate equivalent to 750 mg levofloxacin.',
+  },
+  {
+    brandName: 'Solotik 50 mg',
+    genericName: 'Sertraline',
+    activeIngredients: ['Sertraline hydrochloride'],
+    drugClass: 'Selective Serotonin Reuptake Inhibitors (SSRIs)',
+    strength: '50 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets',
+    indications:
+      'Treatment of major depressive episodes and prevention of recurrence of major depressive episodes; panic disorder (with or without agoraphobia); obsessive-compulsive disorder (OCD) in adults and paediatric patients aged 6–17 years; social anxiety disorder; and post-traumatic stress disorder (PTSD).',
+    dose:
+      'Adults: Depression and OCD: initiate at 50 mg orally once daily (morning or evening), with or without food; may be titrated in 50 mg increments at intervals of at least 1 week up to a maximum of 200 mg/day. Panic disorder, PTSD, and social anxiety disorder: initiate at 25 mg once daily, increasing to 50 mg once daily after 1 week.',
+    contraindications:
+      'Hypersensitivity to sertraline; concomitant treatment with irreversible monoamine oxidase inhibitors (MAOIs — wait at least 14 days) or pimozide.',
+    adverseEffects:
+      'Insomnia, dizziness, somnolence, headache, diarrhoea, nausea, dry mouth, ejaculation failure, fatigue, tremor, hyperhidrosis, anxiety, agitation.',
+    storage: 'Store below 30°C in a dry place.',
+    specialties: ['Psychiatry', 'Neurology', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sources: [
+      {
+        title: 'Hikma Pharmaceuticals PLC — CNS Portfolio (Solotik / Sertraline)',
+        url: 'https://www.hikma.com/what-we-do/branded/',
+      },
+    ],
+    notes:
+      'Official Hikma Pharmaceuticals PLC CNS portfolio data. Each film-coated tablet contains sertraline hydrochloride equivalent to 50 mg sertraline.',
+  },
+  {
+    brandName: 'Solotik 100 mg',
+    genericName: 'Sertraline',
+    activeIngredients: ['Sertraline hydrochloride'],
+    drugClass: 'Selective Serotonin Reuptake Inhibitors (SSRIs)',
+    strength: '100 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets',
+    indications:
+      'Maintenance and higher-dose treatment of major depressive disorder, obsessive-compulsive disorder (OCD), panic disorder, social anxiety disorder, and post-traumatic stress disorder (PTSD) in adults.',
+    dose:
+      'Adults: 100 mg orally once daily (up to a maximum of 200 mg once daily) taken in the morning or evening with or without food.',
+    contraindications:
+      'Hypersensitivity to sertraline; concomitant use of MAOIs or pimozide.',
+    adverseEffects:
+      'Nausea, diarrhoea, dyspepsia, insomnia, somnolence, dizziness, headache, tremor, sexual dysfunction, hyperhidrosis, fatigue.',
+    storage: 'Store below 30°C in a dry place.',
+    specialties: ['Psychiatry', 'Neurology', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sources: [
+      {
+        title: 'Hikma Pharmaceuticals PLC — CNS Portfolio (Solotik 100 mg)',
+        url: 'https://www.hikma.com/what-we-do/branded/',
+      },
+    ],
+    notes:
+      'Official Hikma Pharmaceuticals PLC CNS portfolio data. Each film-coated tablet contains sertraline hydrochloride equivalent to 100 mg sertraline.',
+  },
+  {
+    brandName: 'Empagliform 5 mg / 1000 mg',
+    genericName: 'Empagliflozin + Metformin hydrochloride',
+    activeIngredients: ['Empagliflozin', 'Metformin hydrochloride'],
+    drugClass: 'SGLT2 Inhibitor + Biguanide Fixed-Dose Combination',
+    strength: '5 mg / 1000 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets',
+    indications:
+      'Treatment of adults with type 2 diabetes mellitus as an adjunct to diet and exercise to improve glycaemic control in patients inadequately controlled on their maximally tolerated dose of metformin alone, in combination with other glucose-lowering medicinal products including insulin, or in patients already being treated with the combination of empagliflozin and metformin as separate tablets.',
+    dose:
+      'One 5 mg / 1000 mg film-coated tablet twice daily taken with meals.',
+    contraindications:
+      'Hypersensitivity to empagliflozin or metformin; any type of acute metabolic acidosis (lactic acidosis, diabetic ketoacidosis); diabetic pre-coma; severe renal failure (eGFR < 30 mL/min/1.73 m²); acute conditions with potential to alter renal function; tissue hypoxia states; hepatic impairment, acute alcohol intoxication, alcoholism.',
+    adverseEffects:
+      'Genital mycotic infections, urinary tract infections, hypoglycaemia (when used with sulphonylurea or insulin), gastrointestinal symptoms (nausea, vomiting, diarrhoea, abdominal pain, loss of appetite), taste disturbance, volume depletion, thirst.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Endocrinology', 'Internal Medicine', 'Cardiology', 'Nephrology'],
+    sources: [
+      {
+        title: 'Hikma Pharmaceuticals PLC — Diabetes & Cardiometabolic Portfolio (Empagliform)',
+        url: 'https://www.hikma.com/what-we-do/branded/',
+      },
+    ],
+    notes:
+      'Official Hikma Pharmaceuticals PLC cardiometabolic portfolio data. Each film-coated tablet contains 5 mg empagliflozin and 1000 mg metformin hydrochloride.',
+  },
+  {
+    brandName: 'Empagliform 12.5 mg / 1000 mg',
+    genericName: 'Empagliflozin + Metformin hydrochloride',
+    activeIngredients: ['Empagliflozin', 'Metformin hydrochloride'],
+    drugClass: 'SGLT2 Inhibitor + Biguanide Fixed-Dose Combination',
+    strength: '12.5 mg / 1000 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets',
+    indications:
+      'Treatment of type 2 diabetes mellitus in adults requiring 25 mg total daily empagliflozin and 2000 mg total daily metformin hydrochloride.',
+    dose:
+      'One 12.5 mg / 1000 mg film-coated tablet twice daily taken with meals.',
+    contraindications:
+      'Hypersensitivity to empagliflozin or metformin; acute metabolic acidosis (lactic acidosis, DKA); eGFR < 30 mL/min/1.73 m²; dehydration or shock; hepatic impairment or alcoholism.',
+    adverseEffects:
+      'Vulvovaginal candidiasis, balanitis, urinary tract infection, polyuria, gastrointestinal disturbances (nausea, diarrhoea, abdominal pain), metallic taste, decreased vitamin B12.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Endocrinology', 'Internal Medicine', 'Cardiology', 'Nephrology'],
+    sources: [
+      {
+        title: 'Hikma Pharmaceuticals PLC — Diabetes & Cardiometabolic Portfolio (Empagliform 12.5/1000 mg)',
+        url: 'https://www.hikma.com/what-we-do/branded/',
+      },
+    ],
+    notes:
+      'Official Hikma Pharmaceuticals PLC cardiometabolic portfolio data. Each film-coated tablet contains 12.5 mg empagliflozin and 1000 mg metformin hydrochloride.',
+  },
 ];
 
 export const HIKMA_PRODUCTS: AiProductDraft[] = RAW_HIKMA.map((d) => ({

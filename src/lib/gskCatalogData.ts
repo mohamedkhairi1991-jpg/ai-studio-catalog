@@ -1193,9 +1193,72 @@ const GSK_COMPACT_PRODUCTS: CompactGskDrug[] = [
     sideEffects:
       'Anemia, hypothyroidism, diarrhea, nausea, vomiting, abdominal pain, colitis, pruritus, rash, arthralgia, myalgia, pyrexia, elevated transaminases, and immune-mediated adverse reactions (pneumonitis, colitis, hepatitis, endocrinopathies, nephritis, severe skin reactions).',
     storageConditions: 'Store in a refrigerator (2°C to 8°C). Do not freeze. Store in the original package in order to protect from light.',
-    specialties: ['Oncology', 'Obstetrics and Gynecology'],
+    specialties: ['Oncology', 'Obstetrics & Gynecology'],
     sourceTitle: 'Jemperli (dostarlimab) — EMA Official EPAR & SmPC',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/jemperli',
+  },
+  {
+    brandName: 'Volibris 5 mg',
+    genericName: 'Ambrisentan',
+    drugClassNameEn: 'Selective Endothelin A (ET-A) Receptor Antagonists for Pulmonary Arterial Hypertension',
+    dosageForm: 'Film-coated tablet',
+    strength: '5 mg',
+    route: 'Oral',
+    packSize: '30 film-coated tablets',
+    indications:
+      'Treatment of pulmonary arterial hypertension (PAH) in adult patients of WHO Functional Class II to III, including use in combination treatment, and in adolescents and children (aged 8 to <18 years) of WHO Functional Class II to III.',
+    adultDosage:
+      'Adults: Initiate at 5 mg orally once daily; may be increased to 10 mg once daily depending on clinical response and tolerability (when used in combination with tadalafil, titrate to 10 mg once daily after 4 weeks). Swallow whole with or without food.',
+    contraindications:
+      'Hypersensitivity to ambrisentan, soya, or any excipient; pregnancy and women of childbearing potential not using reliable contraception; breastfeeding; severe hepatic impairment (with or without cirrhosis); baseline hepatic aminotransferases (AST and/or ALT) > 3x ULN; idiopathic pulmonary fibrosis (IPF), with or without secondary pulmonary hypertension.',
+    sideEffects:
+      'Peripheral oedema, fluid retention, anaemia (decreased haemoglobin/haematocrit), headache, dizziness, palpitations, flushing, nasal congestion, sinusitis, nasopharyngitis, dyspnoea, abdominal pain, constipation, nausea, vomiting, elevated hepatic transaminases, asthenia, fatigue.',
+    storageConditions: 'This medicinal product does not require any special storage conditions.',
+    specialties: ['Cardiology', 'Pulmonology'],
+    sourceTitle: 'Volibris (ambrisentan) — EMA Official EPAR & SmPC',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/volibris',
+  },
+  {
+    brandName: 'Volibris 10 mg',
+    genericName: 'Ambrisentan',
+    drugClassNameEn: 'Selective Endothelin A (ET-A) Receptor Antagonists for Pulmonary Arterial Hypertension',
+    dosageForm: 'Film-coated tablet',
+    strength: '10 mg',
+    route: 'Oral',
+    packSize: '30 film-coated tablets',
+    indications:
+      'Maintenance treatment of pulmonary arterial hypertension (PAH) in adult and paediatric (8 to <18 years) patients of WHO Functional Class II to III as monotherapy or in combination with tadalafil.',
+    adultDosage:
+      'Adults: 10 mg orally once daily with or without food. Swallow film-coated tablet whole; do not split, crush, or chew.',
+    contraindications:
+      'Hypersensitivity to ambrisentan, soya, or excipients; pregnancy and women of childbearing potential not using reliable contraception; breastfeeding; severe hepatic impairment; baseline AST/ALT > 3x ULN; idiopathic pulmonary fibrosis (IPF).',
+    sideEffects:
+      'Peripheral oedema, fluid retention, anaemia, headache, flushing, nasal congestion, nasopharyngitis, palpitations, abdominal pain, nausea, elevated hepatic aminotransferases, fatigue.',
+    storageConditions: 'This medicinal product does not require any special storage conditions.',
+    specialties: ['Cardiology', 'Pulmonology'],
+    sourceTitle: 'Volibris (ambrisentan) — EMA Official EPAR & SmPC',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/volibris',
+  },
+  {
+    brandName: 'Beconase 50 mcg Nasal Spray',
+    genericName: 'Beclometasone dipropionate',
+    drugClassNameEn: 'Intranasal Corticosteroids',
+    dosageForm: 'Nasal spray, suspension',
+    strength: '50 mcg / actuation',
+    route: 'Nasal',
+    packSize: '1 bottle (200 sprays)',
+    indications:
+      'Prophylaxis and treatment of perennial and seasonal allergic rhinitis (including hay fever) and vasomotor rhinitis.',
+    adultDosage:
+      'Adults and children over 6 years: Two sprays (100 mcg) into each nostril twice daily (400 mcg/day total); once symptoms are controlled, maintenance may be reduced to one spray into each nostril twice daily.',
+    contraindications:
+      'Hypersensitivity to beclometasone dipropionate or to any of the excipients.',
+    sideEffects:
+      'Dryness and irritation of the nose and throat, unpleasant taste and smell, epistaxis, nasal ulceration, raised intraocular pressure, and rare nasal septal perforation.',
+    storageConditions: 'Do not store above 30°C. Protect from light; do not refrigerate.',
+    specialties: ['ENT (Otolaryngology)', 'Allergy & Immunology', 'General Practice / Family Medicine'],
+    sourceTitle: 'Beconase Aqueous Nasal Spray (beclometasone dipropionate) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Beconase',
   },
 ];
 

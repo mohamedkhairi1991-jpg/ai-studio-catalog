@@ -14,6 +14,8 @@ import { CompanyCatalog } from './CompanyCatalog';
 import { DoctorCatalog } from './DoctorCatalog';
 import { LegalDocumentPage, resolveLegalPage } from './LegalPages';
 import Onboarding from './Onboarding';
+import { NotificationBell } from './NotificationBell';
+import { recordAppOpen } from '../lib/notifications';
 import { Field, Screen, TermsAcceptanceCheckbox, buttonClass, inputClass } from './ui';
 import { TurnstileWidget } from './TurnstileWidget';
 import { CAPTCHA_ENABLED, captchaOptions } from '../lib/captcha';
@@ -98,6 +100,7 @@ export default function AuthGate() {
         }
       }
     }
+    void recordAppOpen(supabase);
     setAccess(resolved);
     setLoading(false);
   }, []);
@@ -192,7 +195,10 @@ export default function AuthGate() {
     const blocked = BLOCKED_MESSAGE[access.audience];
     return (
       <Screen>
-        <p className="text-sm text-text-muted">Signed in as {access.email}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm text-text-muted">Signed in as {access.email}</p>
+          <NotificationBell client={client} profileId={access.profileId} />
+        </div>
         {blocked && <p className="text-sm text-warning">{blocked}</p>}
         <button className={buttonClass} onClick={() => void signOut()}>
           Sign out

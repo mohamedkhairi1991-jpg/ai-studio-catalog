@@ -58,9 +58,10 @@ import {
   doctorSelfSignup,
   listSpecialties,
   loadDoctorProfileSummary,
-  recordDoctorAppOpen,
   type Option,
 } from '../lib/onboarding';
+import { recordAppOpen } from '../lib/notifications';
+import { NotificationBell } from './NotificationBell';
 import {
   BrandLogo,
   Field,
@@ -229,7 +230,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
       const userId = userRes.data.user?.id;
       if (userId) {
-        void recordDoctorAppOpen(client, userId);
+        void recordAppOpen(client);
         const summary = await loadDoctorProfileSummary(client, userId);
         if (!active) return;
         setProfileFullName(summary.fullName);
@@ -584,6 +585,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
+            <NotificationBell client={client} profileId={access.profileId} />
             <button
               type="button"
               aria-label="Saved and recent medicines"

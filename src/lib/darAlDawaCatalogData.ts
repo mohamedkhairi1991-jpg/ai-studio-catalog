@@ -72,7 +72,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: insomnia, dysgeusia, headache, taste perversion, diarrhoea, vomiting, dyspepsia, nausea, abdominal pain, abnormal liver function test, rash, hyperhidrosis.',
     storage:
       'Store below 30°C in a dry place Protected from light.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Gastroenterology', 'Internal Medicine'],
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Gastroenterology', 'Internal Medicine'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Claridar (clarithromycin) Official Product Portfolio',
@@ -225,7 +225,7 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
       'Common: headache, dizziness, vertigo, nausea, vomiting, diarrhoea, dyspepsia, abdominal pain, flatulence, anorexia, increased transaminases, rash.',
     storage:
       'Store below 30°C in a dry place.',
-    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics and Gynecology'],
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'Obstetrics & Gynecology'],
     sources: [
       {
         title: 'Dar Al Dawa Development & Investment Co. — Diclogesic (diclofenac sodium) Official Product Portfolio',
@@ -263,6 +263,413 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
     ],
     notes:
       'Official Dar Al Dawa Development & Investment Co. SmPC data. Each prolonged-release tablet contains 100 mg diclofenac sodium (INN base: Diclofenac).',
+  },
+  {
+    brandName: 'Ciprodar 250 mg',
+    genericName: 'Ciprofloxacin',
+    activeIngredients: ['Ciprofloxacin'],
+    drugClass: 'Fluoroquinolone antibacterial',
+    strength: '250 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 10 film-coated tablets in blister',
+    indications:
+      'Uncomplicated and complicated urinary tract infections, gonococcal urethritis and cervicitis, infectious diarrhoea, and respiratory or skin infections caused by susceptible Gram-negative bacteria.',
+    dose:
+      'Adults: 250 mg to 500 mg twice daily (every 12 hours) for 3 to 14 days depending on indication and severity. Separate from dairy products or polyvalent cation antacids/supplements.',
+    contraindications:
+      'Hypersensitivity to ciprofloxacin, other fluoroquinolones, or excipients; concomitant administration with tizanidine.',
+    adverseEffects:
+      'Common: nausea, diarrhoea. Uncommon: fungal superinfections, headache, dizziness, abdominal pain, dyspepsia, rash, arthralgia. Class warnings: tendinitis and tendon rupture, peripheral neuropathy, QT prolongation.',
+    storage:
+      'Store below 30°C in a dry place in the original package.',
+    specialties: ['Infectious Diseases', 'Urology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Ciprodar 250 mg Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each film-coated tablet contains ciprofloxacin hydrochloride equivalent to 250 mg ciprofloxacin (INN base: Ciprofloxacin).',
+  },
+  {
+    brandName: 'Ciprodar 750 mg',
+    genericName: 'Ciprofloxacin',
+    activeIngredients: ['Ciprofloxacin'],
+    drugClass: 'Fluoroquinolone antibacterial',
+    strength: '750 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 10 film-coated tablets in blister',
+    indications:
+      'Severe or complicated bacterial infections in adults: bone and joint infections (osteomyelitis), malignant external otitis, lower respiratory tract infections due to Pseudomonas aeruginosa in bronchiectasis/COPD, complicated intra-abdominal infections, and chronic bacterial prostatitis.',
+    dose:
+      'Adults: 750 mg twice daily (every 12 hours) for 7 to 14 days (up to 4–8 weeks for bone and joint infections or malignant external otitis).',
+    contraindications:
+      'Hypersensitivity to ciprofloxacin, other fluoroquinolones, or excipients; concomitant administration with tizanidine.',
+    adverseEffects:
+      'Common: nausea, diarrhoea. Uncommon: headache, dizziness, vomiting, abdominal pain, elevated transaminases, rash, arthralgia. Class warnings: tendinitis and tendon rupture, peripheral neuropathy, QT prolongation.',
+    storage:
+      'Store below 30°C in a dry place in the original package.',
+    specialties: ['Infectious Diseases', 'Urology', 'Orthopedics', 'Pulmonology', 'ENT (Otolaryngology)'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Ciprodar 750 mg Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each film-coated tablet contains ciprofloxacin hydrochloride equivalent to 750 mg ciprofloxacin (INN base: Ciprofloxacin).',
+  },
+  {
+    brandName: 'Claridar 250 mg',
+    genericName: 'Clarithromycin',
+    activeIngredients: ['Clarithromycin'],
+    drugClass: 'Macrolide antibacterial',
+    strength: '250 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 14 film-coated tablets in blisters',
+    indications:
+      'Bacterial pharyngitis/tonsillitis, acute maxillary sinusitis, acute bacterial exacerbation of chronic bronchitis, mild to moderate community-acquired pneumonia, and uncomplicated skin and soft tissue infections.',
+    dose:
+      'Adults and adolescents (>= 12 years): Usual dose is 250 mg twice daily (every 12 hours) for 6 to 14 days, increased to 500 mg twice daily in severe infections.',
+    contraindications:
+      'Hypersensitivity to clarithromycin, macrolide antibiotics, or excipients; concomitant astemizole, cisapride, domperidone, pimozide, terfenadine, ergot alkaloids, oral midazolam, lomitapide, ticagrelor, ivabradine, ranolazine, lovastatin, simvastatin, or colchicine; history of QT prolongation or ventricular arrhythmia; hypokalaemia or hypomagnesaemia.',
+    adverseEffects:
+      'Common: insomnia, dysgeusia, headache, diarrhoea, vomiting, dyspepsia, nausea, abdominal pain, abnormal liver function test, rash, hyperhidrosis.',
+    storage:
+      'Store below 30°C in a dry place, protected from light.',
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Claridar 250 mg Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each film-coated tablet contains 250 mg clarithromycin.',
+  },
+  {
+    brandName: 'Claridar 125 mg/5 mL',
+    genericName: 'Clarithromycin',
+    activeIngredients: ['Clarithromycin'],
+    drugClass: 'Macrolide antibacterial',
+    strength: '125 mg/5 mL',
+    dosageForm: 'Granules for oral suspension',
+    route: 'Oral',
+    packSize: 'Bottle for preparation of 60 mL or 100 mL oral suspension',
+    indications:
+      'Paediatric bacterial infections (aged 6 months to 12 years): streptococcal pharyngitis/tonsillitis, acute otitis media, acute maxillary sinusitis, community-acquired pneumonia, and uncomplicated skin and soft tissue infections.',
+    dose:
+      'Children aged 6 months to 12 years: Recommended dose is 7.5 mg/kg twice daily (every 12 hours) for 5 to 10 days, up to a maximum of 500 mg twice daily. May be given with or without food or milk.',
+    contraindications:
+      'Hypersensitivity to clarithromycin, macrolide antibiotics, or excipients; concomitant QT-prolonging drugs or ergot alkaloids; history of QT prolongation or ventricular cardiac arrhythmia; hypokalaemia.',
+    adverseEffects:
+      'Common: diarrhoea, vomiting, abdominal pain, dyspepsia, dysgeusia, headache, rash.',
+    storage:
+      'Dry granules: store below 30°C. Reconstituted suspension: store below 25°C (do not refrigerate) and use within 14 days.',
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Claridar Paediatric Suspension Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. After reconstitution, each 5 mL contains 125 mg clarithromycin.',
+  },
+  {
+    brandName: 'Hyposec 40 mg',
+    genericName: 'Omeprazole',
+    activeIngredients: ['Omeprazole'],
+    drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
+    strength: '40 mg',
+    dosageForm: 'Gastro-resistant hard capsule',
+    route: 'Oral',
+    packSize: 'Pack of 14 or 28 gastro-resistant hard capsules',
+    indications:
+      'Severe or refractory reflux oesophagitis, gastric ulcer, duodenal ulcer poorly responsive to 20 mg daily, Helicobacter pylori eradication regimens, and Zollinger-Ellison syndrome.',
+    dose:
+      '40 mg once daily in the morning before food for 4 to 8 weeks. Zollinger-Ellison syndrome: initially 60 mg once daily, titrated individually.',
+    contraindications:
+      'Hypersensitivity to omeprazole, substituted benzimidazoles, or excipients; concomitant administration with nelfinavir.',
+    adverseEffects:
+      'Common: headache, abdominal pain, constipation, diarrhoea, flatulence, nausea, vomiting, benign fundic gland polyps.',
+    storage:
+      'Store below 25°C in a dry place, protected from light and moisture.',
+    specialties: ['Gastroenterology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Hyposec 40 mg Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each gastro-resistant hard capsule contains 40 mg omeprazole.',
+  },
+  {
+    brandName: 'Lansodar 15 mg',
+    genericName: 'Lansoprazole',
+    activeIngredients: ['Lansoprazole'],
+    drugClass: 'Proton pump inhibitor (H+/K+-ATPase inhibitor)',
+    strength: '15 mg',
+    dosageForm: 'Gastro-resistant hard capsule',
+    route: 'Oral',
+    packSize: 'Pack of 14 or 28 gastro-resistant hard capsules',
+    indications:
+      'Maintenance treatment for prevention of relapse of reflux oesophagitis; symptomatic gastro-oesophageal reflux disease (heartburn and acid regurgitation); and prophylaxis of NSAID-associated benign gastric and duodenal ulcers in patients requiring continued NSAID treatment.',
+    dose:
+      '15 mg once daily in the morning at least 30 minutes before food (may be increased to 30 mg once daily if required).',
+    contraindications:
+      'Hypersensitivity to lansoprazole or to any of the excipients.',
+    adverseEffects:
+      'Common: headache, dizziness, nausea, diarrhoea, stomach ache, constipation, vomiting, flatulence, dry mouth or throat, benign fundic gland polyps, elevated liver enzymes, rash, fatigue.',
+    storage:
+      'Store below 25°C in the original package to protect from moisture.',
+    specialties: ['Gastroenterology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Lansodar 15 mg Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each gastro-resistant hard capsule contains 15 mg lansoprazole.',
+  },
+  {
+    brandName: 'Diclogesic 75 mg/3 mL',
+    genericName: 'Diclofenac',
+    activeIngredients: ['Diclofenac'],
+    drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, phenylacetic acid derivative)',
+    strength: '75 mg/3 mL',
+    dosageForm: 'Solution for injection',
+    route: 'Intramuscular',
+    packSize: 'Pack of 5 ampoules of 3 mL solution for injection',
+    indications:
+      'Acute exacerbations of inflammatory and degenerative rheumatic diseases, acute gout, renal colic, biliary colic, post-traumatic and post-operative pain, inflammation, and swelling.',
+    dose:
+      'Adults: One 75 mg ampoule once daily by deep intragluteal injection into the upper outer quadrant (or two 75 mg injections separated by a few hours in severe cases, maximum 150 mg/day) for no more than 2 days.',
+    contraindications:
+      'Hypersensitivity to diclofenac, aspirin, or other NSAIDs; active or recurrent peptic ulcer/haemorrhage; history of NSAID-related GI bleeding or perforation; established congestive heart failure (NYHA II–IV), ischaemic heart disease, peripheral arterial disease, or cerebrovascular disease; severe hepatic or renal failure; bleeding disorders or concomitant anticoagulation; third trimester of pregnancy.',
+    adverseEffects:
+      'Common: injection site pain and induration, headache, dizziness, vertigo, nausea, vomiting, diarrhoea, dyspepsia, abdominal pain, elevated transaminases, rash.',
+    storage:
+      'Store below 30°C, protected from light. Do not freeze.',
+    specialties: ['Orthopedics', 'Rheumatology', 'Emergency Medicine', 'General Surgery', 'Urology'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Diclogesic Ampoules Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each 3 mL ampoule contains 75 mg diclofenac sodium (INN base: Diclofenac).',
+  },
+  {
+    brandName: 'Diclogesic 1% Emulgel',
+    category: 'otc_drug',
+    genericName: 'Diclofenac',
+    activeIngredients: ['Diclofenac'],
+    drugClass: 'Topical non-steroidal anti-inflammatory and analgesic gel',
+    strength: '1% w/w',
+    dosageForm: 'Gel',
+    route: 'Topical',
+    packSize: 'Tube of 50 g topical gel',
+    indications:
+      'Local symptomatic relief of pain and inflammation in trauma of the tendons, ligaments, muscles, and joints (e.g. due to sprains, strains, and bruises), localised forms of soft-tissue rheumatism (tendinitis, bursitis, shoulder-hand syndrome), and localised osteoarthritis of superficial joints.',
+    dose:
+      'Adults and adolescents (>= 14 years): Gently rub 2 g to 4 g of gel into the affected area 3 to 4 times daily. Wash hands after application unless they are the site being treated.',
+    contraindications:
+      'Hypersensitivity to diclofenac, aspirin, other NSAIDs, or excipients; third trimester of pregnancy; application to open wounds, infected skin, or exfoliative dermatitis; children and adolescents under 14 years of age.',
+    adverseEffects:
+      'Common: local dermatitis (including contact dermatitis), rash, erythema, eczema, pruritus. Very rare: pustular rash, angioedema, asthma, photosensitivity reaction.',
+    storage:
+      'Store below 30°C.',
+    specialties: ['Orthopedics', 'Rheumatology', 'Physical Medicine and Rehabilitation', 'General Practice / Family Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Diclogesic Emulgel Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Contains diclofenac diethylamine equivalent to 1% w/w diclofenac sodium (INN base: Diclofenac).',
+  },
+  {
+    brandName: 'Moxiclav 625 mg',
+    genericName: 'Amoxicillin + Clavulanic acid',
+    activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
+    drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
+    strength: '500 mg/125 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 14 or 20 film-coated tablets in blisters',
+    indications:
+      'Acute bacterial sinusitis, acute otitis media, acute exacerbations of chronic bronchitis, community-acquired pneumonia, cystitis, pyelonephritis, skin and soft tissue infections, and bone and joint infections.',
+    dose:
+      'Adults and children >= 40 kg: One 625 mg (500 mg/125 mg) tablet every 8 hours (three times daily) for 5 to 14 days at the start of a meal.',
+    contraindications:
+      'Hypersensitivity to amoxicillin, clavulanic acid, penicillins, or excipients; history of severe immediate hypersensitivity reaction to another beta-lactam agent; history of amoxicillin/clavulanic acid-induced jaundice or hepatic dysfunction.',
+    adverseEffects:
+      'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: dizziness, headache, dyspepsia, elevated AST/ALT, rash, pruritus, urticaria.',
+    storage:
+      'Store below 25°C in a dry place in the original package to protect from moisture.',
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Moxiclav (amoxicillin / clavulanic acid) Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each 625 mg film-coated tablet contains amoxicillin trihydrate equivalent to 500 mg amoxicillin and potassium clavulanate equivalent to 125 mg clavulanic acid (INN bases: Amoxicillin + Clavulanic acid).',
+  },
+  {
+    brandName: 'Moxiclav 1 g',
+    genericName: 'Amoxicillin + Clavulanic acid',
+    activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
+    drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
+    strength: '875 mg/125 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 14 film-coated tablets in blisters',
+    indications:
+      'Acute bacterial sinusitis, acute otitis media, acute exacerbations of chronic bronchitis, community-acquired pneumonia, cystitis, pyelonephritis, skin and soft tissue infections, and bone and joint infections.',
+    dose:
+      'Adults and children >= 40 kg: One 1 g (875 mg/125 mg) tablet every 12 hours (twice daily); up to three times daily for severe infections. Administer at the start of a meal.',
+    contraindications:
+      'Hypersensitivity to amoxicillin, clavulanic acid, penicillins, or excipients; history of severe immediate hypersensitivity reaction to another beta-lactam antibacterial; history of amoxicillin/clavulanic acid-induced jaundice or hepatic dysfunction.',
+    adverseEffects:
+      'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: headache, dizziness, dyspepsia, elevated hepatic transaminases, skin rash, pruritus, urticaria.',
+    storage:
+      'Store below 25°C in a dry place in the original package to protect from moisture.',
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT (Otolaryngology)', 'Urology'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Moxiclav 1 g Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each 1 g film-coated tablet contains amoxicillin trihydrate equivalent to 875 mg amoxicillin and potassium clavulanate equivalent to 125 mg clavulanic acid (INN bases: Amoxicillin + Clavulanic acid).',
+  },
+  {
+    brandName: 'Moxiclav Forte 457 mg/5 mL',
+    genericName: 'Amoxicillin + Clavulanic acid',
+    activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
+    drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
+    strength: '400 mg/57 mg per 5 mL',
+    dosageForm: 'Powder for oral suspension',
+    route: 'Oral',
+    packSize: 'Bottle for preparation of 70 mL oral suspension',
+    indications:
+      'Paediatric bacterial infections: acute bacterial sinusitis, acute otitis media, community-acquired pneumonia, cystitis, pyelonephritis, and skin and soft tissue infections.',
+    dose:
+      'Children < 40 kg (aged >= 2 months): 25/3.6 mg/kg/day to 45/6.4 mg/kg/day (up to 70/10 mg/kg/day for severe infections) divided into 2 equal doses every 12 hours at the start of a meal.',
+    contraindications:
+      'Hypersensitivity to penicillins or beta-lactamase inhibitors; history of severe hypersensitivity to other beta-lactam agents; history of amoxicillin/clavulanic acid-associated jaundice or hepatic dysfunction.',
+    adverseEffects:
+      'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis, diaper dermatitis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
+    storage:
+      'Dry powder: store below 25°C. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT (Otolaryngology)', 'Pulmonology'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Moxiclav Forte Oral Suspension Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each 5 mL of reconstituted suspension contains 400 mg amoxicillin and 57 mg clavulanic acid (INN bases: Amoxicillin + Clavulanic acid).',
+  },
+  {
+    brandName: 'Atorlip 10 mg',
+    genericName: 'Atorvastatin',
+    activeIngredients: ['Atorvastatin'],
+    drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
+    strength: '10 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets in blisters',
+    indications:
+      'Reduction of elevated total cholesterol, LDL-C, apolipoprotein B, and triglycerides in primary hypercholesterolaemia, heterozygous and homozygous familial hypercholesterolaemia, or combined (mixed) hyperlipidaemia; primary and secondary prevention of cardiovascular events.',
+    dose:
+      'Usual starting dose is 10 mg or 20 mg once daily; dose range is 10 mg to 80 mg once daily at any time of day, with or without food.',
+    contraindications:
+      'Hypersensitivity to atorvastatin or excipients; active liver disease or unexplained persistent elevations of serum transaminases > 3x ULN; pregnancy and breastfeeding.',
+    adverseEffects:
+      'Common: nasopharyngitis, hyperglycaemia, headache, pharyngolaryngeal pain, epistaxis, constipation, flatulence, dyspepsia, nausea, diarrhoea, myalgia, arthralgia, pain in extremity, muscle spasms, abnormal liver function test, increased blood creatine kinase.',
+    storage:
+      'Store below 30°C in a dry place.',
+    specialties: ['Cardiology', 'Endocrinology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Atorlip (atorvastatin) Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each film-coated tablet contains atorvastatin calcium equivalent to 10 mg atorvastatin (INN base: Atorvastatin).',
+  },
+  {
+    brandName: 'Atorlip 20 mg',
+    genericName: 'Atorvastatin',
+    activeIngredients: ['Atorvastatin'],
+    drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
+    strength: '20 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets in blisters',
+    indications:
+      'Primary hypercholesterolaemia, familial hypercholesterolaemia, mixed dyslipidaemia, and prevention of cardiovascular events in high-risk patients.',
+    dose:
+      '20 mg once daily at any time of day, with or without food; titrate at intervals of 4 weeks or more up to a maximum of 80 mg once daily.',
+    contraindications:
+      'Hypersensitivity to atorvastatin or excipients; active liver disease or persistent elevations of serum transaminases > 3x ULN; pregnancy and breastfeeding.',
+    adverseEffects:
+      'Common: nasopharyngitis, hyperglycaemia, headache, dyspepsia, nausea, diarrhoea, constipation, myalgia, arthralgia, elevated hepatic transaminases and CK.',
+    storage:
+      'Store below 30°C in a dry place.',
+    specialties: ['Cardiology', 'Endocrinology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Atorlip 20 mg Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each film-coated tablet contains atorvastatin calcium equivalent to 20 mg atorvastatin (INN base: Atorvastatin).',
+  },
+  {
+    brandName: 'Atorlip 40 mg',
+    genericName: 'Atorvastatin',
+    activeIngredients: ['Atorvastatin'],
+    drugClass: 'HMG-CoA reductase inhibitor (statin lipid-modifying agent)',
+    strength: '40 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets in blisters',
+    indications:
+      'High-intensity LDL-C reduction in severe hypercholesterolaemia, familial hypercholesterolaemia, and secondary cardiovascular prevention.',
+    dose:
+      '40 mg once daily (up to 80 mg once daily), taken with or without food.',
+    contraindications:
+      'Hypersensitivity to atorvastatin or excipients; active liver disease or persistent serum transaminase elevations > 3x ULN; pregnancy and breastfeeding.',
+    adverseEffects:
+      'Common: myalgia, arthralgia, diarrhoea, dyspepsia, nausea, headache, hyperglycaemia, elevated serum transaminases and creatine kinase.',
+    storage:
+      'Store below 30°C in a dry place.',
+    specialties: ['Cardiology', 'Endocrinology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Atorlip 40 mg Official Product Portfolio',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. SmPC data. Each film-coated tablet contains atorvastatin calcium equivalent to 40 mg atorvastatin (INN base: Atorvastatin).',
   },
 ];
 

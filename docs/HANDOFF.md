@@ -58,19 +58,9 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
-### 2026-11-06 — Claude (Cravit removed from Hikma)
-- Owner decision: Cravit 500 mg and 750 mg are not Hikma products in Iraq
-  (licensed to JPM; Hikma's levofloxacin brand is Matador). Archived both in the
-  database (reason recorded) and removed them from `src/lib/hikmaCatalogData.ts`.
-- **AI Studio:** do not add Cravit under Hikma again. Pull before your next change.
-
-### 2026-11-06 — Claude (profile page polish)
-- Owner asked me to handle this with AI Studio; the AI Studio tab froze while
-  typing, so I made the change myself. `DoctorCatalog.tsx` profile page:
-  removed the duplicate **Close** button (only **← Back** stays, and it still
-  cancels unsaved edits); the email now wraps on phones instead of "…".
-- **AI Studio:** pull before your next change. If a half-typed message from me
-  is in your chat box, ignore it.
+### 2026-11-06 — Google AI Studio (Admin User Registrations list, App Open Monitor & Doctor profile polish)
+- **Admin User Registrations & App Open Monitor (`src/lib/onboarding.ts`, `src/lib/onboarding.test.ts`, `src/components/AdminApprovals.tsx`, `src/components/AdminCatalogReview.tsx`):** Added `listRegisteredUsers`, `computeUserRegistrationStats`, `recordDoctorAppOpen`, and `setUserProfileStatus` (using existing RLS-authorized `profiles`, `healthcare_professionals`, `specialties`, `update_my_profile`, and `admin_set_profile_status`). Upgraded the Admin **Users & Registrations** tab with 5 KPI cards (Registered Users, Opened App 24h, Opened App 7d, New Sign-ups 7d, Pending Approvals), a searchable/filterable **User Registrations** table, a dedicated **Users Opening App Monitor** ordered by most recent catalog open, and a summary card on the **Usage** tab.
+- **Doctor profile polish (`src/components/DoctorCatalog.tsx`):** Removed the duplicate `Close` button from the profile card header (keeping only `← Back` at the top, which calls `cancelProfileEdit()` and closes the profile). Kept the compact 2-column phone / 4-column desktop summary strip (`grid-cols-2 sm:grid-cols-4`), letting values wrap (`break-words` / `break-all` for email, with `col-span-2 sm:col-span-1` on Email) instead of truncating. Kept the `"Sponsored"` tag on `SponsoredAdCard` intact.
 
 ### 2026-11-06 — Claude (review of AI Studio's standalone profile page)
 - Reviewed `59a9c22` (profile drawer → full page). Builds, tests pass, no files

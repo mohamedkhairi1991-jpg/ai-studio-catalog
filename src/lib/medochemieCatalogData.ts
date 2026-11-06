@@ -45,7 +45,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoclav (amoxicillin / clavulanic acid) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoclav',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -74,7 +74,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoclav (amoxicillin / clavulanic acid) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoclav',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -105,7 +105,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoflucon (fluconazole) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoflucon',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -134,7 +134,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoflucon (fluconazole) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoflucon',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -165,7 +165,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoprazole (omeprazole) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoprazole',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -196,7 +196,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medociprin (ciprofloxacin) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medociprin',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -227,7 +227,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Axetine (cefuroxime) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/axetine',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -256,7 +256,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Axetine (cefuroxime sodium) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/axetine',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -287,7 +287,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medopenem (meropenem) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medopenem',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -316,7 +316,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoclav Forte Oral Suspension Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoclav',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -345,7 +345,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoflucon 50 mg Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoflucon',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -374,7 +374,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medociprin 250 mg Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medociprin',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -403,7 +403,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Axetine 250 mg Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/axetine',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -432,7 +432,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Axetine 1.5 g Injection Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/axetine',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -461,7 +461,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medopenem 500 mg Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medopenem',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -519,7 +519,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medoklor (cefaclor) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medoklor',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:
@@ -548,7 +548,7 @@ const RAW_MEDOCHEMIE: CompactDrug[] = [
     sources: [
       {
         title: 'Medochemie Ltd — Medobufen (ibuprofen 400 mg) Official Product Information',
-        url: 'https://www.medochemie.com/Products/Product-Details/medobufen',
+        url: 'https://www.medochemie.com/',
       },
     ],
     notes:

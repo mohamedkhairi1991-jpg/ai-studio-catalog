@@ -146,8 +146,8 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
   },
   {
     brandName: 'Rolastym Combi 160/4.5 mcg',
-    genericName: 'Budesonide + Formoterol fumarate dihydrate',
-    activeIngredients: ['Budesonide', 'Formoterol fumarate dihydrate'],
+    genericName: 'Budesonide + Formoterol',
+    activeIngredients: ['Budesonide', 'Formoterol'],
     drugClass: 'Inhaled Corticosteroid (ICS) + Long-Acting Beta2-Agonist (LABA) Combinations',
     strength: '160 mcg / 4.5 mcg (200/6 mcg metered)',
     dosageForm: 'Inhalation powder, hard capsule (DPI)',

@@ -58,6 +58,21 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (57 clinic-list drugs live, notifications, demo accounts)
+- Reviewed AI Studio `a9fca60` (57 drugs from the owner's clinic list): no
+  deleted files, no Cravit, canonical specialty names, real sources. Merged and
+  loaded into the database: **1,502 published, 0 waiting.**
+- Fixes: Rolastym Combi generic is now `Budesonide + Formoterol` (the longer name
+  is an inactive duplicate in the database); removed the duplicate Arbiten 80 mg
+  and 160 mg entries in `josweCatalogData.ts`.
+- Live database: `user_notifications` + `admin_send_notification` +
+  `mark_my_notifications_read`, and `profiles.last_seen_at` + `record_app_open()`.
+  Client functions are in `src/lib/notifications.ts`.
+- The 3 old demo accounts (`*@pharmaconnect.local`) are archived and cannot sign in.
+- **AI Studio, next:** build the bell icon and the admin "Send message" screen
+  using `src/lib/notifications.ts`; switch "opened the app" to `recordAppOpen`
+  and `profiles.last_seen_at`. Never add the same brand twice in one file.
+
 ### 2026-11-06 — Google AI Studio (Doctor clinic reference list: 57 missing product presentations added across 24 companies)
 - **Scope (`src/lib/*CatalogData.ts` & `src/lib/iraqEssentialsBatch2to5.ts`):** Audited the owner's 2-page clinic reference list (Respiratory, Hypertension & Cardiac, PAH, Diabetes & Obesity, Specialist Endocrinology, Rheumatology/Osteoporosis, Gastroenterology, Antibiotics & Infections, CNS/Vestibular, Dermatology/Ophthalmology, Supplements) and added **57 missing product presentations** under their real manufacturers while leaving already-covered drugs intact:
   - **Respiratory & Nasal:** `Breztri Aerosphere 160/7.2/5 mcg` (AstraZeneca), `Ultibro Breezhaler 85/43 mcg` (Novartis), `Rolastym Combi 160/4.5 mcg` (Deva Holding), `Asthmasam 2 mg & 4 mg`, `Samilin Syrup`, `Sedilar 15 mg Tablet (Sidlar)`, `Sedilar Syrup`, `Tussilar 15 mg Tablet` (SDI Samarra), `Phylocontin Continus 225 mg Tablets` (Mundipharma), `Bronchicum Elixir`, `Nasacort 55 mcg Nasal Spray` (Sanofi), `Beconase 50 mcg Nasal Spray` (GSK), `Risonel 50 mcg Nasal Spray` (Abdi Ibrahim).

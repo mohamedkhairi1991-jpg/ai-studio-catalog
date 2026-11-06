@@ -13,11 +13,13 @@ export interface AccessResult {
   audience: Audience;
   email: string;
   role: string | null;
+  profileId?: string;
   companyName?: string;
   canManageDrafts?: boolean;
 }
 
 interface ProfileRow {
+  id?: string;
   role: string | null;
   status: string;
 }
@@ -29,13 +31,17 @@ export async function resolveAccess(client: SupabaseClient, user: User): Promise
 
   const { data: profile, error } = await client
     .from('profiles')
-    .select('role,status')
+    .select('id,role,status')
     .eq('auth_user_id', user.id)
     .maybeSingle<ProfileRow>();
 
   if (error || !profile) return { audience: 'pending', email, role: null };
 
-  const base = { email, role: profile.role };
+  const base = {
+    ...(profile.id ? { profileId: profile.id } : {}),
+    email,
+    role: profile.role,
+  };
 
   if (profile.status === 'suspended' || profile.status === 'archived') {
     return { ...base, audience: 'suspended' };

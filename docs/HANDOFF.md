@@ -68,6 +68,16 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 - Drugs of an archived company (e.g. "iraqi", "Tigris Pharma") still need the
   company restored first.
 - **AI Studio:** small text change in `AdminCatalogReview.tsx`; pull first.
+### 2026-11-06 — Claude (review of AI Studio's notification bell)
+- Reviewed `4ca47b3` (bell icon for every signed-in user, admin "Send message",
+  `recordAppOpen` + `last_seen_at`). Builds, 72 tests pass, no deleted files, no
+  database changes. The old profile re-save heartbeat is gone. Merged.
+- Sync conflicts resolved in AI Studio: kept GitHub's `HANDOFF.md` (AI Studio's
+  copy had an entry written in Claude's name with wrong details) and GitHub's
+  `notifications.ts` / test (only a trailing blank line differed).
+- Added: Users & Registrations hides archived accounts (the 3 old demo accounts)
+  unless "Archived (old accounts)" is chosen; they are not counted in the stats.
+- **AI Studio:** pull first. Never write HANDOFF entries in Claude's name.
 
 ### 2026-11-06 — Claude (57 clinic-list drugs live, notifications, demo accounts)
 - Reviewed AI Studio `a9fca60` (57 drugs from the owner's clinic list): no

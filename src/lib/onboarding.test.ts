@@ -5,8 +5,8 @@ import {
   blankToNull,
   computeUserRegistrationStats,
   doctorSelfSignup,
+  listRegisteredUsers,
   onboardingStep,
-  recordDoctorAppOpen,
   reviewProfessional,
   setUserProfileStatus,
   submitCompanyApplication,
@@ -20,6 +20,7 @@ import {
   type CompanyForm,
   type OnboardingState,
 } from './onboarding';
+import { recordAppOpen } from './notifications';
 import {
   LEGAL_LAST_UPDATED,
   PRIVACY_POLICY_SECTIONS,
@@ -271,7 +272,7 @@ describe('database function calls match the migrations', () => {
     expect(calls).toHaveLength(0);
   });
 
-  it('computes user registration and app-open activity stats accurately and records app opens via update_my_profile', async () => {
+  it('computes user registration and app-open activity stats from last_seen_at and records app opens via record_app_open', async () => {
     const now = Date.parse('2026-11-06T12:00:00Z');
     const stats = computeUserRegistrationStats(
       [
@@ -318,7 +319,7 @@ describe('database function calls match the migrations', () => {
           workplace: null,
           licenseNumber: null,
           registeredAt: '2026-09-01T10:00:00Z',
-          lastActiveAt: '2026-09-01T10:00:00Z',
+          lastActiveAt: null,
         },
       ],
       now
@@ -333,32 +334,72 @@ describe('database function calls match the migrations', () => {
       newLast30d: 2,
     });
 
-    const calls: RpcCall[] = [];
-    const openClient = {
-      from: () => ({
-        select: () => ({
-          eq: () => ({
-            maybeSingle: async () => ({
-              data: {
-                full_name: 'Dr. Sara',
-                phone: '+964 770 111 2222',
-                country_id: null,
-                city_id: null,
-              },
+    const selectedColumns: Record<string, string> = {};
+    const listClient = {
+      from: (table: string) => ({
+        select: (cols: string) => {
+          selectedColumns[table] = cols;
+          if (table === 'profiles') {
+            return {
+              order: async () => ({
+                data: [
+                  {
+                    id: 'u1',
+                    email: 'doc1@hospital.iq',
+                    full_name: 'Dr. Sara',
+                    phone: '+964 770 111 2222',
+                    role: 'healthcare_professional',
+                    status: 'active',
+                    created_at: '2026-11-05T10:00:00Z',
+                    last_seen_at: '2026-11-06T09:00:00Z',
+                  },
+                ],
+              }),
+            };
+          }
+          if (table === 'healthcare_professionals') {
+            return Promise.resolve({
+              data: [
+                {
+                  profile_id: 'u1',
+                  specialty_id: 'spec-1',
+                  verification_status: 'approved',
+                  workplace: null,
+                  license_number: null,
+                },
+              ],
+            });
+          }
+          return {
+            eq: async () => ({
+              data: [
+                {
+                  id: 'spec-1',
+                  profession_type: 'physician',
+                  specialty_translations: [{ locale: 'en', name: 'Cardiology' }],
+                },
+              ],
             }),
-          }),
-        }),
+          };
+        },
       }),
-      rpc: async (fn: string, args: Record<string, unknown>) => {
-        calls.push({ fn, args });
+    } as unknown as SupabaseClient;
+
+    const listed = await listRegisteredUsers(listClient);
+    expect(selectedColumns.profiles).toContain('last_seen_at');
+    expect(selectedColumns.profiles).not.toContain('updated_at');
+    expect(listed[0]?.lastActiveAt).toBe('2026-11-06T09:00:00Z');
+
+    const calls: string[] = [];
+    const openClient = {
+      rpc: async (fn: string) => {
+        calls.push(fn);
         return { data: null, error: null };
       },
     } as unknown as SupabaseClient;
 
-    await recordDoctorAppOpen(openClient, 'auth-u1');
-    expect(calls).toHaveLength(1);
-    expect(calls[0]?.fn).toBe('update_my_profile');
-    expectMatchesMigration(calls[0]!);
+    await recordAppOpen(openClient);
+    expect(calls).toEqual(['record_app_open']);
   });
 });
 

@@ -25,6 +25,8 @@ import {
   type ProductStatus,
 } from '../lib/catalog';
 import { CatalogBanner as Banner } from './DoctorCatalog';
+import { NotificationBell } from './NotificationBell';
+import { recordAppOpen } from '../lib/notifications';
 import { BrandLogo, Field, LegalFooter, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
@@ -90,8 +92,9 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
   );
 
   useEffect(() => {
+    void recordAppOpen(client);
     void refresh();
-  }, [refresh]);
+  }, [client, refresh]);
 
   const activeCompany = useMemo(() => {
     if (!bundle) return null;
@@ -174,6 +177,7 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
             <span className="text-xs text-[#B8C3CC] hidden sm:inline">
               {access.email}
             </span>
+            <NotificationBell client={client} profileId={access.profileId} />
             {canManageDrafts && (
               <button
                 type="button"

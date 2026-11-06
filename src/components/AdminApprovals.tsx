@@ -12,7 +12,13 @@ import {
   type PendingProfessional,
   type RegisteredUserRecord,
 } from '../lib/onboarding';
-import { inputClass, secondaryButtonClass } from './ui';
+import {
+  adminSendNotification,
+  recordAppOpen,
+  type NotificationKind,
+} from '../lib/notifications';
+import { NotificationBell } from './NotificationBell';
+import { buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
   client: SupabaseClient;
@@ -21,7 +27,8 @@ interface Props {
   embedded?: boolean;
 }
 
-function formatDateTime(iso: string): string {
+function formatDateTime(iso: string | null): string {
+  if (!iso) return '—';
   const ms = Date.parse(iso);
   if (Number.isNaN(ms)) return '—';
   return new Date(ms).toLocaleString('en-GB', {
@@ -33,9 +40,10 @@ function formatDateTime(iso: string): string {
   });
 }
 
-function formatRelativeTime(iso: string, nowMs: number = Date.now()): string {
+function formatRelativeTime(iso: string | null, nowMs: number = Date.now()): string {
+  if (!iso) return 'Never opened';
   const ms = Date.parse(iso);
-  if (Number.isNaN(ms)) return '';
+  if (Number.isNaN(ms)) return 'Never opened';
   const diffSec = Math.max(0, Math.floor((nowMs - ms) / 1000));
   if (diffSec < 60) return 'Just now';
   const diffMin = Math.floor(diffSec / 60);
@@ -71,7 +79,7 @@ export default function AdminApprovals({
   // Filters for User Registrations
   const [searchQuery, setSearchQuery] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'archived'>('all');
 
   // Time window for App Open Monitor
   const [monitorWindow, setMonitorWindow] = useState<'24h' | '7d' | '30d' | 'all'>('7d');
@@ -79,6 +87,16 @@ export default function AdminApprovals({
   // Inline status action state for a user row
   const [editingStatusProfileId, setEditingStatusProfileId] = useState<string | null>(null);
   const [statusActionReason, setStatusActionReason] = useState('');
+
+  // Selection & Send notification form state
+  const [selectedProfileIds, setSelectedProfileIds] = useState<string[]>([]);
+  const [recipientIds, setRecipientIds] = useState<string[] | null>(null);
+  const [notifKind, setNotifKind] = useState<NotificationKind>('message');
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifBody, setNotifBody] = useState('');
+  const [notifLink, setNotifLink] = useState('');
+  const [sendingNotif, setSendingNotif] = useState(false);
+  const [notifError, setNotifError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -97,6 +115,12 @@ export default function AdminApprovals({
     void reload();
   }, [reload]);
 
+  useEffect(() => {
+    if (!embedded) {
+      void recordAppOpen(client);
+    }
+  }, [client, embedded]);
+
   const stats = useMemo(() => computeUserRegistrationStats(users), [users]);
 
   const availableSpecialties = useMemo(() => {
@@ -111,6 +135,11 @@ export default function AdminApprovals({
     const q = searchQuery.trim().toLowerCase();
     return users.filter((u) => {
       if (specialtyFilter && u.specialtyName !== specialtyFilter) return false;
+      if (statusFilter === 'archived') {
+        if (u.profileStatus !== 'archived') return false;
+      } else if (u.profileStatus === 'archived') {
+        return false;
+      }
       if (statusFilter === 'active' && u.profileStatus !== 'active') return false;
       if (statusFilter === 'suspended' && u.profileStatus !== 'suspended') return false;
       if (!q) return true;
@@ -127,6 +156,80 @@ export default function AdminApprovals({
     });
   }, [users, searchQuery, specialtyFilter, statusFilter]);
 
+  const selectableFilteredIds = useMemo(
+    () =>
+      filteredRegistrations
+        .filter((u) => u.profileStatus === 'active')
+        .map((u) => u.profileId),
+    [filteredRegistrations]
+  );
+
+  const allFilteredSelected =
+    selectableFilteredIds.length > 0 &&
+    selectableFilteredIds.every((id) => selectedProfileIds.includes(id));
+
+  const toggleSelectAllFiltered = () => {
+    if (allFilteredSelected) {
+      setSelectedProfileIds((prev) =>
+        prev.filter((id) => !selectableFilteredIds.includes(id))
+      );
+    } else {
+      setSelectedProfileIds((prev) =>
+        Array.from(new Set([...prev, ...selectableFilteredIds]))
+      );
+    }
+  };
+
+  const toggleSelectOne = (profileId: string) => {
+    setSelectedProfileIds((prev) =>
+      prev.includes(profileId)
+        ? prev.filter((id) => id !== profileId)
+        : [...prev, profileId]
+    );
+  };
+
+  const openSendForm = (ids: string[]) => {
+    setRecipientIds(ids);
+    setNotifKind('message');
+    setNotifTitle('');
+    setNotifBody('');
+    setNotifLink('');
+    setNotifError(null);
+  };
+
+  const closeSendForm = () => {
+    setRecipientIds(null);
+    setNotifError(null);
+  };
+
+  const handleSendNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recipientIds || recipientIds.length === 0) return;
+    setSendingNotif(true);
+    setNotifError(null);
+    setMessage(null);
+    const res = await adminSendNotification(client, {
+      recipientProfileIds: recipientIds,
+      kind: notifKind,
+      title: notifTitle,
+      body: notifBody,
+      linkUrl: notifLink.trim() ? notifLink.trim() : undefined,
+    });
+    setSendingNotif(false);
+    if (!res.ok) {
+      setNotifError(res.message);
+      return;
+    }
+    setMessage({
+      text: `Sent to ${res.data} users`,
+      tone: 'ok',
+    });
+    setSelectedProfileIds((prev) =>
+      prev.filter((id) => !recipientIds.includes(id))
+    );
+    closeSendForm();
+  };
+
   const monitoredUsers = useMemo(() => {
     const nowMs = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
@@ -141,11 +244,16 @@ export default function AdminApprovals({
 
     return [...users]
       .filter((u) => {
-        if (cutoff === 0) return true;
+        if (!u.lastActiveAt) return cutoff === 0;
         const ms = Date.parse(u.lastActiveAt);
-        return !Number.isNaN(ms) && ms >= cutoff;
+        if (Number.isNaN(ms)) return cutoff === 0;
+        return cutoff === 0 || ms >= cutoff;
       })
-      .sort((a, b) => Date.parse(b.lastActiveAt) - Date.parse(a.lastActiveAt));
+      .sort((a, b) => {
+        const aMs = a.lastActiveAt ? Date.parse(a.lastActiveAt) : 0;
+        const bMs = b.lastActiveAt ? Date.parse(b.lastActiveAt) : 0;
+        return (Number.isNaN(bMs) ? 0 : bMs) - (Number.isNaN(aMs) ? 0 : aMs);
+      });
   }, [users, monitorWindow]);
 
   const reasonFor = (id: string) => reasons[id] ?? '';
@@ -171,6 +279,18 @@ export default function AdminApprovals({
 
   const pendingTotal = doctors.length + companies.length;
 
+  const recipientSummary = useMemo(() => {
+    if (!recipientIds || recipientIds.length === 0) return '';
+    if (recipientIds.length === 1) {
+      const target = users.find((u) => u.profileId === recipientIds[0]);
+      if (target) {
+        return target.fullName ? `${target.fullName} (${target.email})` : target.email;
+      }
+      return '1 user';
+    }
+    return `${recipientIds.length} selected users`;
+  }, [recipientIds, users]);
+
   return (
     <div className="space-y-6">
       {/* Header card */}
@@ -180,7 +300,7 @@ export default function AdminApprovals({
             User Registrations & App Activity Monitor
           </h1>
           <p className="text-xs text-[#B8C3CC] mt-0.5">
-            View all registered doctor and administrator accounts, monitor users opening the app, and review pending applications.
+            View all registered doctor and administrator accounts, monitor users opening the app, send notifications, and review pending applications.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -193,13 +313,16 @@ export default function AdminApprovals({
             {loading ? 'Loading…' : 'Refresh'}
           </button>
           {!embedded && (
-            <button
-              type="button"
-              className={secondaryButtonClass}
-              onClick={onSignOut}
-            >
-              Sign out ({email})
-            </button>
+            <>
+              <NotificationBell client={client} />
+              <button
+                type="button"
+                className={secondaryButtonClass}
+                onClick={onSignOut}
+              >
+                Sign out ({email})
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -214,6 +337,143 @@ export default function AdminApprovals({
         >
           {message.text}
         </div>
+      )}
+
+      {/* Send Message Modal / Card */}
+      {recipientIds && recipientIds.length > 0 && (
+        <form
+          onSubmit={(e) => void handleSendNotification(e)}
+          aria-label="Send notification form"
+          className="rounded-xl bg-[#263744] border border-[#5DB4F2]/60 p-5 space-y-4 shadow-lg"
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-[#304451] pb-3">
+            <div>
+              <h2 className="text-sm font-semibold text-[#F2F5F8]">
+                Send Message / Notification
+              </h2>
+              <p className="text-xs text-[#B8C3CC] mt-0.5">
+                To: <span className="text-[#5DB4F2] font-medium">{recipientSummary}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={closeSendForm}
+              className={secondaryButtonClass}
+            >
+              Cancel
+            </button>
+          </div>
+
+          {notifError && (
+            <div className="rounded-lg bg-[#B42318]/15 border border-[#FF7272]/40 px-3.5 py-2.5 text-xs text-[#FF7272]">
+              {notifError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label
+                htmlFor="notif-kind"
+                className="block text-xs font-medium text-[#B8C3CC] mb-1"
+              >
+                Kind
+              </label>
+              <select
+                id="notif-kind"
+                aria-label="Notification kind"
+                value={notifKind}
+                onChange={(e) => setNotifKind(e.target.value as NotificationKind)}
+                className={inputClass}
+              >
+                <option value="message">Message</option>
+                <option value="alert">Alert</option>
+                <option value="invitation">Invitation</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <label
+                  htmlFor="notif-title"
+                  className="block text-xs font-medium text-[#B8C3CC]"
+                >
+                  Title
+                </label>
+                <span className="text-[11px] text-[#B8C3CC] tabular-nums">
+                  {notifTitle.length}/120
+                </span>
+              </div>
+              <input
+                id="notif-title"
+                type="text"
+                maxLength={120}
+                required
+                value={notifTitle}
+                onChange={(e) => setNotifTitle(e.target.value)}
+                placeholder="Subject or headline (max 120 characters)"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label
+                htmlFor="notif-body"
+                className="block text-xs font-medium text-[#B8C3CC]"
+              >
+                Message
+              </label>
+              <span className="text-[11px] text-[#B8C3CC] tabular-nums">
+                {notifBody.length}/2000
+              </span>
+            </div>
+            <textarea
+              id="notif-body"
+              rows={4}
+              maxLength={2000}
+              required
+              value={notifBody}
+              onChange={(e) => setNotifBody(e.target.value)}
+              placeholder="Write your message, alert, or conference invitation (max 2000 characters)…"
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="notif-link"
+              className="block text-xs font-medium text-[#B8C3CC] mb-1"
+            >
+              Optional HTTPS link
+            </label>
+            <input
+              id="notif-link"
+              type="url"
+              value={notifLink}
+              onChange={(e) => setNotifLink(e.target.value)}
+              placeholder="https://example.com"
+              className={inputClass}
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={closeSendForm}
+              className={secondaryButtonClass}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={sendingNotif}
+              className={buttonClass}
+            >
+              {sendingNotif ? 'Sending…' : 'Send notification'}
+            </button>
+          </div>
+        </form>
       )}
 
       {/* KPI Summary Cards */}
@@ -350,13 +610,14 @@ export default function AdminApprovals({
                 aria-label="Filter registrations by status"
                 value={statusFilter}
                 onChange={(e) =>
-                  setStatusFilter(e.target.value as 'all' | 'active' | 'suspended')
+                  setStatusFilter(e.target.value as 'all' | 'active' | 'suspended' | 'archived')
                 }
                 className={`${inputClass} sm:w-40`}
               >
                 <option value="all">All statuses</option>
                 <option value="active">Active</option>
                 <option value="suspended">Suspended</option>
+                <option value="archived">Archived (old accounts)</option>
               </select>
             </div>
           </div>
@@ -371,18 +632,42 @@ export default function AdminApprovals({
             </div>
           ) : (
             <div className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#304451] flex items-center justify-between text-xs text-[#B8C3CC]">
-                <span className="font-semibold uppercase tracking-wider">
-                  Registered Accounts
-                </span>
-                <span className="tabular-nums">
-                  Showing {filteredRegistrations.length} of {users.length}
-                </span>
+              <div className="px-4 py-3 border-b border-[#304451] flex flex-wrap items-center justify-between gap-2 text-xs text-[#B8C3CC]">
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold uppercase tracking-wider">
+                    Registered Accounts
+                  </span>
+                  <span className="tabular-nums">
+                    Showing {filteredRegistrations.length} of {users.length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={selectedProfileIds.length === 0}
+                    onClick={() => openSendForm(selectedProfileIds)}
+                    className="rounded-lg bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-40 disabled:pointer-events-none px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+                  >
+                    Send to selected
+                    {selectedProfileIds.length > 0
+                      ? ` (${selectedProfileIds.length})`
+                      : ''}
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-[#304451] bg-[#1F2D38]/60 text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                      <th className="py-3 px-4 w-10">
+                        <input
+                          type="checkbox"
+                          aria-label="Select all active users"
+                          checked={allFilteredSelected}
+                          onChange={toggleSelectAllFiltered}
+                          className="h-4 w-4 rounded border-[#304451] bg-[#1F2D38] text-[#1769AA]"
+                        />
+                      </th>
                       <th className="py-3 px-4">User / Doctor</th>
                       <th className="py-3 px-4">Specialty</th>
                       <th className="py-3 px-4">Phone</th>
@@ -394,13 +679,25 @@ export default function AdminApprovals({
                   </thead>
                   <tbody className="divide-y divide-[#304451] text-xs">
                     {filteredRegistrations.map((u) => {
-                      const activeMs = Date.parse(u.lastActiveAt);
+                      const activeMs = u.lastActiveAt ? Date.parse(u.lastActiveAt) : NaN;
                       const isActive24h =
                         !Number.isNaN(activeMs) &&
                         Date.now() - activeMs <= 24 * 60 * 60 * 1000;
                       const isEditingRow = editingStatusProfileId === u.profileId;
+                      const isSelected = selectedProfileIds.includes(u.profileId);
+                      const isActiveProfile = u.profileStatus === 'active';
                       return (
                         <tr key={u.profileId} className="hover:bg-[#1F2D38]/40">
+                          <td className="py-3 px-4">
+                            <input
+                              type="checkbox"
+                              aria-label={`Select ${u.fullName || u.email}`}
+                              disabled={!isActiveProfile}
+                              checked={isSelected}
+                              onChange={() => toggleSelectOne(u.profileId)}
+                              className="h-4 w-4 rounded border-[#304451] bg-[#1F2D38] text-[#1769AA] disabled:opacity-40"
+                            />
+                          </td>
                           <td className="py-3 px-4">
                             <div className="font-semibold text-[#F2F5F8]">
                               {u.fullName || '—'}
@@ -445,7 +742,11 @@ export default function AdminApprovals({
                             <div className="flex items-center gap-1.5">
                               <span
                                 className={`h-2 w-2 rounded-full shrink-0 ${
-                                  isActive24h ? 'bg-[#38C976]' : 'bg-[#5DB4F2]/60'
+                                  isActive24h
+                                    ? 'bg-[#38C976]'
+                                    : u.lastActiveAt
+                                    ? 'bg-[#5DB4F2]/60'
+                                    : 'bg-[#304451]'
                                 }`}
                               />
                               <span className="text-[#F2F5F8] font-medium">
@@ -501,18 +802,29 @@ export default function AdminApprovals({
                                 </div>
                               </div>
                             ) : (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingStatusProfileId(u.profileId);
-                                  setStatusActionReason('');
-                                }}
-                                className={secondaryButtonClass}
-                              >
-                                {u.profileStatus === 'active'
-                                  ? 'Suspend'
-                                  : 'Activate'}
-                              </button>
+                              <div className="inline-flex flex-wrap items-center justify-end gap-1.5">
+                                {isActiveProfile && (
+                                  <button
+                                    type="button"
+                                    onClick={() => openSendForm([u.profileId])}
+                                    className={secondaryButtonClass}
+                                  >
+                                    Send message
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingStatusProfileId(u.profileId);
+                                    setStatusActionReason('');
+                                  }}
+                                  className={secondaryButtonClass}
+                                >
+                                  {u.profileStatus === 'active'
+                                    ? 'Suspend'
+                                    : 'Activate'}
+                                </button>
+                              </div>
                             )}
                           </td>
                         </tr>
@@ -535,7 +847,7 @@ export default function AdminApprovals({
                 Users Opening App Monitor
               </h2>
               <p className="text-xs text-[#B8C3CC] mt-0.5">
-                Ordered by most recent catalog session open. Doctors automatically update their last-opened timestamp when opening the catalog.
+                Ordered by most recent app open (`last_seen_at`). Signed-in users automatically update their last-opened timestamp when opening the app.
               </p>
             </div>
             <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5">
@@ -583,12 +895,13 @@ export default function AdminApprovals({
                       <th className="py-3 px-4">Phone</th>
                       <th className="py-3 px-4">Registered On</th>
                       <th className="py-3 px-4">Activity Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#304451] text-xs">
                     {monitoredUsers.map((u) => {
-                      const activeMs = Date.parse(u.lastActiveAt);
-                      const ageMs = Date.now() - activeMs;
+                      const activeMs = u.lastActiveAt ? Date.parse(u.lastActiveAt) : NaN;
+                      const ageMs = Number.isNaN(activeMs) ? Infinity : Date.now() - activeMs;
                       const is24h = ageMs <= 24 * 60 * 60 * 1000;
                       const is7d = ageMs <= 7 * 24 * 60 * 60 * 1000;
                       return (
@@ -641,8 +954,21 @@ export default function AdminApprovals({
                                 ? 'Opened in last 24h'
                                 : is7d
                                 ? 'Opened this week'
-                                : 'Registered / Earlier'}
+                                : u.lastActiveAt
+                                ? 'Opened earlier'
+                                : 'Never opened'}
                             </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {u.profileStatus === 'active' && (
+                              <button
+                                type="button"
+                                onClick={() => openSendForm([u.profileId])}
+                                className={secondaryButtonClass}
+                              >
+                                Send message
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );

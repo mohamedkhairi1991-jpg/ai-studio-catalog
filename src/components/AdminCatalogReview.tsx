@@ -1,4 +1,3 @@
-// Users & Registrations monitor (2026-11-06)
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AccessResult } from '../lib/access';

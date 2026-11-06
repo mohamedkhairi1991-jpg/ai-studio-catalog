@@ -1,4 +1,3 @@
-// Users & Registrations monitor (2026-11-06)
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { captchaOptions } from './captcha';
 

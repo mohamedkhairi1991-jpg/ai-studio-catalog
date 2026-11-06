@@ -1,4 +1,3 @@
-// Users & Registrations monitor (2026-11-06)
 import React, { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   AlertOctagon,

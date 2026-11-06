@@ -8,6 +8,8 @@ import {
   ChevronRight,
   Clock,
   ExternalLink,
+  Lock,
+  Pencil,
   Layers,
   Package,
   Pill,
@@ -148,6 +150,13 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [profilePhone, setProfilePhone] = useState('');
   const [profileSpecialtyId, setProfileSpecialtyId] = useState('');
   const [profileBusy, setProfileBusy] = useState(false);
+  // The profile opens as a locked, read-only view; fields unlock only after "Edit profile".
+  const [profileEditing, setProfileEditing] = useState(false);
+  const [profileSaved, setProfileSaved] = useState({
+    fullName: '',
+    phone: '',
+    specialtyId: '',
+  });
   const [profileNotice, setProfileNotice] = useState<{
     tone: 'error' | 'ok';
     text: string;
@@ -224,6 +233,11 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         setProfileFullName(summary.fullName);
         setProfilePhone(summary.phone);
         setProfileSpecialtyId(summary.specialtyId);
+        setProfileSaved({
+          fullName: summary.fullName,
+          phone: summary.phone,
+          specialtyId: summary.specialtyId,
+        });
       }
     });
     void loadSuggestions();
@@ -506,9 +520,33 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       setProfileNotice({ tone: 'error', text: res.message });
       return;
     }
+    setProfileSaved({
+      fullName: profileFullName,
+      phone: profilePhone,
+      specialtyId: profileSpecialtyId,
+    });
+    setProfileEditing(false);
     setProfileNotice({ tone: 'ok', text: 'Profile updated.' });
     await loadSuggestions();
   };
+
+  const startProfileEdit = () => {
+    setProfileNotice(null);
+    setProfileEditing(true);
+  };
+
+  const cancelProfileEdit = () => {
+    setProfileFullName(profileSaved.fullName);
+    setProfilePhone(profileSaved.phone);
+    setProfileSpecialtyId(profileSaved.specialtyId);
+    setProfileNotice(null);
+    setProfileEditing(false);
+  };
+
+  const savedSpecialtyName =
+    physicianSpecialties.find((s) => s.id === profileSaved.specialtyId)?.label ||
+    specialties.find((s) => s.id === profileSaved.specialtyId)?.nameEn ||
+    '';
 
   const doctorSpecialtyName =
     suggestions[0]?.specialtyName ||
@@ -581,6 +619,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 setProfileOpen((v) => !v);
                 setSavedOpen(false);
                 setProfileNotice(null);
+                cancelProfileEdit();
               }}
             >
               <User className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -718,23 +757,125 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 <h2 className="text-base font-semibold text-text">
                   My profile
                 </h2>
-                {access.email && (
+                {profileEditing && access.email && (
                   <p className="text-xs text-accent mt-0.5">
                     {access.email}
                   </p>
                 )}
                 <p className="text-xs text-text-muted mt-0.5">
-                  Update your phone number and medical specialty.
+                  {profileEditing
+                    ? 'Edit your name, phone number and medical specialty, then save.'
+                    : 'Your details are locked. Tap Edit profile to change them.'}
                 </p>
               </div>
               <button
                 type="button"
                 className={secondaryButtonClass}
-                onClick={() => setProfileOpen(false)}
+                onClick={() => {
+                  cancelProfileEdit();
+                  setProfileOpen(false);
+                }}
               >
                 Close
               </button>
             </div>
+            {!profileEditing ? (
+              <div className="space-y-4">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    { label: 'Full name', value: profileSaved.fullName },
+                    { label: 'Email', value: access.email ?? '' },
+                    { label: 'Phone number', value: profileSaved.phone },
+                    { label: 'Medical specialty', value: savedSpecialtyName },
+                  ].map((row) => (
+                    <div
+                      key={row.label}
+                      className="rounded-xl bg-background border border-border px-3.5 py-3"
+                    >
+                      <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-text-muted">
+                        <Lock className="w-3 h-3" aria-hidden="true" />
+                        {row.label}
+                      </dt>
+                      <dd className="mt-1 text-sm font-medium text-text break-words">
+                        {row.value || <span className="text-text-muted">Not set</span>}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    {profileNotice && (
+                      <p
+                        className={`text-xs font-medium ${
+                          profileNotice.tone === 'error'
+                            ? 'text-danger'
+                            : 'text-success'
+                        }`}
+                      >
+                        {profileNotice.text}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={startProfileEdit}
+                    className={`${buttonClass} sm:w-auto px-5 inline-flex items-center justify-center gap-2`}
+                  >
+                    <Pencil className="w-4 h-4" aria-hidden="true" />
+                    Edit profile
+                  </button>
+                </div>
+
+                <div className="space-y-2 border-t border-border pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-accent tabular-nums">
+                      My saved medicines ({savedDrugs.length})
+                    </span>
+                    {savedDrugs.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          setSavedOpen(true);
+                        }}
+                        className="text-xs font-medium text-accent hover:underline"
+                      >
+                        Saved & recent
+                      </button>
+                    )}
+                  </div>
+                  {savedDrugs.length === 0 ? (
+                    <p className="text-xs text-text-muted rounded-xl bg-background border border-border p-3.5">
+                      No saved medicines yet. Open any medicine and tap Save to keep it here.
+                    </p>
+                  ) : (
+                    <div className="divide-y divide-border rounded-xl bg-background border border-border overflow-hidden">
+                      {savedDrugs.map((item) => (
+                        <button
+                          key={item.productId}
+                          type="button"
+                          onClick={() => {
+                            setProfileOpen(false);
+                            openProductPage(item.productId);
+                          }}
+                          className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                        >
+                          <span className="min-w-0">
+                            <span className="block text-xs font-semibold text-text truncate">
+                              {item.brandNameEn}
+                            </span>
+                            <span className="block text-xs text-text-muted truncate">
+                              {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
+                            </span>
+                          </span>
+                          <ChevronRight className="w-4 h-4 shrink-0 text-text-muted" aria-hidden="true" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
             <form
               onSubmit={(e) => void handleSaveProfile(e)}
               className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end"
@@ -787,6 +928,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     </p>
                   )}
                 </div>
+                <div className="flex w-full sm:w-auto items-center gap-2">
                 <button
                   type="submit"
                   disabled={
@@ -794,12 +936,22 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     !profilePhone.trim() ||
                     !profileSpecialtyId.trim()
                   }
-                  className={`${buttonClass} sm:w-auto px-5`}
+                  className={`${buttonClass} flex-1 sm:flex-none sm:w-auto px-5`}
                 >
                   {profileBusy ? 'Saving…' : 'Save profile'}
                 </button>
+                <button
+                  type="button"
+                  onClick={cancelProfileEdit}
+                  disabled={profileBusy}
+                  className={`${secondaryButtonClass} flex-1 sm:flex-none sm:w-auto px-5`}
+                >
+                  Cancel
+                </button>
+                </div>
               </div>
             </form>
+            )}
           </section>
         )}
 

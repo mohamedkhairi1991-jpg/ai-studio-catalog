@@ -58,6 +58,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (doctor profile: locked view)
+- `src/components/DoctorCatalog.tsx`: My profile now opens as a locked, read-only view
+  (full name, email, phone, specialty with lock icons). Fields unlock only after
+  "Edit profile"; Save or Cancel locks them again (Cancel restores the saved values).
+- The profile also lists the doctor's saved medicines, with a link to Saved & recent.
+- **AI Studio:** pull before your next change; keep this view/edit behaviour.
+
 ### 2026-11-06 — Google AI Studio (Visual design refresh)
 - **Design tokens & typography (`index.html`, `src/index.css`):** Loaded `IBM Plex Sans` (400/500/600, `display=swap`) from Google Fonts; defined Tailwind v4 `@theme` tokens (`background` `#141F28`, `surface` `#1C2B36`, `surface-raised` `#243746`, `border` `#2F4556`, `text` `#F2F6FA`, `text-muted` `#A6B6C4`, `primary` `#1769AA`, `accent` `#5DB4F2`, `success`, `warning`, `danger`, `radius-sm/md/lg`, `shadow-soft`), `tabular-nums` for strengths/counts, and `prefers-reduced-motion` support.
 - **Doctor header, home, search & drug page (`src/components/DoctorCatalog.tsx`):** Sticky translucent header with 44 px tap targets and desktop labels / mobile icons for Saved, Profile, Sign out; time-of-day greeting (`Good morning/afternoon/evening, Dr <first name>`) with specialty chip; search box with embedded search icon and clear button, plus compact rounded filter selects; suggestion cards with hover lift, accent generic name, company chip, chevron, skeleton loading, and ghost Refresh button; slim gradient-bordered Sponsored card; search results with count pill, row dividers, hover highlight, chevron, skeleton rows, and icon empty state; drug monograph page with hero header (amber chip for `Over-the-Counter (OTC)`), quick-facts icon cards, separate clinical section cards with icons and soft red/amber tints for Contraindications and Adverse Effects, and Reference Sources list with external-link icons.

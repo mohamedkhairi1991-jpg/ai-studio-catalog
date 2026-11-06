@@ -58,6 +58,14 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (profile page polish)
+- Owner asked me to handle this with AI Studio; the AI Studio tab froze while
+  typing, so I made the change myself. `DoctorCatalog.tsx` profile page:
+  removed the duplicate **Close** button (only **← Back** stays, and it still
+  cancels unsaved edits); the email now wraps on phones instead of "…".
+- **AI Studio:** pull before your next change. If a half-typed message from me
+  is in your chat box, ignore it.
+
 ### 2026-11-06 — Claude (review of AI Studio's standalone profile page)
 - Reviewed `59a9c22` (profile drawer → full page). Builds, tests pass, no files
   deleted. Merged.

@@ -807,16 +807,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                       Edit profile
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="rounded-lg border border-border bg-surface-raised/60 hover:bg-surface-raised px-3 py-1.5 text-xs font-medium text-text transition-colors duration-150"
-                    onClick={() => {
-                      cancelProfileEdit();
-                      setProfileOpen(false);
-                    }}
-                  >
-                    Close
-                  </button>
                 </div>
               </div>
               {!profileEditing ? (
@@ -828,13 +818,17 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                       { label: 'Phone number', value: profileSaved.phone },
                       { label: 'Email', value: access.email ?? '' },
                     ].map((row) => (
-                      <div key={row.label} className="min-w-0">
+                      <div
+                        key={row.label}
+                        className={`min-w-0 ${row.label === 'Email' ? 'col-span-2 sm:col-span-1' : ''}`}
+                      >
                         <dt className="text-[11px] font-medium text-text-muted truncate">
                           {row.label}
                         </dt>
                         <dd
-                          className="mt-0.5 text-xs sm:text-sm font-medium text-text truncate"
-                          title={row.value || undefined}
+                          className={`mt-0.5 text-xs sm:text-sm font-medium text-text ${
+                            row.label === 'Email' ? 'break-all' : 'break-words'
+                          }`}
                         >
                           {row.value || <span className="text-text-muted">Not set</span>}
                         </dd>

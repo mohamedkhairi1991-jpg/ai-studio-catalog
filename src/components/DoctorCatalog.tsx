@@ -749,214 +749,223 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           </section>
         )}
 
-        {/* My Profile Drawer / Card */}
-        {profileOpen && (
-          <section className="rounded-2xl bg-surface border border-border shadow-soft p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div>
-                <h2 className="text-base font-semibold text-text">
-                  My profile
-                </h2>
-                {profileEditing && access.email && (
-                  <p className="text-xs text-accent mt-0.5">
-                    {access.email}
-                  </p>
-                )}
-                <p className="text-xs text-text-muted mt-0.5">
-                  {profileEditing
-                    ? 'Edit your name, phone number and medical specialty, then save.'
-                    : 'Your details are locked. Tap Edit profile to change them.'}
-                </p>
-              </div>
+        {/* Standalone My Profile & Preferences Page */}
+        {profileOpen ? (
+          <div className="flex-1 flex flex-col gap-5">
+            <div>
               <button
                 type="button"
-                className={secondaryButtonClass}
                 onClick={() => {
                   cancelProfileEdit();
                   setProfileOpen(false);
                 }}
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised px-3.5 py-2 text-sm font-medium text-text transition-colors duration-150"
               >
-                Close
+                ← Back
               </button>
             </div>
-            {!profileEditing ? (
-              <div className="space-y-4">
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    { label: 'Full name', value: profileSaved.fullName },
-                    { label: 'Email', value: access.email ?? '' },
-                    { label: 'Phone number', value: profileSaved.phone },
-                    { label: 'Medical specialty', value: savedSpecialtyName },
-                  ].map((row) => (
-                    <div
-                      key={row.label}
-                      className="rounded-xl bg-background border border-border px-3.5 py-3"
-                    >
-                      <dt className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-text-muted">
-                        <Lock className="w-3 h-3" aria-hidden="true" />
-                        {row.label}
-                      </dt>
-                      <dd className="mt-1 text-sm font-medium text-text break-words">
-                        {row.value || <span className="text-text-muted">Not set</span>}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    {profileNotice && (
-                      <p
-                        className={`text-xs font-medium ${
-                          profileNotice.tone === 'error'
-                            ? 'text-danger'
-                            : 'text-success'
-                        }`}
-                      >
-                        {profileNotice.text}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={startProfileEdit}
-                    className={`${buttonClass} sm:w-auto px-5 inline-flex items-center justify-center gap-2`}
-                  >
-                    <Pencil className="w-4 h-4" aria-hidden="true" />
-                    Edit profile
-                  </button>
-                </div>
 
-                <div className="space-y-2 border-t border-border pt-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-accent tabular-nums">
-                      My saved medicines ({savedDrugs.length})
+            <section className="rounded-2xl bg-surface border border-border shadow-soft p-4 sm:p-5 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+                <div className="flex flex-wrap items-center gap-2 min-w-0">
+                  <h2 className="text-base font-semibold text-text">
+                    My profile
+                  </h2>
+                  {!profileEditing ? (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-md bg-background/80 border border-border px-2 py-0.5 text-[11px] font-medium text-text-muted"
+                      title="Your details are locked. Tap Edit profile to change them."
+                    >
+                      <Lock className="w-3 h-3" aria-hidden="true" />
+                      Locked
                     </span>
-                    {savedDrugs.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setProfileOpen(false);
-                          setSavedOpen(true);
-                        }}
-                        className="text-xs font-medium text-accent hover:underline"
-                      >
-                        Saved & recent
-                      </button>
-                    )}
-                  </div>
-                  {savedDrugs.length === 0 ? (
-                    <p className="text-xs text-text-muted rounded-xl bg-background border border-border p-3.5">
-                      No saved medicines yet. Open any medicine and tap Save to keep it here.
-                    </p>
                   ) : (
-                    <div className="divide-y divide-border rounded-xl bg-background border border-border overflow-hidden">
-                      {savedDrugs.map((item) => (
-                        <button
-                          key={item.productId}
-                          type="button"
-                          onClick={() => {
-                            setProfileOpen(false);
-                            openProductPage(item.productId);
-                          }}
-                          className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
-                        >
-                          <span className="min-w-0">
-                            <span className="block text-xs font-semibold text-text truncate">
-                              {item.brandNameEn}
-                            </span>
-                            <span className="block text-xs text-text-muted truncate">
-                              {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
-                            </span>
-                          </span>
-                          <ChevronRight className="w-4 h-4 shrink-0 text-text-muted" aria-hidden="true" />
-                        </button>
-                      ))}
-                    </div>
+                    <span className="text-xs text-text-muted">
+                      Update your details below, then save.
+                    </span>
                   )}
-                </div>
-              </div>
-            ) : (
-            <form
-              onSubmit={(e) => void handleSaveProfile(e)}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end"
-            >
-              <Field label="Full name (optional)">
-                <input
-                  className={inputClass}
-                  type="text"
-                  value={profileFullName}
-                  onChange={(e) => setProfileFullName(e.target.value)}
-                  placeholder="Dr. Full Name"
-                />
-              </Field>
-              <Field label="Phone number">
-                <input
-                  className={inputClass}
-                  type="tel"
-                  required
-                  value={profilePhone}
-                  onChange={(e) => setProfilePhone(e.target.value)}
-                  placeholder="+964 770 123 4567"
-                />
-              </Field>
-              <Field label="Medical specialty">
-                <select
-                  className={inputClass}
-                  required
-                  value={profileSpecialtyId}
-                  onChange={(e) => setProfileSpecialtyId(e.target.value)}
-                >
-                  <option value="">— Select specialty —</option>
-                  {physicianSpecialties.map((spec) => (
-                    <option key={spec.id} value={spec.id}>
-                      {spec.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <div className="sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-1">
-                <div>
                   {profileNotice && (
-                    <p
+                    <span
                       className={`text-xs font-medium ${
                         profileNotice.tone === 'error'
                           ? 'text-danger'
                           : 'text-success'
                       }`}
                     >
-                      {profileNotice.text}
-                    </p>
+                      · {profileNotice.text}
+                    </span>
                   )}
                 </div>
-                <div className="flex w-full sm:w-auto items-center gap-2">
-                <button
-                  type="submit"
-                  disabled={
-                    profileBusy ||
-                    !profilePhone.trim() ||
-                    !profileSpecialtyId.trim()
-                  }
-                  className={`${buttonClass} flex-1 sm:flex-none sm:w-auto px-5`}
-                >
-                  {profileBusy ? 'Saving…' : 'Save profile'}
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelProfileEdit}
-                  disabled={profileBusy}
-                  className={`${secondaryButtonClass} flex-1 sm:flex-none sm:w-auto px-5`}
-                >
-                  Cancel
-                </button>
+                <div className="flex items-center gap-2">
+                  {!profileEditing && (
+                    <button
+                      type="button"
+                      onClick={startProfileEdit}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-[#1E7BC4] px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-150"
+                    >
+                      <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                      Edit profile
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="rounded-lg border border-border bg-surface-raised/60 hover:bg-surface-raised px-3 py-1.5 text-xs font-medium text-text transition-colors duration-150"
+                    onClick={() => {
+                      cancelProfileEdit();
+                      setProfileOpen(false);
+                    }}
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
-            </form>
-            )}
-          </section>
-        )}
+              {!profileEditing ? (
+                <div className="space-y-4">
+                  <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2.5 rounded-xl bg-background/70 border border-border px-4 py-3">
+                    {[
+                      { label: 'Full name', value: profileSaved.fullName },
+                      { label: 'Medical specialty', value: savedSpecialtyName },
+                      { label: 'Phone number', value: profileSaved.phone },
+                      { label: 'Email', value: access.email ?? '' },
+                    ].map((row) => (
+                      <div key={row.label} className="min-w-0">
+                        <dt className="text-[11px] font-medium text-text-muted truncate">
+                          {row.label}
+                        </dt>
+                        <dd
+                          className="mt-0.5 text-xs sm:text-sm font-medium text-text truncate"
+                          title={row.value || undefined}
+                        >
+                          {row.value || <span className="text-text-muted">Not set</span>}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
 
-        {/* Standalone Drug Page (#/product/<id>) */}
-        {activeProductId ? (
+                  <div className="space-y-2 border-t border-border/70 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-accent tabular-nums">
+                        My saved medicines ({savedDrugs.length})
+                      </span>
+                      {savedDrugs.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileOpen(false);
+                            setSavedOpen(true);
+                          }}
+                          className="text-xs font-medium text-accent hover:underline"
+                        >
+                          Saved & recent
+                        </button>
+                      )}
+                    </div>
+                    {savedDrugs.length === 0 ? (
+                      <p className="text-xs text-text-muted rounded-lg bg-background/70 border border-border px-3 py-2.5">
+                        No saved medicines yet. Open any medicine and tap Save to keep it here.
+                      </p>
+                    ) : (
+                      <div className="max-h-56 overflow-y-auto divide-y divide-border rounded-xl bg-background/70 border border-border">
+                        {savedDrugs.map((item) => (
+                          <button
+                            key={item.productId}
+                            type="button"
+                            onClick={() => {
+                              setProfileOpen(false);
+                              openProductPage(item.productId);
+                            }}
+                            className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                          >
+                            <span className="min-w-0 flex items-baseline gap-2 truncate">
+                              <span className="text-xs font-semibold text-text truncate">
+                                {item.brandNameEn}
+                              </span>
+                              <span className="text-xs text-text-muted truncate">
+                                {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
+                              </span>
+                            </span>
+                            <ChevronRight className="w-3.5 h-3.5 shrink-0 text-text-muted" aria-hidden="true" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <form
+                  onSubmit={(e) => void handleSaveProfile(e)}
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end"
+                >
+                  <Field label="Full name (optional)">
+                    <input
+                      className={inputClass}
+                      type="text"
+                      value={profileFullName}
+                      onChange={(e) => setProfileFullName(e.target.value)}
+                      placeholder="Dr. Full Name"
+                    />
+                  </Field>
+                  <Field label="Phone number">
+                    <input
+                      className={inputClass}
+                      type="tel"
+                      required
+                      value={profilePhone}
+                      onChange={(e) => setProfilePhone(e.target.value)}
+                      placeholder="+964 770 123 4567"
+                    />
+                  </Field>
+                  <Field label="Medical specialty">
+                    <select
+                      className={inputClass}
+                      required
+                      value={profileSpecialtyId}
+                      onChange={(e) => setProfileSpecialtyId(e.target.value)}
+                    >
+                      <option value="">— Select specialty —</option>
+                      {physicianSpecialties.map((spec) => (
+                        <option key={spec.id} value={spec.id}>
+                          {spec.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <div className="sm:col-span-3 flex flex-wrap items-center justify-end gap-2 pt-1">
+                    <button
+                      type="submit"
+                      disabled={
+                        profileBusy ||
+                        !profilePhone.trim() ||
+                        !profileSpecialtyId.trim()
+                      }
+                      className={`${buttonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
+                    >
+                      {profileBusy ? 'Saving…' : 'Save profile'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelProfileEdit}
+                      disabled={profileBusy}
+                      className={`${secondaryButtonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </section>
+
+            {/* Bottom space reserved for the sponsored ad (keeps its small "Sponsored" tag) */}
+            <section aria-label="Sponsored" className="mt-auto pt-2">
+              <SponsoredAdCard
+                ad={sponsoredAd}
+                onAdClick={(adId) =>
+                  void recordSponsoredAdEvent(client, adId, 'click')
+                }
+              />
+            </section>
+          </div>
+        ) : activeProductId ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <button
@@ -1677,12 +1686,7 @@ export function SponsoredAdCard({
 }) {
   if (!ad) {
     return (
-      <div className="w-full rounded-xl border border-dashed border-border bg-surface/40 px-4 py-3.5 flex items-center justify-between gap-3">
-        <span className="text-xs uppercase tracking-wider text-text-muted">
-          Sponsored
-        </span>
-        <span className="text-xs text-text-muted">Advertising space</span>
-      </div>
+      <div className="w-full min-h-[84px] rounded-2xl border border-dashed border-border/70 bg-surface/30" />
     );
   }
 
@@ -1699,12 +1703,14 @@ export function SponsoredAdCard({
     <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
       <div className="w-full rounded-[15px] bg-surface/95 p-4 sm:p-5 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs uppercase tracking-wider text-text-muted">
+          <span className="text-[11px] uppercase tracking-wider text-text-muted">
             Sponsored
           </span>
-          <span className="text-xs font-medium text-accent">
-            {ad.sponsorName}
-          </span>
+          {ad.sponsorName && (
+            <span className="text-xs font-medium text-accent">
+              {ad.sponsorName}
+            </span>
+          )}
         </div>
 
         {validImageUrl && (

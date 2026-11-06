@@ -231,6 +231,354 @@ const RAW_TABUK: CompactDrug[] = [
     notes:
       'Official Tabuk Pharmaceutical Manufacturing Co. product page and SmPC data. Each dual-release hard capsule contains 75 mg diclofenac sodium (25 mg gastro-resistant pellets and 50 mg prolonged-release pellets; INN base: Diclofenac).',
   },
+  {
+    brandName: 'Tabuvan 320 mg',
+    genericName: 'Valsartan',
+    activeIngredients: ['Valsartan'],
+    drugClass: 'Angiotensin II receptor blocker (ARB)',
+    strength: '320 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets in blisters',
+    indications:
+      'Treatment of essential hypertension in adult patients requiring maximal angiotensin II receptor blockade.',
+    dose:
+      'Adults: One 320 mg film-coated tablet once daily (maximum daily dose for hypertension), taken with or without food.',
+    contraindications:
+      'Hypersensitivity to valsartan or excipients; severe hepatic impairment, biliary cirrhosis, and cholestasis; 2nd and 3rd trimesters of pregnancy; concomitant aliskiren in diabetes mellitus or renal impairment (GFR < 60 mL/min/1.73 m²); concomitant sacubitril/valsartan.',
+    adverseEffects:
+      'Common: dizziness, postural dizziness, hypotension, orthostatic hypotension, hyperkalaemia, renal impairment.',
+    storage:
+      'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Tabuvan 320 mg Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. product page and SmPC data. Each film-coated tablet contains 320 mg valsartan.',
+  },
+  {
+    brandName: 'Co-Tabuvan 160 mg/25 mg',
+    genericName: 'Valsartan + Hydrochlorothiazide',
+    activeIngredients: ['Valsartan', 'Hydrochlorothiazide'],
+    drugClass: 'Angiotensin II receptor blocker (ARB) and thiazide diuretic fixed-dose combination',
+    strength: '160 mg/25 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets in blisters',
+    indications:
+      'Treatment of essential hypertension in adult patients whose blood pressure is not adequately controlled on valsartan 160 mg, hydrochlorothiazide, or Co-Tabuvan 160 mg/12.5 mg.',
+    dose:
+      'One film-coated tablet (160 mg valsartan / 25 mg hydrochlorothiazide) once daily, taken with or without food.',
+    contraindications:
+      'Hypersensitivity to valsartan, hydrochlorothiazide, sulfonamides, or excipients; 2nd and 3rd trimesters of pregnancy; severe hepatic impairment, biliary cirrhosis, cholestasis; severe renal impairment (CrCl < 30 mL/min), anuria; refractory hypokalaemia, hyponatraemia, hypercalcaemia, or symptomatic hyperuricaemia; concomitant aliskiren in diabetes or renal impairment.',
+    adverseEffects:
+      'Uncommon: dehydration, dizziness, hypotension, cough, myalgia, fatigue, electrolyte disturbances (hypokalaemia, hyponatraemia, hyperuricaemia, hyperglycaemia).',
+    storage:
+      'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Co-Tabuvan 160 mg/25 mg Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. product page and SmPC data. Each film-coated tablet contains 160 mg valsartan and 25 mg hydrochlorothiazide.',
+  },
+  {
+    brandName: 'Tabuklav 625 mg',
+    genericName: 'Amoxicillin + Clavulanic acid',
+    activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
+    drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
+    strength: '500 mg/125 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 14 or 20 film-coated tablets in blisters',
+    indications:
+      'Acute bacterial sinusitis, acute otitis media, acute exacerbations of chronic bronchitis, community-acquired pneumonia, cystitis, pyelonephritis, skin and soft tissue infections, and bone and joint infections.',
+    dose:
+      'Adults and children >= 40 kg: One 625 mg (500 mg/125 mg) tablet every 8 hours (three times daily) for 5 to 14 days, taken at the start of a meal.',
+    contraindications:
+      'Hypersensitivity to amoxicillin, clavulanic acid, penicillins, or excipients; history of severe immediate hypersensitivity reaction to another beta-lactam agent; history of amoxicillin/clavulanic acid-induced jaundice or hepatic dysfunction.',
+    adverseEffects:
+      'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: dizziness, headache, dyspepsia, elevated AST/ALT, rash, pruritus, urticaria.',
+    storage:
+      'Store below 25°C in a dry place in the original package to protect from moisture.',
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Tabuklav (amoxicillin / clavulanic acid) Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each 625 mg film-coated tablet contains amoxicillin trihydrate equivalent to 500 mg amoxicillin and potassium clavulanate equivalent to 125 mg clavulanic acid (INN bases: Amoxicillin + Clavulanic acid).',
+  },
+  {
+    brandName: 'Tabuklav 1 g',
+    genericName: 'Amoxicillin + Clavulanic acid',
+    activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
+    drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
+    strength: '875 mg/125 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 14 film-coated tablets in blisters',
+    indications:
+      'Acute bacterial sinusitis, acute otitis media, acute exacerbations of chronic bronchitis, community-acquired pneumonia, cystitis, pyelonephritis, skin and soft tissue infections, and bone and joint infections.',
+    dose:
+      'Adults and children >= 40 kg: One 1 g (875 mg/125 mg) tablet every 12 hours (twice daily); up to three times daily for severe infections. Administer at the start of a meal.',
+    contraindications:
+      'Hypersensitivity to amoxicillin, clavulanic acid, penicillins, or excipients; history of severe immediate hypersensitivity reaction to another beta-lactam antibacterial; history of amoxicillin/clavulanic acid-induced jaundice or hepatic dysfunction.',
+    adverseEffects:
+      'Very common: diarrhoea. Common: mucocutaneous candidiasis, nausea, vomiting. Uncommon: headache, dizziness, dyspepsia, elevated hepatic transaminases, skin rash, pruritus, urticaria.',
+    storage:
+      'Store below 25°C in a dry place in the original package to protect from moisture.',
+    specialties: ['Infectious Diseases', 'Internal Medicine', 'Pulmonology', 'ENT', 'Urology'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Tabuklav 1 g Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each 1 g film-coated tablet contains amoxicillin trihydrate equivalent to 875 mg amoxicillin and potassium clavulanate equivalent to 125 mg clavulanic acid (INN bases: Amoxicillin + Clavulanic acid).',
+  },
+  {
+    brandName: 'Tabuklav 457 mg/5 mL',
+    genericName: 'Amoxicillin + Clavulanic acid',
+    activeIngredients: ['Amoxicillin', 'Clavulanic acid'],
+    drugClass: 'Penicillin beta-lactam antibacterial and beta-lactamase inhibitor combination',
+    strength: '400 mg/57 mg per 5 mL',
+    dosageForm: 'Powder for oral suspension',
+    route: 'Oral',
+    packSize: 'Bottle for preparation of 70 mL oral suspension',
+    indications:
+      'Paediatric bacterial infections: acute bacterial sinusitis, acute otitis media, community-acquired pneumonia, cystitis, pyelonephritis, and skin and soft tissue infections.',
+    dose:
+      'Children < 40 kg (aged >= 2 months): 25/3.6 mg/kg/day to 45/6.4 mg/kg/day (up to 70/10 mg/kg/day for severe otitis media, sinusitis, or lower respiratory infections) divided into 2 equal doses every 12 hours at the start of a meal.',
+    contraindications:
+      'Hypersensitivity to penicillins or beta-lactamase inhibitors; history of severe hypersensitivity to other beta-lactam agents; history of amoxicillin/clavulanic acid-associated jaundice or hepatic dysfunction.',
+    adverseEffects:
+      'Common: diarrhoea, nausea, vomiting, mucocutaneous candidiasis, diaper dermatitis. Uncommon: indigestion, skin rash, urticaria, pruritus.',
+    storage:
+      'Dry powder: store below 25°C. Reconstituted suspension: store in a refrigerator (2°C to 8°C) and use within 7 days.',
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Tabuklav 457 mg/5 mL Oral Suspension Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each 5 mL of reconstituted suspension contains 400 mg amoxicillin and 57 mg clavulanic acid (INN bases: Amoxicillin + Clavulanic acid).',
+  },
+  {
+    brandName: 'Azomac 500 mg',
+    genericName: 'Azithromycin',
+    activeIngredients: ['Azithromycin'],
+    drugClass: 'Macrolide (azalide) antibacterial',
+    strength: '500 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 3 film-coated tablets in blister',
+    indications:
+      'Upper and lower respiratory tract infections (sinusitis, otitis media, pharyngitis/tonsillitis, bronchitis, mild to moderate community-acquired pneumonia), uncomplicated skin and soft tissue infections, and uncomplicated Chlamydia trachomatis urethritis and cervicitis.',
+    dose:
+      'Adults and adolescents (>= 45 kg): 500 mg (1 tablet) once daily for 3 consecutive days (total dose 1500 mg). Uncomplicated Chlamydia trachomatis infection: 1000 mg (2 tablets) as a single oral dose.',
+    contraindications:
+      'Hypersensitivity to azithromycin, erythromycin, any macrolide or ketolide antibiotic, or excipients; history of azithromycin-associated cholestatic jaundice or hepatic dysfunction.',
+    adverseEffects:
+      'Very common: diarrhoea. Common: headache, vomiting, abdominal pain, nausea. Uncommon: dizziness, dysgeusia, palpitations, rash, pruritus, QT prolongation.',
+    storage:
+      'Store below 30°C in a dry place.',
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT', 'Dermatology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Azomac (azithromycin) Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each film-coated tablet contains azithromycin dihydrate equivalent to 500 mg azithromycin (INN base: Azithromycin).',
+  },
+  {
+    brandName: 'Azomac 200 mg/5 mL',
+    genericName: 'Azithromycin',
+    activeIngredients: ['Azithromycin'],
+    drugClass: 'Macrolide (azalide) antibacterial',
+    strength: '200 mg/5 mL',
+    dosageForm: 'Powder for oral suspension',
+    route: 'Oral',
+    packSize: 'Bottle for preparation of 15 mL or 22.5 mL oral suspension',
+    indications:
+      'Paediatric bacterial infections: acute otitis media, acute bacterial sinusitis, streptococcal pharyngitis and tonsillitis, community-acquired pneumonia, and skin and soft tissue infections.',
+    dose:
+      'Children (< 45 kg): 10 mg/kg body weight (0.25 mL/kg) once daily for 3 consecutive days; for streptococcal pharyngitis/tonsillitis, 10–20 mg/kg once daily for 3 days (maximum 500 mg/day).',
+    contraindications:
+      'Hypersensitivity to azithromycin, macrolide or ketolide antibiotics, or excipients.',
+    adverseEffects:
+      'Common: diarrhoea, abdominal pain, nausea, vomiting, headache, rash.',
+    storage:
+      'Dry powder: store below 30°C. Reconstituted suspension: store below 25°C and discard unused portion after 10 days.',
+    specialties: ['Pediatrics', 'Infectious Diseases', 'ENT', 'Pulmonology'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Azomac Oral Suspension Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. After reconstitution, each 5 mL contains azithromycin dihydrate equivalent to 200 mg azithromycin (INN base: Azithromycin).',
+  },
+  {
+    brandName: 'Fastflam 50 mg',
+    genericName: 'Diclofenac',
+    activeIngredients: ['Diclofenac'],
+    drugClass: 'Non-steroidal anti-inflammatory drug (NSAID, phenylacetic acid derivative)',
+    strength: '50 mg',
+    dosageForm: 'Sugar-coated / film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 20 tablets in blisters',
+    indications:
+      'Short-term treatment of acute painful and inflammatory conditions: post-traumatic pain, inflammation, and swelling (e.g. sprains), post-operative pain and inflammation (e.g. dental or orthopaedic surgery), primary dysmenorrhoea, migraine attacks, and acute musculoskeletal or spinal pain syndromes.',
+    dose:
+      'Adults: Recommended initial daily dose is 100 mg to 150 mg divided into 2 or 3 doses (one 50 mg tablet 2 to 3 times daily); in milder cases, 50 mg to 100 mg daily.',
+    contraindications:
+      'Hypersensitivity to diclofenac, aspirin, or other NSAIDs; active or recurrent peptic ulcer/haemorrhage; history of NSAID-related GI bleeding or perforation; established congestive heart failure (NYHA II–IV), ischaemic heart disease, peripheral arterial disease, or cerebrovascular disease; severe hepatic or renal failure; third trimester of pregnancy.',
+    adverseEffects:
+      'Common: headache, dizziness, vertigo, nausea, vomiting, diarrhoea, dyspepsia, abdominal pain, flatulence, elevated transaminases, skin rash.',
+    storage:
+      'Store below 30°C in a dry place.',
+    specialties: ['Orthopedics', 'Rheumatology', 'Internal Medicine', 'Obstetrics and Gynecology'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Fastflam (diclofenac potassium 50 mg) Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each tablet contains 50 mg diclofenac potassium for rapid onset of analgesia (INN base: Diclofenac).',
+  },
+  {
+    brandName: 'Vasoxen 5 mg',
+    genericName: 'Nebivolol',
+    activeIngredients: ['Nebivolol'],
+    drugClass: 'Cardioselective third-generation beta-1 adrenergic receptor blocker with nitric oxide-mediated vasodilating properties',
+    strength: '5 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 or 30 tablets in blisters',
+    indications:
+      'Treatment of essential hypertension in adults; and treatment of stable mild and moderate chronic heart failure in addition to standard therapies in elderly patients aged >= 70 years.',
+    dose:
+      'Hypertension: One 5 mg tablet once daily, preferably at the same time each day, with or without food (2.5 mg starting dose in renal insufficiency or patients > 65 years). Chronic heart failure: titrated slowly from 1.25 mg once daily up to a maximum of 10 mg once daily.',
+    contraindications:
+      'Hypersensitivity to nebivolol or excipients; liver insufficiency or liver function impairment; acute heart failure, cardiogenic shock, or episodes of heart failure decompensation requiring IV inotropic therapy; sick sinus syndrome, sino-atrial block, second- and third-degree AV block (without a pacemaker); history of bronchospasm and bronchial asthma; untreated phaeochromocytoma; metabolic acidosis; bradycardia (< 60 bpm prior to therapy); severe hypotension or severe peripheral circulatory disturbances.',
+    adverseEffects:
+      'Common: headache, dizziness, paraesthesia, dyspnoea, constipation, nausea, diarrhoea, tiredness, oedema. Uncommon: bradycardia, heart failure, slowed AV conduction/AV block, hypotension, bronchospasm, dyspepsia, flatulence, vomiting, pruritus, rash, erectile dysfunction.',
+    storage:
+      'Store below 30°C in the original package.',
+    specialties: ['Cardiology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Vasoxen (nebivolol 5 mg) Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each tablet contains nebivolol hydrochloride equivalent to 5 mg nebivolol (INN base: Nebivolol).',
+  },
+  {
+    brandName: 'Celoxib 200 mg',
+    genericName: 'Celecoxib',
+    activeIngredients: ['Celecoxib'],
+    drugClass: 'Selective cyclooxygenase-2 (COX-2) inhibitor (NSAID)',
+    strength: '200 mg',
+    dosageForm: 'Hard capsule',
+    route: 'Oral',
+    packSize: 'Pack of 20 or 30 hard capsules in blisters',
+    indications:
+      'Symptomatic relief in the treatment of osteoarthritis, rheumatoid arthritis, and ankylosing spondylitis in adults.',
+    dose:
+      'Osteoarthritis: 200 mg once daily or 100 mg twice daily. Rheumatoid arthritis: 100 mg to 200 mg twice daily. Ankylosing spondylitis: 200 mg once daily (up to 400 mg daily).',
+    contraindications:
+      'Hypersensitivity to celecoxib, sulfonamides, or excipients; NSAID/aspirin-induced asthma, urticaria, or allergic reactions; active peptic ulceration or GI bleeding; severe hepatic dysfunction; CrCl < 30 mL/min; inflammatory bowel disease; congestive heart failure (NYHA II–IV), established ischaemic heart disease, peripheral arterial disease, or cerebrovascular disease; pregnancy.',
+    adverseEffects:
+      'Very common: hypertension. Common: sinusitis, upper respiratory tract infection, insomnia, dizziness, headache, abdominal pain, diarrhoea, dyspepsia, flatulence, vomiting, nausea, rash, pruritus, peripheral oedema.',
+    storage:
+      'Store below 30°C in a dry place.',
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Celoxib (celecoxib 200 mg) Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each hard capsule contains 200 mg celecoxib.',
+  },
+  {
+    brandName: 'Airfast 10 mg',
+    genericName: 'Montelukast',
+    activeIngredients: ['Montelukast'],
+    drugClass: 'Selective leukotriene receptor antagonist (CysLT1)',
+    strength: '10 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 or 30 film-coated tablets in blisters',
+    indications:
+      'Add-on treatment of mild to moderate persistent bronchial asthma in patients aged 15 years and older inadequately controlled on inhaled corticosteroids and short-acting beta-agonists, prophylaxis of exercise-induced bronchoconstriction, and symptomatic relief of seasonal allergic rhinitis in asthmatic patients.',
+    dose:
+      'Adults and adolescents (>= 15 years): One 10 mg film-coated tablet once daily in the evening, taken with or without food.',
+    contraindications:
+      'Hypersensitivity to montelukast or to any of the excipients.',
+    adverseEffects:
+      'Very common: upper respiratory infection. Common: diarrhoea, nausea, vomiting, elevated serum transaminases (ALT, AST), rash, pyrexia, headache. Post-marketing warning: neuropsychiatric events (sleep disturbances, agitation, depression, behavioural changes).',
+    storage:
+      'Store below 30°C in the original package to protect from light and moisture.',
+    specialties: ['Pulmonology', 'Allergy and Immunology', 'ENT', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Airfast (montelukast) Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each film-coated tablet contains montelukast sodium equivalent to 10 mg montelukast (INN base: Montelukast).',
+  },
+  {
+    brandName: 'Airfast 5 mg',
+    genericName: 'Montelukast',
+    activeIngredients: ['Montelukast'],
+    drugClass: 'Selective leukotriene receptor antagonist (CysLT1)',
+    strength: '5 mg',
+    dosageForm: 'Chewable tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 or 30 chewable tablets in blisters',
+    indications:
+      'Add-on treatment of mild to moderate persistent asthma, alternative to low-dose inhaled corticosteroids in mild persistent asthma without recent serious attacks, and prophylaxis of exercise-induced asthma in paediatric patients aged 6 to 14 years.',
+    dose:
+      'Paediatric patients aged 6 to 14 years: One 5 mg chewable tablet once daily in the evening, taken at least 1 hour before or 2 hours after food.',
+    contraindications:
+      'Hypersensitivity to montelukast or excipients; phenylketonuria (if sweetened with aspartame).',
+    adverseEffects:
+      'Common: headache, abdominal pain, thirst, hyperkinesia, asthma, scaly and itchy skin. Monitor for neuropsychiatric changes (nightmares, behavioural changes).',
+    storage:
+      'Store below 30°C in the original package to protect from light and moisture.',
+    specialties: ['Pediatrics', 'Pulmonology', 'Allergy and Immunology'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Airfast 5 mg Chewable Tablets Official Product Information',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each chewable tablet contains montelukast sodium equivalent to 5 mg montelukast (INN base: Montelukast).',
+  },
 ];
 
 export const TABUK_PRODUCTS: AiProductDraft[] = RAW_TABUK.map((d) => ({

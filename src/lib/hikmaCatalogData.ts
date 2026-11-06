@@ -616,66 +616,6 @@ const RAW_HIKMA: CompactDrug[] = [
     notes:
       'Official Hikma Pharmaceuticals PLC SmPC data. Each hard capsule contains 200 mg celecoxib.',
   },
-
-  // 9. Cravit (Levofloxacin — Hikma Pharmaceuticals PLC under license from Daiichi Sankyo)
-  {
-    brandName: 'Cravit 500 mg',
-    genericName: 'Levofloxacin',
-    activeIngredients: ['Levofloxacin'],
-    drugClass: 'Fluoroquinolone antibacterial',
-    strength: '500 mg',
-    dosageForm: 'Film-coated tablet',
-    route: 'Oral',
-    packSize: 'Pack of 5 or 7 film-coated tablets in blister',
-    indications:
-      'Treatment of acute bacterial sinusitis, acute exacerbation of chronic obstructive pulmonary disease, community-acquired pneumonia, complicated skin and soft tissue infections, acute pyelonephritis and complicated urinary tract infections, and chronic bacterial prostatitis in adults.',
-    dose:
-      'Adults with normal renal function (CrCl > 50 mL/min): 500 mg once daily (or twice daily for severe CAP or complicated skin infections) for 7 to 14 days (28 days for chronic bacterial prostatitis). Separate by at least 2 hours from polyvalent cations (iron, zinc, magnesium/aluminium antacids, sucralfate).',
-    contraindications:
-      'Hypersensitivity to levofloxacin or other quinolones; epilepsy; history of tendon disorders related to fluoroquinolones; children or growing adolescents; pregnancy and breastfeeding.',
-    adverseEffects:
-      'Common: insomnia, headache, dizziness, diarrhoea, vomiting, nausea, elevated hepatic enzymes (ALT/AST). Rare: tendinitis and tendon rupture, peripheral neuropathy, QT prolongation, dysglycaemia.',
-    storage:
-      'Store below 30°C in the original package.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'Urology', 'Internal Medicine'],
-    sources: [
-      {
-        title: 'Hikma Pharmaceuticals PLC — Branded Anti-Infectives Portfolio (Cravit / levofloxacin)',
-        url: 'https://www.hikma.com/what-we-do/branded/',
-      },
-    ],
-    notes:
-      'Official Hikma Pharmaceuticals PLC MENA anti-infectives portfolio SmPC data. Each film-coated tablet contains levofloxacin hemihydrate equivalent to 500 mg levofloxacin (INN base: Levofloxacin).',
-  },
-  {
-    brandName: 'Cravit 750 mg',
-    genericName: 'Levofloxacin',
-    activeIngredients: ['Levofloxacin'],
-    drugClass: 'Fluoroquinolone antibacterial',
-    strength: '750 mg',
-    dosageForm: 'Film-coated tablet',
-    route: 'Oral',
-    packSize: 'Pack of 5 film-coated tablets in blister',
-    indications:
-      'Short-course high-dose therapy for community-acquired pneumonia, acute bacterial sinusitis, complicated urinary tract infections, acute pyelonephritis, and complicated skin and soft tissue infections in adults.',
-    dose:
-      'Adults with CrCl > 50 mL/min: 750 mg once daily for 5 days (community-acquired pneumonia, acute bacterial sinusitis, cUTI/acute pyelonephritis) or 7–14 days (complicated skin and soft tissue infections).',
-    contraindications:
-      'Hypersensitivity to levofloxacin or other quinolones; epilepsy; history of fluoroquinolone-associated tendon disorders; children or growing adolescents; pregnancy and lactation.',
-    adverseEffects:
-      'Common: insomnia, headache, dizziness, nausea, diarrhoea, vomiting, elevated liver enzymes. Class warnings: tendinitis/tendon rupture, peripheral neuropathy, CNS effects, QT prolongation.',
-    storage:
-      'Store below 30°C in the original package.',
-    specialties: ['Infectious Diseases', 'Pulmonology', 'Urology', 'Internal Medicine'],
-    sources: [
-      {
-        title: 'Hikma Pharmaceuticals PLC — Branded Anti-Infectives Portfolio (Cravit 750 mg)',
-        url: 'https://www.hikma.com/what-we-do/branded/',
-      },
-    ],
-    notes:
-      'Official Hikma Pharmaceuticals PLC MENA anti-infectives portfolio SmPC data. Each film-coated tablet contains levofloxacin hemihydrate equivalent to 750 mg levofloxacin (INN base: Levofloxacin).',
-  },
 ];
 
 export const HIKMA_PRODUCTS: AiProductDraft[] = RAW_HIKMA.map((d) => ({

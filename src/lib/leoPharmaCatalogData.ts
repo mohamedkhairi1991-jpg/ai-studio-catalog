@@ -606,6 +606,62 @@ const RAW_LEO_PHARMA: CompactDrug[] = [
     notes:
       'Official EMA EPAR product information (Marketing Authorisation Holder: LEO Pharma A/S). Contains tacrolimus 1.0 mg/g (as tacrolimus monohydrate). Generic name normalized to INN base (Tacrolimus).',
   },
+  {
+    brandName: 'One-Alpha 0.25 mcg',
+    genericName: 'Alfacalcidol',
+    activeIngredients: ['Alfacalcidol'],
+    drugClass: 'Active Vitamin D3 Analogues (1-Alpha-Hydroxycholecalciferol)',
+    strength: '0.25 mcg',
+    dosageForm: 'Soft capsule',
+    route: 'Oral',
+    packSize: '30 or 100 soft capsules',
+    indications:
+      'Diseases caused by disturbances in calcium metabolism due to impaired endogenous 1-alpha-hydroxylation of vitamin D, including renal osteodystrophy, postoperative or idiopathic hypoparathyroidism, pseudohypoparathyroidism, vitamin D-resistant rickets and osteomalacia, and osteoporosis.',
+    dose:
+      'Adults: Typical initial dose is 0.25 mcg to 1 mcg orally once daily, adjusted according to serum calcium and phosphate response (usual maintenance dose 0.25 to 1 mcg daily). Monitor serum calcium and phosphate regularly.',
+    contraindications:
+      'Hypersensitivity to alfacalcidol, sesame oil (in soft capsules), or any excipient; hypercalcaemia; metastatic calcification; hyperphosphataemia (except in hypoparathyroidism); hypermagnesaemia.',
+    adverseEffects:
+      'Hypercalcaemia, hypercalciuria, hyperphosphataemia, pruritus, rash, urticaria, abdominal pain, nausea, constipation, diarrhoea, headache, nephrocalcinosis, and renal impairment if hypercalcaemia is uncorrected.',
+    storage: 'Do not store above 25°C. Store in the original package.',
+    specialties: ['Endocrinology', 'Nephrology', 'Rheumatology', 'Orthopedics', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'One-Alpha Capsules (alfacalcidol) — UK eMC SmPC Search (LEO Pharma)',
+        url: 'https://www.medicines.org.uk/emc/search?q=One-Alpha',
+      },
+    ],
+    notes:
+      'Official LEO Pharma SmPC data. Each soft capsule contains 0.25 micrograms alfacalcidol (1-alpha-hydroxycholecalciferol).',
+  },
+  {
+    brandName: 'One-Alpha 1 mcg',
+    genericName: 'Alfacalcidol',
+    activeIngredients: ['Alfacalcidol'],
+    drugClass: 'Active Vitamin D3 Analogues (1-Alpha-Hydroxycholecalciferol)',
+    strength: '1 mcg',
+    dosageForm: 'Soft capsule',
+    route: 'Oral',
+    packSize: '30 or 100 soft capsules',
+    indications:
+      'Management of renal osteodystrophy in chronic kidney disease, hypoparathyroidism, pseudohypoparathyroidism, osteomalacia, and vitamin D-dependent or vitamin D-resistant rickets.',
+    dose:
+      'Adults: Initiate at 1 mcg orally once daily, then titrate to maintenance dose (typically 0.25 mcg to 1 mcg once daily) based on weekly/monthly serum calcium and phosphate monitoring.',
+    contraindications:
+      'Hypersensitivity to alfacalcidol, sesame oil, or any excipient; hypercalcaemia; metastatic calcification; hyperphosphataemia (except in hypoparathyroidism); hypermagnesaemia.',
+    adverseEffects:
+      'Hypercalcaemia, hypercalciuria, hyperphosphataemia, pruritus, rash, nausea, abdominal pain, thirst, polyuria, nephrocalcinosis.',
+    storage: 'Do not store above 25°C. Store in the original package.',
+    specialties: ['Endocrinology', 'Nephrology', 'Rheumatology', 'Orthopedics', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'One-Alpha 1 microgram Capsules (alfacalcidol) — UK eMC SmPC Search (LEO Pharma)',
+        url: 'https://www.medicines.org.uk/emc/search?q=One-Alpha',
+      },
+    ],
+    notes:
+      'Official LEO Pharma SmPC data. Each soft capsule contains 1 microgram alfacalcidol (1-alpha-hydroxycholecalciferol).',
+  },
 ];
 
 export const LEO_PHARMA_PRODUCTS: AiProductDraft[] = RAW_LEO_PHARMA.map((d) => ({

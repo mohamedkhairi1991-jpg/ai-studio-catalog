@@ -811,6 +811,27 @@ const ABBVIE_COMPACT_PRODUCTS: CompactAbbvieDrug[] = [
     sourceTitle: 'UK EMC Official SmPC – Alphagan 0.2% w/v (2 mg/mL) Eye Drops, Solution',
     sourceUrl: 'https://www.medicines.org.uk/emc/product/856/smpc',
   },
+  {
+    brandName: 'Pylera 140 mg / 125 mg / 125 mg Capsules',
+    genericName: 'Bismuth subcitrate potassium + Metronidazole + Tetracycline hydrochloride',
+    drugClass: 'Fixed-Dose Bismuth Quadruple Therapy Combinations for Helicobacter pylori Eradication',
+    strength: '140 mg / 125 mg / 125 mg',
+    dosageForm: 'Hard capsule',
+    route: 'Oral',
+    packSize: '120 hard capsules (10-day treatment pack)',
+    approvedIndications:
+      'In combination with omeprazole (or a proton pump inhibitor), for the eradication of Helicobacter pylori and prevention of relapse of peptic ulcers in patients with active or a history of H. pylori-associated ulcers.',
+    usualAdultDose:
+      'Three capsules four times daily (12 capsules/day total: 3 capsules after breakfast, 3 after lunch, 3 after dinner, and 3 at bedtime, preferably with a snack) for 10 consecutive days, taken together with omeprazole 20 mg twice daily (with breakfast and dinner). Swallow whole with a full glass of water (250 mL) while seated; do not lie down immediately after dosing and avoid dairy products or multivalent cation antacids.',
+    contraindications:
+      'Hypersensitivity to bismuth subcitrate potassium, metronidazole or other nitroimidazole derivatives, tetracyclines, or any excipient; pregnancy and breastfeeding; paediatric patients under 12 years of age; renal or hepatic impairment; Cockayne syndrome; concomitant methoxyflurane, disulfiram, alcohol, or oral retinoids.',
+    commonAdverseEffects:
+      'Blackening of stools and tongue (harmless bismuth sulphide formation), dysgeusia (metallic taste), diarrhoea, nausea, vomiting, abdominal pain, dyspepsia, headache, dizziness, vaginitis, candidiasis, photosensitivity.',
+    storageConditions: 'This medicinal product does not require any special temperature storage conditions. Store in the original package to protect from light and moisture.',
+    specialties: ['Gastroenterology', 'Internal Medicine'],
+    sourceTitle: 'Pylera 140 mg/125 mg/125 mg Capsules — DailyMed & UK eMC Search (AbbVie)',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Pylera',
+  },
 ];
 
 export const ABBVIE_PRODUCTS: AiProductDraft[] =

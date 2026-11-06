@@ -1659,6 +1659,29 @@ const NOVARTIS_COMPACT_PRODUCTS: CompactNovartisDrug[] = [
     sourceTitle: 'Lucentis (ranibizumab) — EMA Official EPAR & SmPC',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/lucentis',
   },
+  {
+    brandName: 'Ultibro Breezhaler 85/43 mcg',
+    genericName: 'Indacaterol + Glycopyrronium',
+    drugClassNameEn: 'Long-Acting Beta2-Agonist (LABA) + Long-Acting Muscarinic Antagonist (LAMA) Combinations',
+    dosageForm: 'Inhalation powder, hard capsule (DPI)',
+    strength: '85 mcg / 43 mcg delivered dose (110 mcg / 50 mcg metered)',
+    route: 'Inhalation',
+    packSize: '30 hard capsules + 1 Breezhaler inhaler',
+    summary:
+      'Fixed-dose once-daily dual bronchodilator combining the long-acting beta2-adrenergic agonist indacaterol and the long-acting muscarinic antagonist glycopyrronium for COPD maintenance.',
+    indications:
+      'Maintenance bronchodilator treatment to relieve symptoms in adult patients with chronic obstructive pulmonary disease (COPD).',
+    adultDosage:
+      'Inhalation of the content of one capsule once daily at the same time of the day using the Ultibro Breezhaler inhaler only. Capsules must not be swallowed.',
+    contraindications:
+      'Hypersensitivity to indacaterol, glycopyrronium, lactose, or to any of the excipients.',
+    sideEffects:
+      'Upper respiratory tract infection, nasopharyngitis, urinary tract infection, sinusitis, rhinitis, hypersensitivity, hyperglycaemia, dizziness, headache, cough, oropharyngeal pain, dyspepsia, dental caries, bladder obstruction and urinary retention, pyrexia, chest pain.',
+    storageConditions: 'Do not store above 25°C. Store the capsules in the original blister to protect from moisture and remove only immediately before use.',
+    specialties: ['Pulmonology', 'Internal Medicine'],
+    sourceTitle: 'Ultibro Breezhaler (indacaterol/glycopyrronium) — EMA Official EPAR & SmPC',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/ultibro-breezhaler',
+  },
 ];
 
 export const NOVARTIS_PRODUCTS: AiProductDraft[] = NOVARTIS_COMPACT_PRODUCTS.map(toNovartisProductDraft);

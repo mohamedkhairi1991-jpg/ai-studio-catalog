@@ -837,11 +837,80 @@ const TAKEDA_COMPACT_DRUGS: CompactDrug[] = [
       'Hypersensitivity reactions, headache, dizziness, nausea, vomiting, rash, injection site pain, thromboembolic complications (venous thromboembolism, pulmonary embolism, DIC, thrombotic microangiopathy).',
     storageConditions:
       'Do not store above 25°C. Do not freeze. Store in the original package in order to protect from light.',
-    specialties: ['Hematology', 'Critical Care Medicine'],
+    specialties: ['Hematology', 'Critical Care'],
     sourceTitle: 'UK Electronic Medicines Compendium (EMC) — FEIBA 50 U/ml Powder and Solvent for Solution for Infusion SmPC',
     sourceUrl: 'https://www.medicines.org.uk/emc/product/2789/smpc',
     notes:
       'Originator Takeda (Baxalta) factor VIII inhibitor bypassing activity 1000 U vial presentation.',
+  },
+  {
+    brandName: 'Actos 15 mg',
+    genericName: 'Pioglitazone',
+    activeIngredients: ['Pioglitazone hydrochloride'],
+    drugClass: 'Thiazolidinedione (PPAR-gamma Agonist) Oral Antidiabetic Agents',
+    strength: '15 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: '28 tablets',
+    approvedIndications:
+      'Second- or third-line treatment of type 2 diabetes mellitus in adults as monotherapy (in patients inadequately controlled by diet and exercise for whom metformin is inappropriate) or in dual/triple combination therapy with metformin, a sulphonylurea, or insulin.',
+    usualAdultDose:
+      'Initiate at 15 mg or 30 mg orally once daily with or without food; may be increased in increments up to 45 mg once daily. Review response after 3 to 6 months.',
+    contraindications:
+      'Hypersensitivity to pioglitazone; cardiac failure or history of cardiac failure (NYHA stages I to IV); hepatic impairment; diabetic ketoacidosis; current bladder cancer or history of bladder cancer; uninvestigated macroscopic haematuria.',
+    commonAdverseEffects:
+      'Weight gain, fluid retention and peripheral oedema, upper respiratory tract infection, visual disturbance, hypoesthesia, bone fractures (in women), heart failure (especially with insulin).',
+    storageConditions: 'This medicinal product does not require any special storage conditions.',
+    specialties: ['Endocrinology', 'Internal Medicine'],
+    sourceTitle: 'EMA EPAR — Actos (pioglitazone) Summary of Product Characteristics (Takeda)',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/actos',
+    notes: 'Originator Takeda pioglitazone 15 mg tablet.',
+  },
+  {
+    brandName: 'Actos 30 mg',
+    genericName: 'Pioglitazone',
+    activeIngredients: ['Pioglitazone hydrochloride'],
+    drugClass: 'Thiazolidinedione (PPAR-gamma Agonist) Oral Antidiabetic Agents',
+    strength: '30 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: '28 tablets',
+    approvedIndications:
+      'Second- or third-line treatment of type 2 diabetes mellitus in adults as monotherapy or in combination with metformin, a sulphonylurea, or insulin.',
+    usualAdultDose:
+      '30 mg orally once daily with or without food (maximum dose 45 mg once daily). Monitor for signs and symptoms of fluid retention and heart failure.',
+    contraindications:
+      'Hypersensitivity to pioglitazone; cardiac failure or history of cardiac failure (NYHA I–IV); hepatic impairment; diabetic ketoacidosis; current or history of bladder cancer; uninvestigated macroscopic haematuria.',
+    commonAdverseEffects:
+      'Fluid retention, oedema, weight gain, upper respiratory tract infection, visual disturbance, bone fracture, anaemia, heart failure when combined with insulin.',
+    storageConditions: 'This medicinal product does not require any special storage conditions.',
+    specialties: ['Endocrinology', 'Internal Medicine'],
+    sourceTitle: 'EMA EPAR — Actos (pioglitazone) Summary of Product Characteristics (Takeda)',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/actos',
+    notes: 'Originator Takeda pioglitazone 30 mg tablet.',
+  },
+  {
+    brandName: 'Vocinti 20 mg (Vonoprazan)',
+    genericName: 'Vonoprazan',
+    activeIngredients: ['Vonoprazan fumarate'],
+    drugClass: 'Potassium-Competitive Acid Blockers (P-CAB)',
+    strength: '20 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: '14 or 28 film-coated tablets',
+    approvedIndications:
+      'Treatment of erosive oesophagitis (reflux oesophagitis) and maintenance of healed erosive oesophagitis; treatment of gastric ulcer and duodenal ulcer; prevention of recurrence of gastric or duodenal ulcer during low-dose aspirin or NSAID therapy; and adjunct to antibiotics for Helicobacter pylori eradication.',
+    usualAdultDose:
+      'Erosive oesophagitis: 20 mg once daily for 4 to 8 weeks (maintenance: 10 mg or 20 mg once daily). Gastric ulcer: 20 mg once daily for 8 weeks. Duodenal ulcer: 20 mg once daily for 6 weeks. H. pylori eradication: 20 mg twice daily in combination with amoxicillin (plus clarithromycin or metronidazole) for 7 to 14 days. May be taken without regard to food.',
+    contraindications:
+      'Hypersensitivity to vonoprazan or any excipient; concomitant administration with rilpivirine-containing products or atazanavir.',
+    commonAdverseEffects:
+      'Diarrhoea, constipation, abdominal distension, nausea, abdominal pain, dysgeusia, nasopharyngitis, elevated serum gastrin and hepatic transaminases.',
+    storageConditions: 'Store below 30°C in the original package.',
+    specialties: ['Gastroenterology', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sourceTitle: 'Vonoprazan fumarate (Vocinti / Voquezna) — DailyMed Official Prescribing Information',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=vonoprazan',
+    notes: 'Originator Takeda potassium-competitive acid blocker (P-CAB) 20 mg film-coated tablet (also marketed regionally as Vonza 20 mg).',
   },
 ];
 

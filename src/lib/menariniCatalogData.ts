@@ -544,6 +544,34 @@ const RAW_MENARINI: CompactDrug[] = [
     notes:
       'Official UK EMC SmPC data (Berlin-Chemie AG, Menarini Group). Each tablet contains 60 mg dapoxetine (as dapoxetine hydrochloride). Generic name normalized to INN base (Dapoxetine).',
   },
+  {
+    brandName: 'Spasmomen 40 mg',
+    genericName: 'Otilonium bromide',
+    activeIngredients: ['Otilonium bromide'],
+    drugClass: 'Synthetic Antispasmodic & Smooth Muscle Calcium-Channel Modulators (ATC A03AB06)',
+    strength: '40 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: '30 film-coated tablets',
+    indications:
+      'Symptomatic treatment of irritable bowel syndrome (IBS) and painful spastic conditions of the distal enteric tract (gastrointestinal smooth muscle spasm, abdominal pain, bloating, and altered bowel motility).',
+    dose:
+      'Adults: One 40 mg film-coated tablet 2 to 3 times daily, taken orally with water preferably 20 minutes before meals.',
+    contraindications:
+      'Hypersensitivity to otilonium bromide or any excipient; gastrointestinal obstruction. Use with caution in patients with glaucoma, prostatic hypertrophy, or pyloric stenosis.',
+    adverseEffects:
+      'Generally well tolerated at therapeutic doses due to minimal systemic absorption; occasional nausea, epigastric pain, dry mouth, dizziness, headache, fatigue, pruritus, or urticaria.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Gastroenterology', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sources: [
+      {
+        title: 'A. Menarini Industrias Farmacéuticas — Spasmomen 40 mg (otilonium bromide) Official Portfolio',
+        url: 'https://www.menarini.com',
+      },
+    ],
+    notes:
+      'Official Menarini Group gastroenterology product data. Each film-coated tablet contains 40 mg otilonium bromide.',
+  },
 ];
 
 export const MENARINI_PRODUCTS: AiProductDraft[] = RAW_MENARINI.map((d) => ({

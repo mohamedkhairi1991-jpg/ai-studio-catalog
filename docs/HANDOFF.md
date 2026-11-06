@@ -58,6 +58,26 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (admin: company page and re-publishing archived drugs)
+- Owner asked for a cleaner company page in the admin account. Pressing a
+  company now opens its own page: name, legal name, status, description,
+  website, email, phone and city, with **Edit company**, **+ Add drug** and
+  **Remove**. Below are tabs: **Drafts**, **Published**, **Archived** (and
+  **Submitted / hidden** only when there are any). The catalog toolbar is hidden
+  on this page so it is not noisy.
+- **Archived** tab: every drug has a checkbox and a **Publish** button, plus
+  **Select all** and **Publish selected**. Each drug is restored as a draft,
+  then submitted and published. A drug that fails a publish check stays in
+  **Drafts** with the reason shown.
+- Database: new `admin_unarchive_product(product_id, reason)` (admins only,
+  audited as `product_unarchived`). Archived is still final for everyone
+  else; the lifecycle trigger only allows archived → draft inside this
+  function. Editing an archived drug in the editor now uses it too (before,
+  it failed).
+- Admin header on phones: the tab bar now scrolls instead of overflowing.
+- **AI Studio:** pull before your next change to `AdminCatalogReview.tsx`.
+  New pieces there: `CompanyProductListView` and the company page block.
+
 ### 2026-11-06 — Claude (review of the regional-companies push)
 - Reviewed AI Studio's additions to Dar Al Dawa, Hikma, Jamjoom, Julphar, Medochemie,
   SPIMACO and Tabuk (145 entries; 87 new). Fixed specialty names to the existing ones:

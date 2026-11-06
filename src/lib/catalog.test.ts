@@ -29,6 +29,7 @@ import {
   loadProductDetail,
   parseProductRoute,
   parsePublishChecklistErrors,
+  publishArchivedProducts,
   publishCheckedProducts,
   recordCatalogSearchOnce,
   recordProductView,
@@ -1455,5 +1456,48 @@ describe('Admin Review Drafts helpers', () => {
         },
       ],
     });
+  });
+});
+
+describe('publishArchivedProducts', () => {
+  it('restores each archived drug as a draft, then submits and publishes it', async () => {
+    const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const client = {
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        rpcCalls.push({ fn, args });
+        if (fn === 'admin_unarchive_product' && args.p_product_id === 'arch-2') {
+          return { data: null, error: { message: 'Restore the company first' } };
+        }
+        if (fn === 'submit_product_for_review' && args.p_product_id === 'arch-3') {
+          return {
+            data: null,
+            error: {
+              message: 'Publish checklist failed',
+              details: 'missing_approved_indications_en',
+            },
+          };
+        }
+        return { data: args.p_product_id, error: null };
+      },
+    } as unknown as SupabaseClient;
+
+    const summary = await publishArchivedProducts(client, [
+      { id: 'arch-1', brandNameEn: 'Oldora 5 mg', status: 'archived' },
+      { id: 'arch-2', brandNameEn: 'Keptin 10 mg', status: 'archived' },
+      { id: 'arch-3', brandNameEn: 'Fixme 20 mg', status: 'archived' },
+    ]);
+
+    expect(rpcCalls.map((c) => `${c.fn}:${String(c.args.p_product_id)}`)).toEqual([
+      'admin_unarchive_product:arch-1',
+      'submit_product_for_review:arch-1',
+      'admin_publish_product:arch-1',
+      'admin_unarchive_product:arch-2',
+      'admin_unarchive_product:arch-3',
+      'submit_product_for_review:arch-3',
+    ]);
+    expect(summary.publishedCount).toBe(1);
+    expect(summary.failedCount).toBe(2);
+    expect(summary.results.map((r) => r.ok)).toEqual([true, false, false]);
+    expect(summary.results[2].message).toContain('kept as a draft');
   });
 });

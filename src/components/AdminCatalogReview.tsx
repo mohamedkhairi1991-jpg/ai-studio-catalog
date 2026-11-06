@@ -6,7 +6,6 @@ import {
   MARKET_STATUS_LABELS,
   STATUS_LABELS,
   extractAiDraftSources,
-  filterProductsByStatus,
   filterReviewDraftProducts,
   findMatchingTaxonomyOption,
   findNextCompanyWithDrafts,
@@ -21,6 +20,7 @@ import {
   loadCatalogBundle,
   loadCompanyAiDraftSources,
   loadProductAiDraft,
+  publishArchivedProducts,
   publishCheckedProducts,
   rpcAdminArchiveCompany,
   rpcAdminArchiveProduct,
@@ -67,8 +67,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     'catalog' | 'companies' | 'ads' | 'usage' | 'approvals'
   >('catalog');
   const [companySubView, setCompanySubView] = useState<
-    'review_drafts' | 'catalog'
-  >('review_drafts');
+    'drafts' | 'published' | 'archived' | 'other'
+  >('drafts');
   const [bundle, setBundle] = useState<CatalogBundle | null>(null);
   const [cities, setCities] = useState<Option[]>([]);
   const [defaultCountryId, setDefaultCountryId] = useState<string>('');
@@ -87,7 +87,6 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [errorReasons, setErrorReasons] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const [statusFilter, setStatusFilter] = useState<ProductStatus | 'all'>('all');
   const [companyFilterId, setCompanyFilterId] = useState<string>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -245,13 +244,6 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     await refresh();
   };
 
-  const filteredProducts = useMemo(() => {
-    if (!bundle) return [];
-    const byStatus = filterProductsByStatus(bundle.products, statusFilter);
-    if (companyFilterId === 'all') return byStatus;
-    return byStatus.filter((p) => p.companyId === companyFilterId);
-  }, [bundle, statusFilter, companyFilterId]);
-
   const openAddCompanyForm = () => {
     setEditingCompany(null);
     setCompName('');
@@ -316,7 +308,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     const wasEditing = Boolean(editingCompany);
     closeCompanyForm();
     setCompanyFilterId(res.data.id);
-    setCompanySubView('review_drafts');
+    setCompanySubView('drafts');
     setNotice(
       wasEditing
         ? `Updated company "${res.data.companyName}".`
@@ -326,20 +318,47 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   };
 
   const selectedProduct = useMemo(() => {
-    if (!selectedId || filteredProducts.length === 0) return null;
-    return filteredProducts.find((p) => p.id === selectedId) ?? null;
-  }, [filteredProducts, selectedId]);
+    if (!selectedId || !bundle) return null;
+    return bundle.products.find((p) => p.id === selectedId) ?? null;
+  }, [bundle, selectedId]);
 
-  const productsByDrugClass = useMemo(() => {
-    const groups = new Map<string, CatalogProduct[]>();
-    for (const product of filteredProducts) {
-      const className = product.drugClassNameEn || 'Other';
-      const list = groups.get(className) ?? [];
-      list.push(product);
-      groups.set(className, list);
-    }
-    return Array.from(groups.entries());
-  }, [filteredProducts]);
+  const selectedCompany = useMemo(
+    () =>
+      bundle?.companies.find((c) => c.id === companyFilterId) ?? null,
+    [bundle, companyFilterId]
+  );
+
+  const selectedCompanyPublished = useMemo(
+    () =>
+      sortByBrand(
+        (bundle?.products ?? []).filter(
+          (p) => p.companyId === companyFilterId && p.status === 'published'
+        )
+      ),
+    [bundle, companyFilterId]
+  );
+
+  const selectedCompanyArchived = useMemo(
+    () =>
+      sortByBrand(
+        (bundle?.products ?? []).filter(
+          (p) => p.companyId === companyFilterId && p.status === 'archived'
+        )
+      ),
+    [bundle, companyFilterId]
+  );
+
+  const selectedCompanyOther = useMemo(
+    () =>
+      sortByBrand(
+        (bundle?.products ?? []).filter(
+          (p) =>
+            p.companyId === companyFilterId &&
+            (p.status === 'submitted' || p.status === 'hidden')
+        )
+      ),
+    [bundle, companyFilterId]
+  );
 
   const selectedCompanyCounts = useMemo(() => {
     if (!bundle || companyFilterId === 'all') {
@@ -370,18 +389,18 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     <div className="min-h-screen bg-[#1F2D38] text-[#F2F5F8] flex flex-col">
       {/* Header */}
       <header className="border-b border-[#304451] bg-[#263744]/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-16 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 max-w-full">
             <BrandLogo />
             <span className="h-4 w-px bg-[#304451]" />
-            <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5">
+            <div className="flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5 min-w-0 overflow-x-auto">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedId(null);
                   setAdminView('catalog');
                 }}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                   adminView === 'catalog'
                     ? 'bg-[#1769AA] text-white'
                     : 'text-[#B8C3CC] hover:text-white'
@@ -395,7 +414,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   setSelectedId(null);
                   setAdminView('companies');
                 }}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                   adminView === 'companies'
                     ? 'bg-[#1769AA] text-white'
                     : 'text-[#B8C3CC] hover:text-white'
@@ -409,7 +428,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   setSelectedId(null);
                   setAdminView('ads');
                 }}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                   adminView === 'ads'
                     ? 'bg-[#1769AA] text-white'
                     : 'text-[#B8C3CC] hover:text-white'
@@ -423,7 +442,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   setSelectedId(null);
                   setAdminView('usage');
                 }}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                   adminView === 'usage'
                     ? 'bg-[#1769AA] text-white'
                     : 'text-[#B8C3CC] hover:text-white'
@@ -437,7 +456,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   setSelectedId(null);
                   setAdminView('approvals');
                 }}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                   adminView === 'approvals'
                     ? 'bg-[#1769AA] text-white'
                     : 'text-[#B8C3CC] hover:text-white'
@@ -630,7 +649,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                                 type="button"
                                 onClick={() => {
                                   setCompanyFilterId(comp.id);
-                                  setCompanySubView('review_drafts');
+                                  setCompanySubView('drafts');
                                   setSelectedId(null);
                                   setAdminView('catalog');
                                 }}
@@ -655,19 +674,19 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-2 text-xs text-[#B8C3CC] pt-1">
-                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 font-mono">
+                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 tabular-nums">
                               Drafts:{' '}
                               <span className="text-[#F59E0B] font-semibold">
                                 {counts.drafts}
                               </span>
                             </span>
-                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 font-mono">
+                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 tabular-nums">
                               Published:{' '}
                               <span className="text-[#38C976] font-semibold">
                                 {counts.published}
                               </span>
                             </span>
-                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 font-mono">
+                            <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 tabular-nums">
                               Archived:{' '}
                               <span className="text-[#F2F5F8] font-semibold">
                                 {counts.archived}
@@ -708,13 +727,13 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                                 type="button"
                                 onClick={() => {
                                   setCompanyFilterId(comp.id);
-                                  setCompanySubView('review_drafts');
+                                  setCompanySubView('drafts');
                                   setSelectedId(null);
                                   setAdminView('catalog');
                                 }}
                                 className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
                               >
-                                Review drafts ({counts.drafts})
+                                Open company page
                               </button>
                               <button
                                 type="button"
@@ -755,7 +774,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
             </section>
           ) : (
             <>
-              {/* Admin Catalog Toolbar */}
+              {/* Admin Catalog Toolbar (only on the company list; a company page has its own actions) */}
+              {companyFilterId === 'all' && (
               <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] p-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <select
@@ -763,7 +783,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     value={companyFilterId}
                     onChange={(e) => {
                       setCompanyFilterId(e.target.value);
-                      setCompanySubView('review_drafts');
+                      setCompanySubView('drafts');
                       setSelectedId(null);
                     }}
                     className={`${inputClass} sm:w-80`}
@@ -845,6 +865,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   </button>
                 </div>
               </section>
+              )}
 
               {/* Inline Add / Edit Company Form */}
               {creatingCompany && (
@@ -926,7 +947,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                             type="button"
                             onClick={() => {
                               setCompanyFilterId(comp.id);
-                              setCompanySubView('review_drafts');
+                              setCompanySubView('drafts');
                               setSelectedId(null);
                               clearFeedback();
                             }}
@@ -935,7 +956,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                             <div className="font-semibold text-sm text-[#F2F5F8]">
                               {comp.companyName}
                             </div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#B8C3CC]">
+                            <div className="flex flex-wrap items-center gap-2 text-xs tabular-nums text-[#B8C3CC]">
                               <span>
                                 Drafts:{' '}
                                 <strong className="text-[#F59E0B]">
@@ -965,102 +986,289 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 </div>
               ) : (
                 <>
-                  {/* Company Page Header + View Switcher + Counts */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCompanyFilterId('all');
-                          setSelectedId(null);
-                          clearFeedback();
-                        }}
-                        className={secondaryButtonClass}
-                      >
-                        ← Back
-                      </button>
-                      <div>
-                        <h2 className="text-base font-semibold text-[#F2F5F8]">
-                          {bundle?.companies.find(
-                            (c) => c.id === companyFilterId
-                          )?.companyName ?? 'Company'}
-                        </h2>
-                        <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#B8C3CC] mt-0.5">
-                          <span>
-                            Drafts:{' '}
-                            <strong className="text-[#F59E0B]">
-                              {selectedCompanyCounts.drafts}
-                            </strong>
-                          </span>
-                          <span>/</span>
-                          <span>
-                            Published:{' '}
-                            <strong className="text-[#38C976]">
-                              {selectedCompanyCounts.published}
-                            </strong>
-                          </span>
-                          <span>/</span>
-                          <span>
-                            Archived:{' '}
-                            <strong className="text-[#F2F5F8]">
-                              {selectedCompanyCounts.archived}
-                            </strong>
-                          </span>
+                  {/* Company page: details, then Drafts / Published / Archived tabs */}
+                  {selectedCompany && (
+                    <section className="rounded-xl bg-[#263744] border border-[#304451] p-5 space-y-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCompanyFilterId('all');
+                              setSelectedId(null);
+                              setConfirmingRemoveCompanyId(null);
+                              clearFeedback();
+                            }}
+                            className={secondaryButtonClass}
+                          >
+                            ← All companies
+                          </button>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h2 className="text-lg font-semibold text-[#F2F5F8]">
+                                {selectedCompany.companyName}
+                              </h2>
+                              <span className="rounded-md bg-[#1F2D38] border border-[#304451] px-2 py-0.5 text-xs font-medium capitalize text-[#B8C3CC]">
+                                {selectedCompany.status}
+                              </span>
+                            </div>
+                            {selectedCompany.legalName &&
+                              selectedCompany.legalName !==
+                                selectedCompany.companyName && (
+                                <div className="text-xs text-[#B8C3CC] mt-0.5">
+                                  {selectedCompany.legalName}
+                                </div>
+                              )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      {nextCompanyWithDrafts && (
+                        {confirmingRemoveCompanyId === selectedCompany.id ? (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs text-[#F59E0B]">
+                              Remove this company and archive its products?
+                            </span>
+                            <button
+                              type="button"
+                              disabled={removingCompanyId === selectedCompany.id}
+                              onClick={() =>
+                                void handleRemoveCompany(selectedCompany)
+                              }
+                              className="rounded-md bg-[#B42318] hover:bg-[#991B1B] text-white text-xs font-medium px-3 py-2 transition-colors disabled:opacity-50"
+                            >
+                              {removingCompanyId === selectedCompany.id
+                                ? 'Removing…'
+                                : 'Confirm remove'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmingRemoveCompanyId(null)}
+                              className={secondaryButtonClass}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCreatingProduct(false);
+                                openEditCompanyForm(selectedCompany);
+                              }}
+                              className={secondaryButtonClass}
+                            >
+                              Edit company
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                closeCompanyForm();
+                                setSelectedId(null);
+                                setCreatingProduct((v) => !v);
+                                clearFeedback();
+                              }}
+                              className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
+                            >
+                              {creatingProduct ? 'Close drug form' : '+ Add drug'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setConfirmingRemoveCompanyId(selectedCompany.id)
+                              }
+                              className="rounded-md bg-[#1F2D38] hover:bg-[#B42318] border border-[#304451] text-[#B8C3CC] hover:text-white text-xs font-medium px-3 py-2 transition-colors"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {selectedCompany.description && (
+                        <p className="text-sm text-[#B8C3CC] leading-relaxed">
+                          {selectedCompany.description}
+                        </p>
+                      )}
+
+                      <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                        {[
+                          {
+                            label: 'Website',
+                            value: selectedCompany.websiteUrl,
+                            href: selectedCompany.websiteUrl,
+                          },
+                          {
+                            label: 'Email',
+                            value: selectedCompany.contactEmail,
+                            href: selectedCompany.contactEmail
+                              ? `mailto:${selectedCompany.contactEmail}`
+                              : null,
+                          },
+                          {
+                            label: 'Phone',
+                            value: selectedCompany.contactPhone,
+                            href: null,
+                          },
+                          {
+                            label: 'City',
+                            value:
+                              cities.find((c) => c.id === selectedCompany.cityId)
+                                ?.label ?? null,
+                            href: null,
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.label}
+                            className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3 py-2 min-w-0"
+                          >
+                            <dt className="text-xs text-[#B8C3CC]">
+                              {item.label}
+                            </dt>
+                            <dd className="text-[#F2F5F8] truncate">
+                              {item.value ? (
+                                item.href ? (
+                                  <a
+                                    href={item.href}
+                                    target={
+                                      item.label === 'Website'
+                                        ? '_blank'
+                                        : undefined
+                                    }
+                                    rel="noreferrer"
+                                    className="text-[#5DB4F2] hover:underline"
+                                  >
+                                    {item.value}
+                                  </a>
+                                ) : (
+                                  item.value
+                                )
+                              ) : (
+                                <span className="text-[#B8C3CC]">Not set</span>
+                              )}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+
+                      <div
+                        role="tablist"
+                        aria-label="Company products"
+                        className="flex flex-wrap items-center gap-2 border-t border-[#304451] pt-4"
+                      >
+                        {(
+                          [
+                            {
+                              key: 'drafts' as const,
+                              label: 'Drafts',
+                              count: selectedCompanyCounts.drafts,
+                              tone: 'text-[#F59E0B]',
+                            },
+                            {
+                              key: 'published' as const,
+                              label: 'Published',
+                              count: selectedCompanyCounts.published,
+                              tone: 'text-[#38C976]',
+                            },
+                            {
+                              key: 'archived' as const,
+                              label: 'Archived',
+                              count: selectedCompanyCounts.archived,
+                              tone: 'text-[#F2F5F8]',
+                            },
+                            ...(selectedCompanyOther.length > 0
+                              ? [
+                                  {
+                                    key: 'other' as const,
+                                    label: 'Submitted / hidden',
+                                    count: selectedCompanyOther.length,
+                                    tone: 'text-[#5DB4F2]',
+                                  },
+                                ]
+                              : []),
+                          ]
+                        ).map((tab) => {
+                          const active = companySubView === tab.key;
+                          return (
+                            <button
+                              key={tab.key}
+                              type="button"
+                              role="tab"
+                              aria-selected={active}
+                              onClick={() => {
+                                setCompanySubView(tab.key);
+                                setSelectedId(null);
+                                clearFeedback();
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                active
+                                  ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                                  : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                              }`}
+                            >
+                              {tab.label}{' '}
+                              <span
+                                className={`tabular-nums font-semibold ${
+                                  active ? 'text-white' : tab.tone
+                                }`}
+                              >
+                                {tab.count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                        {nextCompanyWithDrafts && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCompanyFilterId(nextCompanyWithDrafts.company.id);
+                              setCompanySubView('drafts');
+                              setSelectedId(null);
+                              clearFeedback();
+                            }}
+                            className="ml-auto text-xs text-[#F59E0B] hover:underline"
+                          >
+                            Next company with drafts:{' '}
+                            {nextCompanyWithDrafts.company.companyName} (
+                            {nextCompanyWithDrafts.drafts}) →
+                          </button>
+                        )}
+                      </div>
+                    </section>
+                  )}
+
+                  {selectedProduct && bundle ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
                         <button
                           type="button"
                           onClick={() => {
-                            setCompanyFilterId(nextCompanyWithDrafts.company.id);
-                            setCompanySubView('review_drafts');
                             setSelectedId(null);
                             clearFeedback();
                           }}
-                          title={`Jump to ${nextCompanyWithDrafts.company.companyName} (${nextCompanyWithDrafts.drafts} drafts)`}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium border bg-[#1F2D38] border-[#304451] text-[#F59E0B] hover:border-[#F59E0B] transition-colors"
+                          className={secondaryButtonClass}
                         >
-                          Next with drafts: {nextCompanyWithDrafts.company.companyName} (
-                          {nextCompanyWithDrafts.drafts}) →
+                          ← Back to the list
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCompanySubView('review_drafts');
-                          setSelectedId(null);
-                          clearFeedback();
-                        }}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                          companySubView === 'review_drafts'
-                            ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
-                            : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
-                        }`}
-                      >
-                        Review drafts ({selectedCompanyCounts.drafts})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCompanySubView('catalog');
-                          setSelectedId(null);
-                          clearFeedback();
-                        }}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                          companySubView === 'catalog'
-                            ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
-                            : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
-                        }`}
-                      >
-                        Catalog list
-                      </button>
-                    </div>
-                  </div>
+                        <div className="text-xs text-[#B8C3CC] truncate">
+                          {selectedProduct.brandNameEn} ·{' '}
+                          {selectedProduct.drugClassNameEn}
+                        </div>
+                      </div>
 
-                  {companySubView === 'review_drafts' && bundle ? (
+                      <AdminProductInspector
+                        key={selectedProduct.id + ':' + selectedProduct.updatedAt}
+                        client={client}
+                        product={selectedProduct}
+                        bundle={bundle}
+                        onError={(msg, reasons) => setFailure(msg, reasons)}
+                        onSuccess={async (msg) => {
+                          clearFeedback();
+                          setNotice(msg);
+                          await refresh(selectedProduct.id);
+                        }}
+                      />
+                    </div>
+                  ) : companySubView === 'drafts' && bundle ? (
                     <CompanyReviewDraftsView
                       key={companyFilterId}
                       client={client}
@@ -1076,147 +1284,24 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                       onRefresh={refresh}
                     />
                   ) : (
-                    <>
-                      {/* Status Filter Bar for Catalog list view */}
-                      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
-                        {(
-                          [
-                            'all',
-                            'published',
-                            'submitted',
-                            'draft',
-                            'changes_requested',
-                            'hidden',
-                            'archived',
-                          ] as const
-                        ).map((st) => {
-                          const active = statusFilter === st;
-                          const baseList = (bundle?.products ?? []).filter(
-                            (p) => p.companyId === companyFilterId
-                          );
-                          const count =
-                            st === 'all'
-                              ? baseList.length
-                              : baseList.filter((p) => p.status === st).length;
-                          return (
-                            <button
-                              key={st}
-                              type="button"
-                              onClick={() => {
-                                setStatusFilter(st);
-                                setSelectedId(null);
-                                clearFeedback();
-                              }}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                                active
-                                  ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
-                                  : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
-                              }`}
-                            >
-                              {st === 'all' ? 'All' : STATUS_LABELS[st]}{' '}
-                              <span className="font-mono tabular-nums opacity-75">
-                                ({count})
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Step 2: Drug Names List vs Step 3: Opened Drug Details */}
-                      {filteredProducts.length === 0 ? (
-                        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center space-y-3">
-                          <h2 className="text-base font-medium text-[#F2F5F8]">
-                            No drugs found for this filter
-                          </h2>
-                          <p className="text-xs text-[#B8C3CC] max-w-md mx-auto">
-                            Click "+ New Product" to add a drug.
-                          </p>
-                        </div>
-                      ) : selectedProduct && bundle ? (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between gap-3 rounded-xl bg-[#263744] border border-[#304451] px-4 py-3">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedId(null);
-                                clearFeedback();
-                              }}
-                              className={secondaryButtonClass}
-                            >
-                              ← Back to {selectedProduct.companyName} Drugs (
-                              {filteredProducts.length})
-                            </button>
-                            <div className="text-xs text-[#B8C3CC]">
-                              <span className="text-[#5DB4F2] font-medium">
-                                {selectedProduct.companyName}
-                              </span>{' '}
-                              · {selectedProduct.drugClassNameEn}
-                            </div>
-                          </div>
-
-                          <AdminProductInspector
-                            key={
-                              selectedProduct.id +
-                              ':' +
-                              selectedProduct.updatedAt
-                            }
-                            client={client}
-                            product={selectedProduct}
-                            bundle={bundle}
-                            onError={(msg, reasons) => setFailure(msg, reasons)}
-                            onSuccess={async (msg) => {
-                              clearFeedback();
-                              setNotice(msg);
-                              await refresh(selectedProduct.id);
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="text-xs text-[#B8C3CC] px-1">
-                            Click any drug name below to open its full clinical
-                            information and controls.
-                          </div>
-                          {productsByDrugClass.map(
-                            ([className, classProducts]) => (
-                              <div
-                                key={className}
-                                className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3"
-                              >
-                                <div className="flex items-center justify-between border-b border-[#304451] pb-2">
-                                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[#5DB4F2]">
-                                    {className}
-                                  </h3>
-                                  <span className="text-xs font-mono text-[#B8C3CC]">
-                                    {classProducts.length} drug
-                                    {classProducts.length === 1 ? '' : 's'}
-                                  </span>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                                  {classProducts.map((product) => (
-                                    <button
-                                      key={product.id}
-                                      type="button"
-                                      onClick={() => {
-                                        setSelectedId(product.id);
-                                        clearFeedback();
-                                      }}
-                                      className="flex items-center justify-between gap-2 rounded-lg bg-[#1F2D38] hover:bg-[#1769AA]/25 border border-[#304451] hover:border-[#5DB4F2] px-3.5 py-2.5 text-left transition-colors"
-                                    >
-                                      <span className="text-sm font-medium text-[#F2F5F8] truncate">
-                                        {product.brandNameEn}
-                                      </span>
-                                      <StatusText status={product.status} />
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      )}
-                    </>
+                    <CompanyProductListView
+                      key={companyFilterId + ':' + companySubView}
+                      client={client}
+                      mode={companySubView === 'drafts' ? 'other' : companySubView}
+                      products={
+                        companySubView === 'published'
+                          ? selectedCompanyPublished
+                          : companySubView === 'archived'
+                            ? selectedCompanyArchived
+                            : selectedCompanyOther
+                      }
+                      onOpen={(productId) => {
+                        setSelectedId(productId);
+                        clearFeedback();
+                      }}
+                      onError={(msg, reasons) => setFailure(msg, reasons)}
+                      onRefresh={refresh}
+                    />
                   )}
                 </>
               )}
@@ -1225,6 +1310,306 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
           </main>
           <LegalFooter />
         </>
+      )}
+    </div>
+  );
+}
+
+function sortByBrand(products: CatalogProduct[]): CatalogProduct[] {
+  return [...products].sort((a, b) =>
+    a.brandNameEn.localeCompare(b.brandNameEn, 'en', { sensitivity: 'base' })
+  );
+}
+
+interface CompanyProductListViewProps {
+  client: SupabaseClient;
+  mode: 'published' | 'archived' | 'other';
+  products: CatalogProduct[];
+  onOpen: (productId: string) => void;
+  onError: (msg: string, reasons?: string[]) => void;
+  onRefresh: (preferProductId?: string) => Promise<void>;
+}
+
+/**
+ * One list of a company's products (published, archived, or submitted/hidden).
+ * In the archived list every drug has a checkbox, so the administrator can
+ * pick drugs and publish them again; each one is restored as a draft,
+ * submitted and published in turn.
+ */
+function CompanyProductListView({
+  client,
+  mode,
+  products,
+  onOpen,
+  onError,
+  onRefresh,
+}: CompanyProductListViewProps) {
+  const [query, setQuery] = useState('');
+  const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  const [confirmingIds, setConfirmingIds] = useState<string[] | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [progressText, setProgressText] = useState<string | null>(null);
+  const [summary, setSummary] = useState<PublishCheckedSummary | null>(null);
+
+  const selectable = mode === 'archived';
+
+  useEffect(() => {
+    const valid = new Set(products.map((p) => p.id));
+    setCheckedIds((prev) => prev.filter((id) => valid.has(id)));
+  }, [products]);
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((p) =>
+      [p.brandNameEn, p.genericNameEn ?? '', p.drugClassNameEn]
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [products, query]);
+
+  const visibleIds = visible.map((p) => p.id);
+  const allVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => checkedIds.includes(id));
+
+  const toggleAll = () => {
+    if (allVisibleSelected) {
+      const set = new Set(visibleIds);
+      setCheckedIds((prev) => prev.filter((id) => !set.has(id)));
+    } else {
+      setCheckedIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setCheckedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleConfirmPublish = async () => {
+    if (!confirmingIds || confirmingIds.length === 0) return;
+    const targets = products.filter((p) => confirmingIds.includes(p.id));
+    setConfirmingIds(null);
+    if (targets.length === 0) return;
+
+    setPublishing(true);
+    setSummary(null);
+    setProgressText(
+      `Publishing 1 of ${targets.length}: ${targets[0].brandNameEn}…`
+    );
+
+    const result = await publishArchivedProducts(
+      client,
+      targets.map((p) => ({
+        id: p.id,
+        brandNameEn: p.brandNameEn,
+        status: p.status,
+      })),
+      {
+        onProgress: (idx, total, item) =>
+          setProgressText(`Publishing ${idx} of ${total}: ${item.brandNameEn}…`),
+      }
+    );
+
+    setProgressText(null);
+    setPublishing(false);
+    setSummary(result);
+    if (result.failedCount > 0 && result.publishedCount === 0) {
+      onError(
+        'None of the selected drugs could be published. They are now drafts; open the Drafts tab to fix them.'
+      );
+    }
+    const done = new Set(result.results.map((r) => r.id));
+    setCheckedIds((prev) => prev.filter((id) => !done.has(id)));
+    await onRefresh();
+  };
+
+  const emptyText =
+    mode === 'published'
+      ? 'No published drugs for this company yet.'
+      : mode === 'archived'
+        ? 'No archived drugs for this company.'
+        : 'No submitted or hidden drugs for this company.';
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <input
+            type="search"
+            aria-label="Search this list"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by brand, generic or class…"
+            className={`${inputClass} sm:max-w-md`}
+          />
+          {selectable && (
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="inline-flex items-center gap-2 text-xs font-medium text-[#F2F5F8] cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  disabled={visible.length === 0 || publishing}
+                  onChange={toggleAll}
+                  className="accent-[#1769AA] h-4 w-4"
+                />
+                <span>Select all ({visible.length})</span>
+              </label>
+              <button
+                type="button"
+                disabled={checkedIds.length === 0 || publishing}
+                onClick={() => {
+                  setSummary(null);
+                  setConfirmingIds(checkedIds);
+                }}
+                className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
+              >
+                Publish selected ({checkedIds.length})
+              </button>
+            </div>
+          )}
+        </div>
+        {selectable && (
+          <p className="text-xs text-[#B8C3CC]">
+            Tick the drugs you want doctors to see again. A drug that fails a
+            publish check stays in Drafts so you can fix it.
+          </p>
+        )}
+      </div>
+
+      {confirmingIds && confirmingIds.length > 0 && (
+        <div className="rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B] p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm font-medium text-[#F59E0B]">
+            Publish {confirmingIds.length} archived{' '}
+            {confirmingIds.length === 1 ? 'drug' : 'drugs'}? Doctors will see
+            {confirmingIds.length === 1 ? ' it' : ' them'}.
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={publishing}
+              onClick={() => void handleConfirmPublish()}
+              className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] text-[#1F2D38] text-xs font-semibold px-4 py-2 transition-colors"
+            >
+              Confirm publish
+            </button>
+            <button
+              type="button"
+              disabled={publishing}
+              onClick={() => setConfirmingIds(null)}
+              className={secondaryButtonClass}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {publishing && progressText && <Banner tone="warn">{progressText}</Banner>}
+
+      {summary && (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs font-semibold text-[#F2F5F8]">
+              Results: {summary.publishedCount} published, {summary.failedCount}{' '}
+              not published
+            </div>
+            <button
+              type="button"
+              onClick={() => setSummary(null)}
+              className="text-xs text-[#B8C3CC] hover:text-white"
+            >
+              Dismiss
+            </button>
+          </div>
+          <ul className="divide-y divide-[#304451] text-xs">
+            {summary.results.map((item) => (
+              <li
+                key={item.id}
+                className="py-2 flex flex-wrap items-start justify-between gap-2"
+              >
+                <span className="font-medium text-[#F2F5F8]">
+                  {item.brandNameEn}
+                </span>
+                {item.ok ? (
+                  <span className="text-[#38C976] font-semibold">Published</span>
+                ) : (
+                  <span className="text-right text-[#FF7272]">
+                    {item.message}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {products.length === 0 ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+          {emptyText}
+        </div>
+      ) : visible.length === 0 ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">
+          No drugs match your search.
+        </div>
+      ) : (
+        <ul className="rounded-xl bg-[#263744] border border-[#304451] divide-y divide-[#304451] overflow-hidden">
+          {visible.map((product) => {
+            const checked = checkedIds.includes(product.id);
+            return (
+              <li
+                key={product.id}
+                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                  checked ? 'bg-[#1769AA]/15' : 'hover:bg-[#1F2D38]'
+                }`}
+              >
+                {selectable && (
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${product.brandNameEn} for publishing`}
+                    checked={checked}
+                    disabled={publishing}
+                    onChange={() => toggleOne(product.id)}
+                    className="accent-[#1769AA] h-4 w-4 shrink-0"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => onOpen(product.id)}
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <div className="text-sm font-medium text-[#F2F5F8] truncate hover:text-[#5DB4F2]">
+                    {product.brandNameEn}
+                  </div>
+                  <div className="text-xs text-[#B8C3CC] truncate">
+                    {[product.genericNameEn, product.drugClassNameEn]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </div>
+                </button>
+                {selectable ? (
+                  <button
+                    type="button"
+                    disabled={publishing}
+                    onClick={() => {
+                      setSummary(null);
+                      setConfirmingIds([product.id]);
+                    }}
+                    className="shrink-0 rounded-md border border-[#38C976]/60 text-[#38C976] hover:bg-[#38C976] hover:text-[#1F2D38] disabled:opacity-50 text-xs font-semibold px-3 py-1.5 transition-colors"
+                  >
+                    Publish
+                  </button>
+                ) : (
+                  <span className="shrink-0">
+                    <StatusText status={product.status} />
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       )}
     </div>
   );
@@ -3855,7 +4240,7 @@ function AdminUsageStatsView({
                 key={period}
                 type="button"
                 onClick={() => setDays(period)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                   days === period
                     ? 'bg-[#1769AA] text-white'
                     : 'text-[#B8C3CC] hover:text-white'

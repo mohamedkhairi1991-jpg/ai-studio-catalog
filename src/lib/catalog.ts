@@ -1867,6 +1867,84 @@ export async function rpcAdminRestoreProduct(
   return { ok: true, data: undefined };
 }
 
+export async function rpcAdminUnarchiveProduct(
+  client: SupabaseClient,
+  productId: string,
+  reason?: string
+): Promise<RpcResult> {
+  const { error } = await client.rpc('admin_unarchive_product', {
+    p_product_id: productId,
+    p_reason: reason?.trim() || null,
+  });
+
+  if (error) return { ok: false, message: formatRpcError(error) };
+  return { ok: true, data: undefined };
+}
+
+/**
+ * Brings archived products back and publishes them, one at a time.
+ * Each product is restored as a draft first, then submitted and published.
+ * A product that fails publish validation stays as a draft so the
+ * administrator can fix it in the editor.
+ */
+export async function publishArchivedProducts(
+  client: SupabaseClient,
+  items: PublishCheckedItemInput[],
+  options?: {
+    onProgress?: (
+      currentIndex: number,
+      total: number,
+      item: PublishCheckedItemInput
+    ) => void;
+  }
+): Promise<PublishCheckedSummary> {
+  const results: PublishCheckedItemResult[] = [];
+  let publishedCount = 0;
+  let failedCount = 0;
+
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
+    options?.onProgress?.(i + 1, items.length, item);
+
+    let status = item.status;
+    if (status === 'archived') {
+      const unarchiveRes = await rpcAdminUnarchiveProduct(
+        client,
+        item.id,
+        'Published again from the company page.'
+      );
+      if (!unarchiveRes.ok) {
+        failedCount += 1;
+        results.push({
+          id: item.id,
+          brandNameEn: item.brandNameEn,
+          ok: false,
+          message: unarchiveRes.message,
+        });
+        continue;
+      }
+      status = 'draft';
+    }
+
+    const pubRes = await publishProduct(client, { id: item.id, status });
+    if (pubRes.ok) {
+      publishedCount += 1;
+      results.push({ id: item.id, brandNameEn: item.brandNameEn, ok: true });
+    } else {
+      failedCount += 1;
+      results.push({
+        id: item.id,
+        brandNameEn: item.brandNameEn,
+        ok: false,
+        message: `${pubRes.message} (kept as a draft)`,
+        reasons: pubRes.reasons,
+      });
+    }
+  }
+
+  return { results, publishedCount, failedCount };
+}
+
 export interface AdminCompanyInput {
   countryId?: string | null;
   cityId?: string | null;
@@ -2542,7 +2620,14 @@ export async function saveAndPublishCompleteProduct(
         'Opening product record for administrator edit.'
       );
       if (!restRes.ok) return { ok: false, message: restRes.message };
-    } else if (existing.status === 'hidden' || existing.status === 'archived') {
+    } else if (existing.status === 'archived') {
+      const unarchiveRes = await rpcAdminUnarchiveProduct(
+        client,
+        productId,
+        'Opening archived product record for administrator edit.'
+      );
+      if (!unarchiveRes.ok) return { ok: false, message: unarchiveRes.message };
+    } else if (existing.status === 'hidden') {
       const restRes = await rpcAdminRestoreProduct(
         client,
         productId,

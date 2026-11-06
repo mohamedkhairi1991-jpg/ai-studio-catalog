@@ -58,6 +58,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (review of AI Studio's standalone profile page)
+- Reviewed `59a9c22` (profile drawer → full page). Builds, tests pass, no files
+  deleted. Merged.
+- Owner decision: **ads keep a small "Sponsored" tag.** I put it back in
+  `SponsoredAdCard` (the push had removed it). Doctors must be able to tell paid
+  promotion from official drug information. **AI Studio:** don't remove it again.
+
 ### 2026-11-06 — Claude (admin: company page and re-publishing archived drugs)
 - Owner asked for a cleaner company page in the admin account. Pressing a
   company now opens its own page: name, legal name, status, description,

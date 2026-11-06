@@ -955,15 +955,15 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               )}
             </section>
 
-            {/* Bottom space reserved for ad without Sponsored / Ad text */}
-            <div className="mt-auto pt-2">
+            {/* Bottom space reserved for the sponsored ad (keeps its small "Sponsored" tag) */}
+            <section aria-label="Sponsored" className="mt-auto pt-2">
               <SponsoredAdCard
                 ad={sponsoredAd}
                 onAdClick={(adId) =>
                   void recordSponsoredAdEvent(client, adId, 'click')
                 }
               />
-            </div>
+            </section>
           </div>
         ) : activeProductId ? (
           <div className="space-y-4">
@@ -1702,13 +1702,16 @@ export function SponsoredAdCard({
   const content = (
     <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
       <div className="w-full rounded-[15px] bg-surface/95 p-4 sm:p-5 space-y-3">
-        {ad.sponsorName && (
-          <div className="flex items-center justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] uppercase tracking-wider text-text-muted">
+            Sponsored
+          </span>
+          {ad.sponsorName && (
             <span className="text-xs font-medium text-accent">
               {ad.sponsorName}
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {validImageUrl && (
           <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center">

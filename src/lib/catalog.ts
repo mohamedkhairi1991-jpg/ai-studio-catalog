@@ -3283,3 +3283,740 @@ export async function loadAdminTopViewedProducts(
   }));
   return { ok: true, data: rows };
 }
+
+// ---------- Clinical Therapeutic Class & Subclass Grouping ----------
+
+export type TherapeuticGroupKey =
+  | 'antibiotics'
+  | 'cardiovascular'
+  | 'diabetes'
+  | 'respiratory'
+  | 'gastrointestinal'
+  | 'analgesics'
+  | 'cns'
+  | 'endocrine'
+  | 'oncology'
+  | 'urology'
+  | 'ophthalmology_derm'
+  | 'supplements';
+
+export interface TherapeuticGroupDefinition {
+  key: TherapeuticGroupKey;
+  label: string;
+  shortLabel: string;
+  examples: string;
+}
+
+export const THERAPEUTIC_GROUPS: readonly TherapeuticGroupDefinition[] = [
+  {
+    key: 'antibiotics',
+    label: 'Antibiotics & Anti-infectives',
+    shortLabel: 'Antibiotics',
+    examples: 'Cephalosporins · Penicillins · Macrolides · Fluoroquinolones · Antifungals',
+  },
+  {
+    key: 'cardiovascular',
+    label: 'Antihypertensives & Cardiac',
+    shortLabel: 'Antihypertensives & Cardiac',
+    examples: 'ARBs · ACE Inhibitors · Beta-Blockers · CCBs · Statins · Antiplatelets',
+  },
+  {
+    key: 'diabetes',
+    label: 'Diabetes & Metabolic',
+    shortLabel: 'Diabetes & Metabolic',
+    examples: 'SGLT2i · DPP-4i · Metformin · Insulins · GLP-1/GIP · Sulfonylureas',
+  },
+  {
+    key: 'respiratory',
+    label: 'Respiratory, Asthma & COPD',
+    shortLabel: 'Respiratory & Asthma',
+    examples: 'ICS/LABA/LAMA Inhalers · Montelukast · Bronchodilators · Syrups · Nasal Sprays',
+  },
+  {
+    key: 'gastrointestinal',
+    label: 'Gastrointestinal & Hepatobiliary',
+    shortLabel: 'GI & PPIs',
+    examples: 'PPIs & P-CABs · Antispasmodics · H. pylori · IBD & Laxatives · Antiemetics',
+  },
+  {
+    key: 'analgesics',
+    label: 'Analgesics, NSAIDs & Musculoskeletal',
+    shortLabel: 'Analgesics & NSAIDs',
+    examples: 'NSAIDs · Paracetamol & Analgesics · Muscle Relaxants · Antigout',
+  },
+  {
+    key: 'cns',
+    label: 'CNS, Neurology & Allergy',
+    shortLabel: 'CNS & Allergy',
+    examples: 'Antidepressants · Antiepileptics · Antihistamines · Migraine & Vertigo',
+  },
+  {
+    key: 'endocrine',
+    label: 'Endocrinology, Hormones & Bone',
+    shortLabel: 'Hormones & Bone',
+    examples: 'Thyroid · Corticosteroids · Osteoporosis & Vit D · OB/GYN & Fertility',
+  },
+  {
+    key: 'oncology',
+    label: 'Oncology, Hematology & Immunology',
+    shortLabel: 'Oncology & Immunology',
+    examples: 'Targeted Oncology · Immunosuppressants · Biologics · Hematology',
+  },
+  {
+    key: 'urology',
+    label: 'Urology, BPH & Nephrology',
+    shortLabel: 'Urology & BPH',
+    examples: 'BPH Alpha-Blockers · Overactive Bladder · PDE5 Inhibitors · Renal',
+  },
+  {
+    key: 'ophthalmology_derm',
+    label: 'Ophthalmology, ENT & Dermatology',
+    shortLabel: 'Eye, ENT & Skin',
+    examples: 'Eye Drops & Glaucoma · Topical Corticosteroids & Antibiotics · Psoriasis',
+  },
+  {
+    key: 'supplements',
+    label: 'Vitamins, Iron & Supplements',
+    shortLabel: 'Vitamins & Iron',
+    examples: 'Iron & Antianemics · Vitamin D · Multivitamins & Minerals',
+  },
+];
+
+const GROUP_BY_KEY = new Map<TherapeuticGroupKey, TherapeuticGroupDefinition>(
+  THERAPEUTIC_GROUPS.map((g) => [g.key, g])
+);
+
+/**
+ * Strips raw ATC code annotations such as "(ATC C08CA01)" or "(J01FA10)" so
+ * drug class labels read cleanly in clinical lists.
+ */
+export function cleanDrugClassLabel(raw: string | null | undefined): string {
+  if (!raw) return 'General Medicine';
+  const cleaned = raw
+    .replace(
+      /\s*\((?:ATC\s*)?[A-Z]\d{2}[A-Z]{1,2}\d{0,2}(?:\s*\/\s*[A-Z]\d{2}[A-Z]{1,2}\d{0,2})?\)/gi,
+      ''
+    )
+    .replace(/,\s*(?:ATC\s*)?[A-Z]\d{2}[A-Z]{1,2}\d{0,2}\)/gi, ')')
+    .trim();
+  return cleaned || 'General Medicine';
+}
+
+export interface DrugTherapeuticClassification {
+  groupKey: TherapeuticGroupKey;
+  groupLabel: string;
+  shortGroupLabel: string;
+  subclassLabel: string;
+  cleanClass: string;
+}
+
+/**
+ * Maps a product's drug class and generic name into a clean two-level
+ * clinical hierarchy: Therapeutic Group (e.g. "Antibiotics & Anti-infectives",
+ * "Antihypertensives & Cardiac") and Subclass (e.g. "Cephalosporins",
+ * "ARBs & ARB Combinations", "Beta-Blockers").
+ */
+export function classifyDrugTherapeuticGroup(
+  drugClassNameEn: string | null | undefined,
+  genericNameEn?: string | null,
+  category?: ProductCategory | string | null
+): DrugTherapeuticClassification {
+  const cleanClass = cleanDrugClassLabel(drugClassNameEn);
+  const text = `${drugClassNameEn ?? ''} ${genericNameEn ?? ''}`.toLowerCase();
+
+  const build = (
+    groupKey: TherapeuticGroupKey,
+    subclassLabel: string
+  ): DrugTherapeuticClassification => {
+    const def = GROUP_BY_KEY.get(groupKey)!;
+    return {
+      groupKey,
+      groupLabel: def.label,
+      shortGroupLabel: def.shortLabel,
+      subclassLabel,
+      cleanClass,
+    };
+  };
+
+  // 1. Ophthalmology & Dermatology
+  if (
+    /ophthalm|glaucoma|intravitreal|eye drop|artificial tear|ocular|tobramycin.*dexamethasone|prostamide|prostaglandin.*glaucoma/.test(
+      text
+    )
+  ) {
+    return build(
+      'ophthalmology_derm',
+      /glaucoma|prostamide|timolol/.test(text)
+        ? 'Glaucoma & Intraocular Pressure'
+        : 'Ophthalmic Anti-infectives & Anti-inflammatories'
+    );
+  }
+  if (
+    /topical|cutaneous|ointment|scalp|antipsoriatic|psoriasis|atopic dermatitis|acne|retinoid|wound|burn|ulcer healing|minoxidil|calcipotriol|fusidane.*topical|mupirocin/.test(
+      text
+    )
+  ) {
+    return build(
+      'ophthalmology_derm',
+      /psoria|calcipotriol|atopic|acne|wound|burn/.test(text)
+        ? 'Psoriasis, Acne & Skin Care'
+        : 'Topical Anti-infectives & Corticosteroids'
+    );
+  }
+
+  // 2. Respiratory, Asthma & COPD
+  if (
+    /inhal|bronchodilat|asthma|copd|laba|lama|saba|leukotriene|montelukast|tiotropium|umeclidinium|budesonide.*formoterol|fluticasone.*salmeterol|beclomethasone.*formoterol|salbutamol|aminophylline|doxofylline|theophylline|methylxanthine|il-5|benralizumab|mepolizumab|expectorant|mucolytic|antitussive|cough|dextromethorphan|bromhexine|ambroxol|acetylcysteine|dornase|intranasal|nasal|mometasone.*nasal|triamcinolone.*nasal|xylometazoline|oxymetazoline|cold.*flu/.test(
+      text
+    )
+  ) {
+    let sub = 'Asthma & COPD Inhalers / Bronchodilators';
+    if (/intranasal|nasal/.test(text)) {
+      sub = 'Nasal Corticosteroids & Sprays';
+    } else if (
+      /expectorant|mucolytic|antitussive|cough|dextromethorphan|bromhexine|ambroxol|acetylcysteine|dornase|cold/.test(
+        text
+      )
+    ) {
+      sub = 'Cough, Expectorants & Mucolytics';
+    } else if (/leukotriene|montelukast/.test(text)) {
+      sub = 'Leukotriene Modifiers (Montelukast)';
+    } else if (
+      /tiotropium|lama|anticholinergic/.test(text) &&
+      !/ics|budesonide|fluticasone|beclomethasone/.test(text)
+    ) {
+      sub = 'LAMA / LABA Bronchodilator Inhalers';
+    } else if (
+      /ics|inhal.*corticosteroid|budesonide|fluticasone|beclomethasone/.test(
+        text
+      )
+    ) {
+      sub = 'ICS & Combination Inhalers (ICS/LABA/LAMA)';
+    }
+    return build('respiratory', sub);
+  }
+
+  // 3. Antibiotics & Anti-infectives
+  if (
+    /antibact|antibiotic|cephalosporin|penicillin|beta-lactam|macrolide|azalide|fluoroquinolone|quinolone|carbapenem|glycopeptide|tetracycline|oxazolidinone|aminoglycoside|lincosamide|nitroimidazole|antiprotozoal|antifungal|\btriazole|\bimidazole|echinocandin|antiviral|antiretroviral|hiv|nnrti|nrti|protease inhibitor|anthelmintic|antiparasitic|nitazoxanide|fosfomycin|nitrofurantoin|sulfonamide.*trimethoprim|fusidane|rifaximin/.test(
+      text
+    )
+  ) {
+    let sub = 'Other Antibacterials & Anti-infectives';
+    if (/cephalosporin|cef/.test(text)) {
+      sub = 'Cephalosporins';
+    } else if (/penicillin|amoxicillin|ampicillin|piperacillin/.test(text)) {
+      sub = 'Penicillins & Beta-Lactam Combinations';
+    } else if (
+      /macrolide|azalide|azithromycin|clarithromycin|erythromycin|spiramycin|clindamycin|lincomycin/.test(
+        text
+      )
+    ) {
+      sub = 'Macrolides & Lincosamides';
+    } else if (
+      /fluoroquinolone|quinolone|levofloxacin|ciprofloxacin|moxifloxacin|ofloxacin|norfloxacin/.test(
+        text
+      )
+    ) {
+      sub = 'Fluoroquinolones';
+    } else if (
+      /carbapenem|meropenem|imipenem|ertapenem|glycopeptide|vancomycin|teicoplanin|linezolid|colistin|tigecycline|amikacin|gentamicin/.test(
+        text
+      )
+    ) {
+      sub = 'Hospital & Parenteral Antibiotics';
+    } else if (
+      /antifungal|\btriazole|\bimidazole|echinocandin|fluconazole|itraconazole|voriconazole|posaconazole|caspofungin|micafungin|anidulafungin|terbinafine|nystatin/.test(
+        text
+      )
+    ) {
+      sub = 'Antifungals';
+    } else if (
+      /antiviral|antiretroviral|hiv|nnrti|nrti|protease inhibitor|hcv|hbv|aciclovir|valaciclovir|oseltamivir|entecavir|tenofovir|sofosbuvir|darunavir|rilpivirine/.test(
+        text
+      )
+    ) {
+      sub = 'Antivirals & Antiretrovirals';
+    } else if (
+      /nitroimidazole|antiprotozoal|anthelmintic|metronidazole|ornidazole|secnidazole|tinidazole|albendazole|mebendazole|nitazoxanide/.test(
+        text
+      )
+    ) {
+      sub = 'Antiprotozoals & Anthelmintics';
+    }
+    return build('antibiotics', sub);
+  }
+
+  // 4. Antihypertensives & Cardiovascular
+  if (
+    /antihypertens|angiotensin|arb\b|ace inhibitor|calcium channel blocker|dihydropyridine|beta-1|beta-blocker|beta-adrenoceptor|adrenoceptor blocking|antianginal|antiarrhythmic|heart failure|sacubitril|ivabradine|trimetazidine|nicorandil|ranolazine|statin|hmg-coa|lipid|fibrate|ezetimibe|pcsk9|omega-3|antiplatelet|anticoagulant|antithrombotic|heparin|clopidogrel|ticagrelor|rivaroxaban|apixaban|dabigatran|diuretic|furosemide|torasemide|spironolactone|eplerenone|indapamide|hydrochlorothiazide|pulmonary arterial hypertension|endothelin|bosentan|ambrisentan|macitentan|selexipag|riociguat|imidazoline|moxonidine|methyldopa|vasoprotective|venoactive|diosmin|pentoxifylline|digoxin|nitrate|isosorbide|tranexamic/.test(
+      text
+    )
+  ) {
+    let sub = 'Antihypertensives & Vascular';
+    if (
+      /pulmonary arterial hypertension|endothelin|bosentan|ambrisentan|macitentan|selexipag|riociguat/.test(
+        text
+      )
+    ) {
+      sub = 'Pulmonary Arterial Hypertension (PAH)';
+    } else if (
+      /statin|hmg-coa|lipid|fibrate|ezetimibe|pcsk9|omega-3|rosuvastatin|atorvastatin|simvastatin|pitavastatin|fenofibrate|evolocumab|alirocumab/.test(
+        text
+      )
+    ) {
+      sub = 'Statins & Lipid-Lowering Agents';
+    } else if (
+      /antiplatelet|anticoagulant|antithrombotic|heparin|clopidogrel|ticagrelor|prasugrel|rivaroxaban|apixaban|dabigatran|enoxaparin|tranexamic/.test(
+        text
+      )
+    ) {
+      sub = 'Antiplatelets, Anticoagulants & Hemostatics';
+    } else if (
+      /sacubitril|ivabradine|trimetazidine|nicorandil|ranolazine|antianginal|antiarrhythmic|amiodarone|flecainide|propafenone|digoxin|isosorbide/.test(
+        text
+      )
+    ) {
+      sub = 'Heart Failure, Antianginals & Antiarrhythmics';
+    } else if (
+      /beta-1|beta-blocker|beta-adrenoceptor|adrenoceptor blocking|bisoprolol|metoprolol|nebivolol|carvedilol|atenolol|propranolol/.test(
+        text
+      )
+    ) {
+      sub = 'Beta-Blockers';
+    } else if (
+      /angiotensin ii|arb\b|valsartan|candesartan|losartan|telmisartan|irbesartan|olmesartan|azilsartan/.test(
+        text
+      )
+    ) {
+      sub = 'ARBs & ARB Combinations';
+    } else if (
+      /ace inhibitor|angiotensin-converting|perindopril|enalapril|lisinopril|ramipril|captopril/.test(
+        text
+      )
+    ) {
+      sub = 'ACE Inhibitors & Combinations';
+    } else if (
+      /calcium channel|dihydropyridine|phenylalkylamine|benzothiazepine|amlodipine|lercanidipine|nifedipine|diltiazem|verapamil/.test(
+        text
+      )
+    ) {
+      sub = 'Calcium Channel Blockers (CCBs)';
+    } else if (
+      /diuretic|furosemide|torasemide|spironolactone|eplerenone|indapamide/.test(
+        text
+      )
+    ) {
+      sub = 'Diuretics';
+    }
+    return build('cardiovascular', sub);
+  }
+
+  // 5. Diabetes, Obesity & Metabolic
+  if (
+    /antidiabet|antihyperglyc|diabetes|insulin|biguanide|metformin|sulfonylurea|glimepiride|gliclazide|dpp-4|dipeptidyl peptidase|sitagliptin|vildagliptin|linagliptin|saxagliptin|teneligliptin|sglt2|sodium-glucose|dapagliflozin|empagliflozin|canagliflozin|glp-1|gip|tirzepatide|semaglutide|liraglutide|dulaglutide|thiazolidinedione|pioglitazone|meglitinide|repaglinide|acarbose|orlistat|lipase inhibitor/.test(
+      text
+    )
+  ) {
+    let sub = 'Oral Antidiabetics';
+    if (/insulin|glargine|degludec|aspart|lispro|glulisine/.test(text)) {
+      sub = 'Insulins & Analogues';
+    } else if (
+      /glp-1|gip|tirzepatide|semaglutide|liraglutide|dulaglutide|orlistat|lipase inhibitor/.test(
+        text
+      )
+    ) {
+      sub = 'GLP-1 / GIP Agonists & Weight Management';
+    } else if (
+      /sglt2|sodium-glucose|dapagliflozin|empagliflozin|canagliflozin/.test(
+        text
+      )
+    ) {
+      sub = 'SGLT2 Inhibitors & Combinations';
+    } else if (
+      /dpp-4|dipeptidyl|sitagliptin|vildagliptin|linagliptin|saxagliptin|teneligliptin/.test(
+        text
+      )
+    ) {
+      sub = 'DPP-4 Inhibitors & Combinations';
+    } else if (
+      /sulfonylurea|glimepiride|gliclazide|glibenclamide|thiazolidinedione|pioglitazone|repaglinide/.test(
+        text
+      )
+    ) {
+      sub = 'Sulfonylureas & Glitazones';
+    } else if (/biguanide|metformin/.test(text)) {
+      sub = 'Biguanides (Metformin)';
+    }
+    return build('diabetes', sub);
+  }
+
+  // 6. Gastrointestinal & Hepatobiliary
+  if (
+    /proton pump|ppi\b|p-cab|acid blocker|omeprazole|esomeprazole|pantoprazole|rabeprazole|lansoprazole|dexlansoprazole|vonoprazan|antacid|alginate|famotidine|helicobacter|bismuth|gastrointestinal|gastroprokinetic|antispasmodic.*gastro|musculotropic.*gastro|otilonium|mebeverine|pinaverium|trimebutine|hyoscine|domperidone|metoclopramide|itopride|antiemetic|ondansetron|granisetron|palonosetron|aprepitant|laxative|lactulose|macrogol|bisacodyl|antidiarrheal|loperamide|racecadotril|probiotic|saccharomyces|mesalazine|mesalamine|sulfasalazine|inflammatory bowel|hepatoprotective|ursodeoxycholic|pancreatic enzyme|pancreatin|ademetionine|ornithine|simethicone/.test(
+      text
+    )
+  ) {
+    let sub = 'Gastrointestinal Agents';
+    if (
+      /proton pump|ppi\b|p-cab|acid blocker|omeprazole|esomeprazole|pantoprazole|rabeprazole|lansoprazole|dexlansoprazole|vonoprazan|antacid|alginate|famotidine|helicobacter|bismuth/.test(
+        text
+      )
+    ) {
+      sub = 'PPIs, P-CABs & H. pylori / Acid Suppressants';
+    } else if (
+      /antispasmodic|musculotropic|gastroprokinetic|otilonium|mebeverine|pinaverium|trimebutine|hyoscine|domperidone|metoclopramide|itopride|simethicone/.test(
+        text
+      )
+    ) {
+      sub = 'GI Antispasmodics & Prokinetics';
+    } else if (
+      /antiemetic|ondansetron|granisetron|palonosetron|aprepitant/.test(text)
+    ) {
+      sub = 'Antiemetics';
+    } else if (
+      /hepatoprotective|ursodeoxycholic|pancreatic|pancreatin|ademetionine|ornithine/.test(
+        text
+      )
+    ) {
+      sub = 'Hepatobiliary & Pancreatic Enzymes';
+    } else {
+      sub = 'IBD, Laxatives & Antidiarrheals';
+    }
+    return build('gastrointestinal', sub);
+  }
+
+  // 7. Analgesics, NSAIDs & Musculoskeletal
+  if (
+    /nsaid|non-steroidal anti-inflammatory|analgesic|antipyretic|cox-2|celecoxib|etoricoxib|meloxicam|diclofenac|ibuprofen|naproxen|ketoprofen|dexketoprofen|mefenamic|indomethacin|piroxicam|lornoxicam|paracetamol|acetaminophen|nefopam|tramadol|opioid|morphine|fentanyl|oxycodone|muscle relaxant|neuromuscular|tizanidine|baclofen|orphenadrine|tolperisone|chlorzoxazone|xanthine oxidase|antigout|febuxostat|allopurinol|colchicine|local anesthet|lidocaine|bupivacaine|ropivacaine/.test(
+      text
+    )
+  ) {
+    let sub = 'NSAIDs & Anti-inflammatory';
+    if (/xanthine oxidase|antigout|febuxostat|allopurinol|colchicine/.test(text)) {
+      sub = 'Antigout & Uric Acid Lowering';
+    } else if (
+      /muscle relaxant|neuromuscular|tizanidine|baclofen|orphenadrine|tolperisone|chlorzoxazone/.test(
+        text
+      )
+    ) {
+      sub = 'Muscle Relaxants';
+    } else if (
+      /local anesthet|lidocaine|bupivacaine|ropivacaine/.test(text)
+    ) {
+      sub = 'Local Anesthetics';
+    } else if (
+      /opioid|tramadol|morphine|fentanyl|oxycodone|paracetamol|acetaminophen|nefopam|analgesic and antipyretic/.test(
+        text
+      ) &&
+      !/nsaid|non-steroidal/.test(text)
+    ) {
+      sub = 'Analgesics & Antipyretics';
+    }
+    return build('analgesics', sub);
+  }
+
+  // 8. Urology, BPH & Nephrology
+  if (
+    /prostatic|bph\b|alpha-1.*adrenoceptor|tamsulosin|alfuzosin|silodosin|finasteride|dutasteride|overactive bladder|beta-3 adrenoceptor|urinary.*antispasmodic|muscarinic|solifenacin|mirabegron|oxybutynin|tolterodine|trospium|flavoxate|phosphodiesterase type 5|pde5|sildenafil|tadalafil|vardenafil|premature ejaculation|dapoxetine|phosphate binder|sevelamer|calcimimetic|cinacalcet|ketoanalogue|potassium binder|hyperkalemia|sodium zirconium/.test(
+      text
+    )
+  ) {
+    let sub = 'BPH & Urinary Agents';
+    if (
+      /prostatic|bph|tamsulosin|alfuzosin|silodosin|finasteride|dutasteride/.test(
+        text
+      )
+    ) {
+      sub = 'Benign Prostatic Hyperplasia (BPH)';
+    } else if (
+      /overactive bladder|urinary.*antispasmodic|solifenacin|mirabegron|oxybutynin|tolterodine|flavoxate/.test(
+        text
+      )
+    ) {
+      sub = 'Overactive Bladder & Urinary Antispasmodics';
+    } else if (
+      /pde5|phosphodiesterase type 5|sildenafil|tadalafil|vardenafil|dapoxetine|premature ejaculation/.test(
+        text
+      )
+    ) {
+      sub = "PDE5 Inhibitors & Men's Health";
+    } else {
+      sub = 'Nephrology, Binders & Electrolytes';
+    }
+    return build('urology', sub);
+  }
+
+  // 9. CNS, Neurology, Psychiatry & Allergy
+  if (
+    /ssri|snri|serotonin|antidepressant|tricyclic|amitriptyline|sertraline|escitalopram|citalopram|fluoxetine|paroxetine|duloxetine|venlafaxine|vortioxetine|mirtazapine|antiepileptic|anticonvulsant|neuropathic|gaba|pregabalin|gabapentin|levetiracetam|valproate|carbamazepine|oxcarbazepine|lamotrigine|topiramate|lacosamide|antipsychotic|mood stabilizer|olanzapine|risperidone|quetiapine|aripiprazole|amisulpride|haloperidol|clozapine|paliperidone|benzodiazepine|anxiolytic|hypnotic|z-drug|diazepam|alprazolam|clonazepam|lorazepam|bromazepam|zolpidem|eszopiclone|psychostimulant|adhd|methylphenidate|atomoxetine|parkinson|dopamine|levodopa|pramipexole|ropinirole|rasagiline|rotigotine|alzheimer|dementia|cholinesterase|donepezil|rivastigmine|memantine|migraine|cgrp|gepant|sumatriptan|rizatriptan|zolmitriptan|antivertigo|betahistine|cinnarizine|flunarizine|nootropic|piracetam|citicoline|neuroprotective|alpha-lipoic|general anaesthet|sevoflurane|propofol|antihistamine|h1-receptor|h1 antihistamine|desloratadine|levocetirizine|cetirizine|fexofenadine|loratadine|bilastine|rupatadine|cyproheptadine|ketotifen|diphenhydramine/.test(
+      text
+    )
+  ) {
+    let sub = 'Neurology & CNS Agents';
+    if (
+      /antihistamine|h1-receptor|h1 antihistamine|desloratadine|levocetirizine|cetirizine|fexofenadine|loratadine|bilastine|rupatadine|cyproheptadine|ketotifen/.test(
+        text
+      )
+    ) {
+      sub = 'Antihistamines & Antiallergics';
+    } else if (
+      /ssri|snri|serotonin|antidepressant|tricyclic|amitriptyline|sertraline|escitalopram|citalopram|fluoxetine|paroxetine|duloxetine|venlafaxine|vortioxetine|mirtazapine/.test(
+        text
+      )
+    ) {
+      sub = 'Antidepressants (SSRIs, SNRIs & TCAs)';
+    } else if (
+      /antiepileptic|anticonvulsant|neuropathic|gaba|pregabalin|gabapentin|levetiracetam|valproate|carbamazepine|oxcarbazepine|lamotrigine|topiramate|lacosamide/.test(
+        text
+      )
+    ) {
+      sub = 'Antiepileptics & Neuropathic Pain';
+    } else if (
+      /antipsychotic|benzodiazepine|anxiolytic|hypnotic|z-drug|psychostimulant|adhd|methylphenidate|olanzapine|risperidone|quetiapine|aripiprazole|amisulpride|diazepam|alprazolam|clonazepam|zolpidem/.test(
+        text
+      )
+    ) {
+      sub = 'Antipsychotics, Anxiolytics & ADHD';
+    } else if (
+      /migraine|cgrp|gepant|triptan|antivertigo|betahistine|cinnarizine|parkinson|dopamine|levodopa|pramipexole|rasagiline|dementia|donepezil|memantine|nootropic|piracetam|neuroprotective|alpha-lipoic/.test(
+        text
+      )
+    ) {
+      sub = "Migraine, Vertigo, Parkinson's & Neuroprotection";
+    }
+    return build('cns', sub);
+  }
+
+  // 10. Oncology, Hematology & Immunosuppressants
+  if (
+    /antineoplastic|oncology|leukaemia|leukemia|lymphoma|carcinoma|myeloma|tumour|tumor|monoclonal antibody|tyrosine kinase|kinase inhibitor|parp inhibitor|pd-l1|pd-1|checkpoint|jak1|jak\b|tnf|interleukin|il-17|il-23|il-4|il-13|cd20|cd30|cd38|bcl-2|proteasome|antibody-drug conjugate|taxane|platinum|alkylating|antimetabolite|anastrozole|letrozole|exemestane|tamoxifen|fulvestrant|enzalutamide|apalutamide|abiraterone|bicalutamide|androgen receptor|gnrh|lhrh|leuprorelin|goserelin|triptorelin|immunosuppress|calcineurin|mycophenolate|tacrolimus|cyclosporine|ciclosporin|azathioprine|methotrexate|hydroxychloroquine|leflunomide|multiple sclerosis|interferon|glatiramer|fingolimod|siponimod|teriflunomide|integrin|vedolizumab|natalizumab|colony-stimulating|g-csf|filgrastim|pegfilgrastim|erythropoie|epoetin|darbepoetin|thrombopoietin|eltrombopag|romiplostim|coagulation factor|factor viii|factor ix|prothrombin|emicizumab|enzyme replacement|gaucher|fabry|hunter|kallikrein|icatibant|lanadelumab|deferasirox/.test(
+      text
+    )
+  ) {
+    let sub = 'Oncology & Targeted Therapies';
+    if (
+      /colony-stimulating|g-csf|filgrastim|pegfilgrastim|erythropoie|epoetin|darbepoetin|thrombopoietin|eltrombopag|coagulation factor|factor viii|factor ix|prothrombin|emicizumab|enzyme replacement|gaucher|fabry|hunter|kallikrein|deferasirox/.test(
+        text
+      )
+    ) {
+      sub = 'Hematology, Coagulation & Rare Diseases';
+    } else if (
+      /immunosuppress|calcineurin|mycophenolate|tacrolimus|cyclosporine|ciclosporin|azathioprine|methotrexate|hydroxychloroquine|leflunomide|tnf|interleukin|il-17|il-23|il-4|il-13|jak|integrin|vedolizumab|multiple sclerosis|glatiramer|interferon|fingolimod/.test(
+        text
+      )
+    ) {
+      sub = 'Immunosuppressants, Biologics & Autoimmune';
+    }
+    return build('oncology', sub);
+  }
+
+  // 11. Endocrinology, Hormones, Bone & OB/GYN
+  if (
+    /thyroid|levothyroxine|carbimazole|thiamazole|corticosteroid|glucocorticoid|mineralocorticoid|hydrocortisone|prednisolone|methylprednisolone|dexamethasone|betamethasone|deflazacort|fludrocortisone|bisphosphonate|alendronate|zoledronic|ibandronic|risedronate|rankl|denosumab|alfacalcidol|calcitriol|vitamin d3 analogue|parathyroid|teriparatide|progestogen|progesterone|dydrogesterone|hormone replacement|estradiol|estrogen|contraceptive|ovulation|gonadotropin|follicle-stimulating|fsh|clomifene|cabergoline|bromocriptine|prolactin|oxytocin|atosiban|carbetocin|cervical ripening|somatropin|growth hormone|desmopressin|vasopressin|octreotide|lanreotide/.test(
+      text
+    )
+  ) {
+    let sub = 'Endocrine & Hormonal Agents';
+    if (
+      /thyroid|levothyroxine|carbimazole|thiamazole|corticosteroid|glucocorticoid|mineralocorticoid|hydrocortisone|prednisolone|methylprednisolone|dexamethasone|betamethasone|deflazacort|fludrocortisone/.test(
+        text
+      )
+    ) {
+      sub = 'Thyroid & Systemic Corticosteroids';
+    } else if (
+      /bisphosphonate|alendronate|zoledronic|ibandronic|risedronate|rankl|denosumab|alfacalcidol|calcitriol|vitamin d3 analogue|teriparatide/.test(
+        text
+      )
+    ) {
+      sub = 'Bone Metabolism & Osteoporosis';
+    } else if (
+      /progestogen|progesterone|dydrogesterone|hormone replacement|estradiol|estrogen|contraceptive|ovulation|gonadotropin|follicle-stimulating|fsh|clomifene|cabergoline|prolactin|oxytocin|atosiban|cervical ripening/.test(
+        text
+      )
+    ) {
+      sub = 'Reproductive Hormones & OB/GYN';
+    }
+    return build('endocrine', sub);
+  }
+
+  // 12. Vitamins, Minerals, Iron & Supplements
+  if (
+    category === 'dietary_supplement' ||
+    /iron|ferric|ferrous|folic|cyanocobalamin|mecobalamin|b12|antianemic|vitamin|mineral|calcium|cholecalciferol|ergocalciferol|zinc|magnesium|supplement/.test(
+      text
+    )
+  ) {
+    return build(
+      'supplements',
+      /iron|ferric|ferrous|folic|cyanocobalamin|mecobalamin|b12|antianemic/.test(
+        text
+      )
+        ? 'Iron & Antianemic Preparations'
+        : 'Vitamins, Minerals & Supplements'
+    );
+  }
+
+  return build('supplements', cleanClass);
+}
+
+export interface GroupedSubclassSection<T> {
+  groupKey: TherapeuticGroupKey;
+  groupLabel: string;
+  shortGroupLabel: string;
+  subclassLabel: string;
+  items: T[];
+}
+
+export interface GroupedTherapeuticClass<T> {
+  groupKey: TherapeuticGroupKey;
+  groupLabel: string;
+  shortGroupLabel: string;
+  totalCount: number;
+  subclasses: GroupedSubclassSection<T>[];
+}
+
+/**
+ * Organizes a list of products into ordered Therapeutic Classes and Subclasses,
+ * sorting products alphabetically by brand name inside each subclass.
+ */
+export function groupProductsByTherapeuticClass<T>(
+  items: readonly T[],
+  accessor: (item: T) => {
+    brandNameEn: string;
+    genericNameEn?: string | null;
+    drugClassNameEn?: string | null;
+    category?: ProductCategory | string | null;
+  }
+): GroupedTherapeuticClass<T>[] {
+  const byGroup = new Map<
+    TherapeuticGroupKey,
+    Map<string, T[]>
+  >();
+
+  for (const item of items) {
+    const fields = accessor(item);
+    const classified = classifyDrugTherapeuticGroup(
+      fields.drugClassNameEn,
+      fields.genericNameEn,
+      fields.category
+    );
+    let subMap = byGroup.get(classified.groupKey);
+    if (!subMap) {
+      subMap = new Map<string, T[]>();
+      byGroup.set(classified.groupKey, subMap);
+    }
+    const list = subMap.get(classified.subclassLabel) ?? [];
+    list.push(item);
+    subMap.set(classified.subclassLabel, list);
+  }
+
+  const result: GroupedTherapeuticClass<T>[] = [];
+  for (const def of THERAPEUTIC_GROUPS) {
+    const subMap = byGroup.get(def.key);
+    if (!subMap || subMap.size === 0) continue;
+
+    const subclasses: GroupedSubclassSection<T>[] = Array.from(subMap.entries())
+      .map(([subclassLabel, subItems]) => {
+        const sorted = [...subItems].sort((a, b) =>
+          accessor(a).brandNameEn.localeCompare(accessor(b).brandNameEn, 'en', {
+            sensitivity: 'base',
+          })
+        );
+        return {
+          groupKey: def.key,
+          groupLabel: def.label,
+          shortGroupLabel: def.shortLabel,
+          subclassLabel,
+          items: sorted,
+        };
+      })
+      .sort((a, b) => a.subclassLabel.localeCompare(b.subclassLabel, 'en'));
+
+    const totalCount = subclasses.reduce((sum, s) => sum + s.items.length, 0);
+    result.push({
+      groupKey: def.key,
+      groupLabel: def.label,
+      shortGroupLabel: def.shortLabel,
+      totalCount,
+      subclasses,
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Fetches published catalog products matching the given search/company/specialty
+ * filters and filters them by the requested Therapeutic Group key.
+ */
+export async function searchCatalogProductsByTherapeuticGroup(
+  client: SupabaseClient,
+  input: {
+    groupKey: TherapeuticGroupKey;
+    query?: string | null;
+    companyId?: string | null;
+    specialtyId?: string | null;
+  }
+): Promise<RpcResult<{ rows: DoctorSearchRow[]; totalCount: number }>> {
+  const pageSize = 50;
+  const firstRes = await searchCatalogProducts(client, {
+    query: input.query,
+    companyId: input.companyId,
+    specialtyId: input.specialtyId,
+    limit: pageSize,
+    offset: 0,
+  });
+
+  if (!firstRes.ok) {
+    return firstRes;
+  }
+
+  const allRows = [...firstRes.data.rows];
+  const totalInDb = firstRes.data.totalCount;
+
+  if (allRows.length < totalInDb && allRows.length === pageSize) {
+    const offsets: number[] = [];
+    for (let offset = pageSize; offset < totalInDb; offset += pageSize) {
+      offsets.push(offset);
+    }
+
+    const batchSize = 6;
+    for (let i = 0; i < offsets.length; i += batchSize) {
+      const batch = offsets.slice(i, i + batchSize);
+      const batchResults = await Promise.all(
+        batch.map((offset) =>
+          searchCatalogProducts(client, {
+            query: input.query,
+            companyId: input.companyId,
+            specialtyId: input.specialtyId,
+            limit: pageSize,
+            offset,
+          })
+        )
+      );
+      for (const res of batchResults) {
+        if (res.ok) {
+          allRows.push(...res.data.rows);
+        }
+      }
+    }
+  }
+
+  const matched = allRows.filter(
+    (row) =>
+      classifyDrugTherapeuticGroup(
+        row.drugClassNameEn,
+        row.genericNameEn,
+        row.category
+      ).groupKey === input.groupKey
+  );
+
+  return {
+    ok: true,
+    data: {
+      rows: matched,
+      totalCount: matched.length,
+    },
+  };
+}

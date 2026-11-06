@@ -78,3 +78,11 @@ input[type="search"]::-webkit-search-decoration {
     scroll-behavior: auto !important;
   }
 }
+
+/* Horizontal chip rows: scroll without showing a scrollbar */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

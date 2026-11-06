@@ -5,6 +5,8 @@ import {
   CATALOG_PAGE_SIZE,
   buildProductRouteHash,
   buildUpsertMarketArgs,
+  classifyDrugTherapeuticGroup,
+  cleanDrugClassLabel,
   fetchAllPages,
   fetchInChunksPaged,
   filterDoctorProducts,
@@ -16,6 +18,7 @@ import {
   getCompanyProductCounts,
   getProductSourceWarning,
   getReviewDraftSourceCounts,
+  groupProductsByTherapeuticClass,
   invokeAiDraftProduct,
   invokeAiFindCompanyProducts,
   invokeAiSuggestCompanies,
@@ -40,6 +43,7 @@ import {
   rpcAdminSaveAiProductDraft,
   rpcAdminSaveSponsoredAd,
   searchCatalogProducts,
+  searchCatalogProductsByTherapeuticGroup,
   validateSponsoredAdForm,
   type CatalogProduct,
   type CompanySummary,
@@ -1500,5 +1504,178 @@ describe('publishArchivedProducts', () => {
     expect(summary.results.map((r) => r.ok)).toEqual([true, false, false]);
     expect(summary.results[1].message).toContain('Still archived');
     expect(summary.results[2].message).toContain('kept as a draft');
+  });
+});
+
+describe('therapeutic class & subclass grouping', () => {
+  it('strips raw ATC codes and classifies antibiotics, antihypertensives, diabetes, and respiratory drugs into subclasses', () => {
+    expect(
+      cleanDrugClassLabel(
+        'Dihydropyridine calcium channel blocker antihypertensive and antianginal (ATC C08CA01)'
+      )
+    ).toBe(
+      'Dihydropyridine calcium channel blocker antihypertensive and antianginal'
+    );
+
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Third-generation cephalosporin antibacterial (ATC J01DD08)',
+        'Cefixime'
+      )
+    ).toMatchObject({
+      groupKey: 'antibiotics',
+      groupLabel: 'Antibiotics & Anti-infectives',
+      subclassLabel: 'Cephalosporins',
+    });
+
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Angiotensin II receptor blocker (ARB) and thiazide diuretic antihypertensive combination (ATC C09DA03)',
+        'Valsartan / Hydrochlorothiazide'
+      )
+    ).toMatchObject({
+      groupKey: 'cardiovascular',
+      groupLabel: 'Antihypertensives & Cardiac',
+      subclassLabel: 'ARBs & ARB Combinations',
+    });
+
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Cardioselective beta-1 adrenergic blocker antihypertensive and heart failure therapy (ATC C07AB07)',
+        'Bisoprolol'
+      )
+    ).toMatchObject({
+      groupKey: 'cardiovascular',
+      groupLabel: 'Antihypertensives & Cardiac',
+      subclassLabel: 'Beta-Blockers',
+    });
+
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Inhaled Corticosteroid and Long-Acting Beta-2 Agonist (ICS/LABA)',
+        'Budesonide / Formoterol'
+      )
+    ).toMatchObject({
+      groupKey: 'respiratory',
+      groupLabel: 'Respiratory, Asthma & COPD',
+      subclassLabel: 'ICS & Combination Inhalers (ICS/LABA/LAMA)',
+    });
+
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Sodium-Glucose Co-Transporter 2 (SGLT2) Inhibitor / Biguanide Antidiabetic Combination',
+        'Dapagliflozin / Metformin'
+      )
+    ).toMatchObject({
+      groupKey: 'diabetes',
+      groupLabel: 'Diabetes & Metabolic',
+      subclassLabel: 'SGLT2 Inhibitors & Combinations',
+    });
+
+    // "benzimidazole" must not be read as an imidazole antifungal.
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Proton pump inhibitor (substituted benzimidazole H+/K+-ATPase inhibitor)',
+        'Pantoprazole'
+      )
+    ).toMatchObject({ groupKey: 'gastrointestinal' });
+
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Benzimidazole carbamate broad-spectrum anthelmintic',
+        'Albendazole'
+      ).subclassLabel
+    ).not.toBe('Antifungals');
+
+    expect(
+      classifyDrugTherapeuticGroup('Triazole Antifungals', 'Fluconazole')
+    ).toMatchObject({ groupKey: 'antibiotics', subclassLabel: 'Antifungals' });
+  });
+
+  it('groups products by therapeutic class and subclass in clinical order and filters catalog searches by groupKey', async () => {
+    const items = [
+      sampleProduct({
+        id: 'p-1',
+        brandNameEn: 'Diovan 160 mg',
+        genericNameEn: 'Valsartan',
+        drugClassNameEn: 'Angiotensin II Receptor Blocker (ARB)',
+      }),
+      sampleProduct({
+        id: 'p-2',
+        brandNameEn: 'Concor 5 mg',
+        genericNameEn: 'Bisoprolol',
+        drugClassNameEn: 'Cardioselective beta-1 adrenergic blocker',
+      }),
+      sampleProduct({
+        id: 'p-3',
+        brandNameEn: 'Suprax 400 mg',
+        genericNameEn: 'Cefixime',
+        drugClassNameEn: 'Third-generation cephalosporin antibacterial',
+      }),
+    ];
+
+    const grouped = groupProductsByTherapeuticClass(items, (p) => ({
+      brandNameEn: p.brandNameEn,
+      genericNameEn: p.genericNameEn,
+      drugClassNameEn: p.drugClassNameEn,
+      category: p.category,
+    }));
+
+    expect(grouped.map((g) => g.groupKey)).toEqual([
+      'antibiotics',
+      'cardiovascular',
+    ]);
+    expect(grouped[0].subclasses[0].subclassLabel).toBe('Cephalosporins');
+    expect(grouped[1].subclasses.map((s) => s.subclassLabel)).toEqual([
+      'ARBs & ARB Combinations',
+      'Beta-Blockers',
+    ]);
+
+    const client = {
+      rpc: async () => ({
+        data: [
+          {
+            product_id: 'p-1',
+            brand_name_en: 'Diovan 160 mg',
+            generic_name_en: 'Valsartan',
+            drug_class_name_en: 'Angiotensin II Receptor Blocker (ARB)',
+            company_id: 'comp-1',
+            company_name: 'Novartis',
+            category: 'prescription_drug',
+            strength: '160 mg',
+            dosage_form: 'Film-coated tablet',
+            pack_size: '28 tablets',
+            specialty_names_en: ['Cardiology'],
+            total_count: 2,
+          },
+          {
+            product_id: 'p-3',
+            brand_name_en: 'Suprax 400 mg',
+            generic_name_en: 'Cefixime',
+            drug_class_name_en: 'Third-generation cephalosporin antibacterial',
+            company_id: 'comp-2',
+            company_name: 'Hikma',
+            category: 'prescription_drug',
+            strength: '400 mg',
+            dosage_form: 'Capsule',
+            pack_size: '10 capsules',
+            specialty_names_en: ['Internal Medicine'],
+            total_count: 2,
+          },
+        ],
+        error: null,
+      }),
+    } as unknown as SupabaseClient;
+
+    const filtered = await searchCatalogProductsByTherapeuticGroup(client, {
+      groupKey: 'cardiovascular',
+    });
+    expect(filtered.ok).toBe(true);
+    if (filtered.ok) {
+      expect(filtered.data.totalCount).toBe(1);
+      expect(filtered.data.rows.map((r) => r.brandNameEn)).toEqual([
+        'Diovan 160 mg',
+      ]);
+    }
   });
 });

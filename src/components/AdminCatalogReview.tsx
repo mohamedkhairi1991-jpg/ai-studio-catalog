@@ -5,6 +5,8 @@ import {
   CATEGORY_LABELS,
   MARKET_STATUS_LABELS,
   STATUS_LABELS,
+  classifyDrugTherapeuticGroup,
+  cleanDrugClassLabel,
   extractAiDraftSources,
   filterReviewDraftProducts,
   findMatchingTaxonomyOption,
@@ -12,6 +14,7 @@ import {
   getCompanyProductCounts,
   getProductSourceWarning,
   getReviewDraftSourceCounts,
+  groupProductsByTherapeuticClass,
   invokeAiDraftProduct,
   loadAdminSponsoredAdStats,
   loadAdminSponsoredAds,
@@ -49,6 +52,7 @@ import {
   type ReviewDraftSourceFilter,
   type SponsoredAdRecord,
   type StoredProductAiDraft,
+  type TherapeuticGroupKey,
 } from '../lib/catalog';
 import {
   computeUserRegistrationStats,
@@ -1357,6 +1361,9 @@ function CompanyProductListView({
   onRefresh,
 }: CompanyProductListViewProps) {
   const [query, setQuery] = useState('');
+  const [classFilter, setClassFilter] = useState<TherapeuticGroupKey | 'all'>(
+    'all'
+  );
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [confirmingIds, setConfirmingIds] = useState<string[] | null>(null);
   const [publishing, setPublishing] = useState(false);
@@ -1370,16 +1377,46 @@ function CompanyProductListView({
     setCheckedIds((prev) => prev.filter((id) => valid.has(id)));
   }, [products]);
 
+  const allGroups = useMemo(
+    () =>
+      groupProductsByTherapeuticClass(products, (p) => ({
+        brandNameEn: p.brandNameEn,
+        genericNameEn: p.genericNameEn,
+        drugClassNameEn: p.drugClassNameEn,
+        category: p.category,
+      })),
+    [products]
+  );
+
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter((p) =>
-      [p.brandNameEn, p.genericNameEn ?? '', p.drugClassNameEn]
+    return products.filter((p) => {
+      if (classFilter !== 'all') {
+        const classified = classifyDrugTherapeuticGroup(
+          p.drugClassNameEn,
+          p.genericNameEn,
+          p.category
+        );
+        if (classified.groupKey !== classFilter) return false;
+      }
+      if (!q) return true;
+      return [p.brandNameEn, p.genericNameEn ?? '', p.drugClassNameEn]
         .join(' ')
         .toLowerCase()
-        .includes(q)
-    );
-  }, [products, query]);
+        .includes(q);
+    });
+  }, [products, query, classFilter]);
+
+  const visibleGroups = useMemo(
+    () =>
+      groupProductsByTherapeuticClass(visible, (p) => ({
+        brandNameEn: p.brandNameEn,
+        genericNameEn: p.genericNameEn,
+        drugClassNameEn: p.drugClassNameEn,
+        category: p.category,
+      })),
+    [visible]
+  );
 
   const visibleIds = visible.map((p) => p.id);
   const allVisibleSelected =
@@ -1483,6 +1520,39 @@ function CompanyProductListView({
             </div>
           )}
         </div>
+        {allGroups.length > 1 && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#304451]">
+            <button
+              type="button"
+              onClick={() => setClassFilter('all')}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors tabular-nums ${
+                classFilter === 'all'
+                  ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                  : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+              }`}
+            >
+              All classes ({products.length})
+            </button>
+            {allGroups.map((grp) => (
+              <button
+                key={grp.groupKey}
+                type="button"
+                onClick={() =>
+                  setClassFilter(
+                    classFilter === grp.groupKey ? 'all' : grp.groupKey
+                  )
+                }
+                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors tabular-nums ${
+                  classFilter === grp.groupKey
+                    ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                    : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                }`}
+              >
+                {grp.groupLabel} ({grp.totalCount})
+              </button>
+            ))}
+          </div>
+        )}
         {selectable && (
           <p className="text-xs text-[#B8C3CC]">
             Tick the drugs you want doctors to see again. A drug that fails a
@@ -1567,61 +1637,97 @@ function CompanyProductListView({
           No drugs match your search.
         </div>
       ) : (
-        <ul className="rounded-xl bg-[#263744] border border-[#304451] divide-y divide-[#304451] overflow-hidden">
-          {visible.map((product) => {
-            const checked = checkedIds.includes(product.id);
-            return (
-              <li
-                key={product.id}
-                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                  checked ? 'bg-[#1769AA]/15' : 'hover:bg-[#1F2D38]'
-                }`}
+        <div className="space-y-4">
+          {visibleGroups.map((grp) =>
+            grp.subclasses.map((sub) => (
+              <div
+                key={`${grp.groupKey}-${sub.subclassLabel}`}
+                className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden"
               >
-                {selectable && (
-                  <input
-                    type="checkbox"
-                    aria-label={`Select ${product.brandNameEn} for publishing`}
-                    checked={checked}
-                    disabled={publishing}
-                    onChange={() => toggleOne(product.id)}
-                    className="accent-[#1769AA] h-4 w-4 shrink-0"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => onOpen(product.id)}
-                  className="flex-1 min-w-0 text-left"
-                >
-                  <div className="text-sm font-medium text-[#F2F5F8] truncate hover:text-[#5DB4F2]">
-                    {product.brandNameEn}
+                <div className="px-4 py-2.5 bg-[#1F2D38]/80 border-b border-[#304451] flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-semibold text-[#F2F5F8]">
+                      {sub.subclassLabel}
+                    </span>
+                    <span className="text-xs text-[#B8C3CC]">·</span>
+                    <span className="text-xs text-[#B8C3CC]">
+                      {grp.groupLabel}
+                    </span>
                   </div>
-                  <div className="text-xs text-[#B8C3CC] truncate">
-                    {[product.genericNameEn, product.drugClassNameEn]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </div>
-                </button>
-                {selectable ? (
-                  <button
-                    type="button"
-                    disabled={publishing}
-                    onClick={() => {
-                      setSummary(null);
-                      setConfirmingIds([product.id]);
-                    }}
-                    className="shrink-0 rounded-md border border-[#38C976]/60 text-[#38C976] hover:bg-[#38C976] hover:text-[#1F2D38] disabled:opacity-50 text-xs font-semibold px-3 py-1.5 transition-colors"
-                  >
-                    Publish
-                  </button>
-                ) : (
-                  <span className="shrink-0">
-                    <StatusText status={product.status} />
+                  <span className="text-xs font-mono text-[#B8C3CC] tabular-nums">
+                    {sub.items.length}{' '}
+                    {sub.items.length === 1 ? 'drug' : 'drugs'}
                   </span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                </div>
+                <ul className="divide-y divide-[#304451]">
+                  {sub.items.map((product) => {
+                    const checked = checkedIds.includes(product.id);
+                    const presentation = [
+                      product.market?.strength,
+                      product.market?.dosageForm,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ');
+                    return (
+                      <li
+                        key={product.id}
+                        className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                          checked ? 'bg-[#1769AA]/15' : 'hover:bg-[#1F2D38]'
+                        }`}
+                      >
+                        {selectable && (
+                          <input
+                            type="checkbox"
+                            aria-label={`Select ${product.brandNameEn} for publishing`}
+                            checked={checked}
+                            disabled={publishing}
+                            onChange={() => toggleOne(product.id)}
+                            className="accent-[#1769AA] h-4 w-4 shrink-0"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onOpen(product.id)}
+                          className="flex-1 min-w-0 text-left"
+                        >
+                          <div className="text-sm font-medium text-[#F2F5F8] truncate hover:text-[#5DB4F2]">
+                            {product.brandNameEn}
+                          </div>
+                          <div className="text-xs text-[#B8C3CC] truncate">
+                            {[
+                              product.genericNameEn,
+                              presentation ||
+                                cleanDrugClassLabel(product.drugClassNameEn),
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </div>
+                        </button>
+                        {selectable ? (
+                          <button
+                            type="button"
+                            disabled={publishing}
+                            onClick={() => {
+                              setSummary(null);
+                              setConfirmingIds([product.id]);
+                            }}
+                            className="shrink-0 rounded-md border border-[#38C976]/60 text-[#38C976] hover:bg-[#38C976] hover:text-[#1F2D38] disabled:opacity-50 text-xs font-semibold px-3 py-1.5 transition-colors"
+                          >
+                            Publish
+                          </button>
+                        ) : (
+                          <span className="shrink-0">
+                            <StatusText status={product.status} />
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))
+          )}
+        </div>
       )}
     </div>
   );
@@ -1665,6 +1771,9 @@ function CompanyReviewDraftsView({
   const [draftQuery, setDraftQuery] = useState('');
   const [draftSourceFilter, setDraftSourceFilter] =
     useState<ReviewDraftSourceFilter>('all');
+  const [draftClassFilter, setDraftClassFilter] = useState<
+    TherapeuticGroupKey | 'all'
+  >('all');
 
   const [extraSourcesByProduct, setExtraSourcesByProduct] = useState<
     Record<string, AiDraftSource[]>
@@ -1700,13 +1809,52 @@ function CompanyReviewDraftsView({
     [draftProducts, extraSourcesByProduct]
   );
 
-  const visibleDraftProducts = useMemo(
+  const allDraftGroups = useMemo(
     () =>
-      filterReviewDraftProducts(draftProducts, extraSourcesByProduct, {
+      groupProductsByTherapeuticClass(draftProducts, (p) => ({
+        brandNameEn: p.brandNameEn,
+        genericNameEn: p.genericNameEn,
+        drugClassNameEn: p.drugClassNameEn,
+        category: p.category,
+      })),
+    [draftProducts]
+  );
+
+  const visibleDraftProducts = useMemo(() => {
+    const filtered = filterReviewDraftProducts(
+      draftProducts,
+      extraSourcesByProduct,
+      {
         query: draftQuery,
         sourceFilter: draftSourceFilter,
-      }),
-    [draftProducts, extraSourcesByProduct, draftQuery, draftSourceFilter]
+      }
+    );
+    if (draftClassFilter === 'all') return filtered;
+    return filtered.filter((p) => {
+      const classified = classifyDrugTherapeuticGroup(
+        p.drugClassNameEn,
+        p.genericNameEn,
+        p.category
+      );
+      return classified.groupKey === draftClassFilter;
+    });
+  }, [
+    draftProducts,
+    extraSourcesByProduct,
+    draftQuery,
+    draftSourceFilter,
+    draftClassFilter,
+  ]);
+
+  const visibleDraftGroups = useMemo(
+    () =>
+      groupProductsByTherapeuticClass(visibleDraftProducts, (p) => ({
+        brandNameEn: p.brandNameEn,
+        genericNameEn: p.genericNameEn,
+        drugClassNameEn: p.drugClassNameEn,
+        category: p.category,
+      })),
+    [visibleDraftProducts]
   );
 
   const editingProduct = useMemo(
@@ -1843,51 +1991,87 @@ function CompanyReviewDraftsView({
 
   return (
     <div className="space-y-4">
-      {/* Review Toolbar: Search, Source Filter, Select all + Publish checked (N) */}
+      {/* Review Toolbar: Search, Source Filter, Class Filter, Select all + Publish checked (N) */}
       <div className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3">
         {draftProducts.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border-b border-[#304451] pb-3">
-            <div className="flex-1 max-w-md">
-              <input
-                type="search"
-                aria-label="Search company drafts"
-                value={draftQuery}
-                onChange={(e) => setDraftQuery(e.target.value)}
-                placeholder="Search drafts by brand, generic, or class…"
-                className={inputClass}
-              />
+          <div className="space-y-2.5 border-b border-[#304451] pb-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              <div className="flex-1 max-w-md">
+                <input
+                  type="search"
+                  aria-label="Search company drafts"
+                  value={draftQuery}
+                  onChange={(e) => setDraftQuery(e.target.value)}
+                  placeholder="Search drafts by brand, generic, or class…"
+                  className={inputClass}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {(
+                  [
+                    {
+                      key: 'all' as const,
+                      label: `All (${sourceCounts.all})`,
+                    },
+                    {
+                      key: 'ready' as const,
+                      label: `Ready — valid source (${sourceCounts.ready})`,
+                    },
+                    {
+                      key: 'warnings' as const,
+                      label: `Has warnings (${sourceCounts.warnings})`,
+                    },
+                  ]
+                ).map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setDraftSourceFilter(tab.key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      draftSourceFilter === tab.key
+                        ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                        : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {(
-                [
-                  {
-                    key: 'all' as const,
-                    label: `All (${sourceCounts.all})`,
-                  },
-                  {
-                    key: 'ready' as const,
-                    label: `Ready — valid source (${sourceCounts.ready})`,
-                  },
-                  {
-                    key: 'warnings' as const,
-                    label: `Has warnings (${sourceCounts.warnings})`,
-                  },
-                ]
-              ).map((tab) => (
+
+            {allDraftGroups.length > 1 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 <button
-                  key={tab.key}
                   type="button"
-                  onClick={() => setDraftSourceFilter(tab.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                    draftSourceFilter === tab.key
+                  onClick={() => setDraftClassFilter('all')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors tabular-nums ${
+                    draftClassFilter === 'all'
                       ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
                       : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
                   }`}
                 >
-                  {tab.label}
+                  All classes ({draftProducts.length})
                 </button>
-              ))}
-            </div>
+                {allDraftGroups.map((grp) => (
+                  <button
+                    key={grp.groupKey}
+                    type="button"
+                    onClick={() =>
+                      setDraftClassFilter(
+                        draftClassFilter === grp.groupKey ? 'all' : grp.groupKey
+                      )
+                    }
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors tabular-nums ${
+                      draftClassFilter === grp.groupKey
+                        ? 'bg-[#1769AA] border-[#5DB4F2] text-white'
+                        : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-[#F2F5F8]'
+                    }`}
+                  >
+                    {grp.groupLabel} ({grp.totalCount})
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -2019,215 +2203,251 @@ function CompanyReviewDraftsView({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {visibleDraftProducts.map((product) => {
-            const isChecked = checkedIds.includes(product.id);
-            const market = product.market;
-            const enClinical = product.marketTranslations.en;
-            const sources = extractAiDraftSources(
-              product.aiSources ?? [],
-              { sources: extraSourcesByProduct[product.id] ?? [] }
-            );
-            const sourceWarning = getProductSourceWarning(sources);
-            const isArchiving = archivingProductId === product.id;
-
-            return (
+        <div className="space-y-6">
+          {visibleDraftGroups.map((grp) =>
+            grp.subclasses.map((sub) => (
               <div
-                key={product.id}
-                className={`rounded-xl bg-[#263744] border p-5 space-y-4 transition-colors ${
-                  isChecked ? 'border-[#5DB4F2]' : 'border-[#304451]'
-                }`}
+                key={`${grp.groupKey}-${sub.subclassLabel}`}
+                className="space-y-3"
               >
-                {/* Row Top Bar */}
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#304451] pb-3">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <label className="inline-flex items-center gap-2 rounded-md bg-[#1F2D38] border border-[#304451] px-3 py-1.5 text-xs font-medium text-[#F2F5F8] cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        disabled={publishing}
-                        onChange={() => toggleProductChecked(product.id)}
-                        className="accent-[#1769AA] h-4 w-4"
-                      />
-                      <span>Checked</span>
-                    </label>
+                <div className="px-4 py-2.5 rounded-xl bg-[#1F2D38] border border-[#304451] flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs sm:text-sm font-semibold text-[#F2F5F8]">
+                      {sub.subclassLabel}
+                    </span>
+                    <span className="text-xs text-[#B8C3CC]">·</span>
+                    <span className="text-xs text-[#B8C3CC]">
+                      {grp.groupLabel}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono text-[#B8C3CC] tabular-nums">
+                    {sub.items.length}{' '}
+                    {sub.items.length === 1 ? 'draft' : 'drafts'}
+                  </span>
+                </div>
 
-                    <div>
-                      <div className="flex flex-wrap items-baseline gap-2.5">
-                        <h3 className="text-base font-semibold text-[#F2F5F8]">
-                          {product.brandNameEn}
-                        </h3>
-                        <StatusText status={product.status} />
+                {sub.items.map((product) => {
+                  const isChecked = checkedIds.includes(product.id);
+                  const market = product.market;
+                  const enClinical = product.marketTranslations.en;
+                  const sources = extractAiDraftSources(
+                    product.aiSources ?? [],
+                    { sources: extraSourcesByProduct[product.id] ?? [] }
+                  );
+                  const sourceWarning = getProductSourceWarning(sources);
+                  const isArchiving = archivingProductId === product.id;
+
+                  return (
+                    <div
+                      key={product.id}
+                      className={`rounded-xl bg-[#263744] border p-5 space-y-4 transition-colors ${
+                        isChecked ? 'border-[#5DB4F2]' : 'border-[#304451]'
+                      }`}
+                    >
+                      {/* Row Top Bar */}
+                      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#304451] pb-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="inline-flex items-center gap-2 rounded-md bg-[#1F2D38] border border-[#304451] px-3 py-1.5 text-xs font-medium text-[#F2F5F8] cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              disabled={publishing}
+                              onChange={() => toggleProductChecked(product.id)}
+                              className="accent-[#1769AA] h-4 w-4"
+                            />
+                            <span>Checked</span>
+                          </label>
+
+                          <div>
+                            <div className="flex flex-wrap items-baseline gap-2.5">
+                              <h3 className="text-base font-semibold text-[#F2F5F8]">
+                                {product.brandNameEn}
+                              </h3>
+                              <StatusText status={product.status} />
+                            </div>
+                          </div>
+
+                          {sourceWarning && (
+                            <span className="rounded-md bg-[#F59E0B]/15 border border-[#F59E0B]/60 px-2.5 py-1 text-xs font-semibold text-[#F59E0B]">
+                              {sourceWarning}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={publishing}
+                            onClick={() => setEditingProductId(product.id)}
+                            className={secondaryButtonClass}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            disabled={publishing}
+                            onClick={() => {
+                              setPublishSummary(null);
+                              setConfirmingPublishIds([product.id]);
+                            }}
+                            className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-3 py-2 transition-colors"
+                          >
+                            Publish
+                          </button>
+                          <button
+                            type="button"
+                            disabled={publishing}
+                            onClick={() => {
+                              setArchivingProductId(
+                                isArchiving ? null : product.id
+                              );
+                              setArchiveReason('');
+                            }}
+                            className="rounded-md bg-[#1F2D38] hover:bg-[#B42318] border border-[#304451] text-[#B8C3CC] hover:text-white text-xs font-medium px-3 py-2 transition-colors"
+                          >
+                            Archive
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Inline Archive Reason Prompt */}
+                      {isArchiving && (
+                        <div className="rounded-lg bg-[#1F2D38] border border-[#B42318]/60 p-3.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                          <input
+                            type="text"
+                            value={archiveReason}
+                            onChange={(e) => setArchiveReason(e.target.value)}
+                            placeholder="Reason for archiving this product…"
+                            className={`${inputClass} flex-1`}
+                          />
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              disabled={archivingBusy || !archiveReason.trim()}
+                              onClick={() =>
+                                void handleConfirmArchive(product)
+                              }
+                              className="rounded-md bg-[#B42318] hover:bg-[#991B1B] disabled:opacity-50 text-white text-xs font-medium px-3.5 py-2 transition-colors"
+                            >
+                              {archivingBusy
+                                ? 'Archiving…'
+                                : 'Confirm Archive'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={archivingBusy}
+                              onClick={() => {
+                                setArchivingProductId(null);
+                                setArchiveReason('');
+                              }}
+                              className={secondaryButtonClass}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Presentation & Taxonomy Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 text-xs">
+                        <ReviewField
+                          label="Generic"
+                          value={product.genericNameEn ?? '—'}
+                        />
+                        <ReviewField
+                          label="Strength"
+                          value={market?.strength || '—'}
+                          mono
+                        />
+                        <ReviewField
+                          label="Dosage Form"
+                          value={market?.dosageForm || '—'}
+                        />
+                        <ReviewField
+                          label="Route"
+                          value={market?.route || '—'}
+                        />
+                        <ReviewField
+                          label="Pack Size"
+                          value={market?.packSize || '—'}
+                          mono
+                        />
+                        <ReviewField
+                          label="Category"
+                          value={CATEGORY_LABELS[product.category]}
+                        />
+                        <ReviewField
+                          label="Drug Class"
+                          value={cleanDrugClassLabel(product.drugClassNameEn)}
+                        />
+                        <ReviewField
+                          label="Specialties"
+                          value={
+                            product.specialtyNamesEn.length > 0
+                              ? product.specialtyNamesEn.join(', ')
+                              : '—'
+                          }
+                        />
+                      </div>
+
+                      {/* 5 Clinical Fields */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 text-xs">
+                        <ReviewClinicalField
+                          label="Indications"
+                          value={enClinical?.approvedIndications || '—'}
+                        />
+                        <ReviewClinicalField
+                          label="Usual Adult Dose"
+                          value={enClinical?.usualAdultDose || '—'}
+                        />
+                        <ReviewClinicalField
+                          label="Contraindications"
+                          value={enClinical?.contraindications || '—'}
+                        />
+                        <ReviewClinicalField
+                          label="Common Adverse Effects"
+                          value={enClinical?.commonAdverseEffects || '—'}
+                        />
+                        <div className="md:col-span-2">
+                          <ReviewClinicalField
+                            label="Storage"
+                            value={enClinical?.storageConditions || '—'}
+                          />
+                        </div>
+                      </div>
+
+                      {/* AI Sources */}
+                      <div className="text-xs space-y-1">
+                        <div className="text-[#B8C3CC] font-medium">
+                          AI Sources (product_ai_drafts):
+                        </div>
+                        {sources.length === 0 ? (
+                          <div className="text-[#F59E0B]">
+                            No source recorded
+                          </div>
+                        ) : (
+                          <ul className="list-disc list-inside space-y-1">
+                            {sources.map((src) => (
+                              <li key={src.url}>
+                                <a
+                                  href={src.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[#5DB4F2] hover:underline break-all"
+                                >
+                                  {src.title} ({src.url})
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </div>
-
-                    {sourceWarning && (
-                      <span className="rounded-md bg-[#F59E0B]/15 border border-[#F59E0B]/60 px-2.5 py-1 text-xs font-semibold text-[#F59E0B]">
-                        {sourceWarning}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      disabled={publishing}
-                      onClick={() => setEditingProductId(product.id)}
-                      className={secondaryButtonClass}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      disabled={publishing}
-                      onClick={() => {
-                        setPublishSummary(null);
-                        setConfirmingPublishIds([product.id]);
-                      }}
-                      className="rounded-md bg-[#38C976] hover:bg-[#2F8F5C] disabled:opacity-50 text-[#1F2D38] text-xs font-semibold px-3 py-2 transition-colors"
-                    >
-                      Publish
-                    </button>
-                    <button
-                      type="button"
-                      disabled={publishing}
-                      onClick={() => {
-                        setArchivingProductId(isArchiving ? null : product.id);
-                        setArchiveReason('');
-                      }}
-                      className="rounded-md bg-[#1F2D38] hover:bg-[#B42318] border border-[#304451] text-[#B8C3CC] hover:text-white text-xs font-medium px-3 py-2 transition-colors"
-                    >
-                      Archive
-                    </button>
-                  </div>
-                </div>
-
-                {/* Inline Archive Reason Prompt */}
-                {isArchiving && (
-                  <div className="rounded-lg bg-[#1F2D38] border border-[#B42318]/60 p-3.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                    <input
-                      type="text"
-                      value={archiveReason}
-                      onChange={(e) => setArchiveReason(e.target.value)}
-                      placeholder="Reason for archiving this product…"
-                      className={`${inputClass} flex-1`}
-                    />
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        disabled={archivingBusy || !archiveReason.trim()}
-                        onClick={() => void handleConfirmArchive(product)}
-                        className="rounded-md bg-[#B42318] hover:bg-[#991B1B] disabled:opacity-50 text-white text-xs font-medium px-3.5 py-2 transition-colors"
-                      >
-                        {archivingBusy ? 'Archiving…' : 'Confirm Archive'}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={archivingBusy}
-                        onClick={() => {
-                          setArchivingProductId(null);
-                          setArchiveReason('');
-                        }}
-                        className={secondaryButtonClass}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Presentation & Taxonomy Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 text-xs">
-                  <ReviewField
-                    label="Generic"
-                    value={product.genericNameEn ?? '—'}
-                  />
-                  <ReviewField
-                    label="Strength"
-                    value={market?.strength || '—'}
-                    mono
-                  />
-                  <ReviewField
-                    label="Dosage Form"
-                    value={market?.dosageForm || '—'}
-                  />
-                  <ReviewField label="Route" value={market?.route || '—'} />
-                  <ReviewField
-                    label="Pack Size"
-                    value={market?.packSize || '—'}
-                    mono
-                  />
-                  <ReviewField
-                    label="Category"
-                    value={CATEGORY_LABELS[product.category]}
-                  />
-                  <ReviewField
-                    label="Drug Class"
-                    value={product.drugClassNameEn}
-                  />
-                  <ReviewField
-                    label="Specialties"
-                    value={
-                      product.specialtyNamesEn.length > 0
-                        ? product.specialtyNamesEn.join(', ')
-                        : '—'
-                    }
-                  />
-                </div>
-
-                {/* 5 Clinical Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 text-xs">
-                  <ReviewClinicalField
-                    label="Indications"
-                    value={enClinical?.approvedIndications || '—'}
-                  />
-                  <ReviewClinicalField
-                    label="Usual Adult Dose"
-                    value={enClinical?.usualAdultDose || '—'}
-                  />
-                  <ReviewClinicalField
-                    label="Contraindications"
-                    value={enClinical?.contraindications || '—'}
-                  />
-                  <ReviewClinicalField
-                    label="Common Adverse Effects"
-                    value={enClinical?.commonAdverseEffects || '—'}
-                  />
-                  <div className="md:col-span-2">
-                    <ReviewClinicalField
-                      label="Storage"
-                      value={enClinical?.storageConditions || '—'}
-                    />
-                  </div>
-                </div>
-
-                {/* AI Sources */}
-                <div className="text-xs space-y-1">
-                  <div className="text-[#B8C3CC] font-medium">
-                    AI Sources (product_ai_drafts):
-                  </div>
-                  {sources.length === 0 ? (
-                    <div className="text-[#F59E0B]">No source recorded</div>
-                  ) : (
-                    <ul className="list-disc list-inside space-y-1">
-                      {sources.map((src) => (
-                        <li key={src.url}>
-                          <a
-                            href={src.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#5DB4F2] hover:underline break-all"
-                          >
-                            {src.title} ({src.url})
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            ))
+          )}
         </div>
       )}
     </div>

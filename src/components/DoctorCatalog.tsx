@@ -58,6 +58,7 @@ import {
   doctorSelfSignup,
   listSpecialties,
   loadDoctorProfileSummary,
+  recordDoctorAppOpen,
   type Option,
 } from '../lib/onboarding';
 import {
@@ -228,6 +229,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
       const userId = userRes.data.user?.id;
       if (userId) {
+        void recordDoctorAppOpen(client, userId);
         const summary = await loadDoctorProfileSummary(client, userId);
         if (!active) return;
         setProfileFullName(summary.fullName);
@@ -796,38 +798,36 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {!profileEditing && (
-                    <button
-                      type="button"
-                      onClick={startProfileEdit}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-[#1E7BC4] px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-150"
-                    >
-                      <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                      Edit profile
-                    </button>
-                  )}
-                </div>
+                {!profileEditing && (
+                  <button
+                    type="button"
+                    onClick={startProfileEdit}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-[#1E7BC4] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors duration-150"
+                  >
+                    <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                    Edit profile
+                  </button>
+                )}
               </div>
               {!profileEditing ? (
                 <div className="space-y-4">
                   <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2.5 rounded-xl bg-background/70 border border-border px-4 py-3">
                     {[
-                      { label: 'Full name', value: profileSaved.fullName },
-                      { label: 'Medical specialty', value: savedSpecialtyName },
-                      { label: 'Phone number', value: profileSaved.phone },
-                      { label: 'Email', value: access.email ?? '' },
+                      { label: 'Full name', value: profileSaved.fullName, isEmail: false },
+                      { label: 'Medical specialty', value: savedSpecialtyName, isEmail: false },
+                      { label: 'Phone number', value: profileSaved.phone, isEmail: false },
+                      { label: 'Email', value: access.email ?? '', isEmail: true },
                     ].map((row) => (
                       <div
                         key={row.label}
-                        className={`min-w-0 ${row.label === 'Email' ? 'col-span-2 sm:col-span-1' : ''}`}
+                        className={`min-w-0 ${row.isEmail ? 'col-span-2 sm:col-span-1' : ''}`}
                       >
-                        <dt className="text-[11px] font-medium text-text-muted truncate">
+                        <dt className="text-[11px] font-medium text-text-muted">
                           {row.label}
                         </dt>
                         <dd
                           className={`mt-0.5 text-xs sm:text-sm font-medium text-text ${
-                            row.label === 'Email' ? 'break-all' : 'break-words'
+                            row.isEmail ? 'break-all' : 'break-words'
                           }`}
                         >
                           {row.value || <span className="text-text-muted">Not set</span>}

@@ -58,6 +58,21 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (review of AI Studio's users & registrations monitor)
+- Reviewed `5ab30af`. Builds, 67 tests pass, no files deleted, my company page in
+  `AdminCatalogReview.tsx` is intact. Merged.
+- Fixed: the push had deleted my two entries below (Cravit removed from Hikma,
+  profile polish); put them back. Removed the temporary marker comments.
+- Safe: the database blocks an admin from suspending themselves or another admin.
+- Follow-up (needs owner OK): "opened the app" is measured by re-saving the
+  doctor's profile, and admin status changes also count as "opened". Planned fix:
+  a `last_seen_at` column with its own small function, so only real app opens count.
+- **AI Studio:** never delete other entries in this file; add yours on top.
+
+### 2026-11-06 — Google AI Studio (Admin User Registrations list, App Open Monitor & Doctor profile polish)
+- **Admin User Registrations & App Open Monitor (`src/lib/onboarding.ts`, `src/lib/onboarding.test.ts`, `src/components/AdminApprovals.tsx`, `src/components/AdminCatalogReview.tsx`):** Added `listRegisteredUsers`, `computeUserRegistrationStats`, `recordDoctorAppOpen`, and `setUserProfileStatus` (using existing RLS-authorized `profiles`, `healthcare_professionals`, `specialties`, `update_my_profile`, and `admin_set_profile_status`). Upgraded the Admin **Users & Registrations** tab with 5 KPI cards (Registered Users, Opened App 24h, Opened App 7d, New Sign-ups 7d, Pending Approvals), a searchable/filterable **User Registrations** table, a dedicated **Users Opening App Monitor** ordered by most recent catalog open, and a summary card on the **Usage** tab.
+- **Doctor profile polish (`src/components/DoctorCatalog.tsx`):** Removed the duplicate `Close` button from the profile card header (keeping only `← Back` at the top, which calls `cancelProfileEdit()` and closes the profile). Kept the compact 2-column phone / 4-column desktop summary strip (`grid-cols-2 sm:grid-cols-4`), letting values wrap (`break-words` / `break-all` for email, with `col-span-2 sm:col-span-1` on Email) instead of truncating. Kept the `"Sponsored"` tag on `SponsoredAdCard` intact.
+
 ### 2026-11-06 — Claude (Cravit removed from Hikma)
 - Owner decision: Cravit 500 mg and 750 mg are not Hikma products in Iraq
   (licensed to JPM; Hikma's levofloxacin brand is Matador). Archived both in the

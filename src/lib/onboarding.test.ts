@@ -3,9 +3,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   COMPANY_SELF_SIGNUP_ENABLED,
   blankToNull,
+  computeUserRegistrationStats,
   doctorSelfSignup,
   onboardingStep,
+  recordDoctorAppOpen,
   reviewProfessional,
+  setUserProfileStatus,
   submitCompanyApplication,
   submitDoctorRecord,
   submitSignUpWithConsent,
@@ -245,6 +248,7 @@ describe('database function calls match the migrations', () => {
     });
     await reviewProfessional(client, 'id', 'approved', '');
     await verifyCompany(client, 'id', 'checked');
+    await setUserProfileStatus(client, 'id', 'suspended', 'policy check');
     expect(calls.map((c) => c.fn)).toEqual([
       'doctor_self_signup',
       'create_my_healthcare_professional_record',
@@ -252,17 +256,109 @@ describe('database function calls match the migrations', () => {
       'create_company_application',
       'admin_review_healthcare_professional',
       'admin_verify_company',
+      'admin_set_profile_status',
     ]);
     calls.forEach(expectMatchesMigration);
   });
 
-  it('requires a reason before rejecting, requesting documents, or verifying', async () => {
+  it('requires a reason before rejecting, requesting documents, verifying, or changing user status', async () => {
     const calls: RpcCall[] = [];
     const client = recordingClient(calls);
     expect((await reviewProfessional(client, 'id', 'rejected', ' ')).ok).toBe(false);
     expect((await reviewProfessional(client, 'id', 'documents_requested', '')).ok).toBe(false);
     expect((await verifyCompany(client, 'id', '')).ok).toBe(false);
+    expect((await setUserProfileStatus(client, 'id', 'suspended', ' ')).ok).toBe(false);
     expect(calls).toHaveLength(0);
+  });
+
+  it('computes user registration and app-open activity stats accurately and records app opens via update_my_profile', async () => {
+    const now = Date.parse('2026-11-06T12:00:00Z');
+    const stats = computeUserRegistrationStats(
+      [
+        {
+          profileId: 'u1',
+          email: 'doc1@hospital.iq',
+          fullName: 'Dr. Sara',
+          phone: '+964 770 111 2222',
+          role: 'healthcare_professional',
+          profileStatus: 'active',
+          specialtyId: 'spec-1',
+          specialtyName: 'Cardiology',
+          verificationStatus: 'approved',
+          workplace: null,
+          licenseNumber: null,
+          registeredAt: '2026-11-05T10:00:00Z',
+          lastActiveAt: '2026-11-06T09:00:00Z',
+        },
+        {
+          profileId: 'u2',
+          email: 'doc2@hospital.iq',
+          fullName: 'Dr. Omar',
+          phone: '+964 770 333 4444',
+          role: 'healthcare_professional',
+          profileStatus: 'active',
+          specialtyId: 'spec-2',
+          specialtyName: 'Neurology',
+          verificationStatus: 'approved',
+          workplace: null,
+          licenseNumber: null,
+          registeredAt: '2026-10-20T10:00:00Z',
+          lastActiveAt: '2026-11-02T10:00:00Z',
+        },
+        {
+          profileId: 'u3',
+          email: 'admin@pharmaty.iq',
+          fullName: 'Admin',
+          phone: null,
+          role: 'admin',
+          profileStatus: 'active',
+          specialtyId: null,
+          specialtyName: null,
+          verificationStatus: null,
+          workplace: null,
+          licenseNumber: null,
+          registeredAt: '2026-09-01T10:00:00Z',
+          lastActiveAt: '2026-09-01T10:00:00Z',
+        },
+      ],
+      now
+    );
+
+    expect(stats).toEqual({
+      totalUsers: 3,
+      totalDoctors: 2,
+      openedLast24h: 1,
+      openedLast7d: 2,
+      newLast7d: 1,
+      newLast30d: 2,
+    });
+
+    const calls: RpcCall[] = [];
+    const openClient = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({
+              data: {
+                full_name: 'Dr. Sara',
+                phone: '+964 770 111 2222',
+                country_id: null,
+                city_id: null,
+              },
+            }),
+          }),
+        }),
+      }),
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        calls.push({ fn, args });
+        return { data: null, error: null };
+      },
+    } as unknown as SupabaseClient;
+
+    await recordDoctorAppOpen(openClient, 'auth-u1');
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.fn).toBe('update_my_profile');
+    expectMatchesMigration(calls[0]!);
   });
 });
 

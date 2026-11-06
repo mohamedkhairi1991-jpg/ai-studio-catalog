@@ -50,7 +50,14 @@ import {
   type SponsoredAdRecord,
   type StoredProductAiDraft,
 } from '../lib/catalog';
-import { listCities, listCountries, type Option } from '../lib/onboarding';
+import {
+  computeUserRegistrationStats,
+  listCities,
+  listCountries,
+  listRegisteredUsers,
+  type Option,
+  type UserRegistrationStats,
+} from '../lib/onboarding';
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner, SponsoredAdCard } from './DoctorCatalog';
@@ -462,7 +469,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     : 'text-[#B8C3CC] hover:text-white'
                 }`}
               >
-                Doctor Approvals
+                Users & Registrations
               </button>
             </div>
           </div>
@@ -490,50 +497,53 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
         </div>
       </header>
 
-      {adminView === 'approvals' ? (
-        <AdminApprovals
-          client={client}
-          email={access.email}
-          onSignOut={onSignOut}
-        />
-      ) : (
-        <>
-          <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6 flex flex-col gap-6">
-          {syncingChatCatalog && syncProgressText && (
-            <Banner tone="warn">{syncProgressText}</Banner>
-          )}
-          {error && (
-            <Banner tone="error">
-              <div className="space-y-2">
-                <div>{error}</div>
-                {errorReasons.length > 0 && (
-                  <ul className="list-disc list-inside space-y-1 text-xs text-[#F2F5F8]">
-                    {errorReasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </Banner>
-          )}
-          {notice && <Banner tone="success">{notice}</Banner>}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+        {syncingChatCatalog && syncProgressText && (
+          <Banner tone="warn">{syncProgressText}</Banner>
+        )}
+        {error && (
+          <Banner tone="error">
+            <div className="space-y-2">
+              <div>{error}</div>
+              {errorReasons.length > 0 && (
+                <ul className="list-disc list-inside space-y-1 text-xs text-[#F2F5F8]">
+                  {errorReasons.map((reason) => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Banner>
+        )}
+        {notice && <Banner tone="success">{notice}</Banner>}
 
-          {adminView === 'ads' ? (
-            <AdminSponsoredAdsView
-              client={client}
-              bundle={bundle}
-              onNotice={(msg) => {
-                clearFeedback();
-                setNotice(msg);
-              }}
-              onError={(msg) => setFailure(msg)}
-            />
-          ) : adminView === 'usage' ? (
-            <AdminUsageStatsView
-              client={client}
-              onError={(msg) => setFailure(msg)}
-            />
-          ) : adminView === 'companies' ? (
+        {adminView === 'approvals' ? (
+          <AdminApprovals
+            client={client}
+            email={access.email}
+            onSignOut={onSignOut}
+            embedded
+          />
+        ) : adminView === 'ads' ? (
+          <AdminSponsoredAdsView
+            client={client}
+            bundle={bundle}
+            onNotice={(msg) => {
+              clearFeedback();
+              setNotice(msg);
+            }}
+            onError={(msg) => setFailure(msg)}
+          />
+        ) : adminView === 'usage' ? (
+          <AdminUsageStatsView
+            client={client}
+            onError={(msg) => setFailure(msg)}
+            onOpenUsersMonitor={() => {
+              setSelectedId(null);
+              setAdminView('approvals');
+            }}
+          />
+        ) : adminView === 'companies' ? (
             <section className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
                 <div>
@@ -1307,10 +1317,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
               )}
             </>
           )}
-          </main>
-          <LegalFooter />
-        </>
-      )}
+      </main>
+      <LegalFooter />
     </div>
   );
 }
@@ -4178,23 +4186,27 @@ function AdminSponsoredAdsView({
 function AdminUsageStatsView({
   client,
   onError,
+  onOpenUsersMonitor,
 }: {
   client: SupabaseClient;
   onError: (msg: string) => void;
+  onOpenUsersMonitor: () => void;
 }) {
   const [days, setDays] = useState<7 | 30 | 90>(30);
   const [loading, setLoading] = useState(true);
   const [topSearches, setTopSearches] = useState<AdminTopSearchRow[]>([]);
   const [topProducts, setTopProducts] = useState<AdminTopViewedProductRow[]>([]);
   const [adStats, setAdStats] = useState<AdminSponsoredAdStat[]>([]);
+  const [userStats, setUserStats] = useState<UserRegistrationStats | null>(null);
 
   const loadUsage = useCallback(
     async (selectedDays: 7 | 30 | 90) => {
       setLoading(true);
-      const [searchesRes, productsRes, adsRes] = await Promise.all([
+      const [searchesRes, productsRes, adsRes, regUsers] = await Promise.all([
         loadAdminTopSearches(client, selectedDays, 50),
         loadAdminTopViewedProducts(client, selectedDays, 50),
         loadAdminSponsoredAdStats(client, selectedDays),
+        listRegisteredUsers(client),
       ]);
       setLoading(false);
 
@@ -4214,6 +4226,7 @@ function AdminUsageStatsView({
       setTopSearches(searchesRes.data);
       setTopProducts(productsRes.data);
       setAdStats(adsRes.data);
+      setUserStats(computeUserRegistrationStats(regUsers));
     },
     [client, onError]
   );
@@ -4227,10 +4240,10 @@ function AdminUsageStatsView({
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
         <div>
           <h1 className="text-base font-semibold text-[#F2F5F8]">
-            Anonymous Usage Statistics
+            Usage & User Activity Statistics
           </h1>
           <p className="text-xs text-[#B8C3CC] mt-0.5">
-            Aggregated search queries, drug page views, and sponsored ad performance (no user IDs stored).
+            Registered users opening the app, search queries, drug page views, and sponsored ad performance.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -4260,6 +4273,66 @@ function AdminUsageStatsView({
           </button>
         </div>
       </div>
+
+      {/* User Registrations & App Open Monitor Summary */}
+      {userStats && (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-sm font-semibold text-[#F2F5F8]">
+                User Registrations & App Open Monitor
+              </h2>
+              <p className="text-xs text-[#B8C3CC]">
+                Real-time summary of registered accounts and doctors opening the catalog.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenUsersMonitor}
+              className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-semibold px-3.5 py-2 transition-colors"
+            >
+              Open Users & Activity Monitor →
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3.5 py-2.5">
+              <div className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
+                Registered Users
+              </div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#F2F5F8]">
+                {userStats.totalUsers}{' '}
+                <span className="text-xs font-normal text-[#5DB4F2]">
+                  ({userStats.totalDoctors} doctors)
+                </span>
+              </div>
+            </div>
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3.5 py-2.5">
+              <div className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
+                Opened App (24h)
+              </div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#38C976]">
+                {userStats.openedLast24h}
+              </div>
+            </div>
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3.5 py-2.5">
+              <div className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
+                Opened App (7d)
+              </div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#5DB4F2]">
+                {userStats.openedLast7d}
+              </div>
+            </div>
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] px-3.5 py-2.5">
+              <div className="text-[11px] uppercase tracking-wider text-[#B8C3CC]">
+                New Sign-ups (7d / 30d)
+              </div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#F2F5F8]">
+                {userStats.newLast7d} / {userStats.newLast30d}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="rounded-xl bg-[#263744] border border-[#304451] p-12 text-center text-sm text-[#B8C3CC]">

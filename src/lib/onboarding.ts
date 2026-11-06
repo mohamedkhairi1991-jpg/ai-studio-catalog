@@ -425,6 +425,199 @@ export async function reviewProfessional(
   return error ? fail(error.message) : { ok: true };
 }
 
+export interface RegisteredUserRecord {
+  profileId: string;
+  email: string;
+  fullName: string | null;
+  phone: string | null;
+  role: string | null;
+  profileStatus: string;
+  specialtyId: string | null;
+  specialtyName: string | null;
+  verificationStatus: ProfessionalStatus | null;
+  workplace: string | null;
+  licenseNumber: string | null;
+  registeredAt: string;
+  lastActiveAt: string;
+}
+
+export interface UserRegistrationStats {
+  totalUsers: number;
+  totalDoctors: number;
+  openedLast24h: number;
+  openedLast7d: number;
+  newLast7d: number;
+  newLast30d: number;
+}
+
+export function computeUserRegistrationStats(
+  users: RegisteredUserRecord[],
+  nowMs: number = Date.now()
+): UserRegistrationStats {
+  const dayMs = 24 * 60 * 60 * 1000;
+  const cutoff24h = nowMs - dayMs;
+  const cutoff7d = nowMs - 7 * dayMs;
+  const cutoff30d = nowMs - 30 * dayMs;
+
+  let totalDoctors = 0;
+  let openedLast24h = 0;
+  let openedLast7d = 0;
+  let newLast7d = 0;
+  let newLast30d = 0;
+
+  for (const u of users) {
+    if (u.role === 'healthcare_professional' || u.verificationStatus !== null) {
+      totalDoctors += 1;
+    }
+    const lastActiveMs = Date.parse(u.lastActiveAt);
+    if (!Number.isNaN(lastActiveMs)) {
+      if (lastActiveMs >= cutoff24h) openedLast24h += 1;
+      if (lastActiveMs >= cutoff7d) openedLast7d += 1;
+    }
+    const regMs = Date.parse(u.registeredAt);
+    if (!Number.isNaN(regMs)) {
+      if (regMs >= cutoff7d) newLast7d += 1;
+      if (regMs >= cutoff30d) newLast30d += 1;
+    }
+  }
+
+  return {
+    totalUsers: users.length,
+    totalDoctors,
+    openedLast24h,
+    openedLast7d,
+    newLast7d,
+    newLast30d,
+  };
+}
+
+export async function recordDoctorAppOpen(
+  client: SupabaseClient,
+  authUserId: string
+): Promise<void> {
+  try {
+    const { data: profile } = await client
+      .from('profiles')
+      .select('full_name,phone,country_id,city_id')
+      .eq('auth_user_id', authUserId)
+      .maybeSingle<{
+        full_name: string | null;
+        phone: string | null;
+        country_id: string | null;
+        city_id: string | null;
+      }>();
+    if (!profile) return;
+    const cleanPhone = blankToNull(profile.phone ?? '');
+    if (!cleanPhone) return;
+    await client.rpc('update_my_profile', {
+      full_name: blankToNull(profile.full_name ?? ''),
+      phone: cleanPhone,
+      country_id: profile.country_id ?? null,
+      city_id: profile.city_id ?? null,
+    });
+  } catch {
+    // Fire-and-forget: never block catalog rendering if activity ping fails.
+  }
+}
+
+export async function listRegisteredUsers(
+  client: SupabaseClient
+): Promise<RegisteredUserRecord[]> {
+  const [{ data: profilesData }, { data: prosData }, specialties] =
+    await Promise.all([
+      client
+        .from('profiles')
+        .select('id,email,full_name,phone,role,status,created_at,updated_at')
+        .order('created_at', { ascending: false }),
+      client
+        .from('healthcare_professionals')
+        .select(
+          'profile_id,specialty_id,verification_status,workplace,license_number,updated_at'
+        ),
+      listSpecialties(client),
+    ]);
+
+  const specialtyMap = new Map<string, string>();
+  for (const s of specialties) {
+    specialtyMap.set(s.id, s.label);
+  }
+
+  const proByProfileId = new Map<
+    string,
+    {
+      specialty_id: string | null;
+      verification_status: ProfessionalStatus;
+      workplace: string | null;
+      license_number: string | null;
+      updated_at: string | null;
+    }
+  >();
+  for (const pro of (prosData ?? []) as Array<{
+    profile_id: string;
+    specialty_id: string | null;
+    verification_status: ProfessionalStatus;
+    workplace: string | null;
+    license_number: string | null;
+    updated_at: string | null;
+  }>) {
+    proByProfileId.set(pro.profile_id, pro);
+  }
+
+  const rows = (profilesData ?? []) as Array<{
+    id: string;
+    email: string;
+    full_name: string | null;
+    phone: string | null;
+    role: string | null;
+    status: string;
+    created_at: string;
+    updated_at: string;
+  }>;
+
+  return rows.map((p) => {
+    const pro = proByProfileId.get(p.id);
+    const specialtyId = pro?.specialty_id ?? null;
+    const pUpdatedMs = Date.parse(p.updated_at);
+    const proUpdatedMs = pro?.updated_at ? Date.parse(pro.updated_at) : NaN;
+    const lastActiveAt =
+      !Number.isNaN(proUpdatedMs) &&
+      (Number.isNaN(pUpdatedMs) || proUpdatedMs > pUpdatedMs)
+        ? pro!.updated_at!
+        : p.updated_at || p.created_at;
+
+    return {
+      profileId: p.id,
+      email: p.email,
+      fullName: p.full_name,
+      phone: p.phone,
+      role: p.role,
+      profileStatus: p.status,
+      specialtyId,
+      specialtyName: specialtyId ? specialtyMap.get(specialtyId) ?? null : null,
+      verificationStatus: pro?.verification_status ?? null,
+      workplace: pro?.workplace ?? null,
+      licenseNumber: pro?.license_number ?? null,
+      registeredAt: p.created_at,
+      lastActiveAt,
+    };
+  });
+}
+
+export async function setUserProfileStatus(
+  client: SupabaseClient,
+  profileId: string,
+  newStatus: 'active' | 'suspended' | 'archived',
+  reason: string
+): Promise<Result> {
+  if (!reason.trim()) return fail('A reason is required.');
+  const { error } = await client.rpc('admin_set_profile_status', {
+    target_profile_id: profileId,
+    new_status: newStatus,
+    reason: reason.trim(),
+  });
+  return error ? fail(error.message) : { ok: true };
+}
+
 export async function verifyCompany(client: SupabaseClient, id: string, reason: string): Promise<Result> {
   if (!reason.trim()) return fail('A verification reason is required.');
   const { error } = await client.rpc('admin_verify_company', { p_company_id: id, p_reason: reason.trim() });

@@ -465,7 +465,9 @@ export function computeUserRegistrationStats(
   let newLast7d = 0;
   let newLast30d = 0;
 
-  for (const u of users) {
+  const counted = users.filter((u) => u.profileStatus !== 'archived');
+
+  for (const u of counted) {
     if (u.role === 'healthcare_professional' || u.verificationStatus !== null) {
       totalDoctors += 1;
     }
@@ -482,7 +484,7 @@ export function computeUserRegistrationStats(
   }
 
   return {
-    totalUsers: users.length,
+    totalUsers: counted.length,
     totalDoctors,
     openedLast24h,
     openedLast7d,

@@ -79,7 +79,7 @@ export default function AdminApprovals({
   // Filters for User Registrations
   const [searchQuery, setSearchQuery] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'archived'>('all');
 
   // Time window for App Open Monitor
   const [monitorWindow, setMonitorWindow] = useState<'24h' | '7d' | '30d' | 'all'>('7d');
@@ -135,6 +135,11 @@ export default function AdminApprovals({
     const q = searchQuery.trim().toLowerCase();
     return users.filter((u) => {
       if (specialtyFilter && u.specialtyName !== specialtyFilter) return false;
+      if (statusFilter === 'archived') {
+        if (u.profileStatus !== 'archived') return false;
+      } else if (u.profileStatus === 'archived') {
+        return false;
+      }
       if (statusFilter === 'active' && u.profileStatus !== 'active') return false;
       if (statusFilter === 'suspended' && u.profileStatus !== 'suspended') return false;
       if (!q) return true;
@@ -605,13 +610,14 @@ export default function AdminApprovals({
                 aria-label="Filter registrations by status"
                 value={statusFilter}
                 onChange={(e) =>
-                  setStatusFilter(e.target.value as 'all' | 'active' | 'suspended')
+                  setStatusFilter(e.target.value as 'all' | 'active' | 'suspended' | 'archived')
                 }
                 className={`${inputClass} sm:w-40`}
               >
                 <option value="all">All statuses</option>
                 <option value="active">Active</option>
                 <option value="suspended">Suspended</option>
+                <option value="archived">Archived (old accounts)</option>
               </select>
             </div>
           </div>

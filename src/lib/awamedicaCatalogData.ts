@@ -134,7 +134,7 @@ const RAW_AWAMEDICA: CompactDrug[] = [
       'Abdominal pain, diarrhoea (discontinue if diarrhoea occurs), dyspepsia, nausea, vomiting, constipation, flatulence, peptic ulceration/GI bleeding, headache, dizziness, drowsiness, skin rash, haemolytic anaemia (with prolonged therapy).',
     storage:
       'Store below 25°C in a dry place in the original package.',
-    specialties: ['Obstetrics & Gynecology', 'Rheumatology', 'Orthopedics', 'General Practice'],
+    specialties: ['Obstetrics & Gynecology', 'Rheumatology', 'Orthopedics', 'General Practice / Family Medicine'],
     sources: [
       {
         title: 'Awamedica Pharmaceutical Company — Official Product Portfolio (Mefenamic Awa 250 mg Capsules)',
@@ -143,6 +143,90 @@ const RAW_AWAMEDICA: CompactDrug[] = [
     ],
     notes:
       'Official Awamedica Pharmaceutical Company (Erbil, Iraq) portfolio data. Each hard capsule contains 250 mg mefenamic acid (INN base: Mefenamic acid).',
+  },
+  {
+    brandName: 'Awacand 8 mg',
+    genericName: 'Candesartan',
+    activeIngredients: ['Candesartan cilexetil'],
+    drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
+    strength: '8 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 tablets in blisters',
+    indications:
+      'Treatment of essential hypertension in adults and children/adolescents aged 6 to <18 years, and treatment of adult patients with heart failure and impaired left ventricular systolic function (LVEF ≤ 40%) when ACE inhibitors are not tolerated or as add-on therapy to ACE inhibitors.',
+    dose:
+      'Hypertension: Recommended initial and usual maintenance dose is 8 mg orally once daily with or without food; may be increased to 16 mg once daily (up to 32 mg once daily). Heart failure: initiate at 4 mg once daily and double at intervals of at least 2 weeks up to target 32 mg once daily.',
+    contraindications:
+      'Hypersensitivity to candesartan cilexetil or any excipient; second and third trimesters of pregnancy; severe hepatic impairment and/or cholestasis; children under 1 year of age; concomitant use with aliskiren in patients with diabetes mellitus or renal impairment (eGFR < 60 mL/min/1.73 m²).',
+    adverseEffects:
+      'Dizziness/vertigo, headache, respiratory infection, hypotension, renal impairment, hyperkalaemia, elevated serum creatinine and urea.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Awamedica Pharmaceutical Company — Cardiovascular Portfolio (Awacand 8 mg)',
+        url: 'https://www.awamedica.com',
+      },
+    ],
+    notes:
+      'Official Awamedica Pharmaceutical Company (Erbil, Iraq) cardiovascular portfolio data. Each tablet contains 8 mg candesartan cilexetil.',
+  },
+  {
+    brandName: 'Awacand 16 mg',
+    genericName: 'Candesartan',
+    activeIngredients: ['Candesartan cilexetil'],
+    drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
+    strength: '16 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 tablets in blisters',
+    indications:
+      'Maintenance treatment of essential hypertension and chronic heart failure with reduced ejection fraction (LVEF ≤ 40%) in adults.',
+    dose:
+      'Hypertension: One 16 mg tablet orally once daily (up to 32 mg once daily) with or without food.',
+    contraindications:
+      'Hypersensitivity to candesartan cilexetil; second and third trimesters of pregnancy; severe hepatic impairment and/or cholestasis; concomitant aliskiren in diabetes or eGFR < 60 mL/min/1.73 m².',
+    adverseEffects:
+      'Dizziness, headache, hypotension, hyperkalaemia, increased serum creatinine.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Awamedica Pharmaceutical Company — Cardiovascular Portfolio (Awacand 16 mg)',
+        url: 'https://www.awamedica.com',
+      },
+    ],
+    notes:
+      'Official Awamedica Pharmaceutical Company (Erbil, Iraq) cardiovascular portfolio data. Each tablet contains 16 mg candesartan cilexetil.',
+  },
+  {
+    brandName: 'Awacand Plus 16 mg / 12.5 mg',
+    genericName: 'Candesartan + Hydrochlorothiazide',
+    activeIngredients: ['Candesartan cilexetil', 'Hydrochlorothiazide'],
+    drugClass: 'Angiotensin II Receptor Blocker (ARB) + Thiazide Diuretic Combinations',
+    strength: '16 mg / 12.5 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 tablets in blisters',
+    indications:
+      'Treatment of essential hypertension in adult patients whose blood pressure is not optimally controlled with candesartan cilexetil or hydrochlorothiazide monotherapy.',
+    dose:
+      'One 16 mg / 12.5 mg tablet orally once daily with or without food.',
+    contraindications:
+      'Hypersensitivity to candesartan cilexetil, hydrochlorothiazide, or any sulfonamide-derived drugs; second and third trimesters of pregnancy; severe renal impairment (CrCl < 30 mL/min/1.73 m²); severe hepatic impairment and/or cholestasis; refractory hypokalaemia and hypercalcaemia; gout; concomitant aliskiren in diabetes or eGFR < 60 mL/min/1.73 m².',
+    adverseEffects:
+      'Dizziness/vertigo, headache, metabolic disturbances (hyperglycaemia, hyperuricaemia, electrolyte imbalance including hyponatraemia and hypokalaemia or hyperkalaemia), hypotension, renal impairment, photosensitivity.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Awamedica Pharmaceutical Company — Cardiovascular Portfolio (Awacand Plus 16/12.5 mg)',
+        url: 'https://www.awamedica.com',
+      },
+    ],
+    notes:
+      'Official Awamedica Pharmaceutical Company (Erbil, Iraq) cardiovascular portfolio data. Each tablet contains 16 mg candesartan cilexetil and 12.5 mg hydrochlorothiazide.',
   },
 ];
 

@@ -1050,6 +1050,27 @@ const MERCK_KGAA_COMPACT_PRODUCTS: CompactMerckKgaaDrug[] = [
     sourceTitle: 'EMA EPAR — Tepmetko (tepotinib) Summary of Product Characteristics',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/tepmetko',
   },
+  {
+    brandName: 'Astonin H 0.1 mg',
+    genericName: 'Fludrocortisone',
+    drugClassNameEn: 'Mineralocorticoids (Systemic Corticosteroids)',
+    dosageForm: 'Tablet',
+    strength: '0.1 mg (100 mcg)',
+    route: 'Oral',
+    packSize: '50 or 100 tablets',
+    indications:
+      'Replacement therapy in primary adrenocortical insufficiency (Addison disease) in combination with a glucocorticoid (hydrocortisone), salt-losing congenital adrenal hyperplasia (adrenogenital syndrome), and severe neurogenic orthostatic hypotension.',
+    adultDosage:
+      'Adults: Usual dose is 0.05 mg to 0.2 mg (half to two 0.1 mg tablets) orally once daily in the morning after breakfast. In primary adrenal insufficiency, administer concurrently with oral hydrocortisone (typically 15–25 mg/day in divided doses). Monitor blood pressure and serum electrolytes regularly.',
+    contraindications:
+      'Hypersensitivity to fludrocortisone acetate or any excipient; systemic fungal infections; untreated severe hypertension, severe cardiac insufficiency, or conditions associated with generalised oedema and hypokalaemic alkalosis.',
+    sideEffects:
+      'Sodium and water retention, peripheral oedema, hypertension, hypokalaemia, hypokalaemic alkalosis, headache, weight gain, cardiac enlargement, congestive heart failure, muscle weakness.',
+    storageConditions: 'Store below 25°C in the original container.',
+    specialties: ['Endocrinology', 'Internal Medicine', 'Cardiology'],
+    sourceTitle: 'Fludrocortisone acetate 0.1 mg Tablets (Astonin H / Florinef) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=fludrocortisone',
+  },
 ];
 
 export const MERCK_KGAA_PRODUCTS: AiProductDraft[] = MERCK_KGAA_COMPACT_PRODUCTS.map(toMerckKgaaProductDraft);

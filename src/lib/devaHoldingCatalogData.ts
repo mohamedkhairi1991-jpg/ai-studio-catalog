@@ -134,7 +134,7 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
       'Headache, dizziness, vertigo, nausea, vomiting, diarrhoea, dyspepsia, abdominal pain, flatulence, anorexia, elevated transaminases, skin rash. Rare/Very rare: gastrointestinal ulceration/haemorrhage, arterial thrombotic events, bronchospasm, interstitial nephritis, bullous skin reactions.',
     storage:
       'Store below 25°C in the original package to protect from moisture.',
-    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'General Practice'],
+    specialties: ['Rheumatology', 'Orthopedics', 'Internal Medicine', 'General Practice / Family Medicine'],
     sources: [
       {
         title: 'Deva Holding A.Ş. — Official Product Portfolio & KÜB (Dikloron 50 mg Enterik Kaplı Tablet)',
@@ -143,6 +143,34 @@ const RAW_DEVA_HOLDING: CompactDrug[] = [
     ],
     notes:
       'Official Deva Holding KÜB (SmPC) data. Each gastro-resistant tablet contains 50 mg diclofenac sodium (INN base: Diclofenac).',
+  },
+  {
+    brandName: 'Rolastym Combi 160/4.5 mcg',
+    genericName: 'Budesonide + Formoterol fumarate dihydrate',
+    activeIngredients: ['Budesonide', 'Formoterol fumarate dihydrate'],
+    drugClass: 'Inhaled Corticosteroid (ICS) + Long-Acting Beta2-Agonist (LABA) Combinations',
+    strength: '160 mcg / 4.5 mcg (200/6 mcg metered)',
+    dosageForm: 'Inhalation powder, hard capsule (DPI)',
+    route: 'Inhalation',
+    packSize: '60 or 120 inhalation capsules + inhaler device',
+    indications:
+      'Regular treatment of bronchial asthma where use of a combination (inhaled corticosteroid and long-acting beta2-adrenoceptor agonist) is appropriate, and symptomatic treatment of patients with moderate to severe chronic obstructive pulmonary disease (COPD) with frequent symptoms and a history of exacerbations.',
+    dose:
+      'Adults and adolescents (≥12 years): 1 to 2 inhalations twice daily (morning and evening). Rinse mouth with water after each inhalation to minimise risk of oral candidiasis.',
+    contraindications:
+      'Hypersensitivity to budesonide, formoterol, or inhaled lactose.',
+    adverseEffects:
+      'Oropharyngeal candidiasis, hoarseness/dysphonia, cough, throat irritation, headache, tremor, palpitations, tachycardia, muscle cramps.',
+    storage: 'Store below 25°C in the original blister to protect from moisture.',
+    specialties: ['Pulmonology', 'Allergy & Immunology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Deva Holding A.Ş. — Respiratory Portfolio (Rolastym Combi)',
+        url: 'https://www.deva.com.tr',
+      },
+    ],
+    notes:
+      'Official Deva Holding respiratory KÜB (SmPC) data. Delivers budesonide and formoterol fumarate dihydrate for maintenance inhalation therapy in asthma and COPD.',
   },
 ];
 

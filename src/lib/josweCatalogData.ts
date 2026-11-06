@@ -233,6 +233,90 @@ const RAW_JOSWE: CompactDrug[] = [
     notes:
       'Official JOSWE Medical product portfolio and SmPC data. Each film-coated tablet contains levofloxacin hemihydrate equivalent to 500 mg levofloxacin (INN base: Levofloxacin). Also available in 250 mg and 750 mg strengths.',
   },
+  {
+    brandName: 'Arbiten 80 mg',
+    genericName: 'Valsartan',
+    activeIngredients: ['Valsartan'],
+    drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
+    strength: '80 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets',
+    indications:
+      'Treatment of essential hypertension in adults and children/adolescents aged 6 to <18 years; treatment of clinically stable adult patients with symptomatic heart failure or asymptomatic left ventricular systolic dysfunction after a recent myocardial infarction; and treatment of symptomatic heart failure in adults when ACE inhibitors are not tolerated.',
+    dose:
+      'Hypertension: Recommended starting dose is 80 mg once daily; may be increased to 160 mg (up to 320 mg) once daily. Heart failure: initiate at 40 mg twice daily and titrate to 80 mg and 160 mg twice daily as tolerated.',
+    contraindications:
+      'Hypersensitivity to valsartan or any excipient; severe hepatic impairment, biliary cirrhosis, and cholestasis; second and third trimesters of pregnancy; concomitant use with aliskiren in patients with diabetes mellitus or renal impairment (eGFR < 60 mL/min/1.73 m²).',
+    adverseEffects:
+      'Dizziness, postural dizziness, hypotension, orthostatic hypotension, renal impairment, increased serum creatinine, hyperkalaemia, fatigue, headache, cough.',
+    storage: 'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'JOSWE Medical — Cardiovascular Portfolio (Arbiten / Valsartan)',
+        url: 'https://joswe.com',
+      },
+    ],
+    notes:
+      'Official JOSWE Medical cardiovascular portfolio data. Each film-coated tablet contains 80 mg valsartan.',
+  },
+  {
+    brandName: 'Arbiten 160 mg',
+    genericName: 'Valsartan',
+    activeIngredients: ['Valsartan'],
+    drugClass: 'Angiotensin II Receptor Blockers (ARBs)',
+    strength: '160 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets',
+    indications:
+      'Maintenance treatment of essential hypertension, symptomatic heart failure, and post-myocardial infarction left ventricular systolic dysfunction in adults.',
+    dose:
+      'Hypertension: 160 mg orally once daily (up to 320 mg once daily). Heart failure / post-MI target maintenance: 160 mg twice daily as tolerated.',
+    contraindications:
+      'Hypersensitivity to valsartan; severe hepatic impairment, biliary cirrhosis, or cholestasis; second and third trimesters of pregnancy; concomitant aliskiren in diabetes or eGFR < 60 mL/min/1.73 m².',
+    adverseEffects:
+      'Dizziness, hypotension, hyperkalaemia, elevated serum creatinine and blood urea, fatigue.',
+    storage: 'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'JOSWE Medical — Cardiovascular Portfolio (Arbiten 160 mg)',
+        url: 'https://joswe.com',
+      },
+    ],
+    notes:
+      'Official JOSWE Medical cardiovascular portfolio data. Each film-coated tablet contains 160 mg valsartan.',
+  },
+  {
+    brandName: 'Arbiten Plus 160 mg / 12.5 mg',
+    genericName: 'Valsartan + Hydrochlorothiazide',
+    activeIngredients: ['Valsartan', 'Hydrochlorothiazide'],
+    drugClass: 'Angiotensin II Receptor Blocker (ARB) + Thiazide Diuretic Combinations',
+    strength: '160 mg / 12.5 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets',
+    indications:
+      'Treatment of essential hypertension in adults whose blood pressure is not adequately controlled by valsartan or hydrochlorothiazide monotherapy.',
+    dose:
+      'One 160 mg / 12.5 mg film-coated tablet orally once daily with or without food.',
+    contraindications:
+      'Hypersensitivity to valsartan, hydrochlorothiazide, other sulfonamide-derived medicinal products, or any excipient; second and third trimesters of pregnancy; severe hepatic impairment, biliary cirrhosis, and cholestasis; severe renal impairment (CrCl < 30 mL/min), anuria; refractory hypokalaemia, hyponatraemia, hypercalcaemia, and symptomatic hyperuricaemia; concomitant aliskiren in diabetes or eGFR < 60 mL/min/1.73 m².',
+    adverseEffects:
+      'Dizziness, headache, hypotension, hypokalaemia or hyperkalaemia, hyponatraemia, hyperuricaemia, hyperglycaemia, photosensitivity, non-melanoma skin cancer risk with long-term cumulative HCTZ exposure, acute angle-closure glaucoma.',
+    storage: 'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'JOSWE Medical — Cardiovascular Portfolio (Arbiten Plus 160/12.5 mg)',
+        url: 'https://joswe.com',
+      },
+    ],
+    notes:
+      'Official JOSWE Medical cardiovascular portfolio data (often written clinically as Arbetin Plus 160/12.5 mg). Each film-coated tablet contains 160 mg valsartan and 12.5 mg hydrochlorothiazide.',
+  },
 ];
 
 export const JOSWE_PRODUCTS: AiProductDraft[] = RAW_JOSWE.map((d) => ({

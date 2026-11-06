@@ -579,6 +579,62 @@ const RAW_TABUK: CompactDrug[] = [
     notes:
       'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each chewable tablet contains montelukast sodium equivalent to 5 mg montelukast (INN base: Montelukast).',
   },
+  {
+    brandName: 'Cardex 5 mg',
+    genericName: 'Bisoprolol',
+    activeIngredients: ['Bisoprolol fumarate'],
+    drugClass: 'Cardioselective Beta-1 Adrenoceptor Blockers',
+    strength: '5 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets',
+    indications:
+      'Treatment of essential hypertension, stable chronic angina pectoris, and stable chronic heart failure with reduced systolic left ventricular function in addition to ACE inhibitors, diuretics, and optionally cardiac glycosides.',
+    dose:
+      'Hypertension and angina pectoris: Usual dose is 5 mg to 10 mg orally once daily in the morning with or without breakfast (maximum 20 mg once daily). Chronic heart failure: titrate gradually from 1.25 mg once daily up to target 10 mg once daily.',
+    contraindications:
+      'Hypersensitivity to bisoprolol; acute heart failure or decompensated heart failure requiring intravenous inotropic therapy; cardiogenic shock; second- or third-degree AV block (without a pacemaker); sick sinus syndrome; sinoatrial block; symptomatic bradycardia; symptomatic hypotension; severe bronchial asthma or severe COPD; severe peripheral arterial occlusive disease or Raynaud syndrome; untreated phaeochromocytoma; metabolic acidosis.',
+    adverseEffects:
+      'Bradycardia, worsening of pre-existing heart failure, dizziness, headache, feeling of coldness or numbness in the extremities, hypotension, gastrointestinal complaints (nausea, vomiting, diarrhoea, constipation), asthenia, fatigue.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Cardiology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Cardiovascular Portfolio (Cardex 5 mg)',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each film-coated tablet contains 5 mg bisoprolol fumarate.',
+  },
+  {
+    brandName: 'Cardex 10 mg',
+    genericName: 'Bisoprolol',
+    activeIngredients: ['Bisoprolol fumarate'],
+    drugClass: 'Cardioselective Beta-1 Adrenoceptor Blockers',
+    strength: '10 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 30 film-coated tablets',
+    indications:
+      'Maintenance treatment of essential hypertension, chronic stable angina pectoris, and stable chronic heart failure with reduced ejection fraction.',
+    dose:
+      '10 mg orally once daily in the morning with or without food. Do not discontinue beta-blocker therapy abruptly, particularly in patients with ischaemic heart disease.',
+    contraindications:
+      'Hypersensitivity to bisoprolol; acute/decompensated heart failure, cardiogenic shock, 2nd/3rd-degree AV block, sick sinus syndrome, symptomatic bradycardia or hypotension, severe bronchial asthma, severe peripheral arterial disease, untreated phaeochromocytoma, metabolic acidosis.',
+    adverseEffects:
+      'Bradycardia, dizziness, headache, cold extremities, hypotension, nausea, diarrhoea, fatigue.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Cardiology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Tabuk Pharmaceutical Manufacturing Co. — Cardiovascular Portfolio (Cardex 10 mg)',
+        url: 'https://www.tabukpharmaceuticals.com/',
+      },
+    ],
+    notes:
+      'Official Tabuk Pharmaceutical Manufacturing Co. SmPC data. Each film-coated tablet contains 10 mg bisoprolol fumarate.',
+  },
 ];
 
 export const TABUK_PRODUCTS: AiProductDraft[] = RAW_TABUK.map((d) => ({

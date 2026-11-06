@@ -144,6 +144,146 @@ const RAW_PIONEER: CompactDrug[] = [
     notes:
       'Official Pioneer Co. for Pharmaceutical Industries (Sulaymaniyah, Iraq) portfolio data. Each modified-release capsule contains 0.4 mg tamsulosin hydrochloride equivalent to 0.367 mg tamsulosin base (INN base: Tamsulosin).',
   },
+  {
+    brandName: 'Sitavia 50 mg',
+    genericName: 'Sitagliptin',
+    activeIngredients: ['Sitagliptin phosphate monohydrate'],
+    drugClass: 'Dipeptidyl Peptidase-4 (DPP-4) Inhibitors',
+    strength: '50 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 or 30 film-coated tablets',
+    indications:
+      'Improvement of glycaemic control in adults with type 2 diabetes mellitus as monotherapy (when metformin is inappropriate) or in combination with metformin, a sulphonylurea, a PPAR-gamma agonist, or insulin, including in patients with moderate renal impairment (eGFR 30 to <45 mL/min/1.73 m²).',
+    dose:
+      'Standard adult dose is 100 mg once daily. In patients with moderate renal impairment (eGFR ≥30 to <45 mL/min/1.73 m²), the recommended dose is 50 mg orally once daily with or without food.',
+    contraindications:
+      'Hypersensitivity to sitagliptin or any excipient; should not be used in type 1 diabetes or diabetic ketoacidosis.',
+    adverseEffects:
+      'Headache, upper respiratory tract infection, nasopharyngitis, hypoglycaemia (when combined with sulphonylurea or insulin), osteoarthritis, pain in extremity; rare acute pancreatitis or bullous pemphigoid.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Endocrinology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Pioneer Co. for Pharmaceutical Industries — Antidiabetic Portfolio (Sitavia 50 mg)',
+        url: 'https://pioneerpharmaceutical.com',
+      },
+    ],
+    notes:
+      'Official Pioneer Co. for Pharmaceutical Industries (Sulaymaniyah, Iraq) portfolio data. Each film-coated tablet contains sitagliptin phosphate monohydrate equivalent to 50 mg sitagliptin.',
+  },
+  {
+    brandName: 'Sitavia 100 mg',
+    genericName: 'Sitagliptin',
+    activeIngredients: ['Sitagliptin phosphate monohydrate'],
+    drugClass: 'Dipeptidyl Peptidase-4 (DPP-4) Inhibitors',
+    strength: '100 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 or 30 film-coated tablets',
+    indications:
+      'Improvement of glycaemic control in adult patients with type 2 diabetes mellitus as an adjunct to diet and exercise as monotherapy or in dual/triple oral therapy with metformin, sulphonylureas, thiazolidinediones, or insulin.',
+    dose:
+      'Adults with normal or mildly impaired renal function (eGFR ≥45 mL/min/1.73 m²): 100 mg orally once daily with or without food.',
+    contraindications:
+      'Hypersensitivity to sitagliptin or any excipient.',
+    adverseEffects:
+      'Headache, nasopharyngitis, upper respiratory tract infection, hypoglycaemia (with sulphonylurea/insulin), constipation, arthralgia; rare acute pancreatitis.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Endocrinology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Pioneer Co. for Pharmaceutical Industries — Antidiabetic Portfolio (Sitavia 100 mg)',
+        url: 'https://pioneerpharmaceutical.com',
+      },
+    ],
+    notes:
+      'Official Pioneer Co. for Pharmaceutical Industries (Sulaymaniyah, Iraq) portfolio data. Each film-coated tablet contains sitagliptin phosphate monohydrate equivalent to 100 mg sitagliptin.',
+  },
+  {
+    brandName: 'Sitavia Plus 50 mg / 1000 mg (Sitamet)',
+    genericName: 'Sitagliptin + Metformin hydrochloride',
+    activeIngredients: ['Sitagliptin phosphate monohydrate', 'Metformin hydrochloride'],
+    drugClass: 'DPP-4 Inhibitor + Biguanide Fixed-Dose Combination',
+    strength: '50 mg / 1000 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 or 56 film-coated tablets',
+    indications:
+      'Adjunct to diet and exercise to improve glycaemic control in adult patients with type 2 diabetes mellitus inadequately controlled on maximally tolerated metformin alone, or those already being treated with the combination of sitagliptin and metformin.',
+    dose:
+      'One 50 mg / 1000 mg film-coated tablet orally twice daily taken with meals to reduce gastrointestinal adverse effects associated with metformin.',
+    contraindications:
+      'Hypersensitivity to sitagliptin or metformin; any type of acute metabolic acidosis (lactic acidosis, diabetic ketoacidosis); severe renal impairment (eGFR < 30 mL/min/1.73 m²); acute conditions with potential to alter renal function (dehydration, severe infection, shock, intravascular iodinated contrast administration); acute or chronic disease causing tissue hypoxia; hepatic impairment, acute alcohol intoxication, alcoholism.',
+    adverseEffects:
+      'Diarrhoea, nausea, dyspepsia, flatulence, vomiting, abdominal pain, headache, hypoglycaemia (when used with sulphonylurea or insulin), decreased vitamin B12 absorption.',
+    storage: 'Store below 30°C in the original package.',
+    specialties: ['Endocrinology', 'Internal Medicine'],
+    sources: [
+      {
+        title: 'Pioneer Co. for Pharmaceutical Industries — Antidiabetic Portfolio (Sitavia Plus 50/1000 mg)',
+        url: 'https://pioneerpharmaceutical.com',
+      },
+    ],
+    notes:
+      'Official Pioneer Co. for Pharmaceutical Industries (Sulaymaniyah, Iraq) portfolio data. Each film-coated tablet contains 50 mg sitagliptin and 1000 mg metformin hydrochloride.',
+  },
+  {
+    brandName: 'Lotevan 5 mg / 160 mg',
+    genericName: 'Amlodipine + Valsartan',
+    activeIngredients: ['Amlodipine', 'Valsartan'],
+    drugClass: 'Dihydropyridine Calcium Channel Blocker + Angiotensin II Receptor Blocker (ARB) Combinations',
+    strength: '5 mg / 160 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets',
+    indications:
+      'Treatment of essential hypertension in adult patients whose blood pressure is not adequately controlled on amlodipine or valsartan monotherapy.',
+    dose:
+      'One 5 mg / 160 mg film-coated tablet orally once daily with or without food.',
+    contraindications:
+      'Hypersensitivity to amlodipine, dihydropyridines, or valsartan; severe hepatic impairment, biliary cirrhosis, or cholestasis; second and third trimesters of pregnancy; severe hypotension, cardiogenic shock, or left ventricular outflow tract obstruction; concomitant aliskiren in diabetes or renal impairment (eGFR < 60 mL/min/1.73 m²).',
+    adverseEffects:
+      'Peripheral oedema, headache, dizziness, flushing, palpitations, orthostatic hypotension, nasopharyngitis, fatigue, asthenia, hyperkalaemia.',
+    storage: 'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Pioneer Co. for Pharmaceutical Industries — Cardiovascular Portfolio (Lotevan 5/160 mg)',
+        url: 'https://pioneerpharmaceutical.com',
+      },
+    ],
+    notes:
+      'Official Pioneer Co. for Pharmaceutical Industries (Sulaymaniyah, Iraq) cardiovascular portfolio data. Each film-coated tablet contains 5 mg amlodipine (as besilate) and 160 mg valsartan.',
+  },
+  {
+    brandName: 'Leranzpin 10 mg',
+    genericName: 'Lercanidipine',
+    activeIngredients: ['Lercanidipine hydrochloride'],
+    drugClass: 'Third-Generation Dihydropyridine Calcium Channel Blockers',
+    strength: '10 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 or 30 film-coated tablets',
+    indications:
+      'Treatment of mild to moderate essential hypertension in adults.',
+    dose:
+      'Recommended dose is 10 mg orally once daily at least 15 minutes before meals (preferably before breakfast); may be increased to 20 mg once daily after at least 2 weeks if blood pressure control is insufficient. Avoid grapefruit juice.',
+    contraindications:
+      'Hypersensitivity to lercanidipine or any dihydropyridine; left ventricular outflow tract obstruction; untreated congestive cardiac failure; unstable angina pectoris or within 1 month of a myocardial infarction; severe hepatic impairment; severe renal impairment (eGFR < 30 mL/min) including dialysis patients; co-administration with strong CYP3A4 inhibitors, ciclosporin, or grapefruit/grapefruit juice; pregnancy and lactation.',
+    adverseEffects:
+      'Flushing, peripheral oedema (lower incidence than first-generation dihydropyridines), headache, dizziness, palpitations, tachycardia, gingival hyperplasia.',
+    storage: 'Store below 30°C in the original package to protect from light and moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Pioneer Co. for Pharmaceutical Industries — Cardiovascular Portfolio (Leranzpin 10 mg)',
+        url: 'https://pioneerpharmaceutical.com',
+      },
+    ],
+    notes:
+      'Official Pioneer Co. for Pharmaceutical Industries cardiovascular portfolio data. Each film-coated tablet contains 10 mg lercanidipine hydrochloride.',
+  },
 ];
 
 export const PIONEER_PRODUCTS: AiProductDraft[] = RAW_PIONEER.map((d) => ({

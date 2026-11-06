@@ -1670,6 +1670,51 @@ const ASTRAZENECA_COMPACT_PRODUCTS: CompactAzDrug[] = [
     sourceTitle: 'Meronem (meropenem) — EMA Official Referral & SmPC Information',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/referrals/meronem',
   },
+  {
+    brandName: 'Breztri Aerosphere 160/7.2/5 mcg',
+    genericName: 'Budesonide + Glycopyrronium + Formoterol fumarate dihydrate',
+    activeIngredients: ['Budesonide', 'Glycopyrronium', 'Formoterol fumarate dihydrate'],
+    drugClass: 'Inhaled Corticosteroid (ICS) + Long-Acting Muscarinic Antagonist (LAMA) + Long-Acting Beta2-Agonist (LABA) Fixed-Dose Triple Therapy',
+    strength: '160 mcg / 7.2 mcg / 5 mcg per actuation (equivalent to 160/9/4.8 mcg)',
+    dosageForm: 'Pressurised inhalation, suspension (MDI)',
+    route: 'Inhalation',
+    packSize: '1 pressurised inhaler (120 actuations)',
+    approvedIndications:
+      'Maintenance treatment in adult patients with moderate to severe chronic obstructive pulmonary disease (COPD) who are not adequately treated by a combination of an inhaled corticosteroid and a long-acting beta2-agonist or a combination of a long-acting beta2-agonist and a long-acting muscarinic antagonist.',
+    usualAdultDose:
+      'Two inhalations (actuations) twice daily (two puffs in the morning and two puffs in the evening). Rinse the mouth with water after inhalation to minimise the risk of oropharyngeal candidiasis. Not indicated for the relief of acute bronchospasm.',
+    contraindications:
+      'Hypersensitivity to budesonide, glycopyrronium, formoterol, or to any of the excipients.',
+    commonAdverseEffects:
+      'Oral candidiasis, pneumonia (in COPD patients), hyperglycaemia, anxiety, insomnia, headache, palpitations, dysphonia, cough, nausea, muscle spasms, urinary tract infection.',
+    storageConditions:
+      'Do not store above 30°C. Do not expose to temperatures higher than 50°C and do not pierce the pressurized canister.',
+    specialties: ['Pulmonology', 'Internal Medicine'],
+    sourceTitle: 'Breztri Aerosphere (budesonide/glycopyrrolate/formoterol fumarate) — DailyMed & EMA EPAR (Trixeo Aerosphere)',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/trixeo-aerosphere',
+  },
+  {
+    brandName: 'Xigduo XR 10 mg / 500 mg',
+    genericName: 'Dapagliflozin + Metformin hydrochloride',
+    activeIngredients: ['Dapagliflozin', 'Metformin hydrochloride'],
+    drugClass: 'SGLT2 Inhibitor + Biguanide Fixed-Dose Combination',
+    strength: '10 mg / 500 mg',
+    dosageForm: 'Prolonged-release film-coated tablet',
+    route: 'Oral',
+    packSize: '28 or 30 prolonged-release film-coated tablets',
+    approvedIndications:
+      'Adjunct to diet and exercise to improve glycaemic control in adults with type 2 diabetes mellitus inadequately controlled on maximally tolerated metformin alone, in combination with other glucose-lowering medicinal products including insulin, or in patients already being treated with the combination of dapagliflozin and metformin as separate tablets.',
+    usualAdultDose:
+      'One 10 mg / 500 mg prolonged-release tablet once daily taken orally with the evening meal. Swallow whole with water; do not crush, cut, or chew.',
+    contraindications:
+      'Hypersensitivity to dapagliflozin or metformin; any type of acute metabolic acidosis (lactic acidosis, diabetic ketoacidosis); diabetic pre-coma; severe renal failure (eGFR < 30 mL/min/1.73 m²); acute conditions with potential to alter renal function (dehydration, severe infection, shock); acute or chronic disease which may cause tissue hypoxia (decompensated heart or respiratory failure, recent myocardial infarction, shock); hepatic impairment; acute alcohol intoxication, alcoholism.',
+    commonAdverseEffects:
+      'Vulvovaginitis, balanitis and related genital infections, urinary tract infection, hypoglycaemia (when used with sulphonylurea or insulin), dizziness, taste disturbance, nausea, vomiting, diarrhoea, abdominal pain, loss of appetite, dysuria, polyuria, decreased vitamin B12 levels.',
+    storageConditions: 'Store below 30°C in the original package.',
+    specialties: ['Endocrinology', 'Internal Medicine', 'Cardiology', 'Nephrology'],
+    sourceTitle: 'Xigduo XR (dapagliflozin and metformin HCl extended-release) — DailyMed Search',
+    sourceUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=Xigduo+XR',
+  },
 ];
 
 export const CHAT_CURATED_COMPANIES: CuratedCompanyEntry[] = [

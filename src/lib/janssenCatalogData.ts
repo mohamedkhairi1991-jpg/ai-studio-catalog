@@ -1207,6 +1207,48 @@ const JANSSEN_COMPACT_PRODUCTS: CompactJanssenDrug[] = [
     sourceTitle: 'EMA EPAR – Uptravi (selexipag) Summary of Product Characteristics',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/uptravi',
   },
+  {
+    brandName: 'Tracleer 62.5 mg',
+    genericName: 'Bosentan',
+    drugClass: 'Dual Endothelin (ET-A and ET-B) Receptor Antagonists for Pulmonary Arterial Hypertension',
+    strength: '62.5 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: '56 film-coated tablets',
+    approvedIndications:
+      'Treatment of pulmonary arterial hypertension (PAH) to improve exercise capacity and symptoms in patients with WHO Functional Class III (and Class II), including primary (idiopathic and heritable) PAH, PAH secondary to scleroderma without significant interstitial pulmonary disease, and PAH associated with congenital systemic-to-pulmonary shunts and Eisenmenger physiology; also indicated to reduce the number of new digital ulcers in patients with systemic sclerosis and ongoing digital ulcer disease.',
+    usualAdultDose:
+      'Adults and adolescents (>40 kg): Initiate at 62.5 mg orally twice daily (morning and evening) for 4 weeks, then increase to the maintenance dose of 125 mg twice daily with or without food. Measure liver aminotransferases prior to initiation and monthly during treatment.',
+    contraindications:
+      'Hypersensitivity to bosentan or any excipient; moderate to severe hepatic impairment (Child-Pugh Class B or C); baseline liver aminotransferases (AST and/or ALT) > 3x ULN; concomitant use of ciclosporin A; pregnancy and women of childbearing potential not using reliable contraception.',
+    commonAdverseEffects:
+      'Abnormal liver function tests (elevated ALT/AST), anaemia, decreased haemoglobin, headache, flushing, syncope, palpitations, hypotension, nasal congestion, gastro-oesophageal reflux disease, diarrhoea, peripheral oedema, fluid retention.',
+    storageConditions: 'Do not store above 30°C.',
+    specialties: ['Cardiology', 'Pulmonology', 'Rheumatology'],
+    sourceTitle: 'EMA EPAR – Tracleer (bosentan) Summary of Product Characteristics',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/tracleer',
+  },
+  {
+    brandName: 'Tracleer 125 mg',
+    genericName: 'Bosentan',
+    drugClass: 'Dual Endothelin (ET-A and ET-B) Receptor Antagonists for Pulmonary Arterial Hypertension',
+    strength: '125 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: '56 film-coated tablets',
+    approvedIndications:
+      'Maintenance treatment of pulmonary arterial hypertension (PAH, WHO Functional Class II–III) and reduction of new digital ulcers in patients with systemic sclerosis and ongoing digital ulcer disease following 4-week initiation on 62.5 mg twice daily.',
+    usualAdultDose:
+      'Adults (>40 kg): 125 mg orally twice daily (morning and evening) with or without food. Monthly liver aminotransferase and regular haemoglobin monitoring are required.',
+    contraindications:
+      'Hypersensitivity to bosentan; moderate to severe hepatic impairment (Child-Pugh B or C); baseline AST/ALT > 3x ULN; concomitant ciclosporin A; pregnancy and women of childbearing potential not using reliable contraception.',
+    commonAdverseEffects:
+      'Elevated hepatic aminotransferases (ALT/AST), decreased haemoglobin/anaemia, headache, flushing, peripheral oedema, fluid retention, nasal congestion, hypotension, palpitations, diarrhoea.',
+    storageConditions: 'Do not store above 30°C.',
+    specialties: ['Cardiology', 'Pulmonology', 'Rheumatology'],
+    sourceTitle: 'EMA EPAR – Tracleer (bosentan) Summary of Product Characteristics',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/tracleer',
+  },
 ];
 
 export const JANSSEN_PRODUCTS: AiProductDraft[] =

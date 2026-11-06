@@ -1486,6 +1486,116 @@ const SANOFI_COMPACT_PRODUCTS: CompactSanofiDrug[] = [
     sourceTitle: 'Eloxatin (oxaliplatin) — FDA Prescribing Information',
     sourceUrl: 'https://www.accessdata.fda.gov/drugsatfda_docs/label/2020/021759s023lbl.pdf',
   },
+  {
+    brandName: 'Nasacort 55 mcg/dose Nasal Spray',
+    genericName: 'Triamcinolone acetonide',
+    activeIngredients: ['Triamcinolone acetonide'],
+    drugClass: 'Intranasal Corticosteroids',
+    strength: '55 mcg / actuation',
+    dosageForm: 'Nasal spray, suspension',
+    route: 'Nasal',
+    packSize: '1 bottle (120 actuations)',
+    approvedIndications:
+      'Treatment of the symptoms of seasonal and perennial allergic rhinitis in adults and children aged 6 years and over.',
+    usualAdultDose:
+      'Adults and adolescents (≥12 years): Recommended starting dose is 220 mcg as 2 sprays in each nostril once daily. Once symptoms are controlled, maintenance dose may be reduced to 110 mcg (1 spray in each nostril once daily).',
+    contraindications:
+      'Hypersensitivity to triamcinolone acetonide or any excipient. Caution in patients with recent nasal septal ulcers, nasal surgery, or trauma until healing has occurred.',
+    commonAdverseEffects:
+      'Epistaxis, headache, pharyngitis, burning or dryness of the nasal mucosa, cough, rhinitis, bronchitis, dyspepsia, flu-like syndrome.',
+    storageConditions: 'Do not store above 25°C.',
+    specialties: ['ENT (Otolaryngology)', 'Allergy & Immunology', 'General Practice / Family Medicine'],
+    sourceTitle: 'Nasacort Allergy Nasal Spray (triamcinolone acetonide) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Nasacort',
+  },
+  {
+    brandName: 'Ikorel 10 mg',
+    genericName: 'Nicorandil',
+    activeIngredients: ['Nicorandil'],
+    drugClass: 'Potassium-Channel Activator & Nitrate-Moiety Antianginal Vasodilators',
+    strength: '10 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: '60 tablets in moisture-protective blister',
+    approvedIndications:
+      'Symptomatic treatment of adult patients with stable angina pectoris who are inadequately controlled or have a contraindication or intolerance to first-line antianginal therapies (such as beta-blockers and/or calcium antagonists).',
+    usualAdultDose:
+      'Usual starting dose is 10 mg twice daily (5 mg twice daily in patients particularly susceptible to headache), titrated upward according to clinical response to the usual maintenance dose of 10 to 20 mg twice daily (up to 30 mg twice daily).',
+    contraindications:
+      'Hypersensitivity to nicorandil; cardiogenic shock, severe hypotension, or left ventricular failure with low filling pressures and cardiac decompensation; concomitant use of phosphodiesterase-5 (PDE-5) inhibitors (sildenafil, tadalafil, vardenafil) or soluble guanylate cyclase stimulators (riociguat); hypovolaemia; acute pulmonary oedema.',
+    commonAdverseEffects:
+      'Headache (especially on treatment initiation), dizziness, cutaneous vasodilation with flushing, nausea, vomiting, weakness; gastrointestinal, skin, mucosal, or ocular ulcerations (discontinue permanently if ulceration develops).',
+    storageConditions: 'Do not store above 25°C. Store in the original moisture-protective blister with desiccant.',
+    specialties: ['Cardiology', 'Internal Medicine'],
+    sourceTitle: 'Ikorel 10 mg and 20 mg Tablets (nicorandil) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Ikorel',
+  },
+  {
+    brandName: 'Ikorel 20 mg',
+    genericName: 'Nicorandil',
+    activeIngredients: ['Nicorandil'],
+    drugClass: 'Potassium-Channel Activator & Nitrate-Moiety Antianginal Vasodilators',
+    strength: '20 mg',
+    dosageForm: 'Tablet',
+    route: 'Oral',
+    packSize: '60 tablets in moisture-protective blister',
+    approvedIndications:
+      'Maintenance symptomatic treatment of chronic stable angina pectoris in adults inadequately controlled on or intolerant of first-line antianginal agents.',
+    usualAdultDose:
+      'One 20 mg tablet orally twice daily (morning and evening) following titration from 10 mg twice daily.',
+    contraindications:
+      'Hypersensitivity to nicorandil; cardiogenic shock, severe hypotension, left ventricular failure with low filling pressure; concomitant PDE-5 inhibitors (sildenafil, tadalafil, vardenafil) or riociguat; hypovolaemia; acute pulmonary oedema.',
+    commonAdverseEffects:
+      'Headache, dizziness, flushing, tachycardia at high doses, nausea, vomiting, and mucosal/gastrointestinal ulcerations.',
+    storageConditions: 'Do not store above 25°C. Keep in the original desiccant blister.',
+    specialties: ['Cardiology', 'Internal Medicine'],
+    sourceTitle: 'Ikorel 20 mg Tablets (nicorandil) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=Ikorel',
+  },
+  {
+    brandName: 'Bronchicum Elixir',
+    genericName: 'Thyme Fluid Extract + Primula Root Fluid Extract',
+    activeIngredients: ['Thyme fluid extract', 'Primula root fluid extract'],
+    drugClass: 'Herbal Expectorant & Secretolytic Syrups',
+    strength: '5.0 g / 2.5 g per 100 g',
+    dosageForm: 'Oral liquid (Syrup / Elixir)',
+    route: 'Oral',
+    packSize: '1 bottle (100 mL)',
+    approvedIndications:
+      'Symptomatic treatment of productive cough and acute bronchitis with viscous mucus in the respiratory tract.',
+    usualAdultDose:
+      'Adults and adolescents: 5 to 7.5 mL orally 3 to 4 times daily at evenly spaced intervals.',
+    contraindications:
+      'Hypersensitivity to thyme, primula, other Lamiaceae species, or any excipient.',
+    commonAdverseEffects:
+      'Rare gastrointestinal disturbances (cramps, nausea, vomiting, diarrhoea) and hypersensitivity reactions (rash, urticaria, dyspnoea).',
+    storageConditions: 'Store below 25°C.',
+    specialties: ['Pulmonology', 'General Practice / Family Medicine', 'Internal Medicine', 'Pediatrics'],
+    sourceTitle: 'Sanofi Consumer Healthcare Portfolio — Bronchicum Elixir',
+    sourceUrl: 'https://www.sanofi.com',
+  },
+  {
+    brandName: 'Orelox 200 mg',
+    genericName: 'Cefpodoxime proxetil',
+    activeIngredients: ['Cefpodoxime proxetil'],
+    drugClass: 'Third-Generation Oral Cephalosporin Antibacterials',
+    strength: '200 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: '10 film-coated tablets',
+    approvedIndications:
+      'Treatment of upper and lower respiratory tract infections caused by susceptible organisms in adults, including acute bacterial sinusitis, acute exacerbation of chronic bronchitis, and community-acquired bacterial pneumonia.',
+    usualAdultDose:
+      'Adults with normal renal function: 200 mg orally twice daily (every 12 hours) taken during meals for optimal bioavailability, for 5 to 10 days.',
+    contraindications:
+      'Hypersensitivity to cefpodoxime, other cephalosporins, or immediate/severe hypersensitivity to any beta-lactam antibacterial agent.',
+    commonAdverseEffects:
+      'Diarrhoea, nausea, vomiting, abdominal pain, headache, dizziness, rash, pruritus, vulvovaginal candidiasis, transient elevation of hepatic transaminases, and rare Clostridioides difficile colitis.',
+    storageConditions: 'Store below 25°C in the original package.',
+    specialties: ['Infectious Diseases', 'Pulmonology', 'ENT (Otolaryngology)', 'Internal Medicine', 'General Practice / Family Medicine'],
+    sourceTitle: 'Orelox (cefpodoxime proxetil) — UK eMC SmPC Search',
+    sourceUrl: 'https://www.medicines.org.uk/emc/search?q=cefpodoxime',
+  },
 ];
 
 export const SANOFI_PRODUCTS: AiProductDraft[] =

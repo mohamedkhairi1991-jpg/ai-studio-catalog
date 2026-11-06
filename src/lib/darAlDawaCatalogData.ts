@@ -671,6 +671,62 @@ const RAW_DAR_AL_DAWA: CompactDrug[] = [
     notes:
       'Official Dar Al Dawa Development & Investment Co. SmPC data. Each film-coated tablet contains atorvastatin calcium equivalent to 40 mg atorvastatin (INN base: Atorvastatin).',
   },
+  {
+    brandName: 'Angiosar 5 mg / 160 mg',
+    genericName: 'Amlodipine + Valsartan',
+    activeIngredients: ['Amlodipine', 'Valsartan'],
+    drugClass: 'Dihydropyridine Calcium Channel Blocker + Angiotensin II Receptor Blocker (ARB) Combinations',
+    strength: '5 mg / 160 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets',
+    indications:
+      'Treatment of essential hypertension in adult patients whose blood pressure is not adequately controlled on amlodipine or valsartan monotherapy.',
+    dose:
+      'One 5 mg / 160 mg film-coated tablet orally once daily with or without food.',
+    contraindications:
+      'Hypersensitivity to amlodipine, dihydropyridine derivatives, valsartan, or any excipient; severe hepatic impairment, biliary cirrhosis, or cholestasis; concomitant use with aliskiren in patients with diabetes mellitus or renal impairment (eGFR < 60 mL/min/1.73 m²); second and third trimesters of pregnancy; severe hypotension, shock, or haemodynamically unstable heart failure after acute myocardial infarction.',
+    adverseEffects:
+      'Peripheral oedema, nasopharyngitis, influenza, headache, dizziness, somnolence, flushing, palpitations, orthostatic hypotension, abdominal pain, nausea, fatigue, asthenia, hyperkalaemia.',
+    storage: 'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Cardiovascular Portfolio (Angiosar)',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. cardiovascular portfolio data. Each film-coated tablet contains amlodipine besilate equivalent to 5 mg amlodipine and 160 mg valsartan.',
+  },
+  {
+    brandName: 'Angiosar 10 mg / 160 mg',
+    genericName: 'Amlodipine + Valsartan',
+    activeIngredients: ['Amlodipine', 'Valsartan'],
+    drugClass: 'Dihydropyridine Calcium Channel Blocker + Angiotensin II Receptor Blocker (ARB) Combinations',
+    strength: '10 mg / 160 mg',
+    dosageForm: 'Film-coated tablet',
+    route: 'Oral',
+    packSize: 'Pack of 28 film-coated tablets',
+    indications:
+      'Treatment of essential hypertension in adults inadequately controlled on lower-strength amlodipine/valsartan combination or monotherapy.',
+    dose:
+      'One 10 mg / 160 mg film-coated tablet orally once daily with or without food.',
+    contraindications:
+      'Hypersensitivity to amlodipine or valsartan; severe hepatic impairment, biliary cirrhosis, or cholestasis; concomitant aliskiren in diabetes or eGFR < 60 mL/min/1.73 m²; second and third trimesters of pregnancy; severe hypotension or cardiogenic shock.',
+    adverseEffects:
+      'Peripheral oedema, dizziness, headache, flushing, palpitations, postural hypotension, fatigue, hyperkalaemia.',
+    storage: 'Store below 30°C in the original package to protect from moisture.',
+    specialties: ['Cardiology', 'Internal Medicine', 'Nephrology'],
+    sources: [
+      {
+        title: 'Dar Al Dawa Development & Investment Co. — Cardiovascular Portfolio (Angiosar 10/160 mg)',
+        url: 'https://www.dadgroup.com/',
+      },
+    ],
+    notes:
+      'Official Dar Al Dawa Development & Investment Co. cardiovascular portfolio data. Each film-coated tablet contains amlodipine besilate equivalent to 10 mg amlodipine and 160 mg valsartan.',
+  },
 ];
 
 export const DAR_AL_DAWA_PRODUCTS: AiProductDraft[] = RAW_DAR_AL_DAWA.map((d) => ({

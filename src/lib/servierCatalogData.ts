@@ -697,6 +697,27 @@ const SERVIER_COMPACT_PRODUCTS: CompactServierDrug[] = [
     sourceTitle: 'EMA EPAR — Tibsovo (ivosidenib) Summary of Product Characteristics',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/tibsovo',
   },
+  {
+    brandName: 'Vastarel MR 35 mg',
+    genericName: 'Trimetazidine',
+    drugClassNameEn: 'Metabolic Anti-ischaemic Agents (3-Ketoacyl-CoA Thiolase Inhibitors)',
+    dosageForm: 'Modified-release film-coated tablet',
+    strength: '35 mg',
+    route: 'Oral',
+    packSize: '60 modified-release film-coated tablets',
+    indications:
+      'Add-on therapy for the symptomatic treatment of adult patients with stable angina pectoris who are inadequately controlled by or intolerant to first-line antianginal therapies.',
+    adultDosage:
+      'One 35 mg modified-release tablet twice daily (one in the morning and one in the evening) taken during meals. Reduce to one 35 mg tablet once daily in the morning during breakfast in patients with moderate renal impairment (CrCl 30–60 mL/min).',
+    contraindications:
+      'Hypersensitivity to trimetazidine or any excipient; Parkinson disease, parkinsonian symptoms, tremors, restless legs syndrome, and other related movement disorders; severe renal impairment (CrCl < 30 mL/min).',
+    sideEffects:
+      'Dizziness, headache, abdominal pain, diarrhoea, dyspepsia, nausea, vomiting, rash, pruritus, urticaria, asthenia, and reversible extrapyramidal/parkinsonian symptoms (tremor, akinesia, hypertonia — discontinue permanently if they occur).',
+    storageConditions: 'Store below 30°C in the original package.',
+    specialties: ['Cardiology', 'Internal Medicine'],
+    sourceTitle: 'EMA Referral — Vastarel MR / Trimetazidine Harmonised Product Information (Servier)',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/referrals/trimetazidine',
+  },
 ];
 
 export const SERVIER_PRODUCTS: AiProductDraft[] = SERVIER_COMPACT_PRODUCTS.map(toServierProductDraft);

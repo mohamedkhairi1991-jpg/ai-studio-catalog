@@ -1097,6 +1097,27 @@ const ROCHE_COMPACT_PRODUCTS: CompactRocheDrug[] = [
     sourceTitle: 'EMA EPAR — Vabysmo (faricimab) Summary of Product Characteristics',
     sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/vabysmo',
   },
+  {
+    brandName: 'Xenical 120 mg',
+    genericName: 'Orlistat',
+    drugClassNameEn: 'Gastrointestinal Lipase Inhibitors (Anti-Obesity Preparations)',
+    dosageForm: 'Hard capsule',
+    strength: '120 mg',
+    route: 'Oral',
+    packSize: '84 hard capsules',
+    indications:
+      'In conjunction with a mildly hypocaloric diet for the treatment of obese patients with a body mass index (BMI) ≥ 30 kg/m², or overweight patients (BMI ≥ 28 kg/m²) with associated risk factors.',
+    adultDosage:
+      'One 120 mg capsule taken with water immediately before, during, or up to 1 hour after each main meal (three times daily). If a meal is missed or contains no fat, the dose of orlistat should be omitted. Discontinue after 12 weeks if the patient has been unable to lose at least 5% of baseline body weight.',
+    contraindications:
+      'Hypersensitivity to orlistat or any excipient; chronic malabsorption syndrome; cholestasis; breastfeeding.',
+    sideEffects:
+      'Oily spotting from the rectum, flatus with discharge, faecal urgency, fatty/oily stool, oily evacuation, flatulence, soft stools, abdominal pain/discomfort, faecal incontinence, reduced absorption of fat-soluble vitamins (A, D, E, K), and rare oxalate nephropathy or cholelithiasis.',
+    storageConditions: 'Do not store above 25°C. Store in the original blister to protect from moisture.',
+    specialties: ['Endocrinology', 'Internal Medicine', 'Gastroenterology', 'General Practice / Family Medicine'],
+    sourceTitle: 'EMA EPAR — Xenical (orlistat) Summary of Product Characteristics',
+    sourceUrl: 'https://www.ema.europa.eu/en/medicines/human/EPAR/xenical',
+  },
 ];
 
 export const ROCHE_PRODUCTS: AiProductDraft[] = ROCHE_COMPACT_PRODUCTS.map(toRocheProductDraft);

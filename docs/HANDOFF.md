@@ -58,6 +58,18 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-06 — Claude (doctor catalog: less clutter, less scrolling — owner asked)
+
+- Reviewed AI Studio's therapeutic-class push (c2e7bea): OK, tests and build pass, nothing deleted, `supabase/` untouched.
+- `src/components/DoctorCatalog.tsx` (owner asked Claude to do this while AI Studio was resting):
+  - Phones: one row with search + **Filters** button (count badge). The 3 selects open only when tapped. Active filters show as removable chips + "Clear all". Desktop keeps the selects inline + Reset.
+  - Home: specialty picks are compact 2-line rows in one card; "Browse by drug class" is a 2/3/4-column tile grid using `shortLabel`.
+  - Results: slim count line, one scrollable row of class chips (subclass chips once a class is picked), one card with thin sticky subclass headers, compact 2-line rows (brand / generic · strength · form · company).
+  - Phone search page about 60% shorter in the preview harness.
+- `src/index.css`: added `.no-scrollbar`.
+- `src/lib/catalog.ts`: `\bimidazole` / `\btriazole` so "benzimidazole" PPIs (pantoprazole etc.) and albendazole are no longer filed under Antifungals. Tests added.
+- **AI Studio:** pull before your next task. Keep this compact layout; don't add back big headers or one card per drug.
+
 ### 2026-11-06 — Google AI Studio (Drugs view organized by therapeutic classes & subclasses)
 - Added clinical therapeutic class & subclass classification and grouping (`THERAPEUTIC_GROUPS`, `cleanDrugClassLabel`, `classifyDrugTherapeuticGroup`, `groupProductsByTherapeuticClass`, `searchCatalogProductsByTherapeuticGroup`) in `src/lib/catalog.ts` (and unit tests in `src/lib/catalog.test.ts`), covering Antibiotics & Anti-infectives (Cephalosporins, Macrolides, Fluoroquinolones, Penicillins, etc.), Antihypertensives & Cardiac (ARBs, ACE Inhibitors, Beta-Blockers, CCBs, Statins, Antiplatelets, Heart Failure & Antianginals, PAH), Diabetes & Metabolic, Respiratory/Asthma/COPD, Gastrointestinal, Analgesics/NSAIDs, CNS/Allergy, Endocrinology/Bone, Oncology/Immunology, Urology, Ophthalmology/ENT/Dermatology, and Vitamins/Supplements.
 - Updated `src/components/DoctorCatalog.tsx`: added a **Filter by drug class** dropdown in the top toolbar, a **Browse by drug class & type** grid on the Home view, interactive class/subclass filter buttons, and subclass-grouped product sections in search/filter results, plus clean clickable class/subclass labels in `DoctorProductDetail` (stripping raw ATC code noise).

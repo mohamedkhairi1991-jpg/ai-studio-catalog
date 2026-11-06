@@ -3498,7 +3498,7 @@ export function classifyDrugTherapeuticGroup(
 
   // 3. Antibiotics & Anti-infectives
   if (
-    /antibact|antibiotic|cephalosporin|penicillin|beta-lactam|macrolide|azalide|fluoroquinolone|quinolone|carbapenem|glycopeptide|tetracycline|oxazolidinone|aminoglycoside|lincosamide|nitroimidazole|antiprotozoal|antifungal|triazole|imidazole|echinocandin|antiviral|antiretroviral|hiv|nnrti|nrti|protease inhibitor|anthelmintic|antiparasitic|nitazoxanide|fosfomycin|nitrofurantoin|sulfonamide.*trimethoprim|fusidane|rifaximin/.test(
+    /antibact|antibiotic|cephalosporin|penicillin|beta-lactam|macrolide|azalide|fluoroquinolone|quinolone|carbapenem|glycopeptide|tetracycline|oxazolidinone|aminoglycoside|lincosamide|nitroimidazole|antiprotozoal|antifungal|\btriazole|\bimidazole|echinocandin|antiviral|antiretroviral|hiv|nnrti|nrti|protease inhibitor|anthelmintic|antiparasitic|nitazoxanide|fosfomycin|nitrofurantoin|sulfonamide.*trimethoprim|fusidane|rifaximin/.test(
       text
     )
   ) {
@@ -3526,7 +3526,7 @@ export function classifyDrugTherapeuticGroup(
     ) {
       sub = 'Hospital & Parenteral Antibiotics';
     } else if (
-      /antifungal|triazole|imidazole|echinocandin|fluconazole|itraconazole|voriconazole|posaconazole|caspofungin|micafungin|anidulafungin|terbinafine|nystatin/.test(
+      /antifungal|\btriazole|\bimidazole|echinocandin|fluconazole|itraconazole|voriconazole|posaconazole|caspofungin|micafungin|anidulafungin|terbinafine|nystatin/.test(
         text
       )
     ) {

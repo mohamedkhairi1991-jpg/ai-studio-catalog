@@ -1571,6 +1571,25 @@ describe('therapeutic class & subclass grouping', () => {
       groupLabel: 'Diabetes & Metabolic',
       subclassLabel: 'SGLT2 Inhibitors & Combinations',
     });
+
+    // "benzimidazole" must not be read as an imidazole antifungal.
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Proton pump inhibitor (substituted benzimidazole H+/K+-ATPase inhibitor)',
+        'Pantoprazole'
+      )
+    ).toMatchObject({ groupKey: 'gastrointestinal' });
+
+    expect(
+      classifyDrugTherapeuticGroup(
+        'Benzimidazole carbamate broad-spectrum anthelmintic',
+        'Albendazole'
+      ).subclassLabel
+    ).not.toBe('Antifungals');
+
+    expect(
+      classifyDrugTherapeuticGroup('Triazole Antifungals', 'Fluconazole')
+    ).toMatchObject({ groupKey: 'antibiotics', subclassLabel: 'Antifungals' });
   });
 
   it('groups products by therapeutic class and subclass in clinical order and filters catalog searches by groupKey', async () => {

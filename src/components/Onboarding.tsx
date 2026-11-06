@@ -16,6 +16,8 @@ import {
   type OnboardingState,
   type Option,
 } from '../lib/onboarding';
+import { NotificationBell } from './NotificationBell';
+import { recordAppOpen } from '../lib/notifications';
 import {
   Errors,
   Field,
@@ -99,6 +101,7 @@ export default function Onboarding({
   }, [client, authUserId, initialFullName, initialPhone, initialSpecialtyId]);
 
   useEffect(() => {
+    void recordAppOpen(client);
     void reload();
     void listSpecialties(client).then(setSpecialties);
     void listCountries(client).then((list) => {
@@ -170,7 +173,12 @@ export default function Onboarding({
     await refresh();
   };
 
-  const header = <p className="text-sm text-text-muted">Signed in as {email}</p>;
+  const header = (
+    <div className="flex items-center justify-between gap-2">
+      <p className="text-sm text-text-muted">Signed in as {email}</p>
+      <NotificationBell client={client} profileId={state.profileId} />
+    </div>
+  );
   const footer = (
     <div className="flex gap-2">
       <button className={secondaryButtonClass} onClick={() => void refresh()}>

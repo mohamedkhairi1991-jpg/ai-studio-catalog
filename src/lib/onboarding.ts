@@ -438,7 +438,7 @@ export interface RegisteredUserRecord {
   workplace: string | null;
   licenseNumber: string | null;
   registeredAt: string;
-  lastActiveAt: string;
+  lastActiveAt: string | null;
 }
 
 export interface UserRegistrationStats {
@@ -469,7 +469,7 @@ export function computeUserRegistrationStats(
     if (u.role === 'healthcare_professional' || u.verificationStatus !== null) {
       totalDoctors += 1;
     }
-    const lastActiveMs = Date.parse(u.lastActiveAt);
+    const lastActiveMs = u.lastActiveAt ? Date.parse(u.lastActiveAt) : NaN;
     if (!Number.isNaN(lastActiveMs)) {
       if (lastActiveMs >= cutoff24h) openedLast24h += 1;
       if (lastActiveMs >= cutoff7d) openedLast7d += 1;
@@ -491,35 +491,6 @@ export function computeUserRegistrationStats(
   };
 }
 
-export async function recordDoctorAppOpen(
-  client: SupabaseClient,
-  authUserId: string
-): Promise<void> {
-  try {
-    const { data: profile } = await client
-      .from('profiles')
-      .select('full_name,phone,country_id,city_id')
-      .eq('auth_user_id', authUserId)
-      .maybeSingle<{
-        full_name: string | null;
-        phone: string | null;
-        country_id: string | null;
-        city_id: string | null;
-      }>();
-    if (!profile) return;
-    const cleanPhone = blankToNull(profile.phone ?? '');
-    if (!cleanPhone) return;
-    await client.rpc('update_my_profile', {
-      full_name: blankToNull(profile.full_name ?? ''),
-      phone: cleanPhone,
-      country_id: profile.country_id ?? null,
-      city_id: profile.city_id ?? null,
-    });
-  } catch {
-    // Fire-and-forget: never block catalog rendering if activity ping fails.
-  }
-}
-
 export async function listRegisteredUsers(
   client: SupabaseClient
 ): Promise<RegisteredUserRecord[]> {
@@ -527,12 +498,12 @@ export async function listRegisteredUsers(
     await Promise.all([
       client
         .from('profiles')
-        .select('id,email,full_name,phone,role,status,created_at,updated_at')
+        .select('id,email,full_name,phone,role,status,created_at,last_seen_at')
         .order('created_at', { ascending: false }),
       client
         .from('healthcare_professionals')
         .select(
-          'profile_id,specialty_id,verification_status,workplace,license_number,updated_at'
+          'profile_id,specialty_id,verification_status,workplace,license_number'
         ),
       listSpecialties(client),
     ]);
@@ -549,7 +520,6 @@ export async function listRegisteredUsers(
       verification_status: ProfessionalStatus;
       workplace: string | null;
       license_number: string | null;
-      updated_at: string | null;
     }
   >();
   for (const pro of (prosData ?? []) as Array<{
@@ -558,7 +528,6 @@ export async function listRegisteredUsers(
     verification_status: ProfessionalStatus;
     workplace: string | null;
     license_number: string | null;
-    updated_at: string | null;
   }>) {
     proByProfileId.set(pro.profile_id, pro);
   }
@@ -571,19 +540,12 @@ export async function listRegisteredUsers(
     role: string | null;
     status: string;
     created_at: string;
-    updated_at: string;
+    last_seen_at: string | null;
   }>;
 
   return rows.map((p) => {
     const pro = proByProfileId.get(p.id);
     const specialtyId = pro?.specialty_id ?? null;
-    const pUpdatedMs = Date.parse(p.updated_at);
-    const proUpdatedMs = pro?.updated_at ? Date.parse(pro.updated_at) : NaN;
-    const lastActiveAt =
-      !Number.isNaN(proUpdatedMs) &&
-      (Number.isNaN(pUpdatedMs) || proUpdatedMs > pUpdatedMs)
-        ? pro!.updated_at!
-        : p.updated_at || p.created_at;
 
     return {
       profileId: p.id,
@@ -598,7 +560,7 @@ export async function listRegisteredUsers(
       workplace: pro?.workplace ?? null,
       licenseNumber: pro?.license_number ?? null,
       registeredAt: p.created_at,
-      lastActiveAt,
+      lastActiveAt: p.last_seen_at ?? null,
     };
   });
 }

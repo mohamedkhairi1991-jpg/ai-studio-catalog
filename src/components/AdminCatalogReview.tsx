@@ -61,6 +61,8 @@ import {
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner, SponsoredAdCard } from './DoctorCatalog';
+import { NotificationBell } from './NotificationBell';
+import { recordAppOpen } from '../lib/notifications';
 import { BrandLogo, Field, LegalFooter, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
 interface Props {
@@ -166,8 +168,9 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   );
 
   useEffect(() => {
+    void recordAppOpen(client);
     void refresh();
-  }, [refresh]);
+  }, [client, refresh]);
 
   const handleManualSyncChatCatalog = async () => {
     if (!bundle || syncingChatCatalog) return;
@@ -478,6 +481,7 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
             <span className="text-xs text-[#B8C3CC] hidden md:inline">
               {access.email}
             </span>
+            <NotificationBell client={client} profileId={access.profileId} />
             <button
               type="button"
               className={secondaryButtonClass}

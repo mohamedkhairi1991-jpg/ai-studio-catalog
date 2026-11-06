@@ -1498,6 +1498,7 @@ describe('publishArchivedProducts', () => {
     expect(summary.publishedCount).toBe(1);
     expect(summary.failedCount).toBe(2);
     expect(summary.results.map((r) => r.ok)).toEqual([true, false, false]);
+    expect(summary.results[1].message).toContain('Still archived');
     expect(summary.results[2].message).toContain('kept as a draft');
   });
 });

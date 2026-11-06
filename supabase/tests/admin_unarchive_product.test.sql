@@ -1,6 +1,6 @@
 begin;
 
-select plan(7);
+select plan(9);
 
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password,
@@ -112,6 +112,59 @@ select throws_ok(
 );
 
 reset role;
+
+-- A drug that was published before it was archived keeps its old
+-- submitted / reviewed / published details; restoring must clear them.
+select set_config('request.jwt.claim.sub', '76000000-0000-4000-8000-000000000001', true);
+set local role authenticated;
+
+select public.admin_save_ai_product_draft(
+  (select id from public.companies where company_name = 'Unarchive Pharma'),
+  '{"brandName": "Wasonline 5 mg", "category": "prescription_drug", "genericName": "Bringbackin",
+    "drugClass": "Test class", "strength": "5 mg", "dosageForm": "Tablet", "route": "Oral",
+    "packSize": "30 tablets"}'::jsonb
+);
+
+select public.admin_archive_product(
+  (select product_id from public.product_translations where brand_name = 'Wasonline 5 mg'),
+  'Old listing'
+);
+
+reset role;
+
+set local session_replication_role = replica;
+update public.products
+set
+  submitted_by = (select id from public.profiles where auth_user_id = '76000000-0000-4000-8000-000000000001'),
+  submitted_at = now() - interval '2 days',
+  reviewed_by = (select id from public.profiles where auth_user_id = '76000000-0000-4000-8000-000000000001'),
+  reviewed_at = now() - interval '2 days',
+  published_by = (select id from public.profiles where auth_user_id = '76000000-0000-4000-8000-000000000001'),
+  published_at = now() - interval '2 days'
+where id = (select product_id from public.product_translations where brand_name = 'Wasonline 5 mg');
+set local session_replication_role = origin;
+
+select set_config('request.jwt.claim.sub', '76000000-0000-4000-8000-000000000001', true);
+set local role authenticated;
+
+select is(
+  (public.admin_unarchive_product(
+    (select product_id from public.product_translations where brand_name = 'Wasonline 5 mg'),
+    'Publish again'
+  )).status::text,
+  'draft',
+  'a previously published drug can be restored as a draft'
+);
+
+reset role;
+
+select is(
+  (select published_at is null and published_by is null and submitted_at is null and reviewed_at is null
+   from public.products
+   where id = (select product_id from public.product_translations where brand_name = 'Wasonline 5 mg')),
+  true,
+  'the old published and review details are cleared'
+);
 
 select * from finish();
 rollback;

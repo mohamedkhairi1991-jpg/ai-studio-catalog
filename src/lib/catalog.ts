@@ -1919,7 +1919,7 @@ export async function publishArchivedProducts(
           id: item.id,
           brandNameEn: item.brandNameEn,
           ok: false,
-          message: unarchiveRes.message,
+          message: `Still archived: ${unarchiveRes.message}`,
         });
         continue;
       }

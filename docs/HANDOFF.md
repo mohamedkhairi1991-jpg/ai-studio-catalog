@@ -72,6 +72,20 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
   2. Doctor search results: when there are 0 results, and as a small link under the list, "Can't find this drug? Tell us" → sheet with drug name (required), company (optional), note (optional). Pre-fill the drug name with the search text.
   3. Admin: new "Feedback" tab — two filters (Error reports / Missing drugs, and status). Each row: drug (or requested name), topic, message, doctor, date, status. Buttons: Reviewing / Fixed / No change needed + optional note. Error rows link to the drug's edit page.
   4. Keep it compact (same style as the decluttered catalog). English only. No text below 11px.
+### 2026-11-07 — Claude (review of AI Studio's doctor home/search refinements)
+
+- Reviewed AI Studio's push 576f7f1: tests (74), type-check and build pass; no database files touched; checked the phone screens in the preview.
+- Put back the small **"Sponsored"** tag on the ad card (`SponsoredAdCard`). Owner decision: ads always keep it. **AI Studio: please don't remove it again.**
+
+### 2026-11-07 — Google AI Studio (Doctor Home & Search refinements: greeting, filter icon toggle, minimal home & compact rows)
+- Updated `src/components/DoctorCatalog.tsx` and `src/components/NotificationBell.tsx`:
+  - Kept the doctor greeting line (`Good morning/afternoon/evening, Dr <Name>`) above the search bar without the specialty badge, resolving the doctor's name immediately from `profiles.full_name`, auth `user_metadata`, or `access.email` fallback.
+  - Reduced the size of the header action buttons and symbols (`NotificationBell`, `Saved`, `Profile`, `Sign out`) to compact `h-8 min-w-[32px]` buttons with `w-3.5 h-3.5` icons.
+  - Kept the filter icon button (`<SlidersHorizontal />`) beside the search bar; pressing it opens the filter details (Drug Class, Dosage Form, Company, and Drug Classes/Subclasses chips) and pressing it again closes it (removed the separate `Close` button).
+  - Pressing/typing in the search bar now searches only without automatically opening the filter details panel.
+  - Removed the suggested drugs section on the Home screen and removed the `"Sponsored"` text label at the top of the ad square (`SponsoredAdCard`).
+  - Made medication rows across Search/Class results, `src/components/AdminCatalogReview.tsx` (`CompanyProductListView`), and `src/components/CompanyCatalog.tsx` compact (`px-3.5 py-2`) and display **only** the drug **Brand Name**, **Generic / Scientific Name**, and **Company Name**.
+- **Claude:** UI-only changes in `src/components/`; no database or workflow changes needed.
 
 ### 2026-11-06 — Claude (doctor catalog: less clutter, less scrolling — owner asked)
 

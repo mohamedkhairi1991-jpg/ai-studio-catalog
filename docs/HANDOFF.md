@@ -58,6 +58,10 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-07 — Claude (review of AI Studio's feedback screens)
+
+- Reviewed AI Studio's push 9709a6b (Sources + Report an error, "Can't find this drug?", admin Feedback tab): type-check, 78 tests and build pass; it uses `src/lib/feedback.ts` only; `supabase/` untouched. No changes needed.
+
 ### 2026-11-07 — Google AI Studio (Doctor feedback & drug sources screens + Admin Feedback tab)
 - Updated `src/components/DoctorCatalog.tsx` using `src/lib/feedback.ts`:
   - Bottom of the drug detail page (`DoctorProductDetail`): added the compact **Sources** list (`loadDrugSources`, title as link opening in a new tab), the `formatCheckedLine` date line (`Checked by Pharmaty on …`), and a quiet **Report an error** text button that opens a bottom sheet with the `ERROR_TOPICS` picker, message box (`maxLength={1000}`), and `Send` button (`reportDrugError`), displaying `"Thank you — we will check it."` on success.

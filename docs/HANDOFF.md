@@ -58,6 +58,21 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-07 — Claude (doctor feedback + drug sources: database ready, screens for AI Studio)
+
+- New migration `20261107120000_drug_feedback_and_sources.sql` + pgTAP test (16 checks). **Not live yet** — waits for the owner's OK.
+- New helper `src/lib/feedback.ts` (+ tests). Use these functions; don't call the database directly:
+  - `reportDrugError(client, { productId, topic, message })` — topics in `ERROR_TOPICS`.
+  - `requestMissingDrug(client, { drugName, companyName?, message? })`.
+  - `loadDrugFeedback(client, { status?, kind? })` — doctor gets own reports, admin gets all.
+  - `adminUpdateDrugFeedback(client, { id, status, adminNote? })` — closing (fixed / dismissed) sends the doctor a thank-you in the bell automatically.
+  - `loadDrugSources(client, productId)` + `formatCheckedLine(checkedAt)`.
+- **AI Studio, please build (screens only):**
+  1. Drug detail page, bottom: small "Sources" list (title as link, opens in new tab) and the line from `formatCheckedLine`. Then a quiet text button "Report an error" → bottom sheet with a topic picker + message box (max 1000) + Send. Show "Thank you — we will check it." on success.
+  2. Doctor search results: when there are 0 results, and as a small link under the list, "Can't find this drug? Tell us" → sheet with drug name (required), company (optional), note (optional). Pre-fill the drug name with the search text.
+  3. Admin: new "Feedback" tab — two filters (Error reports / Missing drugs, and status). Each row: drug (or requested name), topic, message, doctor, date, status. Buttons: Reviewing / Fixed / No change needed + optional note. Error rows link to the drug's edit page.
+  4. Keep it compact (same style as the decluttered catalog). English only. No text below 11px.
+
 ### 2026-11-06 — Claude (doctor catalog: less clutter, less scrolling — owner asked)
 
 - Reviewed AI Studio's therapeutic-class push (c2e7bea): OK, tests and build pass, nothing deleted, `supabase/` untouched.

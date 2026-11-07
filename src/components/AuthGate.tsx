@@ -18,7 +18,7 @@ import { NotificationBell } from './NotificationBell';
 import { recordAppOpen } from '../lib/notifications';
 import { Field, Screen, TermsAcceptanceCheckbox, buttonClass, inputClass } from './ui';
 import { TurnstileWidget } from './TurnstileWidget';
-import { CAPTCHA_ENABLED, captchaOptions } from '../lib/captcha';
+import { captchaOptions, isCaptchaRequiredError, showCaptchaFor } from '../lib/captcha';
 
 const ROUTE_FOR: Partial<Record<Audience, string>> = {
   officialCatalog: '/catalog',
@@ -43,6 +43,8 @@ export default function AuthGate() {
   const [specialtyId, setSpecialtyId] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaKey, setCaptchaKey] = useState(0);
+  // Sign-in/reset show the robot check only if Supabase still asks for one.
+  const [serverAskedCaptcha, setServerAskedCaptcha] = useState(false);
   const [specialties, setSpecialties] = useState<Option[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -219,7 +221,12 @@ export default function AuthGate() {
           password,
           options: captchaOptions(captchaToken),
         });
-        if (error) setNotice({ tone: 'error', text: 'Sign-in failed. Check your email and password.' });
+        if (error && isCaptchaRequiredError(error.message)) {
+          setServerAskedCaptcha(true);
+          setNotice({ tone: 'error', text: 'Please complete the robot check, then sign in again.' });
+        } else if (error) {
+          setNotice({ tone: 'error', text: 'Sign-in failed. Check your email and password.' });
+        }
       } else if (mode === 'signup') {
         const res = await submitSignUpWithConsent(client, {
           email: cleanEmail,
@@ -257,11 +264,16 @@ export default function AuthGate() {
           redirectTo: window.location.origin + import.meta.env.BASE_URL,
           ...captchaOptions(captchaToken),
         });
-        setNotice(
-          error
-            ? { tone: 'error', text: error.message }
-            : { tone: 'ok', text: 'If the email exists, a reset link has been sent.' }
-        );
+        if (error && isCaptchaRequiredError(error.message)) {
+          setServerAskedCaptcha(true);
+          setNotice({ tone: 'error', text: 'Please complete the robot check, then try again.' });
+        } else {
+          setNotice(
+            error
+              ? { tone: 'error', text: error.message }
+              : { tone: 'ok', text: 'If the email exists, a reset link has been sent.' }
+          );
+        }
       }
     } finally {
       setBusy(false);
@@ -271,6 +283,8 @@ export default function AuthGate() {
       setCaptchaKey((k) => k + 1);
     }
   };
+
+  const captchaShown = showCaptchaFor(mode, serverAskedCaptcha);
 
   return (
     <Screen>
@@ -347,7 +361,7 @@ export default function AuthGate() {
             />
           </>
         )}
-        {CAPTCHA_ENABLED && (
+        {captchaShown && (
           <TurnstileWidget key={`${mode}-${captchaKey}`} onToken={setCaptchaToken} />
         )}
         {notice && (
@@ -365,7 +379,7 @@ export default function AuthGate() {
           className={buttonClass}
           disabled={
             busy ||
-            (CAPTCHA_ENABLED && !captchaToken) ||
+            (captchaShown && !captchaToken) ||
             (mode === 'signup' &&
               (!acceptedTerms || !phone.trim() || !specialtyId.trim()))
           }

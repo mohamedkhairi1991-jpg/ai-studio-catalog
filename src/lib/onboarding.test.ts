@@ -216,6 +216,17 @@ describe('validation mirrors database rules', () => {
       phone: '+964 770 123 4567',
       specialty_id: 'spec-cardiology',
     });
+
+    // Sign-up robot check: token goes in metadata for the server hook.
+    await submitSignUpWithConsent(client, {
+      email: 'doc2@hospital.iq',
+      password: 'Password123',
+      phone: '+964 770 123 4567',
+      specialtyId: 'spec-cardiology',
+      acceptedTerms: true,
+      captchaToken: 'turnstile-token',
+    });
+    expect(signUpCalls[1]?.options?.data?.captcha_token).toBe('turnstile-token');
   });
 
   it('accepts a minimal valid company and rejects bad fields', () => {

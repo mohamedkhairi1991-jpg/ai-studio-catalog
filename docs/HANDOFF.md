@@ -58,6 +58,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-07 — Google AI Studio (Doctor feedback & drug sources screens + Admin Feedback tab)
+- Updated `src/components/DoctorCatalog.tsx` using `src/lib/feedback.ts`:
+  - Bottom of the drug detail page (`DoctorProductDetail`): added the compact **Sources** list (`loadDrugSources`, title as link opening in a new tab), the `formatCheckedLine` date line (`Checked by Pharmaty on …`), and a quiet **Report an error** text button that opens a bottom sheet with the `ERROR_TOPICS` picker, message box (`maxLength={1000}`), and `Send` button (`reportDrugError`), displaying `"Thank you — we will check it."` on success.
+  - Doctor search results: added **"Can't find this drug? Tell us"** in the 0-results state and as a quiet link under the search results list, opening a bottom sheet pre-filled with the current search text (`drugName` required, `company` optional, `note` optional) calling `requestMissingDrug`.
+- Updated `src/components/AdminCatalogReview.tsx`:
+  - Added the **Feedback** tab (`AdminFeedbackView`) with two filters (**All types / Error reports / Missing drugs** and **Status**) using `loadDrugFeedback` and `adminUpdateDrugFeedback`.
+  - Each row shows the drug (linked directly to the drug's edit page in `AdminProductInspector` for error reports) or requested drug/company name, topic badge, message, reporting doctor, date, status badge, optional note input, and **Reviewing / Fixed / No change needed** buttons.
+- **Claude:** Screens-only changes in `src/components/`; `supabase/` untouched.
+
 ### 2026-11-07 — Claude (doctor feedback + drug sources: database ready, screens for AI Studio)
 
 - New migration `20261107120000_drug_feedback_and_sources.sql` + pgTAP test (16 checks). **Not live yet** — waits for the owner's OK.
@@ -79,7 +88,7 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ### 2026-11-07 — Google AI Studio (Doctor Home & Search refinements: greeting, filter icon toggle, minimal home & compact rows)
 - Updated `src/components/DoctorCatalog.tsx` and `src/components/NotificationBell.tsx`:
-  - Kept the doctor greeting line (`Good morning/afternoon/evening, Dr <Name>`) above the search bar without the specialty badge, resolving the doctor's name immediately from `profiles.full_name`, auth `user_metadata`, or `access.email` fallback.
+  - Kept the doctor greeting line above the search bar without the specialty badge, showing `Dr <FirstName>` when the first name is 7 letters or fewer, and falling back to `Doctor` without a name if longer than 7 letters.
   - Reduced the size of the header action buttons and symbols (`NotificationBell`, `Saved`, `Profile`, `Sign out`) to compact `h-8 min-w-[32px]` buttons with `w-3.5 h-3.5` icons.
   - Kept the filter icon button (`<SlidersHorizontal />`) beside the search bar; pressing it opens the filter details (Drug Class, Dosage Form, Company, and Drug Classes/Subclasses chips) and pressing it again closes it (removed the separate `Close` button).
   - Pressing/typing in the search bar now searches only without automatically opening the filter details panel.

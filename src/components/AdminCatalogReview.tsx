@@ -60,8 +60,18 @@ import {
   listCountries,
   listRegisteredUsers,
   type Option,
+  type RegisteredUserRecord,
   type UserRegistrationStats,
 } from '../lib/onboarding';
+import {
+  ERROR_TOPICS,
+  FEEDBACK_STATUS_LABELS,
+  adminUpdateDrugFeedback,
+  loadDrugFeedback,
+  type DrugFeedback,
+  type FeedbackKind,
+  type FeedbackStatus,
+} from '../lib/feedback';
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
 import { CatalogBanner as Banner, SponsoredAdCard } from './DoctorCatalog';
@@ -77,7 +87,7 @@ interface Props {
 
 export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [adminView, setAdminView] = useState<
-    'catalog' | 'companies' | 'ads' | 'usage' | 'approvals'
+    'catalog' | 'companies' | 'ads' | 'usage' | 'approvals' | 'feedback'
   >('catalog');
   const [companySubView, setCompanySubView] = useState<
     'drafts' | 'published' | 'archived' | 'other'
@@ -468,6 +478,20 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 type="button"
                 onClick={() => {
                   setSelectedId(null);
+                  setAdminView('feedback');
+                }}
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
+                  adminView === 'feedback'
+                    ? 'bg-[#1769AA] text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
+                }`}
+              >
+                Feedback
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedId(null);
                   setAdminView('approvals');
                 }}
                 className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
@@ -531,6 +555,34 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
             email={access.email}
             onSignOut={onSignOut}
             embedded
+          />
+        ) : adminView === 'feedback' ? (
+          <AdminFeedbackView
+            client={client}
+            bundle={bundle}
+            onNotice={(msg) => {
+              clearFeedback();
+              setNotice(msg);
+            }}
+            onError={(msg) => setFailure(msg)}
+            onOpenProduct={(productId) => {
+              const prod = bundle?.products.find((p) => p.id === productId);
+              if (!prod) return;
+              clearFeedback();
+              setCompanyFilterId(prod.companyId);
+              setCompanySubView(
+                prod.status === 'published'
+                  ? 'published'
+                  : prod.status === 'archived'
+                    ? 'archived'
+                    : prod.status === 'draft' ||
+                        prod.status === 'changes_requested'
+                      ? 'drafts'
+                      : 'other'
+              );
+              setSelectedId(prod.id);
+              setAdminView('catalog');
+            }}
           />
         ) : adminView === 'ads' ? (
           <AdminSponsoredAdsView
@@ -4736,6 +4788,355 @@ function AdminUsageStatsView({
               </div>
             )}
           </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+const TOPIC_LABEL_MAP = new Map<string, string>(
+  ERROR_TOPICS.map((t) => [t.value, t.label])
+);
+
+function formatFeedbackDate(iso: string): string {
+  const ms = Date.parse(iso);
+  if (Number.isNaN(ms)) return '—';
+  return new Date(ms).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function AdminFeedbackView({
+  client,
+  bundle,
+  onNotice,
+  onError,
+  onOpenProduct,
+}: {
+  client: SupabaseClient;
+  bundle: CatalogBundle | null;
+  onNotice: (msg: string) => void;
+  onError: (msg: string) => void;
+  onOpenProduct: (productId: string) => void;
+}) {
+  const [kindFilter, setKindFilter] = useState<FeedbackKind | ''>('');
+  const [statusFilter, setStatusFilter] = useState<FeedbackStatus | ''>('');
+  const [items, setItems] = useState<DrugFeedback[]>([]);
+  const [usersById, setUsersById] = useState<Map<string, RegisteredUserRecord>>(
+    new Map()
+  );
+  const [notesById, setNotesById] = useState<Record<string, string>>({});
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    const [feedbackRes, registeredUsers] = await Promise.all([
+      loadDrugFeedback(client, {
+        kind: kindFilter || undefined,
+        status: statusFilter || undefined,
+      }),
+      listRegisteredUsers(client),
+    ]);
+    setLoading(false);
+
+    const map = new Map<string, RegisteredUserRecord>();
+    for (const u of registeredUsers) {
+      map.set(u.profileId, u);
+    }
+    setUsersById(map);
+
+    if (!feedbackRes.ok) {
+      onError(feedbackRes.message);
+      return;
+    }
+    setItems(feedbackRes.data);
+    setNotesById((prev) => {
+      const next = { ...prev };
+      for (const item of feedbackRes.data) {
+        if (next[item.id] === undefined) {
+          next[item.id] = item.adminNote ?? '';
+        }
+      }
+      return next;
+    });
+  }, [client, kindFilter, statusFilter, onError]);
+
+  useEffect(() => {
+    void loadAll();
+  }, [loadAll]);
+
+  const productsById = useMemo(() => {
+    const map = new Map<string, CatalogProduct>();
+    for (const p of bundle?.products ?? []) {
+      map.set(p.id, p);
+    }
+    return map;
+  }, [bundle]);
+
+  const handleUpdateStatus = async (
+    item: DrugFeedback,
+    nextStatus: FeedbackStatus
+  ) => {
+    setBusyId(item.id);
+    const note = notesById[item.id] ?? item.adminNote ?? '';
+    const res = await adminUpdateDrugFeedback(client, {
+      id: item.id,
+      status: nextStatus,
+      adminNote: note,
+    });
+    setBusyId(null);
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+    setItems((prev) =>
+      prev.map((row) => (row.id === item.id ? res.data : row))
+    );
+    onNotice(`Feedback marked as "${FEEDBACK_STATUS_LABELS[nextStatus]}".`);
+  };
+
+  return (
+    <section className="space-y-4">
+      <div className="rounded-xl bg-[#263744] border border-[#304451] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-base font-semibold text-[#F2F5F8]">
+            Doctor Feedback ({items.length})
+          </h1>
+          <p className="text-xs text-[#B8C3CC] mt-0.5">
+            Error reports on published drugs and requests for missing medications.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Filter 1: Error reports / Missing drugs */}
+          <div
+            role="group"
+            aria-label="Filter by feedback type"
+            className="inline-flex items-center rounded-lg bg-[#1F2D38] border border-[#304451] p-0.5"
+          >
+            {(
+              [
+                { value: '' as const, label: 'All types' },
+                { value: 'error_report' as const, label: 'Error reports' },
+                { value: 'missing_drug' as const, label: 'Missing drugs' },
+              ]
+            ).map((opt) => {
+              const active = kindFilter === opt.value;
+              return (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => setKindFilter(opt.value)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    active
+                      ? 'bg-[#1769AA] text-white'
+                      : 'text-[#B8C3CC] hover:text-white'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Filter 2: Status */}
+          <select
+            aria-label="Filter by status"
+            value={statusFilter}
+            onChange={(e) =>
+              setStatusFilter(e.target.value as FeedbackStatus | '')
+            }
+            className={`${inputClass} w-auto py-1.5 text-xs`}
+          >
+            <option value="">All statuses</option>
+            {(
+              ['open', 'reviewing', 'fixed', 'dismissed'] as FeedbackStatus[]
+            ).map((st) => (
+              <option key={st} value={st}>
+                {FEEDBACK_STATUS_LABELS[st]}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            onClick={() => void loadAll()}
+            disabled={loading}
+            className={secondaryButtonClass}
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-8 text-center text-xs text-[#B8C3CC]">
+          Loading feedback…
+        </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-8 text-center text-xs text-[#B8C3CC]">
+          No feedback items match the selected filters.
+        </div>
+      ) : (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] divide-y divide-[#304451] overflow-hidden">
+          {items.map((item) => {
+            const product = item.productId
+              ? productsById.get(item.productId) ?? null
+              : null;
+            const reporter = usersById.get(item.reporterProfileId);
+            const doctorLabel =
+              reporter?.fullName?.trim() ||
+              reporter?.email ||
+              item.reporterProfileId.slice(0, 8);
+            const topicLabel =
+              item.kind === 'error_report'
+                ? TOPIC_LABEL_MAP.get(item.topic ?? '') ?? item.topic ?? 'Other'
+                : 'Missing drug';
+
+            const statusBadgeClass =
+              item.status === 'fixed'
+                ? 'bg-[#2E8B57]/20 text-[#38C976] border-[#2E8B57]/40'
+                : item.status === 'reviewing'
+                  ? 'bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B]/40'
+                  : item.status === 'dismissed'
+                    ? 'bg-[#304451]/60 text-[#B8C3CC] border-[#304451]'
+                    : 'bg-[#1769AA]/25 text-[#5DB4F2] border-[#5DB4F2]/40';
+
+            const isBusy = busyId === item.id;
+
+            return (
+              <div
+                key={item.id}
+                className="p-3.5 sm:px-4 sm:py-3 space-y-2.5 hover:bg-[#1F2D38]/30 transition-colors"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex flex-wrap items-center gap-2">
+                    {item.kind === 'error_report' ? (
+                      product && item.productId ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpenProduct(item.productId!)}
+                          title="Open drug edit page"
+                          className="font-semibold text-sm text-[#5DB4F2] hover:underline text-left"
+                        >
+                          {product.brandNameEn}
+                        </button>
+                      ) : (
+                        <span className="font-semibold text-sm text-[#F2F5F8]">
+                          Drug #{item.productId?.slice(0, 8) ?? '—'}
+                        </span>
+                      )
+                    ) : (
+                      <span className="font-semibold text-sm text-[#F2F5F8]">
+                        {item.requestedDrugName ?? '—'}
+                        {item.requestedCompanyName && (
+                          <span className="font-normal text-xs text-[#B8C3CC]">
+                            {' '}
+                            · {item.requestedCompanyName}
+                          </span>
+                        )}
+                      </span>
+                    )}
+
+                    <span className="inline-flex items-center rounded border border-[#304451] bg-[#1F2D38] px-2 py-0.5 text-[11px] font-medium text-[#B8C3CC]">
+                      {topicLabel}
+                    </span>
+
+                    <span
+                      className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-semibold ${statusBadgeClass}`}
+                    >
+                      {FEEDBACK_STATUS_LABELS[item.status]}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-[#B8C3CC] shrink-0">
+                    <span>{doctorLabel}</span>
+                    <span aria-hidden="true">·</span>
+                    <span className="tabular-nums">
+                      {formatFeedbackDate(item.createdAt)}
+                    </span>
+                    {item.kind === 'error_report' && product && item.productId && (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <button
+                          type="button"
+                          onClick={() => onOpenProduct(item.productId!)}
+                          className="text-xs font-medium text-[#5DB4F2] hover:underline"
+                        >
+                          Edit drug →
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {item.message && (
+                  <p className="text-xs text-[#F2F5F8] whitespace-pre-line leading-relaxed">
+                    {item.message}
+                  </p>
+                )}
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-0.5">
+                  <input
+                    type="text"
+                    maxLength={1000}
+                    aria-label="Admin note (optional)"
+                    value={notesById[item.id] ?? ''}
+                    onChange={(e) =>
+                      setNotesById((prev) => ({
+                        ...prev,
+                        [item.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Optional note for the doctor…"
+                    className={`${inputClass} flex-1 py-1.5 text-xs bg-[#1F2D38]`}
+                  />
+
+                  <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => void handleUpdateStatus(item, 'reviewing')}
+                      className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+                        item.status === 'reviewing'
+                          ? 'bg-[#F59E0B] border-[#F59E0B] text-[#1F2D38]'
+                          : 'bg-[#1F2D38] border-[#304451] text-[#F59E0B] hover:border-[#F59E0B]'
+                      }`}
+                    >
+                      Reviewing
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => void handleUpdateStatus(item, 'fixed')}
+                      className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+                        item.status === 'fixed'
+                          ? 'bg-[#2E8B57] border-[#38C976] text-white'
+                          : 'bg-[#1F2D38] border-[#304451] text-[#38C976] hover:border-[#38C976]'
+                      }`}
+                    >
+                      Fixed
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => void handleUpdateStatus(item, 'dismissed')}
+                      className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+                        item.status === 'dismissed'
+                          ? 'bg-[#304451] border-[#B8C3CC] text-white'
+                          : 'bg-[#1F2D38] border-[#304451] text-[#B8C3CC] hover:text-white'
+                      }`}
+                    >
+                      No change needed
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </section>

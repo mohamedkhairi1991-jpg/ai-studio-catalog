@@ -64,6 +64,15 @@ import {
   type Option,
 } from '../lib/onboarding';
 import { recordAppOpen } from '../lib/notifications';
+import {
+  ERROR_TOPICS,
+  formatCheckedLine,
+  loadDrugSources,
+  reportDrugError,
+  requestMissingDrug,
+  type DrugSources,
+  type ErrorTopic,
+} from '../lib/feedback';
 import { NotificationBell } from './NotificationBell';
 import {
   BrandLogo,
@@ -88,19 +97,24 @@ function extractDoctorFirstName(fullName: string, email?: string): string | null
   const cleaned = fullName
     .replace(/^(dr\.?|doctor|د\.?|دكتور)\s+/i, '')
     .trim();
+  let firstName = '';
   if (cleaned) {
-    return cleaned.split(/\s+/)[0] ?? null;
+    firstName = (cleaned.split(/\s+/)[0] ?? '').trim();
+  } else {
+    const emailLocal = (email ?? '').split('@')[0]?.trim() ?? '';
+    const cleanedEmail = emailLocal
+      .replace(/^(dr\.?|doctor)[._-]*/i, '')
+      .replace(/[._-]+/g, ' ')
+      .replace(/\d+$/g, '')
+      .trim();
+    const firstToken = (cleanedEmail.split(/\s+/)[0] ?? '').trim();
+    if (firstToken) {
+      firstName =
+        firstToken.charAt(0).toUpperCase() + firstToken.slice(1).toLowerCase();
+    }
   }
-  const emailLocal = (email ?? '').split('@')[0]?.trim() ?? '';
-  const cleanedEmail = emailLocal
-    .replace(/^(dr\.?|doctor)[._-]*/i, '')
-    .replace(/[._-]+/g, ' ')
-    .replace(/\d+$/g, '')
-    .trim();
-  if (!cleanedEmail) return null;
-  const firstToken = cleanedEmail.split(/\s+/)[0] ?? '';
-  if (!firstToken) return null;
-  return firstToken.charAt(0).toUpperCase() + firstToken.slice(1).toLowerCase();
+  if (!firstName || firstName.length > 7) return null;
+  return firstName;
 }
 
 export function CatalogBanner({
@@ -189,6 +203,41 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   );
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  // "Can't find this drug? Tell us" sheet state
+  const [missingSheetOpen, setMissingSheetOpen] = useState(false);
+  const [missingDrugName, setMissingDrugName] = useState('');
+  const [missingCompanyName, setMissingCompanyName] = useState('');
+  const [missingNote, setMissingNote] = useState('');
+  const [missingBusy, setMissingBusy] = useState(false);
+  const [missingError, setMissingError] = useState<string | null>(null);
+  const [missingSuccess, setMissingSuccess] = useState(false);
+
+  const openMissingDrugSheet = () => {
+    setMissingDrugName(query.trim());
+    setMissingCompanyName('');
+    setMissingNote('');
+    setMissingError(null);
+    setMissingSuccess(false);
+    setMissingSheetOpen(true);
+  };
+
+  const handleSubmitMissingDrug = async (e: FormEvent) => {
+    e.preventDefault();
+    setMissingBusy(true);
+    setMissingError(null);
+    const res = await requestMissingDrug(client, {
+      drugName: missingDrugName,
+      companyName: missingCompanyName,
+      message: missingNote,
+    });
+    setMissingBusy(false);
+    if (!res.ok) {
+      setMissingError(res.message);
+      return;
+    }
+    setMissingSuccess(true);
+  };
 
   const searchReqSeqRef = useRef(0);
   const detailReqSeqRef = useRef(0);
@@ -1074,8 +1123,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               )}
             </section>
 
-            {/* Bottom space reserved for the sponsored ad (keeps its small "Sponsored" tag) */}
-            <section aria-label="Sponsored" className="mt-auto pt-2">
+            <section aria-label="Partner notice" className="mt-auto pt-2">
               <SponsoredAdCard
                 ad={sponsoredAd}
                 onAdClick={(adId) =>
@@ -1165,6 +1213,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             ) : (
               selectedProduct && (
                 <DoctorProductDetail
+                  client={client}
                   product={selectedProduct}
                   onSearchGeneric={handleSearchByGeneric}
                   onFilterCompany={handleFilterByCompany}
@@ -1441,7 +1490,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     ))}
                   </div>
                 ) : rows.length === 0 ? (
-                  <div className="rounded-xl bg-surface border border-border p-8 text-center space-y-2">
+                  <div className="rounded-xl bg-surface border border-border p-8 text-center space-y-2.5">
                     <div className="mx-auto w-9 h-9 rounded-full bg-surface-raised border border-border flex items-center justify-center text-text-muted">
                       <Search className="w-4 h-4" aria-hidden="true" />
                     </div>
@@ -1451,6 +1500,15 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     <p className="text-xs text-text-muted max-w-md mx-auto leading-relaxed">
                       Try checking the spelling, searching by generic active ingredient (e.g. bisoprolol, paracetamol), or clearing active filters.
                     </p>
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={openMissingDrugSheet}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
+                      >
+                        Can&apos;t find this drug? Tell us
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-2.5">
@@ -1476,7 +1534,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     <div className="rounded-xl bg-surface border border-border overflow-clip">
                       {visibleSubclasses.map((sub) => (
                         <div key={`${sub.groupKey}-${sub.subclassLabel}`}>
-                          <div className="sticky top-16 z-10 flex items-center justify-between gap-2 px-3.5 py-1.5 bg-surface-raised/95 backdrop-blur border-y border-border first:border-t-0">
+                          <div className="sticky top-14 z-10 flex items-center justify-between gap-2 px-3.5 py-1.5 bg-surface-raised/95 backdrop-blur border-y border-border first:border-t-0">
                             <h3 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted truncate">
                               {sub.subclassLabel}
                             </h3>
@@ -1541,9 +1599,121 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         </button>
                       </div>
                     )}
+
+                    <div className="pt-1 text-center">
+                      <button
+                        type="button"
+                        onClick={openMissingDrugSheet}
+                        className="text-xs text-text-muted hover:text-accent hover:underline transition-colors"
+                      >
+                        Can&apos;t find this drug? Tell us
+                      </button>
+                    </div>
                   </div>
                 )}
               </section>
+            )}
+
+            {/* Missing Drug Request Bottom Sheet */}
+            {missingSheetOpen && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Request a missing drug"
+                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget && !missingBusy) {
+                    setMissingSheetOpen(false);
+                  }
+                }}
+              >
+                <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl bg-surface border border-border p-4 sm:p-5 space-y-3.5 shadow-2xl">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-text">
+                      Can&apos;t find this drug? Tell us
+                    </h3>
+                    <button
+                      type="button"
+                      aria-label="Close"
+                      onClick={() => setMissingSheetOpen(false)}
+                      className="rounded-md p-1 text-text-muted hover:text-text hover:bg-surface-raised transition-colors"
+                    >
+                      <X className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+
+                  {missingSuccess ? (
+                    <div className="space-y-3">
+                      <p className="rounded-xl bg-success/10 border border-success/40 px-3.5 py-2.5 text-xs text-success">
+                        Thank you — we will check it.
+                      </p>
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setMissingSheetOpen(false)}
+                          className={`${secondaryButtonClass} px-4 py-1.5 text-xs`}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmitMissingDrug} className="space-y-3">
+                      {missingError && (
+                        <CatalogBanner tone="error">{missingError}</CatalogBanner>
+                      )}
+                      <Field label="Drug name">
+                        <input
+                          type="text"
+                          required
+                          maxLength={120}
+                          value={missingDrugName}
+                          onChange={(e) => setMissingDrugName(e.target.value)}
+                          placeholder="Brand or generic name (e.g. Bisoprolol 5 mg)"
+                          className={`${inputClass} bg-background text-xs sm:text-sm py-2`}
+                        />
+                      </Field>
+                      <Field label="Company (optional)">
+                        <input
+                          type="text"
+                          maxLength={120}
+                          value={missingCompanyName}
+                          onChange={(e) => setMissingCompanyName(e.target.value)}
+                          placeholder="Manufacturer name"
+                          className={`${inputClass} bg-background text-xs sm:text-sm py-2`}
+                        />
+                      </Field>
+                      <Field label="Note (optional)">
+                        <textarea
+                          rows={2}
+                          maxLength={1000}
+                          value={missingNote}
+                          onChange={(e) => setMissingNote(e.target.value)}
+                          placeholder="Strength, dosage form, or details…"
+                          className={`${inputClass} bg-background text-xs sm:text-sm py-2`}
+                        />
+                      </Field>
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          disabled={missingBusy}
+                          onClick={() => setMissingSheetOpen(false)}
+                          className={`${secondaryButtonClass} px-3.5 py-1.5 text-xs`}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={missingBusy || missingDrugName.trim().length < 2}
+                          className={`${buttonClass} w-auto px-4 py-1.5 text-xs`}
+                        >
+                          {missingBusy ? 'Sending…' : 'Send'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </div>
             )}
           </>
         )}
@@ -1554,11 +1724,13 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 }
 
 function DoctorProductDetail({
+  client,
   product,
   onSearchGeneric,
   onFilterCompany,
   onFilterClass,
 }: {
+  client: SupabaseClient;
   product: CatalogProduct;
   onSearchGeneric: (genericName: string) => void;
   onFilterCompany: (companyId: string, companyName: string) => void;
@@ -1566,7 +1738,61 @@ function DoctorProductDetail({
 }) {
   const market = product.market;
   const enClinical = product.marketTranslations.en;
-  const sources = product.aiSources ?? [];
+  const [drugSources, setDrugSources] = useState<DrugSources | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportTopic, setReportTopic] = useState<ErrorTopic>('dose');
+  const [reportMessage, setReportMessage] = useState('');
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportSuccess, setReportSuccess] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setDrugSources(null);
+    void loadDrugSources(client, product.id).then((res) => {
+      if (!active) return;
+      if (res.ok) {
+        setDrugSources(res.data);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [client, product.id]);
+
+  const fallbackSources = (product.aiSources ?? []).filter((s) =>
+    s.url.startsWith('https://')
+  );
+  const sources =
+    drugSources && drugSources.sources.length > 0
+      ? drugSources.sources
+      : fallbackSources;
+  const checkedLine = formatCheckedLine(drugSources?.checkedAt ?? null);
+
+  const openReportSheet = () => {
+    setReportTopic('dose');
+    setReportMessage('');
+    setReportError(null);
+    setReportSuccess(false);
+    setReportOpen(true);
+  };
+
+  const handleSubmitErrorReport = async (e: FormEvent) => {
+    e.preventDefault();
+    setReportBusy(true);
+    setReportError(null);
+    const res = await reportDrugError(client, {
+      productId: product.id,
+      topic: reportTopic,
+      message: reportMessage,
+    });
+    setReportBusy(false);
+    if (!res.ok) {
+      setReportError(res.message);
+      return;
+    }
+    setReportSuccess(true);
+  };
   const classified = classifyDrugTherapeuticGroup(
     product.drugClassNameEn,
     product.genericNameEn,
@@ -1748,28 +1974,161 @@ function DoctorProductDetail({
         </section>
       )}
 
-      {/* Official Sources List */}
-      {sources.length > 0 && (
-        <section className="rounded-2xl bg-surface border border-border p-5 space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-            Reference Sources
-          </h3>
-          <ul className="space-y-2">
-            {sources.map((src) => (
-              <li key={src.url}>
-                <a
-                  href={src.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-accent hover:underline break-all"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                  <span>{src.title || src.url}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {/* Bottom Sources, Checked Line & Report an Error */}
+      <section className="rounded-xl bg-surface border border-border px-4 py-3.5 space-y-2.5">
+        {sources.length > 0 && (
+          <div className="space-y-1.5">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+              Sources
+            </h3>
+            <ul className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {sources.map((src) => (
+                <li key={src.url}>
+                  <a
+                    href={src.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                  >
+                    <ExternalLink className="w-3 h-3 shrink-0" aria-hidden="true" />
+                    <span>{src.title || src.url}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          {checkedLine ? (
+            <span className="text-xs text-text-muted">{checkedLine}</span>
+          ) : (
+            <span className="text-xs text-text-muted">
+              Official clinical monograph
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={openReportSheet}
+            className="text-xs text-text-muted hover:text-accent hover:underline transition-colors"
+          >
+            Report an error
+          </button>
+        </div>
+      </section>
+
+      {/* Report an Error Bottom Sheet */}
+      {reportOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Report an error"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !reportBusy) {
+              setReportOpen(false);
+            }
+          }}
+        >
+          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl bg-surface border border-border p-4 sm:p-5 space-y-3.5 shadow-2xl">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-semibold text-text">
+                  Report an error
+                </h3>
+                <p className="text-xs text-text-muted mt-0.5">
+                  {product.brandNameEn}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setReportOpen(false)}
+                className="rounded-md p-1 text-text-muted hover:text-text hover:bg-surface-raised transition-colors"
+              >
+                <X className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
+
+            {reportSuccess ? (
+              <div className="space-y-3">
+                <p className="rounded-xl bg-success/10 border border-success/40 px-3.5 py-2.5 text-xs text-success">
+                  Thank you — we will check it.
+                </p>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setReportOpen(false)}
+                    className={`${secondaryButtonClass} px-4 py-1.5 text-xs`}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitErrorReport} className="space-y-3">
+                {reportError && (
+                  <CatalogBanner tone="error">{reportError}</CatalogBanner>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-text-muted">
+                    What is wrong?
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ERROR_TOPICS.map((t) => {
+                      const active = reportTopic === t.value;
+                      return (
+                        <button
+                          key={t.value}
+                          type="button"
+                          onClick={() => setReportTopic(t.value)}
+                          className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+                            active
+                              ? 'bg-primary border-accent text-text'
+                              : 'bg-background border-border text-text-muted hover:text-text'
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <Field label="Details (max 1000 characters)">
+                  <textarea
+                    rows={3}
+                    required
+                    maxLength={1000}
+                    value={reportMessage}
+                    onChange={(e) => setReportMessage(e.target.value)}
+                    placeholder="Please describe what needs to be corrected…"
+                    className={`${inputClass} bg-background text-xs sm:text-sm py-2`}
+                  />
+                </Field>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={reportBusy}
+                    onClick={() => setReportOpen(false)}
+                    className={`${secondaryButtonClass} px-3.5 py-1.5 text-xs`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={reportBusy || !reportMessage.trim()}
+                    className={`${buttonClass} w-auto px-4 py-1.5 text-xs`}
+                  >
+                    {reportBusy ? 'Sending…' : 'Send'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

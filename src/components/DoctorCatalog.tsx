@@ -14,7 +14,6 @@ import {
   Package,
   Pill,
   Power,
-  RefreshCw,
   Scale,
   SlidersHorizontal,
   Search,
@@ -36,7 +35,6 @@ import {
   classifyDrugTherapeuticGroup,
   clearRecentDoctorDrugs,
   groupProductsByTherapeuticClass,
-  loadDoctorHomeSuggestions,
   loadDoctorSponsoredAd,
   loadProductDetail,
   loadRecentDoctorDrugs,
@@ -53,7 +51,6 @@ import {
   toggleSavedDoctorDrug,
   type CatalogProduct,
   type CompanySummary,
-  type DoctorHomeSuggestion,
   type DoctorSearchRow,
   type DoctorSponsoredAd,
   type SavedOrRecentDrugItem,
@@ -87,12 +84,23 @@ function getTimeOfDayGreeting(): string {
   return 'Good evening';
 }
 
-function extractDoctorFirstName(fullName: string): string | null {
+function extractDoctorFirstName(fullName: string, email?: string): string | null {
   const cleaned = fullName
-    .replace(/^(dr\.?|doctor)\s+/i, '')
+    .replace(/^(dr\.?|doctor|د\.?|دكتور)\s+/i, '')
     .trim();
-  if (!cleaned) return null;
-  return cleaned.split(/\s+/)[0] ?? null;
+  if (cleaned) {
+    return cleaned.split(/\s+/)[0] ?? null;
+  }
+  const emailLocal = (email ?? '').split('@')[0]?.trim() ?? '';
+  const cleanedEmail = emailLocal
+    .replace(/^(dr\.?|doctor)[._-]*/i, '')
+    .replace(/[._-]+/g, ' ')
+    .replace(/\d+$/g, '')
+    .trim();
+  if (!cleanedEmail) return null;
+  const firstToken = cleanedEmail.split(/\s+/)[0] ?? '';
+  if (!firstToken) return null;
+  return firstToken.charAt(0).toUpperCase() + firstToken.slice(1).toLowerCase();
 }
 
 export function CatalogBanner({
@@ -142,9 +150,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [suggestions, setSuggestions] = useState<DoctorHomeSuggestion[]>([]);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(true);
-  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
   const [sponsoredAd, setSponsoredAd] = useState<DoctorSponsoredAd | null>(null);
 
   // Saved & Recently Viewed drugs (local on device)
@@ -187,7 +192,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
   const searchReqSeqRef = useRef(0);
   const detailReqSeqRef = useRef(0);
-  const suggestionsReqSeqRef = useRef(0);
   const searchRecordTrackerRef = useRef<{ lastQuery: string | null }>({
     lastQuery: null,
   });
@@ -204,61 +208,60 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const loadSuggestions = useCallback(async () => {
-    const seq = ++suggestionsReqSeqRef.current;
-    const seed = seq - 1;
-    setSuggestionsLoading(true);
-    setSuggestionsError(null);
-    // First load shows today's pair and ad; each Refresh asks for another pair and ad.
-    const [res, ad] = await Promise.all([
-      loadDoctorHomeSuggestions(client, 2, seed),
-      loadDoctorSponsoredAd(client, seed),
-    ]);
-    if (seq !== suggestionsReqSeqRef.current) return;
-    setSponsoredAd(ad);
-    if (!res.ok) {
-      setSuggestionsError(res.message);
-      setSuggestions([]);
-    } else {
-      setSuggestions(res.data);
-    }
-    setSuggestionsLoading(false);
+  // Load doctor profile summary immediately on mount so the greeting name resolves right away
+  useEffect(() => {
+    let active = true;
+    void client.auth.getUser().then(async (userRes) => {
+      if (!active) return;
+      const user = userRes.data.user;
+      const userId = user?.id;
+      const meta = (user?.user_metadata ?? {}) as {
+        full_name?: string | null;
+        name?: string | null;
+      };
+      const metaName = (meta.full_name ?? meta.name ?? '').trim();
+      if (metaName) {
+        setProfileFullName((prev) => prev || metaName);
+      }
+      if (userId) {
+        void recordAppOpen(client);
+        const summary = await loadDoctorProfileSummary(client, userId);
+        if (!active) return;
+        const resolvedFullName = summary.fullName.trim() || metaName;
+        setProfileFullName(resolvedFullName);
+        setProfilePhone(summary.phone);
+        setProfileSpecialtyId(summary.specialtyId);
+        setProfileSaved({
+          fullName: resolvedFullName,
+          phone: summary.phone,
+          specialtyId: summary.specialtyId,
+        });
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, [client]);
 
-  // Load verified companies, active specialties, doctor profile summary, and home suggestions once on mount
+  // Load verified companies, active specialties, and sponsored ad once on mount
   useEffect(() => {
     let active = true;
     void Promise.all([
       loadVerifiedCompanies(client),
       loadSpecialtiesCatalog(client),
       listSpecialties(client),
-      client.auth.getUser(),
-    ]).then(async ([companyList, specialtyList, physicianSpecList, userRes]) => {
+      loadDoctorSponsoredAd(client, 0),
+    ]).then(([companyList, specialtyList, physicianSpecList, ad]) => {
       if (!active) return;
       setCompanies(companyList);
       setSpecialties(specialtyList);
       setPhysicianSpecialties(physicianSpecList);
-
-      const userId = userRes.data.user?.id;
-      if (userId) {
-        void recordAppOpen(client);
-        const summary = await loadDoctorProfileSummary(client, userId);
-        if (!active) return;
-        setProfileFullName(summary.fullName);
-        setProfilePhone(summary.phone);
-        setProfileSpecialtyId(summary.specialtyId);
-        setProfileSaved({
-          fullName: summary.fullName,
-          phone: summary.phone,
-          specialtyId: summary.specialtyId,
-        });
-      }
+      setSponsoredAd(ad);
     });
-    void loadSuggestions();
     return () => {
       active = false;
     };
-  }, [client, loadSuggestions]);
+  }, [client]);
 
   // Debounce search query by 300 ms
   useEffect(() => {
@@ -516,6 +519,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setSpecialtyId('');
     setTherapeuticGroup('');
     setSelectedSubclass('');
+    setFiltersOpen(false);
     setProfileOpen(false);
     setSavedOpen(false);
     setActiveProductId(null);
@@ -656,7 +660,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     });
     setProfileEditing(false);
     setProfileNotice({ tone: 'ok', text: 'Profile updated.' });
-    await loadSuggestions();
   };
 
   const startProfileEdit = () => {
@@ -677,13 +680,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     specialties.find((s) => s.id === profileSaved.specialtyId)?.nameEn ||
     '';
 
-  const doctorSpecialtyName =
-    suggestions[0]?.specialtyName ||
-    physicianSpecialties.find((s) => s.id === profileSpecialtyId)?.label ||
-    specialties.find((s) => s.id === profileSpecialtyId)?.nameEn ||
-    'Your specialty';
-
-  const doctorFirstName = extractDoctorFirstName(profileFullName);
+  const doctorFirstName = extractDoctorFirstName(profileFullName, access.email);
   const greetingText = doctorFirstName
     ? `${getTimeOfDayGreeting()}, Dr ${doctorFirstName}`
     : `${getTimeOfDayGreeting()}, Doctor`;
@@ -697,27 +694,27 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     <div className="min-h-screen bg-background text-text flex flex-col">
       {/* Sticky Translucent Header */}
       <header className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2">
           <div className="flex items-center">
             <button
               type="button"
               onClick={handleGoHome}
               aria-label="Pharmaty home"
               title="Return to home"
-              className="min-h-[44px] inline-flex items-center rounded-lg px-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-opacity duration-150 hover:opacity-90"
+              className="h-9 inline-flex items-center rounded-lg px-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-opacity duration-150 hover:opacity-90"
             >
-              <BrandLogo className="text-xl" />
+              <BrandLogo className="text-lg sm:text-xl" />
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <NotificationBell client={client} profileId={access.profileId} />
             <button
               type="button"
               aria-label="Saved and recent medicines"
               aria-expanded={savedOpen}
               title="Saved and recent medicines"
-              className={`relative min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-lg border px-2.5 sm:px-3.5 transition-colors duration-150 ${
+              className={`relative h-8 min-w-[32px] inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 sm:px-2.5 text-xs transition-colors duration-150 ${
                 savedOpen
                   ? 'border-accent bg-background text-accent'
                   : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
@@ -727,10 +724,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 setProfileOpen(false);
               }}
             >
-              <Bookmark className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline text-sm font-medium">Saved</span>
+              <Bookmark className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline text-xs font-medium">Saved</span>
               {savedDrugs.length > 0 && (
-                <span className="text-xs font-semibold tabular-nums text-accent">
+                <span className="text-[11px] font-semibold tabular-nums text-accent">
                   {savedDrugs.length}
                 </span>
               )}
@@ -740,7 +737,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               aria-label="My profile"
               aria-expanded={profileOpen}
               title="My profile"
-              className={`min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-lg border px-2.5 sm:px-3.5 transition-colors duration-150 ${
+              className={`h-8 min-w-[32px] inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 sm:px-2.5 text-xs transition-colors duration-150 ${
                 profileOpen
                   ? 'border-accent bg-background text-accent'
                   : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
@@ -752,18 +749,18 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 cancelProfileEdit();
               }}
             >
-              <User className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline text-sm font-medium">Profile</span>
+              <User className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline text-xs font-medium">Profile</span>
             </button>
             <button
               type="button"
               aria-label="Sign out"
               title="Sign out"
-              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface/60 px-2.5 sm:px-3.5 text-text hover:bg-surface-raised hover:text-danger transition-colors duration-150"
+              className="h-8 min-w-[32px] inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface/60 px-2 sm:px-2.5 text-xs text-text hover:bg-surface-raised hover:text-danger transition-colors duration-150"
               onClick={onSignOut}
             >
-              <Power className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline text-sm font-medium">Sign out</span>
+              <Power className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline text-xs font-medium">Sign out</span>
             </button>
           </div>
         </div>
@@ -1180,166 +1177,230 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           <>
             {error && <CatalogBanner tone="error">{error}</CatalogBanner>}
 
-            {/* Doctor Greeting Line + Specialty Chip */}
+            {/* Doctor Greeting Line */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-              <div className="flex flex-wrap items-center gap-2.5 text-sm text-text-muted">
-                <span className="font-medium text-text">{greetingText}</span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised border border-border px-2.5 py-0.5 text-xs font-medium text-accent">
-                  <Stethoscope className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>{doctorSpecialtyName}</span>
-                </span>
-              </div>
+              <span className="text-sm font-medium text-text">
+                {greetingText}
+              </span>
             </div>
 
-            {/* Top Search & Filter Toolbar: one search row, filters folded on phones */}
-            <section className="space-y-2">
-              <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-2.5">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <div className="relative flex-1 min-w-0">
-                    <Search
-                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="doctor-catalog-search"
-                      type="search"
-                      aria-label="Search by brand, generic name, or company"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search by brand, generic name, or company"
-                      className={`${inputClass} pl-10 min-h-[46px] bg-surface ${
-                        query ? 'pr-10' : ''
-                      }`}
-                    />
-                    {query && (
-                      <button
-                        type="button"
-                        aria-label="Clear search"
-                        title="Clear search"
-                        onClick={() => {
-                          setQuery('');
-                          setDebouncedQuery('');
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md text-text-muted hover:text-text hover:bg-surface-raised transition-colors duration-150"
-                      >
-                        <X className="w-4 h-4" aria-hidden="true" />
-                      </button>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    aria-expanded={filtersOpen}
-                    aria-controls="doctor-catalog-filters"
-                    onClick={() => setFiltersOpen((v) => !v)}
-                    className={`lg:hidden relative shrink-0 min-h-[46px] inline-flex items-center gap-1.5 rounded-xl border px-3 text-sm font-medium transition-colors duration-150 ${
-                      filtersOpen || activeFilterCount > 0
-                        ? 'border-accent/70 bg-primary/20 text-text'
-                        : 'border-border bg-surface text-text-muted hover:text-text'
+            {/* Top Search Bar + Filter Toggle Icon */}
+            <section className="space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Search
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="doctor-catalog-search"
+                    type="search"
+                    aria-label="Search by brand, generic name, or company"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search by brand, generic name, or company"
+                    className={`${inputClass} pl-10 min-h-[44px] bg-surface ${
+                      query ? 'pr-10' : ''
                     }`}
-                  >
-                    <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
-                    <span>Filters</span>
-                    {activeFilterCount > 0 && (
-                      <span className="ml-0.5 inline-flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold text-background tabular-nums">
-                        {activeFilterCount}
-                      </span>
-                    )}
-                  </button>
-                </div>
-
-              <div
-                  id="doctor-catalog-filters"
-                  className={`${filtersOpen ? 'grid' : 'hidden'} grid-cols-1 sm:grid-cols-3 gap-2 lg:flex lg:items-center lg:gap-2.5`}
-                >
-                  <div className="lg:w-52">
-                    <select
-                      id="doctor-catalog-class"
-                      aria-label="Filter by drug class"
-                      value={therapeuticGroup}
-                      onChange={(e) => {
-                        setTherapeuticGroup(
-                          e.target.value as TherapeuticGroupKey | ''
-                        );
-                        setSelectedSubclass('');
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      aria-label="Clear search"
+                      title="Clear search"
+                      onClick={() => {
+                        setQuery('');
+                        setDebouncedQuery('');
                       }}
-                      className={`${inputClass} min-h-[44px] bg-surface py-2 text-sm`}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded-md text-text-muted hover:text-text hover:bg-surface-raised transition-colors duration-150"
                     >
-                      <option value="">All drug classes</option>
-                      {THERAPEUTIC_GROUPS.map((group) => (
-                        <option key={group.key} value={group.key}>
-                          {group.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="lg:w-44">
-                    <select
-                      id="doctor-catalog-company"
-                      aria-label="Filter by company"
-                      value={companyId}
-                      onChange={(e) => setCompanyId(e.target.value)}
-                      className={`${inputClass} min-h-[44px] bg-surface py-2 text-sm`}
-                    >
-                      <option value="">All companies</option>
-                      {companies.map((comp) => (
-                        <option key={comp.id} value={comp.id}>
-                          {comp.companyName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="lg:w-44">
-                    <select
-                      id="doctor-catalog-specialty"
-                      aria-label="Filter by specialty"
-                      value={specialtyId}
-                      onChange={(e) => setSpecialtyId(e.target.value)}
-                      className={`${inputClass} min-h-[44px] bg-surface py-2 text-sm`}
-                    >
-                      <option value="">All specialties</option>
-                      {specialties.map((spec) => (
-                        <option key={spec.id} value={spec.id}>
-                          {spec.nameEn}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      <X className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
 
-
-                {isSearchingOrFiltering && (
-                  <button
-                    type="button"
-                    onClick={clearAllFilters}
-                    className="hidden lg:inline-flex min-h-[40px] items-center text-xs font-medium text-accent hover:underline px-2 shrink-0"
-                  >
-                    Reset
-                  </button>
-                )}
+                <button
+                  type="button"
+                  aria-label="Toggle filters"
+                  title="Filters"
+                  aria-expanded={filtersOpen}
+                  aria-controls="doctor-catalog-filters"
+                  onClick={() => setFiltersOpen((v) => !v)}
+                  className={`relative shrink-0 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 text-xs sm:text-sm font-medium transition-colors duration-150 ${
+                    filtersOpen || activeFilterCount > 0
+                      ? 'border-accent/70 bg-primary/20 text-text'
+                      : 'border-border bg-surface text-text-muted hover:text-text'
+                  }`}
+                >
+                  <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
+                  {activeFilterCount > 0 && (
+                    <span className="inline-flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold text-background tabular-nums">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
               </div>
 
-              {/* Active filters as small removable chips (phones, when the panel is closed) */}
+              {/* Filter Details Panel: opens when pressing the filter icon and closes when pressing it again */}
+              {filtersOpen && (
+                <div
+                  id="doctor-catalog-filters"
+                  className="rounded-xl bg-surface border border-border p-3 space-y-2.5"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                      <select
+                        id="doctor-catalog-class"
+                        aria-label="Filter by drug class"
+                        value={therapeuticGroup}
+                        onChange={(e) => {
+                          setTherapeuticGroup(
+                            e.target.value as TherapeuticGroupKey | ''
+                          );
+                          setSelectedSubclass('');
+                        }}
+                        className={`${inputClass} min-h-[40px] bg-background py-1.5 text-xs sm:text-sm`}
+                      >
+                        <option value="">All drug classes</option>
+                        {THERAPEUTIC_GROUPS.map((group) => (
+                          <option key={group.key} value={group.key}>
+                            {group.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <select
+                        id="doctor-catalog-company"
+                        aria-label="Filter by company"
+                        value={companyId}
+                        onChange={(e) => setCompanyId(e.target.value)}
+                        className={`${inputClass} min-h-[40px] bg-background py-1.5 text-xs sm:text-sm`}
+                      >
+                        <option value="">All companies</option>
+                        {companies.map((comp) => (
+                          <option key={comp.id} value={comp.id}>
+                            {comp.companyName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <select
+                        id="doctor-catalog-specialty"
+                        aria-label="Filter by specialty"
+                        value={specialtyId}
+                        onChange={(e) => setSpecialtyId(e.target.value)}
+                        className={`${inputClass} min-h-[40px] bg-background py-1.5 text-xs sm:text-sm`}
+                      >
+                        <option value="">All specialties</option>
+                        {specialties.map((spec) => (
+                          <option key={spec.id} value={spec.id}>
+                            {spec.nameEn}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Drug Classes chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pt-1">
+                    {THERAPEUTIC_GROUPS.map((group) => {
+                      const active = therapeuticGroup === group.key;
+                      return (
+                        <button
+                          key={group.key}
+                          type="button"
+                          title={group.examples}
+                          onClick={() => {
+                            if (active) {
+                              setTherapeuticGroup('');
+                              setSelectedSubclass('');
+                            } else {
+                              handleFilterByClass(group.key);
+                            }
+                          }}
+                          className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                            active
+                              ? 'bg-primary border-accent text-text'
+                              : 'bg-background/60 border-border text-text-muted hover:text-text hover:border-accent/50'
+                          }`}
+                        >
+                          {group.shortLabel}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Subclasses row when multiple subclasses match */}
+                  {isSearchingOrFiltering && allSubclasses.length > 1 && (
+                    <div
+                      className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pt-2 border-t border-border/70"
+                      aria-label="Filter by subclass"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSubclass('')}
+                        className={`shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors tabular-nums ${
+                          selectedSubclass === ''
+                            ? 'bg-primary border-accent text-text'
+                            : 'bg-background/50 border-border text-text-muted hover:text-text'
+                        }`}
+                      >
+                        All ({rows.length})
+                      </button>
+                      {allSubclasses.map((sub) => {
+                        const active = selectedSubclass === sub.subclassLabel;
+                        return (
+                          <button
+                            key={`${sub.groupKey}-${sub.subclassLabel}`}
+                            type="button"
+                            onClick={() =>
+                              setSelectedSubclass(
+                                active ? '' : sub.subclassLabel
+                              )
+                            }
+                            className={`shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors tabular-nums whitespace-nowrap ${
+                              active
+                                ? 'bg-primary border-accent text-text'
+                                : 'bg-background/50 border-border text-text-muted hover:text-text'
+                            }`}
+                          >
+                            {sub.subclassLabel} ({sub.items.length})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Active filter chips when filter panel is closed */}
               {!filtersOpen && activeFilterChips.length > 0 && (
-                <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
                   {activeFilterChips.map((chip) => (
                     <button
                       key={chip.key}
                       type="button"
                       onClick={chip.clear}
                       aria-label={`Remove filter ${chip.label}`}
-                      className="shrink-0 inline-flex items-center gap-1 rounded-full border border-accent/50 bg-primary/15 px-2.5 py-1 text-xs text-text"
+                      className="shrink-0 inline-flex items-center gap-1 rounded-full border border-accent/50 bg-primary/15 px-2.5 py-0.5 text-xs text-text"
                     >
-                      <span className="max-w-[160px] truncate">{chip.label}</span>
-                      <X className="w-3 h-3 text-text-muted" aria-hidden="true" />
+                      <span className="max-w-[160px] truncate">
+                        {chip.label}
+                      </span>
+                      <X
+                        className="w-3 h-3 text-text-muted"
+                        aria-hidden="true"
+                      />
                     </button>
                   ))}
                   <button
                     type="button"
                     onClick={clearAllFilters}
-                    className="shrink-0 px-2 py-1 text-xs font-medium text-accent hover:underline"
+                    className="shrink-0 px-2 py-0.5 text-xs font-medium text-accent hover:underline"
                   >
                     Clear all
                   </button>
@@ -1347,268 +1408,75 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               )}
             </section>
 
-            {/* Home View (when search box is empty and no filter is chosen) */}
+            {/* Home View (when not actively filtering/searching) */}
             {!isSearchingOrFiltering ? (
-              <div className="space-y-5">
-                {/* Section a: For your specialty */}
-                <section className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-base font-semibold text-text">
-                      For your specialty: {doctorSpecialtyName}
-                    </h2>
-                    <button
-                      type="button"
-                      aria-label="Refresh specialty suggestions"
-                      title="Refresh suggestions"
-                      disabled={suggestionsLoading}
-                      onClick={() => void loadSuggestions()}
-                      className="min-h-[36px] inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-text-muted hover:text-text hover:bg-surface-raised/70 disabled:opacity-50 transition-colors duration-150"
-                    >
-                      <RefreshCw
-                        className={`w-3.5 h-3.5 ${
-                          suggestionsLoading ? 'animate-spin' : ''
-                        }`}
-                        aria-hidden="true"
-                      />
-                      <span>Refresh</span>
-                    </button>
-                  </div>
-
-                  {suggestionsError && (
-                    <CatalogBanner tone="error">
-                      {suggestionsError}
-                    </CatalogBanner>
-                  )}
-
-                  {suggestionsLoading ? (
-                    <div
-                      role="status"
-                      aria-label="Loading specialty suggestions"
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                    >
-                      {[0, 1].map((idx) => (
-                        <div
-                          key={idx}
-                          className="rounded-2xl bg-surface border border-border p-5 space-y-3 animate-pulse"
-                        >
-                          <div className="h-5 w-40 rounded bg-surface-raised" />
-                          <div className="h-3.5 w-28 rounded bg-surface-raised" />
-                          <div className="h-3.5 w-36 rounded bg-surface-raised" />
-                          <div className="h-6 w-24 rounded-md bg-surface-raised" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : suggestions.length === 0 ? (
-                    <div className="rounded-2xl bg-surface border border-border p-8 text-center text-sm text-text-muted">
-                      No published products for this specialty yet. Use the search box above to search the catalog.
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl bg-surface border border-border overflow-hidden divide-y divide-border">
-                      {suggestions.slice(0, 2).map((item) => {
-                        const classified = classifyDrugTherapeuticGroup(
-                          item.drugClassNameEn,
-                          item.genericNameEn,
-                          item.category
-                        );
-                        const meta = [
-                          item.genericNameEn ?? 'Dietary Supplement',
-                          item.dosageForm,
-                          item.companyName,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ');
-                        return (
-                          <a
-                            key={item.productId}
-                            href={buildProductRouteHash(item.productId)}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              openProductPage(item.productId);
-                            }}
-                            className="group flex items-center gap-3 px-4 py-3 hover:bg-surface-raised/60 transition-colors duration-150"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-baseline gap-2 min-w-0">
-                                <span className="font-semibold text-[15px] text-text group-hover:text-accent transition-colors duration-150 truncate">
-                                  {item.brandNameEn}
-                                </span>
-                                <span className="hidden sm:inline shrink-0 text-xs text-text-muted truncate">
-                                  {classified.subclassLabel}
-                                </span>
-                              </div>
-                              <div className="mt-0.5 text-xs text-text-muted truncate">
-                                <span className="text-accent font-medium">
-                                  {meta.split(' · ')[0]}
-                                </span>
-                                {meta.includes(' · ') &&
-                                  ` · ${meta.split(' · ').slice(1).join(' · ')}`}
-                              </div>
-                            </div>
-                            <ChevronRight
-                              className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors duration-150"
-                              aria-hidden="true"
-                            />
-                          </a>
-                        );
-                      })}
-                    </div>
-                  )}
-                </section>
-
-                {/* Section b: Browse by drug class (compact tiles) */}
-                <section className="space-y-3">
-                  <h2 className="text-base font-semibold text-text">
-                    Browse by drug class
-                  </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {THERAPEUTIC_GROUPS.map((group) => (
-                      <button
-                        key={group.key}
-                        type="button"
-                        title={group.examples}
-                        onClick={() => handleFilterByClass(group.key)}
-                        className="group flex items-center justify-between gap-2 rounded-xl bg-surface border border-border hover:border-accent/60 hover:bg-surface-raised/50 px-3 py-2.5 min-h-[52px] text-left transition-colors duration-150"
-                      >
-                        <span className="text-[13px] leading-snug font-medium text-text group-hover:text-accent line-clamp-2">
-                          {group.shortLabel}
-                        </span>
-                        <ChevronRight
-                          className="w-3.5 h-3.5 shrink-0 text-text-muted group-hover:text-accent"
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Section c: Clearly separated Sponsored ad space */}
-                <section aria-label="Sponsored">
-                  <SponsoredAdCard
-                    ad={sponsoredAd}
-                    onAdClick={(adId) =>
-                      void recordSponsoredAdEvent(client, adId, 'click')
-                    }
-                  />
-                </section>
-              </div>
+              <section aria-label="Ad">
+                <SponsoredAdCard
+                  ad={sponsoredAd}
+                  onAdClick={(adId) =>
+                    void recordSponsoredAdEvent(client, adId, 'click')
+                  }
+                />
+              </section>
             ) : (
               /* Search & Filter Results View */
-              <section className="space-y-4">
+              <section className="space-y-3">
                 {loading ? (
                   <div
                     role="status"
                     aria-label="Loading catalog"
-                    className="rounded-2xl bg-surface border border-border overflow-hidden"
+                    className="rounded-xl bg-surface border border-border overflow-hidden divide-y divide-border"
                   >
-                    <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                      <div className="h-4 w-20 rounded bg-surface-raised animate-pulse" />
-                      <div className="h-5 w-28 rounded-full bg-surface-raised animate-pulse" />
-                    </div>
-                    <div className="divide-y divide-border">
-                      {[0, 1, 2, 3, 4].map((idx) => (
-                        <div
-                          key={idx}
-                          className="px-4 py-4 flex items-center justify-between gap-4 animate-pulse"
-                        >
-                          <div className="space-y-2 flex-1">
-                            <div className="h-4 w-44 rounded bg-surface-raised" />
-                            <div className="h-3.5 w-32 rounded bg-surface-raised" />
-                            <div className="h-3 w-52 rounded bg-surface-raised" />
-                          </div>
-                          <div className="h-4 w-4 rounded bg-surface-raised shrink-0" />
+                    {[0, 1, 2, 3, 4].map((idx) => (
+                      <div
+                        key={idx}
+                        className="px-3.5 py-2.5 flex items-center justify-between gap-3 animate-pulse"
+                      >
+                        <div className="space-y-1.5 flex-1">
+                          <div className="h-3.5 w-40 rounded bg-surface-raised" />
+                          <div className="h-3 w-28 rounded bg-surface-raised" />
                         </div>
-                      ))}
-                    </div>
+                        <div className="h-4 w-4 rounded bg-surface-raised shrink-0" />
+                      </div>
+                    ))}
                   </div>
                 ) : rows.length === 0 ? (
-                  <div className="rounded-2xl bg-surface border border-border p-10 sm:p-12 text-center space-y-2.5">
-                    <div className="mx-auto w-10 h-10 rounded-full bg-surface-raised border border-border flex items-center justify-center text-text-muted">
-                      <Search className="w-5 h-5" aria-hidden="true" />
+                  <div className="rounded-xl bg-surface border border-border p-8 text-center space-y-2">
+                    <div className="mx-auto w-9 h-9 rounded-full bg-surface-raised border border-border flex items-center justify-center text-text-muted">
+                      <Search className="w-4 h-4" aria-hidden="true" />
                     </div>
-                    <h2 className="text-base font-semibold text-text">
+                    <h2 className="text-sm sm:text-base font-semibold text-text">
                       No published products match your search.
                     </h2>
-                    <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto leading-relaxed">
+                    <p className="text-xs text-text-muted max-w-md mx-auto leading-relaxed">
                       Try checking the spelling, searching by generic active ingredient (e.g. bisoprolol, paracetamol), or clearing active filters.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {/* One slim line: count + one scrollable row of class (or subclass) chips */}
-                    <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-2.5">
+                    {/* Slim count line */}
+                    <div className="flex items-center justify-between gap-2 px-0.5">
                       <span className="text-xs text-text-muted tabular-nums">
-                        {rows.length} of {totalCount}{' '}
-                        {totalCount === 1 ? 'result' : 'results'}
+                        Showing {rows.length} of {totalCount}{' '}
+                        {totalCount === 1 ? 'medication' : 'medications'}
                         {therapeuticGroup && (
                           <>
                             {' '}in{' '}
                             <span className="text-text font-medium">
-                              {THERAPEUTIC_GROUPS.find((g) => g.key === therapeuticGroup)
-                                ?.shortLabel ?? 'this class'}
+                              {THERAPEUTIC_GROUPS.find(
+                                (g) => g.key === therapeuticGroup
+                              )?.shortLabel ?? 'this class'}
                             </span>
                           </>
                         )}
                       </span>
                     </div>
 
-                    {(therapeuticGroup ? allSubclasses.length > 1 : groupedClasses.length > 1) && (
-                      <div
-                        className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pb-0.5"
-                        aria-label={therapeuticGroup ? 'Filter by subclass' : 'Filter by drug class'}
-                      >
-                        {therapeuticGroup ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedSubclass('')}
-                              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors tabular-nums ${
-                                selectedSubclass === ''
-                                  ? 'bg-primary border-accent text-text'
-                                  : 'bg-surface border-border text-text-muted hover:text-text'
-                              }`}
-                            >
-                              All ({rows.length})
-                            </button>
-                            {allSubclasses.map((sub) => {
-                              const active = selectedSubclass === sub.subclassLabel;
-                              return (
-                                <button
-                                  key={`${sub.groupKey}-${sub.subclassLabel}`}
-                                  type="button"
-                                  onClick={() => setSelectedSubclass(active ? '' : sub.subclassLabel)}
-                                  className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors tabular-nums whitespace-nowrap ${
-                                    active
-                                      ? 'bg-primary border-accent text-text'
-                                      : 'bg-surface border-border text-text-muted hover:text-text'
-                                  }`}
-                                >
-                                  {sub.subclassLabel} ({sub.items.length})
-                                </button>
-                              );
-                            })}
-                          </>
-                        ) : (
-                          groupedClasses.map((grp) => (
-                            <button
-                              key={grp.groupKey}
-                              type="button"
-                              onClick={() => handleFilterByClass(grp.groupKey)}
-                              className="shrink-0 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-text-muted hover:text-text hover:border-accent/60 transition-colors tabular-nums whitespace-nowrap"
-                            >
-                              {THERAPEUTIC_GROUPS.find((g) => g.key === grp.groupKey)?.shortLabel ??
-                                grp.groupLabel}{' '}
-                              ({grp.totalCount})
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    )}
-
-                    {/* One list; thin sticky headings instead of a box per group */}
-                    <div className="rounded-2xl bg-surface border border-border overflow-clip">
+                    {/* Compact medication list grouped by Subclass: each row shows ONLY Brand, Generic/Scientific, and Company */}
+                    <div className="rounded-xl bg-surface border border-border overflow-clip">
                       {visibleSubclasses.map((sub) => (
                         <div key={`${sub.groupKey}-${sub.subclassLabel}`}>
-                          <div className="sticky top-16 z-10 flex items-center justify-between gap-2 px-4 py-1.5 bg-surface-raised/95 backdrop-blur border-y border-border first:border-t-0">
+                          <div className="sticky top-16 z-10 flex items-center justify-between gap-2 px-3.5 py-1.5 bg-surface-raised/95 backdrop-blur border-y border-border first:border-t-0">
                             <h3 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted truncate">
                               {sub.subclassLabel}
                             </h3>
@@ -1618,9 +1486,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                           </div>
                           <div className="divide-y divide-border">
                             {sub.items.map((row) => {
-                              const meta = [row.strength, row.dosageForm, row.companyName]
-                                .filter(Boolean)
-                                .join(' · ');
+                              const genericName =
+                                row.genericNameEn ?? 'Dietary Supplement';
                               return (
                                 <a
                                   key={row.productId}
@@ -1629,18 +1496,26 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                                     e.preventDefault();
                                     openProductPage(row.productId);
                                   }}
-                                  className="group flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                                  className="group flex items-center justify-between gap-3 px-3.5 py-2 hover:bg-surface-raised/60 transition-colors duration-150"
                                 >
-                                  <div className="min-w-0 flex-1">
-                                    <div className="font-semibold text-sm sm:text-[15px] text-text group-hover:text-accent transition-colors duration-150 truncate">
-                                      {row.brandNameEn}
-                                    </div>
-                                    <div className="mt-0.5 text-xs text-text-muted truncate tabular-nums">
-                                      <span className="font-medium text-accent">
-                                        {row.genericNameEn ?? 'Dietary Supplement'}
+                                  <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-3">
+                                    <div className="min-w-0 truncate">
+                                      <span className="font-semibold text-sm text-text group-hover:text-accent transition-colors duration-150">
+                                        {row.brandNameEn}
                                       </span>
-                                      {meta && ` · ${meta}`}
+                                      <span
+                                        className="mx-1.5 text-text-muted text-xs"
+                                        aria-hidden="true"
+                                      >
+                                        ·
+                                      </span>
+                                      <span className="text-xs font-medium text-accent">
+                                        {genericName}
+                                      </span>
                                     </div>
+                                    <span className="text-xs text-text-muted truncate shrink-0">
+                                      {row.companyName}
+                                    </span>
                                   </div>
                                   <ChevronRight
                                     className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors duration-150"
@@ -2010,16 +1885,13 @@ export function SponsoredAdCard({
   const content = (
     <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
       <div className="w-full rounded-[15px] bg-surface/95 p-4 sm:p-5 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] uppercase tracking-wider text-text-muted">
-            Sponsored
-          </span>
-          {ad.sponsorName && (
+        {ad.sponsorName && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="text-xs font-medium text-accent">
               {ad.sponsorName}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {validImageUrl && (
           <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center">

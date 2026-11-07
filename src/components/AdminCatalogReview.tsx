@@ -1637,41 +1637,27 @@ function CompanyProductListView({
           No drugs match your search.
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden">
           {visibleGroups.map((grp) =>
             grp.subclasses.map((sub) => (
-              <div
-                key={`${grp.groupKey}-${sub.subclassLabel}`}
-                className="rounded-xl bg-[#263744] border border-[#304451] overflow-hidden"
-              >
-                <div className="px-4 py-2.5 bg-[#1F2D38]/80 border-b border-[#304451] flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-[#F2F5F8]">
-                      {sub.subclassLabel}
-                    </span>
-                    <span className="text-xs text-[#B8C3CC]">·</span>
-                    <span className="text-xs text-[#B8C3CC]">
-                      {grp.groupLabel}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono text-[#B8C3CC] tabular-nums">
-                    {sub.items.length}{' '}
-                    {sub.items.length === 1 ? 'drug' : 'drugs'}
+              <div key={`${grp.groupKey}-${sub.subclassLabel}`}>
+                <div className="px-3.5 py-1.5 bg-[#1F2D38]/90 border-y border-[#304451] first:border-t-0 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC] truncate">
+                    {sub.subclassLabel}
+                  </span>
+                  <span className="text-[11px] font-mono text-[#B8C3CC] tabular-nums shrink-0">
+                    {sub.items.length}
                   </span>
                 </div>
                 <ul className="divide-y divide-[#304451]">
                   {sub.items.map((product) => {
                     const checked = checkedIds.includes(product.id);
-                    const presentation = [
-                      product.market?.strength,
-                      product.market?.dosageForm,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ');
+                    const genericName =
+                      product.genericNameEn ?? 'Dietary Supplement';
                     return (
                       <li
                         key={product.id}
-                        className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                        className={`flex items-center gap-3 px-3.5 py-2 transition-colors ${
                           checked ? 'bg-[#1769AA]/15' : 'hover:bg-[#1F2D38]'
                         }`}
                       >
@@ -1688,20 +1674,25 @@ function CompanyProductListView({
                         <button
                           type="button"
                           onClick={() => onOpen(product.id)}
-                          className="flex-1 min-w-0 text-left"
+                          className="flex-1 min-w-0 text-left flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-3"
                         >
-                          <div className="text-sm font-medium text-[#F2F5F8] truncate hover:text-[#5DB4F2]">
-                            {product.brandNameEn}
+                          <div className="min-w-0 truncate">
+                            <span className="text-sm font-semibold text-[#F2F5F8] hover:text-[#5DB4F2]">
+                              {product.brandNameEn}
+                            </span>
+                            <span
+                              className="mx-1.5 text-xs text-[#B8C3CC]"
+                              aria-hidden="true"
+                            >
+                              ·
+                            </span>
+                            <span className="text-xs font-medium text-[#5DB4F2]">
+                              {genericName}
+                            </span>
                           </div>
-                          <div className="text-xs text-[#B8C3CC] truncate">
-                            {[
-                              product.genericNameEn,
-                              presentation ||
-                                cleanDrugClassLabel(product.drugClassNameEn),
-                            ]
-                              .filter(Boolean)
-                              .join(' · ')}
-                          </div>
+                          <span className="text-xs text-[#B8C3CC] truncate shrink-0">
+                            {product.companyName}
+                          </span>
                         </button>
                         {selectable ? (
                           <button
@@ -1711,7 +1702,7 @@ function CompanyProductListView({
                               setSummary(null);
                               setConfirmingIds([product.id]);
                             }}
-                            className="shrink-0 rounded-md border border-[#38C976]/60 text-[#38C976] hover:bg-[#38C976] hover:text-[#1F2D38] disabled:opacity-50 text-xs font-semibold px-3 py-1.5 transition-colors"
+                            className="shrink-0 rounded-md border border-[#38C976]/60 text-[#38C976] hover:bg-[#38C976] hover:text-[#1F2D38] disabled:opacity-50 text-xs font-semibold px-2.5 py-1 transition-colors"
                           >
                             Publish
                           </button>

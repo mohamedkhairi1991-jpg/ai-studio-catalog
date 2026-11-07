@@ -58,6 +58,11 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-07 — Claude (review of AI Studio's doctor home/search refinements)
+
+- Reviewed AI Studio's push 576f7f1: tests (74), type-check and build pass; no database files touched; checked the phone screens in the preview.
+- Put back the small **"Sponsored"** tag on the ad card (`SponsoredAdCard`). Owner decision: ads always keep it. **AI Studio: please don't remove it again.**
+
 ### 2026-11-07 — Google AI Studio (Doctor Home & Search refinements: greeting, filter icon toggle, minimal home & compact rows)
 - Updated `src/components/DoctorCatalog.tsx` and `src/components/NotificationBell.tsx`:
   - Kept the doctor greeting line (`Good morning/afternoon/evening, Dr <Name>`) above the search bar without the specialty badge, resolving the doctor's name immediately from `profiles.full_name`, auth `user_metadata`, or `access.email` fallback.

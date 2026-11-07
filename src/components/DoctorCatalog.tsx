@@ -1885,13 +1885,17 @@ export function SponsoredAdCard({
   const content = (
     <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
       <div className="w-full rounded-[15px] bg-surface/95 p-4 sm:p-5 space-y-3">
-        {ad.sponsorName && (
-          <div className="flex flex-wrap items-center justify-end gap-2">
+        {/* Owner decision: ads always keep the small "Sponsored" tag. */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] uppercase tracking-wider text-text-muted">
+            Sponsored
+          </span>
+          {ad.sponsorName && (
             <span className="text-xs font-medium text-accent">
               {ad.sponsorName}
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {validImageUrl && (
           <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center">

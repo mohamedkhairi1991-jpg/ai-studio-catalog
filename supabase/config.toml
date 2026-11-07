@@ -417,3 +417,6 @@ enabled = true
 # session and administrator role itself, so platform JWT verification is off.
 [functions.ai-draft-product]
 verify_jwt = false
+
+[functions.signup-captcha-hook]
+verify_jwt = false

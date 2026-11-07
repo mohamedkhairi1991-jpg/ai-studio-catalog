@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { captchaOptions } from './captcha';
+import { captchaOptions, signupCaptchaMetadata } from './captcha';
 
 // ---------- Types ----------
 export type ProfessionalStatus = 'pending' | 'approved' | 'rejected' | 'documents_requested';
@@ -230,22 +230,27 @@ export async function submitSignUpWithConsent(
     phone: input.phone.trim(),
     specialty_id: input.specialtyId.trim(),
   };
-  const { data, error } = await client.auth.signUp({
+  // The robot-check token goes in metadata for the sign-up hook
+  // (a DB trigger removes it), and as captchaToken while the old
+  // project-wide Supabase captcha setting may still be on.
+  const token = input.captchaToken ?? null;
+  const data = { ...metadata, ...signupCaptchaMetadata(token) };
+  const { data: result, error } = await client.auth.signUp({
     email: input.email.trim().toLowerCase(),
     password: input.password,
     options:
       typeof window === 'undefined'
-        ? { data: metadata, ...captchaOptions(input.captchaToken ?? null) }
+        ? { data, ...captchaOptions(token) }
         : {
             emailRedirectTo: window.location.origin + import.meta.env.BASE_URL,
-            data: metadata,
-            ...captchaOptions(input.captchaToken ?? null),
+            data,
+            ...captchaOptions(token),
           },
   });
   if (error) return fail(error.message);
   return {
     ok: true,
-    sessionCreated: Boolean((data as { session?: unknown } | null)?.session),
+    sessionCreated: Boolean((result as { session?: unknown } | null)?.session),
   };
 }
 

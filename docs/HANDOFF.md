@@ -58,6 +58,29 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-08 — Claude (robot check at sign-up only)
+- Cloudflare Turnstile now shows **only on the sign-up form**. Sign-in and
+  password reset have no robot check (owner request).
+- Why a hook: the Supabase Auth captcha setting is project-wide (it applies to
+  every sign-in). It must be turned **off**; sign-up is checked instead by the
+  `signup-captcha-hook` edge function, set as the Auth **Before User Created**
+  hook. Only new accounts reach that hook, so sign-in never asks.
+- The form sends the token as `captcha_token` in sign-up metadata; trigger
+  `auth_users_strip_captcha_token` removes it before the user row is saved
+  (migration `20261108120000_strip_signup_captcha_token.sql`).
+- Safe while switching: if Supabase still asks for a captcha on sign-in or
+  reset, the form shows the widget for that try instead of failing.
+- **Owner steps (Supabase dashboard, in this order):**
+  1. Edge Functions → Secrets: add `TURNSTILE_SECRET_KEY` (same Cloudflare secret).
+  2. Authentication → Attack Protection: turn **off** CAPTCHA protection.
+  3. Authentication → Hooks → Before User Created → HTTPS → function
+     `signup-captcha-hook`; generate the secret and save it as Edge Function
+     secret `BEFORE_USER_CREATED_HOOK_SECRET`.
+  Never paste either secret into chat or code.
+- **AI Studio:** keep `TurnstileWidget` on the sign-up form only (`showCaptchaFor`
+  in `src/lib/captcha.ts`); pass `captchaToken` to `submitSignUpWithConsent`.
+  Do not add the widget back to sign-in.
+
 ### 2026-11-07 — Claude (review of AI Studio's feedback screens)
 
 - Reviewed AI Studio's push 9709a6b (Sources + Report an error, "Can't find this drug?", admin Feedback tab): type-check, 78 tests and build pass; it uses `src/lib/feedback.ts` only; `supabase/` untouched. No changes needed.
@@ -288,8 +311,7 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
   is only in Supabase Auth → Attack Protection.
 - Hostnames allowed in Cloudflare: the GitHub Pages site and the AI Studio preview.
   `VITE_CAPTCHA_DISABLED=true` turns the widget off for local tests only.
-- **AI Studio:** keep the widget on every auth form you add; never call
-  `client.auth.signIn*` / `signUp` / `resetPasswordForEmail` without `captchaToken`.
+- (Replaced on 2026-11-08: robot check is now at sign-up only — see that entry.)
 
 ### 2026-11-04 — Google AI Studio (sponsored ads + anonymous usage statistics UI)
 - **What changed:**

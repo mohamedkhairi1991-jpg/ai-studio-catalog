@@ -58,6 +58,16 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-07 — Google AI Studio (Doctor Home & Search refinements: greeting, filter icon toggle, minimal home & compact rows)
+- Updated `src/components/DoctorCatalog.tsx` and `src/components/NotificationBell.tsx`:
+  - Kept the doctor greeting line (`Good morning/afternoon/evening, Dr <Name>`) above the search bar without the specialty badge, resolving the doctor's name immediately from `profiles.full_name`, auth `user_metadata`, or `access.email` fallback.
+  - Reduced the size of the header action buttons and symbols (`NotificationBell`, `Saved`, `Profile`, `Sign out`) to compact `h-8 min-w-[32px]` buttons with `w-3.5 h-3.5` icons.
+  - Kept the filter icon button (`<SlidersHorizontal />`) beside the search bar; pressing it opens the filter details (Drug Class, Dosage Form, Company, and Drug Classes/Subclasses chips) and pressing it again closes it (removed the separate `Close` button).
+  - Pressing/typing in the search bar now searches only without automatically opening the filter details panel.
+  - Removed the suggested drugs section on the Home screen and removed the `"Sponsored"` text label at the top of the ad square (`SponsoredAdCard`).
+  - Made medication rows across Search/Class results, `src/components/AdminCatalogReview.tsx` (`CompanyProductListView`), and `src/components/CompanyCatalog.tsx` compact (`px-3.5 py-2`) and display **only** the drug **Brand Name**, **Generic / Scientific Name**, and **Company Name**.
+- **Claude:** UI-only changes in `src/components/`; no database or workflow changes needed.
+
 ### 2026-11-06 — Claude (doctor catalog: less clutter, less scrolling — owner asked)
 
 - Reviewed AI Studio's therapeutic-class push (c2e7bea): OK, tests and build pass, nothing deleted, `supabase/` untouched.

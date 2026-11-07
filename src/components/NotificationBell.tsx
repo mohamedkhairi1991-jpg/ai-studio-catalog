@@ -151,13 +151,13 @@ export function NotificationBell({ client, profileId }: NotificationBellProps) {
         }
         aria-expanded={open}
         title="Notifications"
-        className={`relative min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border px-2.5 py-2 transition-colors duration-150 ${
+        className={`relative h-8 min-w-[32px] inline-flex items-center justify-center rounded-lg border px-2 py-1.5 transition-colors duration-150 ${
           open
             ? 'border-[#5DB4F2] bg-[#1F2D38] text-[#5DB4F2]'
             : 'border-[#304451] bg-[#263744]/80 text-[#F2F5F8] hover:bg-[#304451]'
         }`}
       >
-        <Bell className="w-4 h-4 shrink-0" aria-hidden="true" />
+        <Bell className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
         {unreadCount > 0 && (
           <span
             data-testid="notification-unread-badge"

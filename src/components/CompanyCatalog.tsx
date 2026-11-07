@@ -6,7 +6,6 @@ import {
   MARKET_STATUS_LABELS,
   REGISTRATION_STATUS_LABELS,
   STATUS_LABELS,
-  cleanDrugClassLabel,
   filterProductsByStatus,
   groupProductsByTherapeuticClass,
   loadCatalogBundle,
@@ -395,16 +394,18 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
                       key={`${grp.groupKey}-${sub.subclassLabel}`}
                       className="divide-y divide-[#304451]/70"
                     >
-                      <div className="px-4 py-2 bg-[#1F2D38]/80 flex items-center justify-between gap-2 text-xs">
-                        <span className="font-semibold text-[#F2F5F8] truncate">
+                      <div className="px-3.5 py-1.5 bg-[#1F2D38]/80 flex items-center justify-between gap-2 text-xs">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC] truncate">
                           {sub.subclassLabel}
                         </span>
-                        <span className="font-mono text-[#B8C3CC] tabular-nums shrink-0">
+                        <span className="font-mono text-[11px] text-[#B8C3CC] tabular-nums shrink-0">
                           {sub.items.length}
                         </span>
                       </div>
                       {sub.items.map((product) => {
                         const isSelected = selectedProduct?.id === product.id;
+                        const genericName =
+                          product.genericNameEn ?? 'Dietary Supplement';
                         return (
                           <button
                             key={product.id}
@@ -414,28 +415,30 @@ export function CompanyCatalog({ client, access, onSignOut }: Props) {
                               setError(null);
                               setNotice(null);
                             }}
-                            className={`w-full text-left px-4 py-3.5 transition-colors ${
+                            className={`w-full text-left px-3.5 py-2 transition-colors ${
                               isSelected
                                 ? 'bg-[#1F2D38] border-l-2 border-l-[#5DB4F2]'
                                 : 'hover:bg-[#1F2D38]/50'
                             }`}
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="font-medium text-sm text-[#F2F5F8]">
+                              <span className="font-medium text-sm text-[#F2F5F8] truncate">
                                 {product.brandNameEn}
                               </span>
                               <StatusText status={product.status} />
                             </div>
 
-                            <div className="text-xs text-[#B8C3CC] mt-1 truncate">
-                              {product.market
-                                ? `${product.market.strength} · ${product.market.dosageForm}`
-                                : cleanDrugClassLabel(product.drugClassNameEn)}
+                            <div className="text-xs text-[#B8C3CC] mt-0.5 truncate">
+                              <span className="text-[#5DB4F2] font-medium">
+                                {genericName}
+                              </span>
+                              {' · '}
+                              <span>{product.companyName}</span>
                             </div>
 
                             {product.status === 'changes_requested' &&
                               product.reviewReason && (
-                                <div className="mt-2 rounded bg-[#F59E0B]/10 border border-[#F59E0B]/40 px-2.5 py-1.5 text-xs text-[#F59E0B]">
+                                <div className="mt-1.5 rounded bg-[#F59E0B]/10 border border-[#F59E0B]/40 px-2 py-1 text-xs text-[#F59E0B]">
                                   {product.reviewReason}
                                 </div>
                               )}

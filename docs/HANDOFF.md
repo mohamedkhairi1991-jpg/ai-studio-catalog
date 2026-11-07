@@ -61,7 +61,7 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 ### 2026-11-07 — Claude (review of AI Studio's doctor home/search refinements)
 
 - Reviewed AI Studio's push 576f7f1: tests (74), type-check and build pass; no database files touched; checked the phone screens in the preview.
-- Put back the small **"Sponsored"** tag on the ad card (`SponsoredAdCard`). Owner decision: ads always keep it. **AI Studio: please don't remove it again.**
+- Owner decision (2026-11-07): the ad card shows **no "Sponsored" tag** (only the sponsor name). Kept AI Studio's version.
 
 ### 2026-11-07 — Google AI Studio (Doctor Home & Search refinements: greeting, filter icon toggle, minimal home & compact rows)
 - Updated `src/components/DoctorCatalog.tsx` and `src/components/NotificationBell.tsx`:

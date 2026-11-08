@@ -17,8 +17,8 @@ import Onboarding from './Onboarding';
 import { NotificationBell } from './NotificationBell';
 import { recordAppOpen } from '../lib/notifications';
 import { Field, Screen, TermsAcceptanceCheckbox, buttonClass, inputClass } from './ui';
-import { TurnstileWidget } from './TurnstileWidget';
-import { captchaOptions, isCaptchaRequiredError, showCaptchaFor } from '../lib/captcha';
+import { TurnstileWidget, preloadTurnstile } from './TurnstileWidget';
+import { CAPTCHA_ENABLED, captchaOptions, isCaptchaRequiredError, showCaptchaFor } from '../lib/captcha';
 
 const ROUTE_FOR: Partial<Record<Audience, string>> = {
   officialCatalog: '/catalog',
@@ -45,6 +45,12 @@ export default function AuthGate() {
   const [captchaKey, setCaptchaKey] = useState(0);
   // Sign-in/reset show the robot check only if Supabase still asks for one.
   const [serverAskedCaptcha, setServerAskedCaptcha] = useState(false);
+
+  // Load the robot check while the person reads the form, so it is ready
+  // as soon as they open "Create account".
+  useEffect(() => {
+    if (CAPTCHA_ENABLED) preloadTurnstile();
+  }, []);
   const [specialties, setSpecialties] = useState<Option[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);

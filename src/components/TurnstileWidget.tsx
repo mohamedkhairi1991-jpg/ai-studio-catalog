@@ -34,6 +34,14 @@ function loadTurnstile(): Promise<void> {
   return scriptPromise;
 }
 
+/** Start loading the robot check early (e.g. when the sign-in page opens). */
+export function preloadTurnstile(): void {
+  if (typeof window === 'undefined') return;
+  loadTurnstile().catch(() => {
+    /* the widget retries when it is shown */
+  });
+}
+
 interface Props {
   onToken: (token: string | null) => void;
 }

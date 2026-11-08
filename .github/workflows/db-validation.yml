@@ -19,7 +19,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: "latest" makes a GitHub API lookup that timed out several times on 2026-11-08.
+          version: 3.0.0
       - name: Start local Supabase and apply migrations
         run: supabase start
       - name: Run database tests

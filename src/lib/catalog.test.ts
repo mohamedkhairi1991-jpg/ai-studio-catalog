@@ -617,7 +617,7 @@ describe('fetchAllPages and fetchInChunksPaged', () => {
 });
 
 describe('searchCatalogProducts and loadProductDetail', () => {
-  it('calls search_catalog_products RPC with trimmed filters and normalizes total_count', async () => {
+  it('calls search_catalog_products_v2 RPC with trimmed filters and normalizes total_count', async () => {
     const rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
     const client = {
       rpc: async (fn: string, args: Record<string, unknown>) => {
@@ -654,7 +654,7 @@ describe('searchCatalogProducts and loadProductDetail', () => {
 
     expect(rpcCalls).toEqual([
       {
-        fn: 'search_catalog_products',
+        fn: 'search_catalog_products_v2',
         args: {
           p_query: 'pentasa',
           p_company_id: 'comp-ferring',
@@ -668,6 +668,7 @@ describe('searchCatalogProducts and loadProductDetail', () => {
       ok: true,
       data: {
         totalCount: 134,
+        closeMatches: false,
         rows: [
           {
             productId: 'prod-42',
@@ -681,6 +682,7 @@ describe('searchCatalogProducts and loadProductDetail', () => {
             dosageForm: 'Prolonged-release tablet',
             publishedAt: '2026-11-01T10:00:00Z',
             totalCount: 134,
+            matchKind: 'exact',
           },
         ],
       },

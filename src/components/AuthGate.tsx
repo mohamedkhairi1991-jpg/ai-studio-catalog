@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { resolveAccess, type AccessResult, type Audience } from '../lib/access';
@@ -9,9 +9,30 @@ import {
   submitSignUpWithConsent,
   type Option,
 } from '../lib/onboarding';
-import { AdminCatalogReview } from './AdminCatalogReview';
-import { CompanyCatalog } from './CompanyCatalog';
-import { DoctorCatalog } from './DoctorCatalog';
+// Each workspace loads only when that kind of user opens it, so doctors do not
+// download the admin and company screens (smaller first load on mobile data).
+const loadDoctorCatalog = () => import('./DoctorCatalog');
+const DoctorCatalog = lazy(() => loadDoctorCatalog().then((m) => ({ default: m.DoctorCatalog })));
+const AdminCatalogReview = lazy(() =>
+  import('./AdminCatalogReview').then((m) => ({ default: m.AdminCatalogReview }))
+);
+const CompanyCatalog = lazy(() =>
+  import('./CompanyCatalog').then((m) => ({ default: m.CompanyCatalog }))
+);
+
+function WorkspaceLoader({ children }: { children: ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <Screen>
+          <p className="text-sm text-text-muted">Loading…</p>
+        </Screen>
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
 import { LegalDocumentPage, resolveLegalPage } from './LegalPages';
 import Onboarding from './Onboarding';
 import { NotificationBell } from './NotificationBell';
@@ -50,6 +71,12 @@ export default function AuthGate() {
   // as soon as they open "Create account".
   useEffect(() => {
     if (CAPTCHA_ENABLED) preloadTurnstile();
+    // Most users are doctors: fetch their screen in the background while the
+    // sign-in form is open, so it shows at once after signing in.
+    const timer = window.setTimeout(() => {
+      void loadDoctorCatalog().catch(() => undefined);
+    }, 1500);
+    return () => window.clearTimeout(timer);
   }, []);
   const [specialties, setSpecialties] = useState<Option[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -192,13 +219,25 @@ export default function AuthGate() {
       );
     }
     if (access.audience === 'administrator') {
-      return <AdminCatalogReview client={client} access={access} onSignOut={() => void signOut()} />;
+      return (
+        <WorkspaceLoader>
+          <AdminCatalogReview client={client} access={access} onSignOut={() => void signOut()} />
+        </WorkspaceLoader>
+      );
     }
     if (access.audience === 'officialCatalog') {
-      return <DoctorCatalog client={client} access={access} onSignOut={() => void signOut()} />;
+      return (
+        <WorkspaceLoader>
+          <DoctorCatalog client={client} access={access} onSignOut={() => void signOut()} />
+        </WorkspaceLoader>
+      );
     }
     if (access.audience === 'companyWorkflow') {
-      return <CompanyCatalog client={client} access={access} onSignOut={() => void signOut()} />;
+      return (
+        <WorkspaceLoader>
+          <CompanyCatalog client={client} access={access} onSignOut={() => void signOut()} />
+        </WorkspaceLoader>
+      );
     }
     const blocked = BLOCKED_MESSAGE[access.audience];
     return (

@@ -156,6 +156,8 @@ export interface DoctorSearchRow {
   dosageForm: string | null;
   publishedAt: string | null;
   totalCount: number;
+  /** 'close' = shown because of a close spelling (no exact match). */
+  matchKind?: 'exact' | 'close';
 }
 
 export interface DoctorHomeSuggestion {
@@ -795,8 +797,9 @@ export async function loadVerifiedCompanies(
 export async function searchCatalogProducts(
   client: SupabaseClient,
   input: SearchCatalogProductsInput = {}
-): Promise<RpcResult<{ rows: DoctorSearchRow[]; totalCount: number }>> {
-  const { data, error } = await client.rpc('search_catalog_products', {
+): Promise<RpcResult<{ rows: DoctorSearchRow[]; totalCount: number; closeMatches: boolean }>> {
+  // v2: typo tolerance, synonyms, drug classes, several words; adds match_kind.
+  const { data, error } = await client.rpc('search_catalog_products_v2', {
     p_query: trimOrNull(input.query),
     p_company_id: trimOrNull(input.companyId),
     p_specialty_id: trimOrNull(input.specialtyId),
@@ -821,6 +824,7 @@ export async function searchCatalogProducts(
     dosage_form: string | null;
     published_at: string | null;
     total_count: number | string | null;
+    match_kind?: 'exact' | 'close' | null;
   }>;
 
   const rows: DoctorSearchRow[] = rawRows.map((row) => ({
@@ -835,10 +839,12 @@ export async function searchCatalogProducts(
     dosageForm: row.dosage_form ?? null,
     publishedAt: row.published_at ?? null,
     totalCount: Number(row.total_count ?? 0),
+    matchKind: row.match_kind === 'close' ? 'close' : 'exact',
   }));
 
   const totalCount = rows.length > 0 ? rows[0].totalCount : 0;
-  return { ok: true, data: { rows, totalCount } };
+  const closeMatches = rows.length > 0 && rows.every((row) => row.matchKind === 'close');
+  return { ok: true, data: { rows, totalCount, closeMatches } };
 }
 
 export async function loadDoctorHomeSuggestions(

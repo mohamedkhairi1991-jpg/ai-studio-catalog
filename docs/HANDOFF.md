@@ -58,6 +58,31 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-08 — Claude (smart search v2, other brands, faster first load)
+- **Search** (`search_catalog_products_v2`, live): finds typos ("panadool",
+  "augmentn", "breaztri"), US/UK names ("acetaminophen", "albuterol",
+  "epinephrine"), drug classes ("beta blocker", "ppi", "statin"), several
+  words ("concor 5", "testformin 1000"), "vitamin d", and ingredients.
+  Close spellings come back only when nothing matches exactly, marked
+  `match_kind = 'close'`. Faster than before (stored `search_text` columns).
+  The old `search_catalog_products` name now calls v2 (same columns).
+  Synonyms live in `private.search_synonyms`.
+- **Lib:** `searchCatalogProducts` now calls v2 and returns
+  `closeMatches` (all rows are close spellings) and `row.matchKind`.
+  New `src/lib/alternatives.ts`: `loadProductAlternatives(client, productId)`,
+  `groupAlternatives`, `alternativeSubtitle`, `closeMatchNotice(query, closeMatches)`.
+- **Speed:** demo prototype, admin and company screens now load on demand
+  (`React.lazy` in `AuthGate.tsx` / `main.tsx`); the doctor screen prefetches
+  while the sign-in form is open. First download 211 KB → 159 KB gzip.
+- **AI Studio — please build (screens only):**
+  1. Drug page: section **"Same medicine, other brands"** below the quick facts,
+     from `loadProductAlternatives`; two groups via `groupAlternatives`
+     ("Same strength" first, then "Other strengths"), each row = brand +
+     `alternativeSubtitle(row)`, tapping opens that drug page. Hide the
+     section when the list is empty. Show at most 6 per group with "Show all".
+  2. Search results: when `closeMatches` is true, show
+     `closeMatchNotice(query, true)` above the list in muted text (min 11px).
+
 ### 2026-11-08 — Claude (manufacturer vs Iraq agent — database + lib)
 - **Owner decision:** doctors must see **who makes** a drug. Many drugs reach
   Iraq through an agent / scientific office; show it only as a small extra

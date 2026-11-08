@@ -154,4 +154,3 @@ comment on function public.search_catalog_products_v2(text, uuid, uuid, integer,
 revoke all on function public.search_catalog_products_v2(text, uuid, uuid, integer, integer) from public, anon;
 grant execute on function public.search_catalog_products_v2(text, uuid, uuid, integer, integer)
   to authenticated, service_role;
-

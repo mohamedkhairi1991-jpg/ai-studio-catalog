@@ -23,6 +23,7 @@ import {
   loadCatalogBundle,
   loadCompanyAiDraftSources,
   loadProductAiDraft,
+  loadProductDetail,
   publishArchivedProducts,
   publishCheckedProducts,
   rpcAdminArchiveCompany,
@@ -54,6 +55,21 @@ import {
   type StoredProductAiDraft,
   type TherapeuticGroupKey,
 } from '../lib/catalog';
+import {
+  COMPANY_TYPE_LABELS,
+  adminSetCompanyAgency,
+  adminSetCompanyProfile,
+  adminSetProductAgent,
+  agentLine,
+  countryNameFromCode,
+  isAgent,
+  isManufacturer,
+  loadCompanyAgencies,
+  manufacturerLine,
+  normalizeCountryCode,
+  type CompanyAgency,
+  type CompanyType,
+} from '../lib/companies';
 import {
   computeUserRegistrationStats,
   listCities,
@@ -127,6 +143,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [compEmail, setCompEmail] = useState('');
   const [compPhone, setCompPhone] = useState('');
   const [compDescription, setCompDescription] = useState('');
+  const [compType, setCompType] = useState<CompanyType>('manufacturer');
+  const [compOriginCountry, setCompOriginCountry] = useState('');
   const [compBusy, setCompBusy] = useState(false);
 
   const clearFeedback = () => {
@@ -277,6 +295,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     setCompEmail('');
     setCompPhone('');
     setCompDescription('');
+    setCompType('manufacturer');
+    setCompOriginCountry('');
     setCreatingCompany(true);
     clearFeedback();
   };
@@ -290,6 +310,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
     setCompEmail(comp.contactEmail ?? '');
     setCompPhone(comp.contactPhone ?? '');
     setCompDescription(comp.description ?? '');
+    setCompType(comp.companyType ?? 'manufacturer');
+    setCompOriginCountry(comp.originCountryCode ?? '');
     setCreatingCompany(true);
     clearFeedback();
   };
@@ -323,12 +345,25 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
       ? await rpcAdminUpdateCompany(client, editingCompany.id, payload)
       : await rpcAdminCreateCompany(client, payload);
 
-    setCompBusy(false);
     if (!res.ok) {
+      setCompBusy(false);
       setFailure(res.message, res.reasons);
       return;
     }
 
+    const profileRes = await adminSetCompanyProfile(client, {
+      companyId: res.data.id,
+      companyType: compType,
+      originCountryCode: compOriginCountry,
+    });
+    if (!profileRes.ok) {
+      setCompBusy(false);
+      setFailure(profileRes.message);
+      await refresh();
+      return;
+    }
+
+    setCompBusy(false);
     const wasEditing = Boolean(editingCompany);
     closeCompanyForm();
     setCompanyFilterId(res.data.id);
@@ -678,6 +713,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   setCompPhone={setCompPhone}
                   compDescription={compDescription}
                   setCompDescription={setCompDescription}
+                  compType={compType}
+                  setCompType={setCompType}
+                  compOriginCountry={compOriginCountry}
+                  setCompOriginCountry={setCompOriginCountry}
                   compBusy={compBusy}
                   onCancel={closeCompanyForm}
                   onSubmit={handleSaveCompany}
@@ -707,12 +746,17 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                     const isConfirmingRemove =
                       confirmingRemoveCompanyId === comp.id;
                     const isRemoving = removingCompanyId === comp.id;
+                    const originCountryName = countryNameFromCode(
+                      comp.originCountryCode
+                    );
+                    const typeLabel =
+                      COMPANY_TYPE_LABELS[comp.companyType ?? 'manufacturer'];
                     return (
                       <div
                         key={comp.id}
                         className="rounded-xl bg-[#263744] border border-[#304451] p-5 flex flex-col justify-between gap-4"
                       >
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <button
@@ -727,9 +771,19 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                               >
                                 {comp.companyName}
                               </button>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-[#B8C3CC]">
+                                <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 text-[#5DB4F2] font-medium">
+                                  {typeLabel}
+                                </span>
+                                {originCountryName && (
+                                  <span className="rounded bg-[#1F2D38] border border-[#304451] px-2 py-0.5 text-[#F2F5F8]">
+                                    {originCountryName} ({comp.originCountryCode})
+                                  </span>
+                                )}
+                              </div>
                               {comp.legalName &&
                                 comp.legalName !== comp.companyName && (
-                                  <div className="text-xs text-[#B8C3CC] mt-0.5">
+                                  <div className="text-xs text-[#B8C3CC] mt-1">
                                     {comp.legalName}
                                   </div>
                                 )}
@@ -763,6 +817,15 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                               </span>
                             </span>
                           </div>
+
+                          <CompanyProfileAndAgentsManager
+                            client={client}
+                            company={comp}
+                            allCompanies={bundle?.companies ?? []}
+                            onError={(msg) => setFailure(msg)}
+                            onNotice={(msg) => setNotice(msg)}
+                            onChanged={() => refresh()}
+                          />
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#304451]">
@@ -812,18 +875,20 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                               >
                                 Edit
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setCompanyFilterId(comp.id);
-                                  setSelectedId(null);
-                                  setCreatingProduct(true);
-                                  setAdminView('catalog');
-                                }}
-                                className={secondaryButtonClass}
-                              >
-                                + Add Drug
-                              </button>
+                              {isManufacturer(comp.companyType) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCompanyFilterId(comp.id);
+                                    setSelectedId(null);
+                                    setCreatingProduct(true);
+                                    setAdminView('catalog');
+                                  }}
+                                  className={secondaryButtonClass}
+                                >
+                                  + Add Drug
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() =>
@@ -956,6 +1021,10 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   setCompPhone={setCompPhone}
                   compDescription={compDescription}
                   setCompDescription={setCompDescription}
+                  compType={compType}
+                  setCompType={setCompType}
+                  compOriginCountry={compOriginCountry}
+                  setCompOriginCountry={setCompOriginCountry}
                   compBusy={compBusy}
                   onCancel={closeCompanyForm}
                   onSubmit={handleSaveCompany}
@@ -968,9 +1037,15 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                   client={client}
                   bundle={bundle}
                   defaultCompanyId={
-                    companyFilterId !== 'all'
+                    companyFilterId !== 'all' &&
+                    isManufacturer(
+                      bundle.companies.find((c) => c.id === companyFilterId)
+                        ?.companyType
+                    )
                       ? companyFilterId
-                      : bundle.companies[0]?.id ?? ''
+                      : bundle.companies.find((c) =>
+                          isManufacturer(c.companyType)
+                        )?.id ?? ''
                   }
                   onCancel={() => setCreatingProduct(false)}
                   onError={(msg, reasons) => setFailure(msg, reasons)}
@@ -1011,6 +1086,9 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                           bundle?.products ?? [],
                           comp.id
                         );
+                        const originCountryName = countryNameFromCode(
+                          comp.originCountryCode
+                        );
                         return (
                           <button
                             key={comp.id}
@@ -1023,8 +1101,18 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                             }}
                             className="flex flex-col justify-between gap-2.5 rounded-lg bg-[#1F2D38] hover:bg-[#1769AA]/25 border border-[#304451] hover:border-[#5DB4F2] p-4 text-left transition-colors"
                           >
-                            <div className="font-semibold text-sm text-[#F2F5F8]">
-                              {comp.companyName}
+                            <div>
+                              <div className="font-semibold text-sm text-[#F2F5F8]">
+                                {comp.companyName}
+                              </div>
+                              <div className="text-xs text-[#B8C3CC] mt-0.5">
+                                {COMPANY_TYPE_LABELS[
+                                  comp.companyType ?? 'manufacturer'
+                                ]}
+                                {originCountryName
+                                  ? ` · ${originCountryName}`
+                                  : ''}
+                              </div>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 text-xs tabular-nums text-[#B8C3CC]">
                               <span>
@@ -1081,6 +1169,24 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                               <span className="rounded-md bg-[#1F2D38] border border-[#304451] px-2 py-0.5 text-xs font-medium capitalize text-[#B8C3CC]">
                                 {selectedCompany.status}
                               </span>
+                              <span className="rounded-md bg-[#1F2D38] border border-[#304451] px-2 py-0.5 text-xs font-medium text-[#5DB4F2]">
+                                {
+                                  COMPANY_TYPE_LABELS[
+                                    selectedCompany.companyType ??
+                                      'manufacturer'
+                                  ]
+                                }
+                              </span>
+                              {countryNameFromCode(
+                                selectedCompany.originCountryCode
+                              ) && (
+                                <span className="rounded-md bg-[#1F2D38] border border-[#304451] px-2 py-0.5 text-xs font-medium text-[#F2F5F8]">
+                                  {countryNameFromCode(
+                                    selectedCompany.originCountryCode
+                                  )}{' '}
+                                  ({selectedCompany.originCountryCode})
+                                </span>
+                              )}
                             </div>
                             {selectedCompany.legalName &&
                               selectedCompany.legalName !==
@@ -1129,18 +1235,22 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                             >
                               Edit company
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                closeCompanyForm();
-                                setSelectedId(null);
-                                setCreatingProduct((v) => !v);
-                                clearFeedback();
-                              }}
-                              className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
-                            >
-                              {creatingProduct ? 'Close drug form' : '+ Add drug'}
-                            </button>
+                            {isManufacturer(selectedCompany.companyType) && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  closeCompanyForm();
+                                  setSelectedId(null);
+                                  setCreatingProduct((v) => !v);
+                                  clearFeedback();
+                                }}
+                                className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3 py-2 transition-colors"
+                              >
+                                {creatingProduct
+                                  ? 'Close drug form'
+                                  : '+ Add drug'}
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() =>
@@ -1159,6 +1269,15 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                           {selectedCompany.description}
                         </p>
                       )}
+
+                      <CompanyProfileAndAgentsManager
+                        client={client}
+                        company={selectedCompany}
+                        allCompanies={bundle?.companies ?? []}
+                        onError={(msg) => setFailure(msg)}
+                        onNotice={(msg) => setNotice(msg)}
+                        onChanged={() => refresh()}
+                      />
 
                       <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                         {[
@@ -2554,6 +2673,10 @@ interface CompanyFormProps {
   setCompPhone: (v: string) => void;
   compDescription: string;
   setCompDescription: (v: string) => void;
+  compType: CompanyType;
+  setCompType: (v: CompanyType) => void;
+  compOriginCountry: string;
+  setCompOriginCountry: (v: string) => void;
   compBusy: boolean;
   onCancel: () => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -2576,10 +2699,17 @@ function CompanyEditorForm({
   setCompPhone,
   compDescription,
   setCompDescription,
+  compType,
+  setCompType,
+  compOriginCountry,
+  setCompOriginCountry,
   compBusy,
   onCancel,
   onSubmit,
 }: CompanyFormProps) {
+  const previewCountryName = countryNameFromCode(
+    normalizeCountryCode(compOriginCountry)
+  );
   return (
     <form
       onSubmit={onSubmit}
@@ -2606,6 +2736,35 @@ function CompanyEditorForm({
             required
             value={compLegalName}
             onChange={(e) => setCompLegalName(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Type">
+          <select
+            value={compType}
+            onChange={(e) => setCompType(e.target.value as CompanyType)}
+            className={inputClass}
+          >
+            {(Object.keys(COMPANY_TYPE_LABELS) as CompanyType[]).map((t) => (
+              <option key={t} value={t}>
+                {COMPANY_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field
+          label={
+            previewCountryName
+              ? `Country (2-letter code · ${previewCountryName})`
+              : 'Country (2-letter code, e.g. CH)'
+          }
+        >
+          <input
+            type="text"
+            maxLength={2}
+            placeholder="e.g. CH"
+            value={compOriginCountry}
+            onChange={(e) => setCompOriginCountry(e.target.value.toUpperCase())}
             className={inputClass}
           />
         </Field>
@@ -2677,6 +2836,263 @@ function CompanyEditorForm({
         </div>
       </div>
     </form>
+  );
+}
+
+interface CompanyProfileAndAgentsManagerProps {
+  client: SupabaseClient;
+  company: CompanySummary;
+  allCompanies: CompanySummary[];
+  onError: (msg: string) => void;
+  onNotice: (msg: string) => void;
+  onChanged: () => Promise<void>;
+}
+
+function CompanyProfileAndAgentsManager({
+  client,
+  company,
+  allCompanies,
+  onError,
+  onNotice,
+  onChanged,
+}: CompanyProfileAndAgentsManagerProps) {
+  const [companyType, setCompanyType] = useState<CompanyType>(
+    company.companyType ?? 'manufacturer'
+  );
+  const [countryCode, setCountryCode] = useState(
+    company.originCountryCode ?? ''
+  );
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const [agencies, setAgencies] = useState<CompanyAgency[]>([]);
+  const [loadingAgencies, setLoadingAgencies] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState('');
+  const [savingAgency, setSavingAgency] = useState(false);
+
+  useEffect(() => {
+    setCompanyType(company.companyType ?? 'manufacturer');
+    setCountryCode(company.originCountryCode ?? '');
+  }, [company.companyType, company.originCountryCode]);
+
+  const showAgentsSection = isManufacturer(company.companyType ?? companyType);
+
+  useEffect(() => {
+    if (!showAgentsSection) {
+      setAgencies([]);
+      return;
+    }
+    let active = true;
+    setLoadingAgencies(true);
+    void loadCompanyAgencies(client, company.id)
+      .then((res) => {
+        if (!active) return;
+        if (!res.ok) {
+          onError(res.message);
+          return;
+        }
+        setAgencies(res.data);
+      })
+      .finally(() => {
+        if (active) setLoadingAgencies(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [client, company.id, showAgentsSection]);
+
+  const activeManufacturerAgencies = useMemo(
+    () =>
+      agencies.filter(
+        (a) => a.manufacturerCompanyId === company.id && a.isActive
+      ),
+    [agencies, company.id]
+  );
+
+  const availableAgentCompanies = useMemo(
+    () =>
+      allCompanies.filter(
+        (c) =>
+          c.id !== company.id &&
+          isAgent(c.companyType) &&
+          !activeManufacturerAgencies.some((a) => a.agentCompanyId === c.id)
+      ),
+    [allCompanies, company.id, activeManufacturerAgencies]
+  );
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    const res = await adminSetCompanyProfile(client, {
+      companyId: company.id,
+      companyType,
+      originCountryCode: countryCode,
+    });
+    setSavingProfile(false);
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+    onNotice(`Saved profile for ${company.companyName}.`);
+    await onChanged();
+  };
+
+  const handleAddAgency = async () => {
+    if (!selectedAgentId) return;
+    setSavingAgency(true);
+    const res = await adminSetCompanyAgency(client, {
+      manufacturerCompanyId: company.id,
+      agentCompanyId: selectedAgentId,
+      isActive: true,
+    });
+    if (!res.ok) {
+      setSavingAgency(false);
+      onError(res.message);
+      return;
+    }
+    const updated = await loadCompanyAgencies(client, company.id);
+    setSavingAgency(false);
+    if (updated.ok) {
+      setAgencies(updated.data);
+    }
+    setSelectedAgentId('');
+    onNotice('Added Iraq agent.');
+  };
+
+  const handleRemoveAgency = async (agentCompanyId: string) => {
+    setSavingAgency(true);
+    const res = await adminSetCompanyAgency(client, {
+      manufacturerCompanyId: company.id,
+      agentCompanyId,
+      isActive: false,
+    });
+    if (!res.ok) {
+      setSavingAgency(false);
+      onError(res.message);
+      return;
+    }
+    const updated = await loadCompanyAgencies(client, company.id);
+    setSavingAgency(false);
+    if (updated.ok) {
+      setAgencies(updated.data);
+    }
+    onNotice('Removed Iraq agent.');
+  };
+
+  const resolvedCountryName = countryNameFromCode(
+    normalizeCountryCode(countryCode)
+  );
+
+  return (
+    <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3 space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <label className="block space-y-1">
+          <span className="block text-[11px] font-medium text-[#B8C3CC]">
+            Type
+          </span>
+          <select
+            aria-label={`Type for ${company.companyName}`}
+            value={companyType}
+            onChange={(e) => setCompanyType(e.target.value as CompanyType)}
+            className="w-full rounded-md bg-[#263744] border border-[#304451] px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+          >
+            {(Object.keys(COMPANY_TYPE_LABELS) as CompanyType[]).map((t) => (
+              <option key={t} value={t}>
+                {COMPANY_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block space-y-1">
+          <span className="block text-[11px] font-medium text-[#B8C3CC]">
+            Country (2-letter){' '}
+            {resolvedCountryName ? `· ${resolvedCountryName}` : ''}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              maxLength={2}
+              placeholder="CH"
+              aria-label={`Country for ${company.companyName}`}
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value.toUpperCase())}
+              className="w-20 uppercase rounded-md bg-[#263744] border border-[#304451] px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+            />
+            <button
+              type="button"
+              disabled={savingProfile}
+              onClick={() => void handleSaveProfile()}
+              className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 transition-colors"
+            >
+              {savingProfile ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </label>
+      </div>
+
+      {showAgentsSection && (
+        <div className="border-t border-[#304451] pt-2.5 space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
+            Iraq agents
+          </div>
+          {loadingAgencies ? (
+            <div className="text-xs text-[#B8C3CC]">Loading Iraq agents…</div>
+          ) : activeManufacturerAgencies.length === 0 ? (
+            <div className="text-xs text-[#B8C3CC]">
+              No Iraq agents linked yet.
+            </div>
+          ) : (
+            <ul className="space-y-1.5">
+              {activeManufacturerAgencies.map((ag) => {
+                const agentComp = allCompanies.find(
+                  (c) => c.id === ag.agentCompanyId
+                );
+                return (
+                  <li
+                    key={ag.agentCompanyId}
+                    className="flex items-center justify-between gap-2 rounded bg-[#263744] border border-[#304451] px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+                  >
+                    <span className="truncate">
+                      {agentComp?.companyName ?? ag.agentCompanyId}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={savingAgency}
+                      onClick={() => void handleRemoveAgency(ag.agentCompanyId)}
+                      className="text-xs text-[#F59E0B] hover:text-white disabled:opacity-50 font-medium"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <div className="flex items-center gap-1.5 pt-1">
+            <select
+              aria-label={`Add Iraq agent for ${company.companyName}`}
+              value={selectedAgentId}
+              onChange={(e) => setSelectedAgentId(e.target.value)}
+              className="flex-1 min-w-0 rounded-md bg-[#263744] border border-[#304451] px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+            >
+              <option value="">Select Iraq agent…</option>
+              {availableAgentCompanies.map((ac) => (
+                <option key={ac.id} value={ac.id}>
+                  {ac.companyName}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              disabled={!selectedAgentId || savingAgency}
+              onClick={() => void handleAddAgency()}
+              className="rounded-md bg-[#263744] hover:bg-[#1769AA] border border-[#304451] disabled:opacity-50 text-xs font-medium text-[#F2F5F8] px-2.5 py-1.5 transition-colors"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -2770,7 +3186,60 @@ function AdminProductEditorForm({
     existingProduct?.specialtyIds ?? []
   );
 
+  const [agentCompanyId, setAgentCompanyId] = useState<string>(
+    existingProduct?.agentCompanyId ?? ''
+  );
+  const [manufacturerAgencies, setManufacturerAgencies] = useState<
+    CompanyAgency[]
+  >([]);
+
   const [busy, setBusy] = useState(false);
+
+  const manufacturerCompanies = useMemo(
+    () => bundle.companies.filter((c) => isManufacturer(c.companyType)),
+    [bundle.companies]
+  );
+
+  // Load manufacturer's active Iraq agents
+  useEffect(() => {
+    if (!companyId) {
+      setManufacturerAgencies([]);
+      return;
+    }
+    let active = true;
+    void loadCompanyAgencies(client, companyId).then((res) => {
+      if (!active) return;
+      if (!res.ok) {
+        setManufacturerAgencies([]);
+        return;
+      }
+      const activeRows = res.data.filter(
+        (r) => r.manufacturerCompanyId === companyId && r.isActive
+      );
+      setManufacturerAgencies(activeRows);
+      setAgentCompanyId((prev) =>
+        prev && activeRows.some((r) => r.agentCompanyId === prev) ? prev : ''
+      );
+    });
+    return () => {
+      active = false;
+    };
+  }, [client, companyId]);
+
+  // Load current product agentCompanyId when editing an existing product
+  useEffect(() => {
+    if (!existingProduct?.id || existingProduct.agentCompanyId !== undefined) {
+      return;
+    }
+    let active = true;
+    void loadProductDetail(client, existingProduct.id).then((res) => {
+      if (!active || !res.ok) return;
+      setAgentCompanyId(res.data.agentCompanyId ?? '');
+    });
+    return () => {
+      active = false;
+    };
+  }, [client, existingProduct?.id, existingProduct?.agentCompanyId]);
 
   // Load stored product_ai_drafts record when editing an existing product
   useEffect(() => {
@@ -2810,6 +3279,14 @@ function AdminProductEditorForm({
   const selectedCompany = useMemo(
     () => bundle.companies.find((c) => c.id === companyId) ?? null,
     [bundle.companies, companyId]
+  );
+
+  const activeAgentOptions = useMemo(
+    () =>
+      manufacturerAgencies
+        .map((ag) => bundle.companies.find((c) => c.id === ag.agentCompanyId))
+        .filter((c): c is CompanySummary => Boolean(c)),
+    [manufacturerAgencies, bundle.companies]
   );
 
   const combinedSources = useMemo(() => {
@@ -3068,13 +3545,26 @@ function AdminProductEditorForm({
       specialtyIds: resolvedSpecialtyIds,
       publishImmediately,
     });
-    setBusy(false);
 
     if (!res.ok) {
+      setBusy(false);
       onError(res.message, res.reasons);
       return;
     }
 
+    if (existingProduct || agentCompanyId) {
+      const agentRes = await adminSetProductAgent(client, {
+        productId: res.data.productId,
+        agentCompanyId: agentCompanyId || null,
+      });
+      if (!agentRes.ok) {
+        setBusy(false);
+        onError(agentRes.message);
+        return;
+      }
+    }
+
+    setBusy(false);
     await onSaved(res.data.productId, res.data.finalStatus, createdTaxonomy);
   };
 
@@ -3249,7 +3739,7 @@ function AdminProductEditorForm({
               className={inputClass}
             >
               <option value="">Select company</option>
-              {bundle.companies.map((c) => (
+              {manufacturerCompanies.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.companyName}
                 </option>
@@ -3257,6 +3747,21 @@ function AdminProductEditorForm({
             </select>
           </Field>
         )}
+
+        <Field label="Iraq agent (optional)">
+          <select
+            value={agentCompanyId}
+            onChange={(e) => setAgentCompanyId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">None</option>
+            {activeAgentOptions.map((ag) => (
+              <option key={ag.id} value={ag.id}>
+                {ag.companyName}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         <Field label="Brand / Trade Name (EN)">
           <input
@@ -3566,6 +4071,65 @@ function AdminProductInspector({
   const [restoreDestination, setRestoreDestination] =
     useState<ProductStatus>('draft');
 
+  const [agentCompanyId, setAgentCompanyId] = useState<string>(
+    product.agentCompanyId ?? ''
+  );
+  const [agentCompanyName, setAgentCompanyName] = useState<string | null>(
+    product.agentCompanyName ?? null
+  );
+  const [manufacturerAgencies, setManufacturerAgencies] = useState<
+    CompanyAgency[]
+  >([]);
+  const [savingAgent, setSavingAgent] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void loadCompanyAgencies(client, product.companyId).then((res) => {
+      if (!active) return;
+      if (!res.ok) {
+        setManufacturerAgencies([]);
+        return;
+      }
+      setManufacturerAgencies(
+        res.data.filter(
+          (r) => r.manufacturerCompanyId === product.companyId && r.isActive
+        )
+      );
+    });
+    void loadProductDetail(client, product.id).then((res) => {
+      if (!active || !res.ok) return;
+      setAgentCompanyId(res.data.agentCompanyId ?? '');
+      setAgentCompanyName(res.data.agentCompanyName ?? null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [client, product.id, product.companyId]);
+
+  const activeAgentOptions = useMemo(
+    () =>
+      manufacturerAgencies
+        .map((ag) => bundle.companies.find((c) => c.id === ag.agentCompanyId))
+        .filter((c): c is CompanySummary => Boolean(c)),
+    [manufacturerAgencies, bundle.companies]
+  );
+
+  const handleSaveInspectorAgent = async () => {
+    setSavingAgent(true);
+    const res = await adminSetProductAgent(client, {
+      productId: product.id,
+      agentCompanyId: agentCompanyId || null,
+    });
+    setSavingAgent(false);
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+    const matched = bundle.companies.find((c) => c.id === agentCompanyId);
+    setAgentCompanyName(matched?.companyName ?? null);
+    await onSuccess('Updated Iraq agent for product.');
+  };
+
   const market = product.market;
   const enClinical = product.marketTranslations.en;
 
@@ -3575,7 +4139,11 @@ function AdminProductInspector({
         client={client}
         bundle={bundle}
         defaultCompanyId={product.companyId}
-        existingProduct={product}
+        existingProduct={{
+          ...product,
+          agentCompanyId: agentCompanyId || null,
+          agentCompanyName,
+        }}
         onCancel={() => setEditing(false)}
         onError={onError}
         onSaved={async (_id, status, createdTaxonomy) => {
@@ -3657,6 +4225,15 @@ function AdminProductInspector({
     product.hasAiDraft &&
     (product.status === 'draft' || product.status === 'changes_requested');
 
+  const companyRecord = bundle.companies.find(
+    (c) => c.id === product.companyId
+  );
+  const makerText = manufacturerLine(
+    product.companyName,
+    product.companyOriginCountryCode ?? companyRecord?.originCountryCode
+  );
+  const iraqAgentText = agentLine(agentCompanyName);
+
   return (
     <div className="rounded-xl bg-[#263744] border border-[#304451] p-6 space-y-6">
       {/* Header */}
@@ -3673,9 +4250,10 @@ function AdminProductInspector({
           <h2 className="text-2xl font-semibold text-[#F2F5F8] mt-1">
             {product.brandNameEn}
           </h2>
-          <div className="text-xs text-[#5DB4F2] mt-1">
-            {product.companyName}
-          </div>
+          <div className="text-xs text-[#5DB4F2] mt-1">{makerText}</div>
+          {iraqAgentText && (
+            <div className="text-xs text-[#B8C3CC] mt-0.5">{iraqAgentText}</div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -3687,6 +4265,35 @@ function AdminProductInspector({
             Edit Product Details
           </button>
         </div>
+      </div>
+
+      {/* Iraq Agent Quick Assignment */}
+      <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex-1 min-w-[200px]">
+          <Field label="Iraq agent (optional)">
+            <select
+              aria-label="Iraq agent"
+              value={agentCompanyId}
+              onChange={(e) => setAgentCompanyId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">None</option>
+              {activeAgentOptions.map((ag) => (
+                <option key={ag.id} value={ag.id}>
+                  {ag.companyName}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        <button
+          type="button"
+          disabled={savingAgent}
+          onClick={() => void handleSaveInspectorAgent()}
+          className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-medium px-3.5 py-2 transition-colors"
+        >
+          {savingAgent ? 'Saving…' : 'Save Iraq agent'}
+        </button>
       </div>
 
       {product.reviewReason && (

@@ -58,6 +58,17 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-08 — Google AI Studio (manufacturer vs Iraq agent screens)
+- **What changed:**
+  - `src/components/DoctorCatalog.tsx`: In `DoctorProductDetail`, displayed `manufacturerLine(product.companyName, product.companyOriginCountryCode)` under the brand name (and in the `Company` quick-fact card and clickable company chip), plus `agentLine(product.agentCompanyName)` below in smaller muted text (`text-xs`) when present.
+  - `src/components/AdminCatalogReview.tsx`:
+    - Added **Type** picker (`COMPANY_TYPE_LABELS`) and 2-letter **Country** field saved via `adminSetCompanyProfile` in `Admin > Companies` (and company editor/header), showing country name and type in the company list.
+    - Added **Iraq agents** list with add/remove (`loadCompanyAgencies` and `adminSetCompanyAgency`, offering companies where `isAgent`) for manufacturers.
+    - Added optional **Iraq agent** picker (limited to the manufacturer's active agents + `None`) saved via `adminSetProductAgent` in product edit and inspector views.
+    - Restricted product-create company pickers and `+ Add Drug` actions to companies where `isManufacturer(companyType)`.
+- **Why:** Let doctors see who manufactures each drug and which Iraq agent represents it, and let admins manage company types, origin countries, manufacturer ↔ Iraq agent links, and product agent assignments.
+- **Next for Claude:** Review and merge the auto-sync PR; `supabase/`, `src/lib/`, `src/main.tsx`, and `src/components/AuthGate.tsx` were not touched.
+
 ### 2026-11-08 — Claude (manufacturer vs Iraq agent — database + lib)
 - **Owner decision:** doctors must see **who makes** a drug. Many drugs reach
   Iraq through an agent / scientific office; show it only as a small extra

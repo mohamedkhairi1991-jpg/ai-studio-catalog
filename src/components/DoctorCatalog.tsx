@@ -73,6 +73,7 @@ import {
   type DrugSources,
   type ErrorTopic,
 } from '../lib/feedback';
+import { agentLine, manufacturerLine } from '../lib/companies';
 import { NotificationBell } from './NotificationBell';
 import {
   BrandLogo,
@@ -1806,6 +1807,12 @@ function DoctorProductDetail({
       ? 'border-success/40 bg-success/15 text-success'
       : 'border-accent/40 bg-accent/15 text-accent';
 
+  const makerLine = manufacturerLine(
+    product.companyName,
+    product.companyOriginCountryCode
+  );
+  const iraqAgent = agentLine(product.agentCompanyName);
+
   return (
     <div className="space-y-6">
       {/* Hero Header Card */}
@@ -1815,6 +1822,23 @@ function DoctorProductDetail({
             <h1 className="text-2xl sm:text-[28px] font-semibold tracking-tight text-text leading-tight">
               {product.brandNameEn}
             </h1>
+            <div className="space-y-0.5">
+              <div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onFilterCompany(product.companyId, product.companyName)
+                  }
+                  title="View all products from this company"
+                  className="text-xs sm:text-sm font-medium text-text hover:text-accent hover:underline text-left"
+                >
+                  {makerLine}
+                </button>
+              </div>
+              {iraqAgent && (
+                <div className="text-xs text-text-muted">{iraqAgent}</div>
+              )}
+            </div>
             <p className="text-sm sm:text-[15px] text-text-muted leading-snug">
               {product.genericNameEn ? (
                 <button
@@ -1851,7 +1875,7 @@ function DoctorProductDetail({
               className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-surface-raised px-3 py-1 text-xs font-medium text-accent hover:bg-primary/30 transition-colors duration-150"
             >
               <Building2 className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>{product.companyName}</span>
+              <span>{makerLine}</span>
             </button>
             <span
               className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${categoryChipStyle}`}
@@ -1924,7 +1948,7 @@ function DoctorProductDetail({
           <QuickFactCard
             icon={<Building2 className="w-4 h-4 text-accent" aria-hidden="true" />}
             label="Company"
-            value={product.companyName}
+            value={makerLine}
             onClick={() =>
               onFilterCompany(product.companyId, product.companyName)
             }

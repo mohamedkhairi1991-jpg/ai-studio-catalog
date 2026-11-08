@@ -58,6 +58,48 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-08 — Claude (manufacturer vs Iraq agent — database + lib)
+- **Owner decision:** doctors must see **who makes** a drug. Many drugs reach
+  Iraq through an agent / scientific office; show it only as a small extra
+  line. (Not a sales-office tracker: no stock, prices, reps or orders.)
+- **Rule:** `products.company_id` is **always the manufacturer**. New optional
+  `products.agent_company_id` = the Iraq agent / office for that product.
+- **Database** (migration `20261108140000_manufacturer_and_iraq_agent.sql`):
+  - `companies.company_type` = `manufacturer` (default) | `agent` | `both`.
+  - `companies.origin_country_code` = manufacturer home country, ISO code
+    (e.g. `CH`). `country_id` stays the Iraq market country.
+  - `company_agencies` (manufacturer ↔ agent, admin-managed; doctors read active links).
+  - Checks: products cannot be saved under an agent-only office; a product's
+    agent must be an active agent of its manufacturer; type changes that would
+    break products/links are refused.
+  - Admin RPCs: `admin_set_company_profile`, `admin_set_company_agency`,
+    `admin_set_product_agent` (all audited).
+  - Countries filled for 125 of 127 companies (migration
+    `20261108140100_company_origin_countries.sql`). Empty on purpose until the
+    owner confirms: **Alido Pharma**, **Teva / Actavis**.
+- **Lib** (`src/lib/companies.ts`): `manufacturerLine(name, code)` →
+  "Novartis · Switzerland", `agentLine(name)` → "Agent in Iraq: …",
+  `countryNameFromCode`, `COMPANY_TYPE_LABELS`, `isManufacturer`, `isAgent`,
+  `adminSetCompanyProfile`, `adminSetCompanyAgency`, `adminSetProductAgent`,
+  `loadCompanyAgencies`. `loadProductDetail` now returns
+  `companyOriginCountryCode/Name`, `agentCompanyId/Name`; `loadCompanies`
+  returns `companyType`, `originCountryCode`.
+- **Robot check:** Turnstile script now preloads when the sign-in page opens
+  (`preloadTurnstile`) + preconnect in `index.html`, so sign-up shows it faster.
+- **AI Studio — please build (screens only, use the lib above):**
+  1. Drug page: under the brand, show `manufacturerLine(companyName,
+     companyOriginCountryCode)`; if `agentLine(agentCompanyName)` is not null,
+     show it below in smaller muted text (min 11px). Company stays clickable.
+  2. Admin → Companies: a **Type** picker (`COMPANY_TYPE_LABELS`) and a
+     **Country** 2-letter field → `adminSetCompanyProfile`. For a manufacturer,
+     an **Iraq agents** list with add/remove (agents = companies where
+     `isAgent`) → `adminSetCompanyAgency` / `loadCompanyAgencies`.
+  3. Admin → Product edit: optional **Iraq agent** picker, limited to the
+     manufacturer's active agents (+ "None") → `adminSetProductAgent`.
+  4. Product create/company pickers: only offer companies where
+     `isManufacturer(companyType)` as the product company.
+  5. Show server error messages as they are (they are plain English).
+
 ### 2026-11-08 — Claude (robot check at sign-up only)
 - Cloudflare Turnstile now shows **only on the sign-up form**. Sign-in and
   password reset have no robot check (owner request).

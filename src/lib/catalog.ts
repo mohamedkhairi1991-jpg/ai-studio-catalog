@@ -1,4 +1,5 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
+import { countryNameFromCode, type CompanyType } from './companies';
 
 // ---------- Database Enums ----------
 export type ProductStatus =
@@ -48,6 +49,10 @@ export interface CompanySummary {
   contactPhone?: string | null;
   websiteUrl?: string | null;
   description?: string | null;
+  /** manufacturer | agent | both (see src/lib/companies.ts). */
+  companyType?: CompanyType;
+  /** Manufacturer home country, ISO code such as "CH". */
+  originCountryCode?: string | null;
 }
 
 export interface ProductMarketRecord {
@@ -102,6 +107,12 @@ export interface CatalogProduct {
   companyId: string;
   companyName: string;
   companyStatus: string | null;
+  /** Manufacturer home country (ISO code) and its English name, when known. */
+  companyOriginCountryCode?: string | null;
+  companyOriginCountryName?: string | null;
+  /** Optional Iraq agent / scientific office for this product. */
+  agentCompanyId?: string | null;
+  agentCompanyName?: string | null;
   genericDrugId: string | null;
   genericNameEn: string | null;
   drugClassId: string;
@@ -421,6 +432,7 @@ interface RawProductRow {
   review_reason: string | null;
   created_at: string;
   updated_at: string;
+  agent_company_id?: string | null;
 }
 
 interface RawTranslationRow {
@@ -714,11 +726,13 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
     contact_phone?: string | null;
     website_url?: string | null;
     description?: string | null;
+    company_type?: CompanyType | null;
+    origin_country_code?: string | null;
   }>((from, to) =>
     client
       .from('companies')
       .select(
-        'id,company_name,legal_name,status,country_id,city_id,contact_email,contact_phone,website_url,description'
+        'id,company_name,legal_name,status,country_id,city_id,contact_email,contact_phone,website_url,description,company_type,origin_country_code'
       )
       .neq('status', 'archived')
       .order('company_name')
@@ -741,6 +755,8 @@ export async function loadCompanies(client: SupabaseClient): Promise<CompanySumm
       contactPhone: c.contact_phone ?? null,
       websiteUrl: c.website_url ?? null,
       description: c.description ?? null,
+      companyType: c.company_type ?? 'manufacturer',
+      originCountryCode: c.origin_country_code ?? null,
     }))
     .sort((a, b) => a.companyName.localeCompare(b.companyName));
 }
@@ -891,7 +907,7 @@ export async function loadProductDetail(
     client
       .from('products')
       .select(
-        'id,company_id,generic_drug_id,drug_class_id,category,status,submitted_at,reviewed_at,review_reason,created_at,updated_at'
+        'id,company_id,agent_company_id,generic_drug_id,drug_class_id,category,status,submitted_at,reviewed_at,review_reason,created_at,updated_at'
       )
       .eq('id', cleanId)
       .maybeSingle(),
@@ -940,6 +956,7 @@ export async function loadProductDetail(
 
   const [
     companyRes,
+    agentRes,
     drugClassTransRes,
     genericTransRes,
     marketTransRes,
@@ -948,9 +965,16 @@ export async function loadProductDetail(
   ] = await Promise.all([
     client
       .from('companies')
-      .select('id,company_name,status')
+      .select('id,company_name,status,origin_country_code')
       .eq('id', productRow.company_id)
       .maybeSingle(),
+    productRow.agent_company_id
+      ? client
+          .from('companies')
+          .select('id,company_name')
+          .eq('id', productRow.agent_company_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
     client
       .from('drug_class_translations')
       .select('drug_class_id,locale,name')
@@ -989,7 +1013,9 @@ export async function loadProductDetail(
     id: string;
     company_name: string;
     status: string;
+    origin_country_code?: string | null;
   } | null;
+  const agentData = agentRes.data as { id: string; company_name: string } | null;
 
   let brandNameEn = 'Untitled Product';
   for (const t of transRows) {
@@ -1102,6 +1128,10 @@ export async function loadProductDetail(
       companyId: productRow.company_id,
       companyName: companyData?.company_name ?? 'Company',
       companyStatus: companyData?.status ?? null,
+      companyOriginCountryCode: companyData?.origin_country_code ?? null,
+      companyOriginCountryName: countryNameFromCode(companyData?.origin_country_code),
+      agentCompanyId: productRow.agent_company_id ?? null,
+      agentCompanyName: agentData?.company_name ?? null,
       genericDrugId: productRow.generic_drug_id,
       genericNameEn,
       drugClassId: productRow.drug_class_id,

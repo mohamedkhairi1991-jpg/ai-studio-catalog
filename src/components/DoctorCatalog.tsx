@@ -16,6 +16,7 @@ import {
   Phone,
   Pin,
   Layers,
+  ListFilter,
   Package,
   Pill,
   Power,
@@ -121,6 +122,100 @@ import {
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
+
+const DRUG_CLASS_SUBTYPES: Record<TherapeuticGroupKey, readonly string[]> = {
+  antibiotics: [
+    'Cephalosporins',
+    'Penicillins & Beta-Lactam Combinations',
+    'Macrolides & Lincosamides',
+    'Fluoroquinolones',
+    'Hospital & Parenteral Antibiotics',
+    'Antifungals',
+    'Antivirals & Antiretrovirals',
+    'Antiprotozoals & Anthelmintics',
+    'Other Antibacterials & Anti-infectives',
+  ],
+  cardiovascular: [
+    'ARBs & ARB Combinations',
+    'ACE Inhibitors & Combinations',
+    'Beta-Blockers',
+    'Calcium Channel Blockers (CCBs)',
+    'Diuretics',
+    'Statins & Lipid-Lowering Agents',
+    'Antiplatelets, Anticoagulants & Hemostatics',
+    'Heart Failure, Antianginals & Antiarrhythmics',
+    'Pulmonary Arterial Hypertension (PAH)',
+    'Antihypertensives & Vascular',
+  ],
+  diabetes: [
+    'Biguanides (Metformin)',
+    'SGLT2 Inhibitors & Combinations',
+    'DPP-4 Inhibitors & Combinations',
+    'Sulfonylureas & Glitazones',
+    'GLP-1 / GIP Agonists & Weight Management',
+    'Insulins & Analogues',
+    'Oral Antidiabetics',
+  ],
+  respiratory: [
+    'ICS & Combination Inhalers (ICS/LABA/LAMA)',
+    'LAMA / LABA Bronchodilator Inhalers',
+    'Leukotriene Modifiers (Montelukast)',
+    'Cough, Expectorants & Mucolytics',
+    'Nasal Corticosteroids & Sprays',
+    'Asthma & COPD Inhalers / Bronchodilators',
+  ],
+  gastrointestinal: [
+    'PPIs, P-CABs & H. pylori / Acid Suppressants',
+    'GI Antispasmodics & Prokinetics',
+    'Antiemetics',
+    'Hepatobiliary & Pancreatic Enzymes',
+    'IBD, Laxatives & Antidiarrheals',
+    'Gastrointestinal Agents',
+  ],
+  analgesics: [
+    'NSAIDs & Anti-inflammatory',
+    'Analgesics & Antipyretics',
+    'Muscle Relaxants',
+    'Antigout & Uric Acid Lowering',
+    'Local Anesthetics',
+  ],
+  cns: [
+    'Antidepressants (SSRIs, SNRIs & TCAs)',
+    'Antiepileptics & Neuropathic Pain',
+    'Antihistamines & Antiallergics',
+    'Antipsychotics, Anxiolytics & ADHD',
+    "Migraine, Vertigo, Parkinson's & Neuroprotection",
+    'Neurology & CNS Agents',
+  ],
+  endocrine: [
+    'Thyroid & Systemic Corticosteroids',
+    'Bone Metabolism & Osteoporosis',
+    'Reproductive Hormones & OB/GYN',
+    'Endocrine & Hormonal Agents',
+  ],
+  oncology: [
+    'Oncology & Targeted Therapies',
+    'Immunosuppressants, Biologics & Autoimmune',
+    'Hematology, Coagulation & Rare Diseases',
+  ],
+  urology: [
+    'Benign Prostatic Hyperplasia (BPH)',
+    'Overactive Bladder & Urinary Antispasmodics',
+    "PDE5 Inhibitors & Men's Health",
+    'Nephrology, Binders & Electrolytes',
+    'BPH & Urinary Agents',
+  ],
+  ophthalmology_derm: [
+    'Ophthalmic Anti-infectives & Anti-inflammatories',
+    'Glaucoma & Intraocular Pressure',
+    'Topical Anti-infectives & Corticosteroids',
+    'Psoriasis, Acne & Skin Care',
+  ],
+  supplements: [
+    'Iron & Antianemic Preparations',
+    'Vitamins, Minerals & Supplements',
+  ],
+};
 
 function getTimeOfDayGreeting(): string {
   const hour = new Date().getHours();
@@ -469,6 +564,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   >('');
   const [selectedSubclass, setSelectedSubclass] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [subtypesOpen, setSubtypesOpen] = useState(false);
 
   const [rows, setRows] = useState<DoctorSearchRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -776,15 +872,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         clear: () => setCompanyId(''),
       });
     }
-    if (specialtyId) {
-      chips.push({
-        key: 'specialty',
-        label: specialties.find((sp) => sp.id === specialtyId)?.nameEn ?? 'Specialty',
-        clear: () => setSpecialtyId(''),
-      });
-    }
     return chips;
-  }, [therapeuticGroup, selectedSubclass, companyId, specialtyId, companies, specialties]);
+  }, [therapeuticGroup, selectedSubclass, companyId, companies]);
 
   const activeFilterCount = activeFilterChips.length;
 
@@ -795,6 +884,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setSpecialtyId('');
     setTherapeuticGroup('');
     setSelectedSubclass('');
+    setSubtypesOpen(false);
   };
 
   const isSearchingOrFiltering = Boolean(
@@ -881,7 +971,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   );
 
   useEffect(() => {
-    setSelectedSubclass('');
     void runSearch(debouncedQuery, companyId, specialtyId, therapeuticGroup);
   }, [runSearch, debouncedQuery, companyId, specialtyId, therapeuticGroup]);
 
@@ -2333,19 +2422,20 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   id="doctor-catalog-filters"
                   className="rounded-xl bg-surface border border-border p-3 space-y-2.5"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="flex items-center gap-1.5">
                       <select
                         id="doctor-catalog-class"
                         aria-label="Filter by drug class"
                         value={therapeuticGroup}
                         onChange={(e) => {
-                          setTherapeuticGroup(
-                            e.target.value as TherapeuticGroupKey | ''
-                          );
+                          const nextGroup = e.target.value as
+                            | TherapeuticGroupKey
+                            | '';
+                          setTherapeuticGroup(nextGroup);
                           setSelectedSubclass('');
                         }}
-                        className={`${inputClass} min-h-[40px] bg-background py-1.5 text-xs sm:text-sm`}
+                        className={`${inputClass} flex-1 min-w-0 min-h-[40px] bg-background py-1.5 text-xs sm:text-sm`}
                       >
                         <option value="">All drug classes</option>
                         {THERAPEUTIC_GROUPS.map((group) => (
@@ -2354,6 +2444,31 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                           </option>
                         ))}
                       </select>
+
+                      <button
+                        type="button"
+                        aria-label="Drug class subtypes"
+                        aria-expanded={subtypesOpen}
+                        title={
+                          selectedSubclass
+                            ? `Subtype: ${selectedSubclass}`
+                            : 'Drug class subtypes'
+                        }
+                        onClick={() => setSubtypesOpen((v) => !v)}
+                        className={`relative shrink-0 h-10 w-10 inline-flex items-center justify-center rounded-lg border transition-colors duration-150 ${
+                          subtypesOpen || Boolean(selectedSubclass)
+                            ? 'border-accent bg-primary/25 text-accent'
+                            : 'border-border bg-background text-text-muted hover:text-text hover:border-accent/50'
+                        }`}
+                      >
+                        <ListFilter className="w-4 h-4" aria-hidden="true" />
+                        {selectedSubclass && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent"
+                          />
+                        )}
+                      </button>
                     </div>
 
                     <div>
@@ -2372,92 +2487,142 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         ))}
                       </select>
                     </div>
-
-                    <div>
-                      <select
-                        id="doctor-catalog-specialty"
-                        aria-label="Filter by specialty"
-                        value={specialtyId}
-                        onChange={(e) => setSpecialtyId(e.target.value)}
-                        className={`${inputClass} min-h-[40px] bg-background py-1.5 text-xs sm:text-sm`}
-                      >
-                        <option value="">All specialties</option>
-                        {specialties.map((spec) => (
-                          <option key={spec.id} value={spec.id}>
-                            {spec.nameEn}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
                   </div>
 
-                  {/* Drug Classes chips */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pt-1">
-                    {THERAPEUTIC_GROUPS.map((group) => {
-                      const active = therapeuticGroup === group.key;
-                      return (
-                        <button
-                          key={group.key}
-                          type="button"
-                          title={group.examples}
-                          onClick={() => {
-                            if (active) {
-                              setTherapeuticGroup('');
-                              setSelectedSubclass('');
-                            } else {
-                              handleFilterByClass(group.key);
-                            }
-                          }}
-                          className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                            active
-                              ? 'bg-primary border-accent text-text'
-                              : 'bg-background/60 border-border text-text-muted hover:text-text hover:border-accent/50'
-                          }`}
-                        >
-                          {group.shortLabel}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Subclasses row when multiple subclasses match */}
-                  {isSearchingOrFiltering && allSubclasses.length > 1 && (
+                  {/* Compact Subtypes List inside Drug Classes when the tiny list button is clicked */}
+                  {subtypesOpen && (
                     <div
-                      className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pt-2 border-t border-border/70"
-                      aria-label="Filter by subclass"
+                      aria-label="Drug class subtypes list"
+                      className="rounded-lg bg-background/70 border border-border p-2.5 max-h-60 overflow-y-auto space-y-2"
                     >
-                      <button
-                        type="button"
-                        onClick={() => setSelectedSubclass('')}
-                        className={`shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors tabular-nums ${
-                          selectedSubclass === ''
-                            ? 'bg-primary border-accent text-text'
-                            : 'bg-background/50 border-border text-text-muted hover:text-text'
-                        }`}
-                      >
-                        All ({rows.length})
-                      </button>
-                      {allSubclasses.map((sub) => {
-                        const active = selectedSubclass === sub.subclassLabel;
-                        return (
-                          <button
-                            key={`${sub.groupKey}-${sub.subclassLabel}`}
-                            type="button"
-                            onClick={() =>
-                              setSelectedSubclass(
-                                active ? '' : sub.subclassLabel
-                              )
+                      {therapeuticGroup ? (
+                        (() => {
+                          const groupDef = THERAPEUTIC_GROUPS.find(
+                            (g) => g.key === therapeuticGroup
+                          );
+                          const countBySub = new Map<string, number>();
+                          for (const sub of allSubclasses) {
+                            if (sub.groupKey === therapeuticGroup) {
+                              countBySub.set(
+                                sub.subclassLabel,
+                                sub.items.length
+                              );
                             }
-                            className={`shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors tabular-nums whitespace-nowrap ${
-                              active
-                                ? 'bg-primary border-accent text-text'
-                                : 'bg-background/50 border-border text-text-muted hover:text-text'
-                            }`}
-                          >
-                            {sub.subclassLabel} ({sub.items.length})
-                          </button>
-                        );
-                      })}
+                          }
+                          const knownSubs =
+                            DRUG_CLASS_SUBTYPES[therapeuticGroup] ?? [];
+                          const mergedSubs = Array.from(
+                            new Set([
+                              ...knownSubs,
+                              ...Array.from(countBySub.keys()),
+                            ])
+                          );
+                          return (
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between gap-2 px-1">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted truncate">
+                                  {groupDef?.label ?? 'Subtypes'}
+                                </span>
+                                {selectedSubclass && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedSubclass('')}
+                                    className="text-[11px] font-medium text-accent hover:underline shrink-0"
+                                  >
+                                    All subtypes
+                                  </button>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedSubclass('');
+                                    setSubtypesOpen(false);
+                                  }}
+                                  className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                                    selectedSubclass === ''
+                                      ? 'bg-primary border-accent text-text'
+                                      : 'bg-surface border-border text-text-muted hover:text-text'
+                                  }`}
+                                >
+                                  All {groupDef?.shortLabel ?? 'class'}
+                                </button>
+                                {mergedSubs.map((subLabel) => {
+                                  const active = selectedSubclass === subLabel;
+                                  const count = countBySub.get(subLabel);
+                                  return (
+                                    <button
+                                      key={subLabel}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedSubclass(
+                                          active ? '' : subLabel
+                                        );
+                                        setSubtypesOpen(false);
+                                      }}
+                                      className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors text-left ${
+                                        active
+                                          ? 'bg-primary border-accent text-text'
+                                          : 'bg-surface border-border text-text-muted hover:text-text'
+                                      }`}
+                                    >
+                                      {subLabel}
+                                      {typeof count === 'number'
+                                        ? ` (${count})`
+                                        : ''}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <div className="space-y-2.5">
+                          {THERAPEUTIC_GROUPS.map((group) => {
+                            const subs = DRUG_CLASS_SUBTYPES[group.key] ?? [];
+                            return (
+                              <div key={group.key} className="space-y-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setTherapeuticGroup(group.key);
+                                    setSelectedSubclass('');
+                                    setSubtypesOpen(false);
+                                  }}
+                                  className="text-[11px] font-semibold uppercase tracking-wider text-accent hover:underline text-left"
+                                >
+                                  {group.label}
+                                </button>
+                                <div className="flex flex-wrap gap-1">
+                                  {subs.map((subLabel) => {
+                                    const active = selectedSubclass === subLabel;
+                                    return (
+                                      <button
+                                        key={`${group.key}-${subLabel}`}
+                                        type="button"
+                                        onClick={() => {
+                                          setTherapeuticGroup(group.key);
+                                          setSelectedSubclass(subLabel);
+                                          setSubtypesOpen(false);
+                                        }}
+                                        className={`rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors text-left ${
+                                          active
+                                            ? 'bg-primary border-accent text-text'
+                                            : 'bg-surface border-border text-text-muted hover:text-text'
+                                        }`}
+                                      >
+                                        {subLabel}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2574,6 +2739,24 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     </div>
 
                     {/* Compact medication list grouped by Subclass: each row shows ONLY Brand, Generic/Scientific, and Company */}
+                    {visibleSubclasses.length === 0 && selectedSubclass ? (
+                      <div className="rounded-xl bg-surface border border-border p-5 text-center space-y-2">
+                        <p className="text-xs text-text-muted">
+                          No published medications found in{' '}
+                          <span className="text-text font-medium">
+                            {selectedSubclass}
+                          </span>
+                          .
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSubclass('')}
+                          className="text-xs font-medium text-accent hover:underline"
+                        >
+                          Show all in this drug class
+                        </button>
+                      </div>
+                    ) : (
                     <div className="rounded-xl bg-surface border border-border overflow-clip">
                       {visibleSubclasses.map((sub) => (
                         <div key={`${sub.groupKey}-${sub.subclassLabel}`}>
@@ -2638,6 +2821,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         </div>
                       ))}
                     </div>
+                    )}
 
                     {rows.length < totalCount && (
                       <div>

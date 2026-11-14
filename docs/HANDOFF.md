@@ -58,12 +58,11 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
-### 2026-11-14 — Claude (company pages did not open for doctors)
-- `AuthGate.tsx` sent every doctor route except `#/product/<id>` back to
-  `#/catalog`, so tapping a company bounced straight back. Doctors
-  (officialCatalog) may now stay on `#/company/<id>` and `#/companies`
-  (`isCompanyDirectoryRoute` in `src/lib/companyPage.ts`). AI Studio: any new
-  doctor sub-page with its own hash route must be added to this allow-list.
+### 2026-11-14 — Google AI Studio (simplify doctor catalog filter panel + drug class subtypes button)
+- **What changed:**
+  - `src/components/DoctorCatalog.tsx`: Removed the Specialty filter dropdown from `#doctor-catalog-filters`, keeping only Drug Classes and Companies; added a compact subtypes list button inside the Drug Classes control so doctors can pick subtypes for each drug class.
+- **Why:** Owner requested keeping only Companies and Drug Classes in the filter panel and placing a small list button inside Drug Classes for subtypes of each drug class.
+- **What Claude must do next:** Nothing required on the database/auth side.
 
 ### 2026-11-14 — Claude (ready for 5,000 doctors)
 - **Search cache** (migration `20261114160000_catalog_search_cache.sql`, live):

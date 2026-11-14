@@ -8,6 +8,7 @@ import {
   checkCompanyImage,
   companyFacts,
   groupCompanyProducts,
+  isCompanyDirectoryRoute,
   loadCompanyDirectory,
   loadCompanyPage,
   parseCompanyPage,
@@ -154,5 +155,12 @@ describe('company pages', () => {
     });
     await adminAddCompanyMedia(client, { companyId: 'c1', storagePath: 'c1/g.jpg', caption: ' Lab ' });
     expect(calls[1].args).toEqual({ p_company_id: 'c1', p_storage_path: 'c1/g.jpg', p_caption: 'Lab', p_sort_order: 0 });
+  });
+
+  it('recognises the companies list route', () => {
+    expect(isCompanyDirectoryRoute(COMPANY_DIRECTORY_ROUTE)).toBe(true);
+    expect(isCompanyDirectoryRoute('/companies/')).toBe(true);
+    expect(isCompanyDirectoryRoute('#/catalog')).toBe(false);
+    expect(isCompanyDirectoryRoute('#/company/c1')).toBe(false);
   });
 });

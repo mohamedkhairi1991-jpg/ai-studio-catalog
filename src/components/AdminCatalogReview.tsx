@@ -5151,13 +5151,13 @@ function AdminSponsoredAdsView({
       return;
     }
 
-    const maxBytes = isVideo ? 25 * 1024 * 1024 : 10 * 1024 * 1024;
+    const maxBytes = isVideo ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
     if (file.size > maxBytes) {
       setMediaUploadStatus({
         tone: 'error',
         text: isVideo
-          ? 'Short video file must be 25 MB or smaller.'
-          : 'Picture file must be 10 MB or smaller.',
+          ? 'Short video file must be 10 MB or smaller.'
+          : 'Picture file must be 5 MB or smaller.',
       });
       return;
     }
@@ -5428,10 +5428,10 @@ function AdminSponsoredAdsView({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
             <div className="rounded-lg bg-[#1F2D38]/70 border border-[#304451] px-3.5 py-2.5 text-[#B8C3CC]">
-              <strong className="text-[#F2F5F8]">Picture Specs:</strong> PNG, JPG, WEBP, or GIF · Recommended 1200×628 px (16:9 or 2:1 landscape) · Max 10 MB.
+              <strong className="text-[#F2F5F8]">Picture Specs:</strong> PNG, JPG, WEBP, or GIF · Recommended 1200×628 px (16:9 or 2:1 landscape) · Max 5 MB (under 500 KB is best).
             </div>
             <div className="rounded-lg bg-[#1F2D38]/70 border border-[#304451] px-3.5 py-2.5 text-[#B8C3CC]">
-              <strong className="text-[#F2F5F8]">Short Video Specs:</strong> MP4, WEBM, or MOV · 6–15 seconds recommended (max 45 seconds) · Muted inline autoplay with user controls · Max 25 MB.
+              <strong className="text-[#F2F5F8]">Short Video Specs:</strong> MP4, WEBM, or MOV · 6–15 seconds recommended (max 45 seconds) · Plays when the doctor taps it · Max 10 MB (smaller is better on mobile data).
             </div>
           </div>
         </div>
@@ -5519,7 +5519,7 @@ function AdminSponsoredAdsView({
                       Ad Media — Picture or Short Video (optional)
                     </div>
                     <p className="text-[11px] text-[#B8C3CC] mt-0.5">
-                      Upload a picture (PNG, JPG, WEBP ≤ 10 MB) or short video (MP4, WEBM, MOV ≤ 45s, ≤ 25 MB), or paste a direct https:// URL.
+                      Upload a picture (PNG, JPG, WEBP ≤ 5 MB) or short video (MP4, WEBM, MOV ≤ 45s, ≤ 10 MB), or paste a direct https:// URL.
                     </p>
                   </div>
                   {currentMediaKind !== 'none' && (

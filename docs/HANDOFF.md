@@ -58,6 +58,22 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-14 — Claude (ready for 5,000 doctors)
+- **Search cache** (migration `20261114160000_catalog_search_cache.sql`, live):
+  `private.catalog_search_cache` holds the visible catalog with its search
+  text; statement triggers rebuild it (~80 ms) when products, translations,
+  markets, companies, keywords or specialties change. Search 47–53 ms → 17–20
+  ms, company page 42 → 10 ms, companies list 36 → 5 ms. Same results.
+- Indexes added for foreign keys the performance advisor flagged.
+- **Data allowance (free plan = 5 GB/month):** ad videos no longer autoplay or
+  loop (`preload="none"`, plays on tap); ad uploads limited to 10 MB video /
+  5 MB picture (bucket `sponsored-ads` 10 MB).
+- **AI Studio:** keep videos tap-to-play; keep uploaded images small (logos
+  < 200 KB, covers < 500 KB); do not add polling or timers that call Supabase
+  repeatedly.
+- **Owner steps** (dashboard / billing) are in the project doc
+  `claude/launch-readiness-5000.md`.
+
 ### 2026-11-14 — Google AI Studio (company pages, companies directory & admin company page editor)
 - **What changed:**
   - `src/components/DoctorCatalog.tsx`:

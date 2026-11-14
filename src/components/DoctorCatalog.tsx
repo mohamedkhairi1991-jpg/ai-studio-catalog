@@ -3540,14 +3540,14 @@ export function SponsoredAdCard({
           )}
 
           <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center overflow-hidden">
+            {/* Plays only when tapped: autoplay would download the whole video
+                for every doctor and use up the monthly data allowance. */}
             <video
               src={validMediaUrl}
               controls
               muted
-              autoPlay
-              loop
               playsInline
-              preload="metadata"
+              preload="none"
               aria-label={ad.title}
               className={`${
                 compact ? 'max-h-[180px]' : 'max-h-[240px]'

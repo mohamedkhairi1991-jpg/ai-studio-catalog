@@ -4,12 +4,13 @@ import {
   AlertTriangle,
   Bookmark,
   Building2,
+  Camera,
   Check,
   ChevronRight,
   Clock,
   ExternalLink,
-  Lock,
   Pencil,
+  Pin,
   Layers,
   Package,
   Pill,
@@ -22,6 +23,7 @@ import {
   Stethoscope,
   Syringe,
   Thermometer,
+  Trash2,
   User,
   X,
 } from 'lucide-react';
@@ -33,7 +35,6 @@ import {
   THERAPEUTIC_GROUPS,
   buildProductRouteHash,
   classifyDrugTherapeuticGroup,
-  clearRecentDoctorDrugs,
   groupProductsByTherapeuticClass,
   loadDoctorSponsoredAd,
   loadProductDetail,
@@ -161,6 +162,245 @@ export function isSponsoredAdVideoUrl(
   );
 }
 
+export type DoctorNoteCategory =
+  | 'clinical_pearl'
+  | 'dosing_protocol'
+  | 'case_memory'
+  | 'conference_study'
+  | 'personal_note';
+
+export interface DoctorNotebookEntry {
+  id: string;
+  title: string;
+  body: string;
+  category: DoctorNoteCategory;
+  pinned: boolean;
+  linkedProductId: string | null;
+  linkedProductName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DoctorProfileExtras {
+  avatarUrl: string;
+  quote: string;
+  workplace: string;
+  clinicalLevel: string;
+  boardStatus: string;
+}
+
+export const DOCTOR_LEVEL_OPTIONS: readonly string[] = [
+  'Resident',
+  'Senior House Officer (Rotator)',
+  'Specialist',
+  'Consultant',
+  'General Practitioner',
+  'Fellow',
+];
+
+export const DOCTOR_BOARD_OPTIONS: readonly string[] = [
+  'Board Student (Iraqi Board)',
+  'Board Student (Arab Board)',
+  'Board Certified',
+  'MSc / Higher Diploma',
+  'Not a Board Student',
+];
+
+export const DOCTOR_NOTE_CATEGORIES: ReadonlyArray<{
+  value: DoctorNoteCategory;
+  label: string;
+}> = [
+  { value: 'clinical_pearl', label: 'Clinical Pearl' },
+  { value: 'dosing_protocol', label: 'Dosing & Protocol' },
+  { value: 'case_memory', label: 'Case Memory' },
+  { value: 'conference_study', label: 'Study & Conference' },
+  { value: 'personal_note', label: 'Personal Note' },
+];
+
+export const PRESET_DOCTOR_QUOTES: readonly string[] = [
+  'Wherever the art of medicine is loved, there is also a love of humanity. — Hippocrates',
+  'The good physician treats the disease; the great physician treats the patient who has the disease. — Sir William Osler',
+  'Medicine is the science of knowing the states of the human body in health and disease. — Ibn Sina',
+  'Dedicated to evidence-based prescribing and safe clinical care for every patient.',
+];
+
+function getProfileExtrasStorageKey(profileKey: string): string {
+  return `pharmaconnect_doctor_profile_extras_v1_${profileKey || 'default'}`;
+}
+
+function getNotebookStorageKey(profileKey: string): string {
+  return `pharmaconnect_doctor_notebook_v1_${profileKey || 'default'}`;
+}
+
+function loadLocalProfileExtras(profileKey: string): DoctorProfileExtras {
+  if (typeof window === 'undefined') {
+    return {
+      avatarUrl: '',
+      quote: '',
+      workplace: '',
+      clinicalLevel: '',
+      boardStatus: '',
+    };
+  }
+  try {
+    const raw = window.localStorage.getItem(
+      getProfileExtrasStorageKey(profileKey)
+    );
+    if (!raw) {
+      return {
+        avatarUrl: '',
+        quote: '',
+        workplace: '',
+        clinicalLevel: '',
+        boardStatus: '',
+      };
+    }
+    const parsed = JSON.parse(raw) as Partial<DoctorProfileExtras>;
+    return {
+      avatarUrl: typeof parsed.avatarUrl === 'string' ? parsed.avatarUrl : '',
+      quote: typeof parsed.quote === 'string' ? parsed.quote : '',
+      workplace: typeof parsed.workplace === 'string' ? parsed.workplace : '',
+      clinicalLevel:
+        typeof parsed.clinicalLevel === 'string' ? parsed.clinicalLevel : '',
+      boardStatus:
+        typeof parsed.boardStatus === 'string' ? parsed.boardStatus : '',
+    };
+  } catch {
+    return {
+      avatarUrl: '',
+      quote: '',
+      workplace: '',
+      clinicalLevel: '',
+      boardStatus: '',
+    };
+  }
+}
+
+function saveLocalProfileExtras(
+  profileKey: string,
+  extras: DoctorProfileExtras
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      getProfileExtrasStorageKey(profileKey),
+      JSON.stringify(extras)
+    );
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function loadLocalDoctorNotebook(profileKey: string): DoctorNotebookEntry[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(getNotebookStorageKey(profileKey));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item): item is DoctorNotebookEntry =>
+          Boolean(item && typeof item.id === 'string' && typeof item.body === 'string')
+      )
+      .map((item) => ({
+        id: item.id,
+        title: typeof item.title === 'string' ? item.title : '',
+        body: item.body,
+        category: DOCTOR_NOTE_CATEGORIES.some((c) => c.value === item.category)
+          ? item.category
+          : 'clinical_pearl',
+        pinned: Boolean(item.pinned),
+        linkedProductId:
+          typeof item.linkedProductId === 'string' && item.linkedProductId
+            ? item.linkedProductId
+            : null,
+        linkedProductName:
+          typeof item.linkedProductName === 'string' && item.linkedProductName
+            ? item.linkedProductName
+            : null,
+        createdAt:
+          typeof item.createdAt === 'string'
+            ? item.createdAt
+            : new Date().toISOString(),
+        updatedAt:
+          typeof item.updatedAt === 'string'
+            ? item.updatedAt
+            : new Date().toISOString(),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalDoctorNotebook(
+  profileKey: string,
+  entries: DoctorNotebookEntry[]
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      getNotebookStorageKey(profileKey),
+      JSON.stringify(entries)
+    );
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function resizeAvatarFileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read the selected image.'));
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+      if (!dataUrl || typeof document === 'undefined') {
+        resolve(dataUrl);
+        return;
+      }
+      const img = new Image();
+      img.onerror = () => reject(new Error('Invalid image file.'));
+      img.onload = () => {
+        try {
+          const size = 240;
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(dataUrl);
+            return;
+          }
+          const minSide = Math.min(img.width, img.height);
+          const sx = Math.max(0, (img.width - minSide) / 2);
+          const sy = Math.max(0, (img.height - minSide) / 2);
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(compressed || dataUrl);
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatNoteTimestamp(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+}
+
 
 export function CatalogBanner({
   tone,
@@ -223,22 +463,65 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [linkCopied, setLinkCopied] = useState(false);
 
   // My profile state
+  const profileStorageKey = access.profileId || access.email || 'default';
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
+  const [profileSavedListOpen, setProfileSavedListOpen] = useState(false);
   const [profileFullName, setProfileFullName] = useState('');
   const [profilePhone, setProfilePhone] = useState('');
   const [profileSpecialtyId, setProfileSpecialtyId] = useState('');
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState(
+    () => loadLocalProfileExtras(profileStorageKey).avatarUrl
+  );
+  const [profileQuote, setProfileQuote] = useState(
+    () => loadLocalProfileExtras(profileStorageKey).quote
+  );
+  const [profileWorkplace, setProfileWorkplace] = useState(
+    () => loadLocalProfileExtras(profileStorageKey).workplace
+  );
+  const [profileClinicalLevel, setProfileClinicalLevel] = useState(
+    () => loadLocalProfileExtras(profileStorageKey).clinicalLevel
+  );
+  const [profileBoardStatus, setProfileBoardStatus] = useState(
+    () => loadLocalProfileExtras(profileStorageKey).boardStatus
+  );
   const [profileBusy, setProfileBusy] = useState(false);
   // The profile opens as a locked, read-only view; fields unlock only after "Edit profile".
   const [profileEditing, setProfileEditing] = useState(false);
-  const [profileSaved, setProfileSaved] = useState({
-    fullName: '',
-    phone: '',
-    specialtyId: '',
+  const [profileSaved, setProfileSaved] = useState(() => {
+    const localExtras = loadLocalProfileExtras(profileStorageKey);
+    return {
+      fullName: '',
+      phone: '',
+      specialtyId: '',
+      avatarUrl: localExtras.avatarUrl,
+      quote: localExtras.quote,
+      workplace: localExtras.workplace,
+      clinicalLevel: localExtras.clinicalLevel,
+      boardStatus: localExtras.boardStatus,
+    };
   });
   const [profileNotice, setProfileNotice] = useState<{
     tone: 'error' | 'ok';
     text: string;
   } | null>(null);
+
+  // Clinical Memory Notebook & Personal Posts state
+  const [notebookEntries, setNotebookEntries] = useState<DoctorNotebookEntry[]>(
+    () => loadLocalDoctorNotebook(profileStorageKey)
+  );
+  const [, setNoteComposerOpen] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteBody, setNoteBody] = useState('');
+  const [noteCategory, setNoteCategory] =
+    useState<DoctorNoteCategory>('clinical_pearl');
+  const [notePinned, setNotePinned] = useState(false);
+  const [noteLinkedProductId, setNoteLinkedProductId] = useState('');
+  const [noteSearchQuery] = useState('');
+  const [noteCategoryFilter] = useState<
+    DoctorNoteCategory | 'all' | 'pinned'
+  >('all');
 
   // Standalone #/product/<id> drug page state
   const [activeProductId, setActiveProductId] = useState<string | null>(() =>
@@ -303,9 +586,13 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  // Load doctor profile summary immediately on mount so the greeting name resolves right away
+  // Load doctor profile summary immediately on mount so the greeting name, avatar, quote, and notebook resolve right away
   useEffect(() => {
     let active = true;
+    const localExtras = loadLocalProfileExtras(profileStorageKey);
+    const localNotes = loadLocalDoctorNotebook(profileStorageKey);
+    setNotebookEntries(localNotes);
+
     void client.auth.getUser().then(async (userRes) => {
       if (!active) return;
       const user = userRes.data.user;
@@ -313,8 +600,47 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       const meta = (user?.user_metadata ?? {}) as {
         full_name?: string | null;
         name?: string | null;
+        doctor_avatar_url?: string | null;
+        doctor_quote?: string | null;
+        doctor_workplace?: string | null;
+        doctor_clinical_level?: string | null;
+        doctor_board_status?: string | null;
+        doctor_notebook_v1?: DoctorNotebookEntry[] | null;
       };
       const metaName = (meta.full_name ?? meta.name ?? '').trim();
+      const resolvedAvatar =
+        localExtras.avatarUrl || (meta.doctor_avatar_url ?? '').trim();
+      const resolvedQuote =
+        localExtras.quote || (meta.doctor_quote ?? '').trim();
+      const resolvedWorkplace =
+        localExtras.workplace || (meta.doctor_workplace ?? '').trim();
+      const resolvedLevel =
+        localExtras.clinicalLevel || (meta.doctor_clinical_level ?? '').trim();
+      const resolvedBoard =
+        localExtras.boardStatus || (meta.doctor_board_status ?? '').trim();
+
+      if (
+        localNotes.length === 0 &&
+        Array.isArray(meta.doctor_notebook_v1) &&
+        meta.doctor_notebook_v1.length > 0
+      ) {
+        setNotebookEntries(meta.doctor_notebook_v1);
+        saveLocalDoctorNotebook(profileStorageKey, meta.doctor_notebook_v1);
+      }
+
+      setProfileAvatarUrl(resolvedAvatar);
+      setProfileQuote(resolvedQuote);
+      setProfileWorkplace(resolvedWorkplace);
+      setProfileClinicalLevel(resolvedLevel);
+      setProfileBoardStatus(resolvedBoard);
+      saveLocalProfileExtras(profileStorageKey, {
+        avatarUrl: resolvedAvatar,
+        quote: resolvedQuote,
+        workplace: resolvedWorkplace,
+        clinicalLevel: resolvedLevel,
+        boardStatus: resolvedBoard,
+      });
+
       if (metaName) {
         setProfileFullName((prev) => prev || metaName);
       }
@@ -330,13 +656,18 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           fullName: resolvedFullName,
           phone: summary.phone,
           specialtyId: summary.specialtyId,
+          avatarUrl: resolvedAvatar,
+          quote: resolvedQuote,
+          workplace: resolvedWorkplace,
+          clinicalLevel: resolvedLevel,
+          boardStatus: resolvedBoard,
         });
       }
     });
     return () => {
       active = false;
     };
-  }, [client]);
+  }, [client, profileStorageKey]);
 
   // Load verified companies, active specialties, and sponsored ad once on mount
   useEffect(() => {
@@ -740,6 +1071,89 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     }
   };
 
+  const syncProfileExtrasToCloud = async (
+    nextExtras: DoctorProfileExtras,
+    nextNotes?: DoctorNotebookEntry[]
+  ) => {
+    saveLocalProfileExtras(profileStorageKey, nextExtras);
+    try {
+      await client.auth.updateUser({
+        data: {
+          doctor_avatar_url: nextExtras.avatarUrl || null,
+          doctor_quote: nextExtras.quote || null,
+          doctor_workplace: nextExtras.workplace || null,
+          doctor_clinical_level: nextExtras.clinicalLevel || null,
+          doctor_board_status: nextExtras.boardStatus || null,
+          ...(nextNotes ? { doctor_notebook_v1: nextNotes.slice(0, 30) } : {}),
+        },
+      });
+    } catch {
+      // Ignore offline/metadata update errors; localStorage is already updated
+    }
+  };
+
+  const handleAvatarFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!/^image\/(jpeg|jpg|png|webp|gif)$/i.test(file.type)) {
+      setProfileNotice({
+        tone: 'error',
+        text: 'Please choose a JPG, PNG, or WebP image for your profile picture.',
+      });
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setProfileNotice({
+        tone: 'error',
+        text: 'Profile picture must be 8 MB or smaller.',
+      });
+      return;
+    }
+    try {
+      const dataUrl = await resizeAvatarFileToDataUrl(file);
+      setProfileAvatarUrl(dataUrl);
+      if (!profileEditing) {
+        const nextExtras: DoctorProfileExtras = {
+          avatarUrl: dataUrl,
+          quote: profileSaved.quote,
+          workplace: profileSaved.workplace,
+          clinicalLevel: profileSaved.clinicalLevel,
+          boardStatus: profileSaved.boardStatus,
+        };
+        setProfileSaved((prev) => ({ ...prev, avatarUrl: dataUrl }));
+        await syncProfileExtrasToCloud(nextExtras);
+        setProfileNotice({ tone: 'ok', text: 'Profile picture updated.' });
+      }
+    } catch (err) {
+      setProfileNotice({
+        tone: 'error',
+        text:
+          err instanceof Error
+            ? err.message
+            : 'Could not update profile picture.',
+      });
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setProfileAvatarUrl('');
+    if (!profileEditing) {
+      const nextExtras: DoctorProfileExtras = {
+        avatarUrl: '',
+        quote: profileSaved.quote,
+        workplace: profileSaved.workplace,
+        clinicalLevel: profileSaved.clinicalLevel,
+        boardStatus: profileSaved.boardStatus,
+      };
+      setProfileSaved((prev) => ({ ...prev, avatarUrl: '' }));
+      await syncProfileExtrasToCloud(nextExtras);
+      setProfileNotice({ tone: 'ok', text: 'Profile picture removed.' });
+    }
+  };
+
   const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
     setProfileBusy(true);
@@ -749,15 +1163,36 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       phone: profilePhone,
       specialtyId: profileSpecialtyId,
     });
+    const cleanQuote = profileQuote.trim().slice(0, 220);
+    const cleanWorkplace = profileWorkplace.trim().slice(0, 120);
+    const cleanLevel = profileClinicalLevel.trim().slice(0, 80);
+    const cleanBoard = profileBoardStatus.trim().slice(0, 80);
+    const nextExtras: DoctorProfileExtras = {
+      avatarUrl: profileAvatarUrl,
+      quote: cleanQuote,
+      workplace: cleanWorkplace,
+      clinicalLevel: cleanLevel,
+      boardStatus: cleanBoard,
+    };
+    await syncProfileExtrasToCloud(nextExtras);
     setProfileBusy(false);
     if (!res.ok) {
       setProfileNotice({ tone: 'error', text: res.message });
       return;
     }
+    setProfileQuote(cleanQuote);
+    setProfileWorkplace(cleanWorkplace);
+    setProfileClinicalLevel(cleanLevel);
+    setProfileBoardStatus(cleanBoard);
     setProfileSaved({
       fullName: profileFullName,
       phone: profilePhone,
       specialtyId: profileSpecialtyId,
+      avatarUrl: profileAvatarUrl,
+      quote: cleanQuote,
+      workplace: cleanWorkplace,
+      clinicalLevel: cleanLevel,
+      boardStatus: cleanBoard,
     });
     setProfileEditing(false);
     setProfileNotice({ tone: 'ok', text: 'Profile updated.' });
@@ -772,9 +1207,145 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setProfileFullName(profileSaved.fullName);
     setProfilePhone(profileSaved.phone);
     setProfileSpecialtyId(profileSaved.specialtyId);
+    setProfileAvatarUrl(profileSaved.avatarUrl);
+    setProfileQuote(profileSaved.quote);
+    setProfileWorkplace(profileSaved.workplace);
+    setProfileClinicalLevel(profileSaved.clinicalLevel);
+    setProfileBoardStatus(profileSaved.boardStatus);
     setProfileNotice(null);
     setProfileEditing(false);
   };
+
+  // Clinical Memory Notebook handlers
+  const linkableDrugs = useMemo(() => {
+    const map = new Map<string, SavedOrRecentDrugItem>();
+    for (const d of savedDrugs) map.set(d.productId, d);
+    for (const d of recentDrugs) {
+      if (!map.has(d.productId)) map.set(d.productId, d);
+    }
+    return Array.from(map.values());
+  }, [savedDrugs, recentDrugs]);
+
+  const resetNoteComposer = () => {
+    setEditingNoteId(null);
+    setNoteTitle('');
+    setNoteBody('');
+    setNoteCategory('clinical_pearl');
+    setNotePinned(false);
+    setNoteLinkedProductId('');
+  };
+
+  const handleSaveNote = async (e: FormEvent) => {
+    e.preventDefault();
+    const cleanBody = noteBody.trim();
+    if (!cleanBody) return;
+    const cleanTitle = noteTitle.trim().slice(0, 120);
+    const linkedDrug = linkableDrugs.find(
+      (d) => d.productId === noteLinkedProductId
+    );
+    const nowIso = new Date().toISOString();
+
+    let nextEntries: DoctorNotebookEntry[];
+    if (editingNoteId) {
+      nextEntries = notebookEntries.map((entry) =>
+        entry.id === editingNoteId
+          ? {
+              ...entry,
+              title: cleanTitle,
+              body: cleanBody.slice(0, 2000),
+              category: noteCategory,
+              pinned: notePinned,
+              linkedProductId: linkedDrug ? linkedDrug.productId : null,
+              linkedProductName: linkedDrug ? linkedDrug.brandNameEn : null,
+              updatedAt: nowIso,
+            }
+          : entry
+      );
+    } else {
+      const newEntry: DoctorNotebookEntry = {
+        id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        title: cleanTitle,
+        body: cleanBody.slice(0, 2000),
+        category: noteCategory,
+        pinned: notePinned,
+        linkedProductId: linkedDrug ? linkedDrug.productId : null,
+        linkedProductName: linkedDrug ? linkedDrug.brandNameEn : null,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+      nextEntries = [newEntry, ...notebookEntries];
+    }
+
+    setNotebookEntries(nextEntries);
+    saveLocalDoctorNotebook(profileStorageKey, nextEntries);
+    resetNoteComposer();
+    setNoteComposerOpen(false);
+    void syncProfileExtrasToCloud(
+      {
+        avatarUrl: profileSaved.avatarUrl,
+        quote: profileSaved.quote,
+        workplace: profileSaved.workplace,
+        clinicalLevel: profileSaved.clinicalLevel,
+        boardStatus: profileSaved.boardStatus,
+      },
+      nextEntries
+    );
+  };
+
+  const handleEditNote = (entry: DoctorNotebookEntry) => {
+    setEditingNoteId(entry.id);
+    setNoteTitle(entry.title);
+    setNoteBody(entry.body);
+    setNoteCategory(entry.category);
+    setNotePinned(entry.pinned);
+    setNoteLinkedProductId(entry.linkedProductId ?? '');
+    setNoteComposerOpen(true);
+  };
+
+  const handleTogglePinNote = (noteId: string) => {
+    const nextEntries = notebookEntries.map((entry) =>
+      entry.id === noteId
+        ? { ...entry, pinned: !entry.pinned, updatedAt: new Date().toISOString() }
+        : entry
+    );
+    setNotebookEntries(nextEntries);
+    saveLocalDoctorNotebook(profileStorageKey, nextEntries);
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    const nextEntries = notebookEntries.filter((entry) => entry.id !== noteId);
+    setNotebookEntries(nextEntries);
+    saveLocalDoctorNotebook(profileStorageKey, nextEntries);
+    if (editingNoteId === noteId) {
+      resetNoteComposer();
+      setNoteComposerOpen(false);
+    }
+  };
+
+  const filteredNotebookEntries = useMemo(() => {
+    const q = noteSearchQuery.trim().toLowerCase();
+    return [...notebookEntries]
+      .filter((entry) => {
+        if (noteCategoryFilter === 'pinned' && !entry.pinned) return false;
+        if (
+          noteCategoryFilter !== 'all' &&
+          noteCategoryFilter !== 'pinned' &&
+          entry.category !== noteCategoryFilter
+        ) {
+          return false;
+        }
+        if (!q) return true;
+        return (
+          entry.title.toLowerCase().includes(q) ||
+          entry.body.toLowerCase().includes(q) ||
+          (entry.linkedProductName ?? '').toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => {
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+        return b.createdAt.localeCompare(a.createdAt);
+      });
+  }, [notebookEntries, noteCategoryFilter, noteSearchQuery]);
 
   const savedSpecialtyName =
     physicianSpecialties.find((s) => s.id === profileSaved.specialtyId)?.label ||
@@ -812,10 +1383,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             <NotificationBell client={client} profileId={access.profileId} />
             <button
               type="button"
-              aria-label="Saved and recent medicines"
+              aria-label="Saved medicines"
               aria-expanded={savedOpen}
-              title="Saved and recent medicines"
-              className={`relative h-8 min-w-[32px] inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 sm:px-2.5 text-xs transition-colors duration-150 ${
+              title="Saved medicines"
+              className={`relative h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
                 savedOpen
                   ? 'border-accent bg-background text-accent'
                   : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
@@ -826,9 +1397,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               }}
             >
               <Bookmark className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline text-xs font-medium">Saved</span>
               {savedDrugs.length > 0 && (
-                <span className="text-[11px] font-semibold tabular-nums text-accent">
+                <span className="ml-0.5 text-[11px] font-semibold tabular-nums text-accent">
                   {savedDrugs.length}
                 </span>
               )}
@@ -838,7 +1408,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               aria-label="My profile"
               aria-expanded={profileOpen}
               title="My profile"
-              className={`h-8 min-w-[32px] inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 sm:px-2.5 text-xs transition-colors duration-150 ${
+              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
                 profileOpen
                   ? 'border-accent bg-background text-accent'
                   : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
@@ -850,18 +1420,24 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 cancelProfileEdit();
               }}
             >
-              <User className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline text-xs font-medium">Profile</span>
+              {(profileSaved.avatarUrl || profileAvatarUrl) ? (
+                <img
+                  src={profileSaved.avatarUrl || profileAvatarUrl}
+                  alt=""
+                  className="w-4 h-4 rounded-full object-cover border border-accent/50 shrink-0"
+                />
+              ) : (
+                <User className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              )}
             </button>
             <button
               type="button"
               aria-label="Sign out"
               title="Sign out"
-              className="h-8 min-w-[32px] inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface/60 px-2 sm:px-2.5 text-xs text-text hover:bg-surface-raised hover:text-danger transition-colors duration-150"
+              className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-border bg-surface/60 text-xs text-text hover:bg-surface-raised hover:text-danger transition-colors duration-150"
               onClick={onSignOut}
             >
               <Power className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline text-xs font-medium">Sign out</span>
             </button>
           </div>
         </div>
@@ -869,436 +1445,252 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
       {/* Main Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
-        {/* Saved & Recently Viewed Drawer */}
+        {/* Saved Medicines Drawer (Only saved medicines, no recent list) */}
         {savedOpen && (
-          <section className="rounded-2xl bg-surface border border-border shadow-soft p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div>
-                <h2 className="text-base font-semibold text-text">
-                  Saved & recently viewed
-                </h2>
-                <p className="text-xs text-text-muted mt-0.5">
-                  Quick access to medicines saved or opened on this device.
-                </p>
-              </div>
+          <section className="rounded-2xl bg-surface border border-border shadow-soft p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent tabular-nums">
+                <Bookmark className="w-4 h-4" aria-hidden="true" />
+                <span>{savedDrugs.length}</span>
+              </span>
               <button
                 type="button"
-                className={secondaryButtonClass}
+                aria-label="Close saved medicines"
+                title="Close"
+                className="h-7 w-7 inline-flex items-center justify-center rounded-lg border border-border bg-background/60 text-text-muted hover:text-text transition-colors"
                 onClick={() => setSavedOpen(false)}
               >
-                Close
+                <X className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Saved Medicines */}
-              <div className="space-y-2">
-                <div className="text-xs font-semibold uppercase tracking-wider text-accent tabular-nums">
-                  Saved medicines ({savedDrugs.length})
-                </div>
-                {savedDrugs.length === 0 ? (
-                  <p className="text-xs text-text-muted rounded-xl bg-background border border-border p-3.5">
-                    No saved medicines yet. Open any product and tap Save to bookmark it here.
-                  </p>
-                ) : (
-                  <div className="divide-y divide-border rounded-xl bg-background border border-border overflow-hidden">
-                    {savedDrugs.map((item) => (
-                      <div
-                        key={item.productId}
-                        className="flex items-center justify-between gap-2 px-3.5 py-2.5"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => openProductPage(item.productId)}
-                          className="text-left flex-1 min-w-0"
-                        >
-                          <div className="text-xs font-semibold text-text truncate hover:text-accent transition-colors duration-150">
-                            {item.brandNameEn}
-                          </div>
-                          <div className="text-xs text-text-muted truncate">
-                            {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={`Remove ${item.brandNameEn} from saved`}
-                          onClick={() => setSavedDrugs(toggleSavedDoctorDrug(item))}
-                          className="text-xs text-text-muted hover:text-danger px-2 py-1 rounded transition-colors duration-150"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Recently Viewed */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-text-muted tabular-nums">
-                    Recently viewed ({recentDrugs.length})
-                  </span>
-                  {recentDrugs.length > 0 && (
+            {savedDrugs.length === 0 ? (
+              <p className="text-xs text-text-muted">
+                No saved medicines yet.
+              </p>
+            ) : (
+              <div className="divide-y divide-border/60">
+                {savedDrugs.map((item) => (
+                  <div
+                    key={item.productId}
+                    className="flex items-center justify-between gap-2 py-2 first:pt-0 last:pb-0"
+                  >
                     <button
                       type="button"
-                      onClick={() => setRecentDrugs(clearRecentDoctorDrugs())}
-                      className="text-xs font-medium text-accent hover:underline"
+                      onClick={() => openProductPage(item.productId)}
+                      className="text-left flex-1 min-w-0"
                     >
-                      Clear
+                      <div className="text-xs font-semibold text-text truncate hover:text-accent transition-colors duration-150">
+                        {item.brandNameEn}
+                      </div>
+                      <div className="text-xs text-text-muted truncate">
+                        {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
+                      </div>
                     </button>
-                  )}
-                </div>
-                {recentDrugs.length === 0 ? (
-                  <p className="text-xs text-text-muted rounded-xl bg-background border border-border p-3.5">
-                    Medicines you open will appear here for quick reference.
-                  </p>
-                ) : (
-                  <div className="divide-y divide-border rounded-xl bg-background border border-border overflow-hidden">
-                    {recentDrugs.map((item) => (
-                      <button
-                        key={item.productId}
-                        type="button"
-                        onClick={() => openProductPage(item.productId)}
-                        className="w-full text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
-                      >
-                        <div className="text-xs font-semibold text-text truncate">
-                          {item.brandNameEn}
-                        </div>
-                        <div className="text-xs text-text-muted truncate">
-                          {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
-                        </div>
-                      </button>
-                    ))}
+                    <button
+                      type="button"
+                      aria-label={`Remove ${item.brandNameEn} from saved`}
+                      title="Remove"
+                      onClick={() => setSavedDrugs(toggleSavedDoctorDrug(item))}
+                      className="h-7 w-7 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-danger transition-colors duration-150"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
                   </div>
-                )}
+                ))}
               </div>
-            </div>
+            )}
           </section>
         )}
 
-        {/* Standalone My Profile & Preferences Page */}
+        {/* Standalone My Profile Page */}
         {profileOpen ? (
-          <div className="flex-1 flex flex-col gap-5">
-            <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 flex flex-col gap-4">
+            <div>
               <button
                 type="button"
+                aria-label="Back"
+                title="Back"
                 onClick={() => {
                   cancelProfileEdit();
                   setProfileOpen(false);
                 }}
-                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised px-3.5 py-2 text-sm font-medium text-text transition-colors duration-150"
+                className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface hover:bg-surface-raised text-sm font-medium text-text transition-colors duration-150"
               >
-                ← Back
+                ←
               </button>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-success/40 bg-success/15 px-3 py-1 text-xs font-medium text-success">
-                <ShieldCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span>Verified Physician Access</span>
-              </span>
             </div>
 
-            {/* Physician Identity & Clinical Dossier Card */}
-            <section className="rounded-2xl bg-surface border border-border shadow-soft overflow-hidden">
-              {/* Top Physician Identity Banner */}
-              <div className="p-4 sm:p-6 bg-gradient-to-r from-surface via-surface-raised/70 to-surface border-b border-border">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                    <div
-                      aria-hidden="true"
-                      className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-primary/25 border border-accent/40 flex items-center justify-center text-base sm:text-lg font-semibold tracking-wider text-accent shadow-inner"
+            {/* Minimal Profile Header + Always-Open Info Row + Always-Open Square Note Box */}
+            <section className="rounded-2xl bg-surface border border-border shadow-soft p-4 sm:p-5 space-y-4">
+              {/* Row 1: Avatar + Name + Quote + Saved Medicines Symbol */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="relative shrink-0">
+                    {(profileEditing ? profileAvatarUrl : profileSaved.avatarUrl || profileAvatarUrl) ? (
+                      <img
+                        src={
+                          profileEditing
+                            ? profileAvatarUrl
+                            : profileSaved.avatarUrl || profileAvatarUrl
+                        }
+                        alt={formatDoctorDisplayTitle(
+                          profileSaved.fullName || profileFullName
+                        )}
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border border-accent/50 bg-background"
+                      />
+                    ) : (
+                      <div
+                        aria-hidden="true"
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/25 border border-accent/40 flex items-center justify-center text-base sm:text-lg font-semibold tracking-wider text-accent"
+                      >
+                        {getDoctorInitials(
+                          profileSaved.fullName || profileFullName,
+                          access.email
+                        )}
+                      </div>
+                    )}
+                    <label
+                      title="Upload or change profile picture"
+                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary hover:bg-[#1E7BC4] border border-surface text-white flex items-center justify-center cursor-pointer shadow-sm transition-colors"
                     >
-                      {getDoctorInitials(profileSaved.fullName || profileFullName, access.email)}
-                    </div>
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h1 className="text-lg sm:text-xl font-semibold text-text truncate">
-                          {formatDoctorDisplayTitle(profileSaved.fullName || profileFullName)}
-                        </h1>
-                        {!profileEditing && (
-                          <span
-                            className="inline-flex items-center gap-1 rounded-md bg-background/80 border border-border px-2 py-0.5 text-[11px] font-medium text-text-muted"
-                            title="Your details are locked. Tap Edit profile to change them."
-                          >
-                            <Lock className="w-3 h-3" aria-hidden="true" />
-                            Locked
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
-                        <span className="inline-flex items-center gap-1 text-accent font-medium">
-                          <Stethoscope className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                          <span>{savedSpecialtyName || 'Specialty not specified'}</span>
-                        </span>
-                        {access.email && (
-                          <>
-                            <span aria-hidden="true">·</span>
-                            <span className="break-all">{access.email}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
+                      <Camera className="w-3 h-3" aria-hidden="true" />
+                      <span className="sr-only">Upload profile picture</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={(e) => void handleAvatarFileChange(e)}
+                        className="sr-only"
+                      />
+                    </label>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    {!profileEditing ? (
-                      <button
-                        type="button"
-                        onClick={startProfileEdit}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-[#1E7BC4] px-3.5 py-2 text-xs font-semibold text-white transition-colors duration-150"
-                      >
-                        <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                        Edit profile
-                      </button>
-                    ) : (
-                      <span className="rounded-lg border border-accent/40 bg-primary/20 px-3 py-1.5 text-xs font-medium text-accent">
-                        Editing credentials
-                      </span>
-                    )}
+                  <div className="min-w-0">
+                    <h1 className="text-base sm:text-lg font-semibold text-text truncate">
+                      {formatDoctorDisplayTitle(
+                        profileSaved.fullName || profileFullName
+                      )}
+                    </h1>
+                    <p className="text-xs italic text-text-muted leading-snug break-words mt-0.5">
+                      “{profileSaved.quote ||
+                        profileQuote ||
+                        'Wherever the art of medicine is loved, there is also a love of humanity.'}”
+                    </p>
                   </div>
                 </div>
 
-                {/* Quick Clinical Activity Bar */}
-                <div className="grid grid-cols-3 gap-2.5 mt-4 pt-4 border-t border-border/70">
-                  <div className="rounded-xl bg-background/60 border border-border px-3 py-2">
-                    <div className="text-[11px] font-medium text-text-muted">
-                      Saved monographs
-                    </div>
-                    <div className="text-sm sm:text-base font-semibold text-text tabular-nums mt-0.5">
-                      {savedDrugs.length}
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-background/60 border border-border px-3 py-2">
-                    <div className="text-[11px] font-medium text-text-muted">
-                      Recently viewed
-                    </div>
-                    <div className="text-sm sm:text-base font-semibold text-text tabular-nums mt-0.5">
-                      {recentDrugs.length}
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-background/60 border border-border px-3 py-2">
-                    <div className="text-[11px] font-medium text-text-muted">
-                      Formulary region
-                    </div>
-                    <div className="text-xs sm:text-sm font-semibold text-success mt-0.5 truncate">
-                      Iraq Official
-                    </div>
-                  </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    aria-label="Saved medicines"
+                    aria-expanded={profileSavedListOpen}
+                    title="Saved medicines"
+                    onClick={() => setProfileSavedListOpen((v) => !v)}
+                    className={`relative h-8 min-w-[32px] px-2 inline-flex items-center justify-center gap-1 rounded-lg border transition-colors ${
+                      profileSavedListOpen
+                        ? 'border-accent bg-primary/20 text-accent'
+                        : 'border-border bg-background/60 text-text-muted hover:text-text'
+                    }`}
+                  >
+                    <Bookmark className="w-4 h-4" aria-hidden="true" />
+                    {savedDrugs.length > 0 && (
+                      <span className="text-[11px] font-semibold tabular-nums">
+                        {savedDrugs.length}
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
 
-              {/* Credentials Body */}
-              <div className="p-4 sm:p-6 space-y-5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h2 className="text-sm font-semibold text-text">
-                      My profile & clinical credentials
-                    </h2>
-                    <p className="text-xs text-text-muted mt-0.5">
-                      {!profileEditing
-                        ? 'Your verified physician profile used for specialty-matched clinical references.'
-                        : 'Update your clinical details below, then save to lock your profile.'}
-                    </p>
-                  </div>
-                  {profileNotice && (
-                    <span
-                      className={`rounded-lg border px-3 py-1 text-xs font-medium ${
-                        profileNotice.tone === 'error'
-                          ? 'border-danger/40 bg-danger/10 text-danger'
-                          : 'border-success/40 bg-success/10 text-success'
-                      }`}
-                    >
-                      {profileNotice.text}
-                    </span>
-                  )}
-                </div>
-
+              {/* Row 2 (div:nth-of-type(2)): Always-open user details + Profile symbol button that widens Level & Board status */}
+              <div className="border-t border-border/70 pt-3.5 space-y-3">
                 {!profileEditing ? (
-                  <div className="space-y-5">
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
-                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-                          <User className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
-                          <span>Full name</span>
-                        </dt>
-                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text break-words">
-                          {profileSaved.fullName ? (
-                            formatDoctorDisplayTitle(profileSaved.fullName)
-                          ) : (
-                            <span className="text-text-muted">Not set</span>
-                          )}
-                        </dd>
-                      </div>
-
-                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
-                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-                          <Stethoscope className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
-                          <span>Medical specialty</span>
-                        </dt>
-                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text break-words">
-                          {savedSpecialtyName || (
-                            <span className="text-text-muted">Not set</span>
-                          )}
-                        </dd>
-                        {profileSaved.specialtyId &&
-                          specialties.some((s) => s.id === profileSaved.specialtyId) && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSpecialtyId(profileSaved.specialtyId);
-                                setProfileOpen(false);
-                              }}
-                              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
-                            >
-                              <span>Browse specialty drugs</span>
-                              <ChevronRight className="w-3 h-3" aria-hidden="true" />
-                            </button>
-                          )}
-                      </div>
-
-                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
-                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-                          <ShieldCheck className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
-                          <span>Phone number</span>
-                        </dt>
-                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text tabular-nums break-words">
-                          {profileSaved.phone || (
-                            <span className="text-text-muted">Not set</span>
-                          )}
-                        </dd>
-                      </div>
-
-                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
-                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-                          <Lock className="w-3.5 h-3.5 text-text-muted shrink-0" aria-hidden="true" />
-                          <span>Account email</span>
-                        </dt>
-                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text break-all">
-                          {access.email || (
-                            <span className="text-text-muted">Not set</span>
-                          )}
-                        </dd>
-                      </div>
-                    </dl>
-
-                    {/* Saved & Recently Consulted Clinical Workspace */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border/70 pt-4">
-                      {/* Saved Medicines */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-accent tabular-nums">
-                            <Bookmark className="w-3.5 h-3.5" aria-hidden="true" />
-                            <span>My saved medicines ({savedDrugs.length})</span>
+                  <div className="space-y-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-text-muted">
+                        <span className="inline-flex items-center gap-1 text-accent font-medium">
+                          <Stethoscope className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                          <span>{savedSpecialtyName || '—'}</span>
+                        </span>
+                        {(profileSaved.workplace || profileWorkplace) && (
+                          <span className="inline-flex items-center gap-1 text-text">
+                            <Building2 className="w-3.5 h-3.5 text-text-muted shrink-0" aria-hidden="true" />
+                            <span>{profileSaved.workplace || profileWorkplace}</span>
                           </span>
-                          {savedDrugs.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setProfileOpen(false);
-                                setSavedOpen(true);
-                              }}
-                              className="text-xs font-medium text-accent hover:underline"
-                            >
-                              Saved & recent
-                            </button>
-                          )}
-                        </div>
-                        {savedDrugs.length === 0 ? (
-                          <p className="text-xs text-text-muted rounded-xl bg-background/70 border border-border px-3.5 py-3">
-                            No saved medicines yet. Open any monograph and tap Save to keep it in your quick clinical reference list.
-                          </p>
-                        ) : (
-                          <div className="max-h-60 overflow-y-auto divide-y divide-border rounded-xl bg-background/70 border border-border">
-                            {savedDrugs.map((item) => (
-                              <button
-                                key={item.productId}
-                                type="button"
-                                onClick={() => {
-                                  setProfileOpen(false);
-                                  openProductPage(item.productId);
-                                }}
-                                className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
-                              >
-                                <span className="min-w-0 flex-1">
-                                  <span className="block text-xs font-semibold text-text truncate">
-                                    {item.brandNameEn}
-                                  </span>
-                                  <span className="block text-[11px] text-text-muted truncate">
-                                    {item.genericNameEn ?? 'Dietary Supplement'}
-                                    {item.strength ? ` · ${item.strength}` : ''} · {item.companyName}
-                                  </span>
-                                </span>
-                                <ChevronRight className="w-3.5 h-3.5 shrink-0 text-text-muted" aria-hidden="true" />
-                              </button>
-                            ))}
-                          </div>
+                        )}
+                        {profileSaved.phone && (
+                          <span className="tabular-nums text-text">
+                            {profileSaved.phone}
+                          </span>
+                        )}
+                        {access.email && (
+                          <span className="break-all">{access.email}</span>
                         )}
                       </div>
 
-                      {/* Recently Consulted Monographs */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted tabular-nums">
-                            <Clock className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
-                            <span>Recently consulted ({recentDrugs.length})</span>
-                          </span>
-                          {recentDrugs.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => setRecentDrugs(clearRecentDoctorDrugs())}
-                              className="text-xs font-medium text-accent hover:underline"
-                            >
-                              Clear history
-                            </button>
-                          )}
-                        </div>
-                        {recentDrugs.length === 0 ? (
-                          <p className="text-xs text-text-muted rounded-xl bg-background/70 border border-border px-3.5 py-3">
-                            Monographs you view during clinical consultations will appear here for immediate recall.
-                          </p>
-                        ) : (
-                          <div className="max-h-60 overflow-y-auto divide-y divide-border rounded-xl bg-background/70 border border-border">
-                            {recentDrugs.map((item) => (
-                              <button
-                                key={item.productId}
-                                type="button"
-                                onClick={() => {
-                                  setProfileOpen(false);
-                                  openProductPage(item.productId);
-                                }}
-                                className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
-                              >
-                                <span className="min-w-0 flex-1">
-                                  <span className="block text-xs font-semibold text-text truncate">
-                                    {item.brandNameEn}
-                                  </span>
-                                  <span className="block text-[11px] text-text-muted truncate">
-                                    {item.genericNameEn ?? 'Dietary Supplement'}
-                                    {item.strength ? ` · ${item.strength}` : ''} · {item.companyName}
-                                  </span>
-                                </span>
-                                <ChevronRight className="w-3.5 h-3.5 shrink-0 text-text-muted" aria-hidden="true" />
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          aria-label="More profile details"
+                          aria-expanded={profileDetailsOpen}
+                          title="Level & board status"
+                          onClick={() => setProfileDetailsOpen((v) => !v)}
+                          className={`h-7 w-7 inline-flex items-center justify-center rounded-lg border transition-colors ${
+                            profileDetailsOpen
+                              ? 'border-accent bg-primary/20 text-accent'
+                              : 'border-border bg-background/60 text-text-muted hover:text-accent'
+                          }`}
+                        >
+                          <User className="w-3.5 h-3.5" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Edit profile"
+                          title="Edit profile"
+                          onClick={startProfileEdit}
+                          className="h-7 w-7 inline-flex items-center justify-center rounded-lg border border-border bg-background/60 text-text-muted hover:text-accent transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                        </button>
                       </div>
                     </div>
+
+                    {/* Widened Professional Details (Level: Resident/Specialist & Board Student status) when Profile symbol is pressed */}
+                    {profileDetailsOpen && (
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-2 border-t border-border/50 text-xs">
+                        <div>
+                          <span className="text-text-muted">Level: </span>
+                          <span className="font-medium text-text">
+                            {profileSaved.clinicalLevel ||
+                              profileClinicalLevel ||
+                              'Resident / Specialist'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-text-muted">Board status: </span>
+                          <span className="font-medium text-accent">
+                            {profileSaved.boardStatus ||
+                              profileBoardStatus ||
+                              'Board Student'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <form
                     onSubmit={(e) => void handleSaveProfile(e)}
-                    className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end rounded-xl bg-background/60 border border-border p-4"
+                    className="space-y-3"
                   >
-                    <Field label="Full name (optional)">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                       <input
                         className={inputClass}
                         type="text"
                         value={profileFullName}
                         onChange={(e) => setProfileFullName(e.target.value)}
                         placeholder="Dr. Full Name"
+                        aria-label="Full name"
                       />
-                    </Field>
-                    <Field label="Phone number">
                       <input
                         className={inputClass}
                         type="tel"
@@ -1306,52 +1698,306 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         value={profilePhone}
                         onChange={(e) => setProfilePhone(e.target.value)}
                         placeholder="+964 770 123 4567"
+                        aria-label="Phone number"
                       />
-                    </Field>
-                    <Field label="Medical specialty">
                       <select
                         className={inputClass}
                         required
                         value={profileSpecialtyId}
                         onChange={(e) => setProfileSpecialtyId(e.target.value)}
+                        aria-label="Medical specialty"
                       >
-                        <option value="">— Select specialty —</option>
+                        <option value="">— Specialty —</option>
                         {physicianSpecialties.map((spec) => (
                           <option key={spec.id} value={spec.id}>
                             {spec.label}
                           </option>
                         ))}
                       </select>
-                    </Field>
-                    <div className="sm:col-span-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/70">
-                      <span className="text-xs text-text-muted break-all">
-                        Account email: <strong className="text-text">{access.email ?? '—'}</strong>
-                      </span>
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <select
+                        className={inputClass}
+                        value={profileClinicalLevel}
+                        onChange={(e) => setProfileClinicalLevel(e.target.value)}
+                        aria-label="Clinical level"
+                      >
+                        <option value="">— Level (Resident / Specialist) —</option>
+                        {DOCTOR_LEVEL_OPTIONS.map((lvl) => (
+                          <option key={lvl} value={lvl}>
+                            {lvl}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className={inputClass}
+                        value={profileBoardStatus}
+                        onChange={(e) => setProfileBoardStatus(e.target.value)}
+                        aria-label="Board status"
+                      >
+                        <option value="">— Board student status —</option>
+                        {DOCTOR_BOARD_OPTIONS.map((b) => (
+                          <option key={b} value={b}>
+                            {b}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        className={inputClass}
+                        type="text"
+                        maxLength={120}
+                        value={profileWorkplace}
+                        onChange={(e) => setProfileWorkplace(e.target.value)}
+                        placeholder="Hospital / Clinic"
+                        aria-label="Hospital or clinic"
+                      />
+                    </div>
+
+                    <input
+                      type="text"
+                      maxLength={220}
+                      value={profileQuote}
+                      onChange={(e) => setProfileQuote(e.target.value)}
+                      placeholder="Personal quote…"
+                      aria-label="Personal quote"
+                      className={inputClass}
+                    />
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <label
+                          title="Upload photo"
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-border bg-background/60 text-text-muted hover:text-accent cursor-pointer transition-colors"
+                        >
+                          <Camera className="w-3.5 h-3.5" aria-hidden="true" />
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            onChange={(e) => void handleAvatarFileChange(e)}
+                            className="sr-only"
+                          />
+                        </label>
+                        {profileAvatarUrl && (
+                          <button
+                            type="button"
+                            aria-label="Remove photo"
+                            title="Remove photo"
+                            onClick={() => void handleRemoveAvatar()}
+                            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-border bg-background/60 text-text-muted hover:text-danger transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
+                          aria-label="Cancel"
+                          title="Cancel"
                           onClick={cancelProfileEdit}
                           disabled={profileBusy}
-                          className={`${secondaryButtonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-border bg-background/60 text-text-muted hover:text-text transition-colors"
                         >
-                          Cancel
+                          <X className="w-4 h-4" aria-hidden="true" />
                         </button>
                         <button
                           type="submit"
+                          aria-label="Save profile"
+                          title="Save profile"
                           disabled={
                             profileBusy ||
                             !profilePhone.trim() ||
                             !profileSpecialtyId.trim()
                           }
-                          className={`${buttonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-lg bg-primary hover:bg-[#1E7BC4] text-white disabled:opacity-50 transition-colors"
                         >
-                          {profileBusy ? 'Saving…' : 'Save profile'}
+                          <Check className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
                   </form>
                 )}
+
+                {profileNotice && (
+                  <p
+                    className={`text-xs font-medium ${
+                      profileNotice.tone === 'error' ? 'text-danger' : 'text-success'
+                    }`}
+                  >
+                    {profileNotice.text}
+                  </p>
+                )}
               </div>
+
+              {/* Saved Medicines List (Opens when pressing the Bookmark symbol button) */}
+              {profileSavedListOpen && (
+                <div className="border-t border-border/70 pt-3.5">
+                  {savedDrugs.length === 0 ? (
+                    <p className="text-xs text-text-muted">
+                      No saved medicines yet.
+                    </p>
+                  ) : (
+                    <div className="max-h-56 overflow-y-auto divide-y divide-border/60">
+                      {savedDrugs.map((item) => (
+                        <div
+                          key={item.productId}
+                          className="flex items-center justify-between gap-2 py-2 first:pt-0 last:pb-0"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProfileOpen(false);
+                              openProductPage(item.productId);
+                            }}
+                            className="min-w-0 flex-1 text-left hover:text-accent transition-colors duration-150"
+                          >
+                            <span className="text-xs font-semibold text-text">
+                              {item.brandNameEn}
+                            </span>
+                            <span className="text-xs text-text-muted ml-2">
+                              {item.genericNameEn ?? 'Dietary Supplement'}
+                              {item.strength ? ` · ${item.strength}` : ''} · {item.companyName}
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Remove ${item.brandNameEn}`}
+                            title="Remove"
+                            onClick={() => setSavedDrugs(toggleSavedDoctorDrug(item))}
+                            className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-danger transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Always-Open Square Note / Post Space (No + button required) */}
+              <form
+                onSubmit={(e) => void handleSaveNote(e)}
+                className="border-t border-border/70 pt-3.5 space-y-2"
+              >
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    required
+                    maxLength={2000}
+                    value={noteBody}
+                    onChange={(e) => setNoteBody(e.target.value)}
+                    placeholder="Write a note…"
+                    aria-label="Write a note"
+                    className={`${inputClass} py-2.5 pr-12 text-xs sm:text-sm leading-relaxed`}
+                  />
+                  <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1">
+                    {editingNoteId && (
+                      <button
+                        type="button"
+                        aria-label="Cancel edit"
+                        title="Cancel"
+                        onClick={resetNoteComposer}
+                        className="h-7 w-7 inline-flex items-center justify-center rounded-lg border border-border bg-surface text-text-muted hover:text-text transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" aria-hidden="true" />
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      aria-label="Save note"
+                      title="Save note"
+                      disabled={!noteBody.trim()}
+                      className="h-7 w-7 inline-flex items-center justify-center rounded-lg bg-primary hover:bg-[#1E7BC4] text-white disabled:opacity-40 transition-colors"
+                    >
+                      <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {/* Notes / Posts Feed */}
+              {notebookEntries.length > 0 && (
+                <div className="divide-y divide-border/70 border-t border-border/70">
+                  {filteredNotebookEntries.map((entry) => (
+                    <article
+                      key={entry.id}
+                      className="py-3 last:pb-0 space-y-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0 text-[11px] text-text-muted">
+                          {entry.pinned && (
+                            <Pin className="w-3 h-3 text-accent shrink-0" aria-hidden="true" />
+                          )}
+                          {entry.title && (
+                            <span className="text-xs sm:text-sm font-semibold text-text truncate">
+                              {entry.title}
+                            </span>
+                          )}
+                          {formatNoteTimestamp(entry.createdAt) && (
+                            <span className="shrink-0">
+                              {formatNoteTimestamp(entry.createdAt)}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            aria-label={entry.pinned ? 'Unpin note' : 'Pin note'}
+                            title={entry.pinned ? 'Unpin' : 'Pin'}
+                            onClick={() => handleTogglePinNote(entry.id)}
+                            className={`h-7 w-7 inline-flex items-center justify-center rounded-lg transition-colors ${
+                              entry.pinned
+                                ? 'text-accent'
+                                : 'text-text-muted hover:text-text'
+                            }`}
+                          >
+                            <Pin className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Edit note"
+                            title="Edit"
+                            onClick={() => handleEditNote(entry)}
+                            className="h-7 w-7 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-text transition-colors"
+                          >
+                            <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Delete note"
+                            title="Delete"
+                            onClick={() => handleDeleteNote(entry.id)}
+                            className="h-7 w-7 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-danger transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <p className="text-xs sm:text-sm text-text leading-relaxed whitespace-pre-line break-words">
+                        {entry.body}
+                      </p>
+
+                      {entry.linkedProductId && entry.linkedProductName && (
+                        <div className="pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProfileOpen(false);
+                              openProductPage(entry.linkedProductId!);
+                            }}
+                            className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
+                          >
+                            <Pill className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>{entry.linkedProductName}</span>
+                          </button>
+                        </div>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section aria-label="Partner notice" className="mt-auto pt-2">
@@ -1368,42 +2014,41 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <button
                 type="button"
+                aria-label="Back"
+                title="Back"
                 onClick={handleBackToCatalog}
-                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised px-3.5 py-2 text-sm font-medium text-text transition-colors duration-150"
+                className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface hover:bg-surface-raised text-sm font-medium text-text transition-colors duration-150"
               >
-                ← Back
+                ←
               </button>
 
               {selectedProduct && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
+                    aria-label={isSelectedProductSaved ? 'Saved' : 'Save'}
+                    title={isSelectedProductSaved ? 'Saved' : 'Save'}
                     onClick={() => handleToggleSaveProduct(selectedProduct)}
                     aria-pressed={isSelectedProductSaved}
-                    className={`min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors duration-150 ${
+                    className={`h-9 w-9 inline-flex items-center justify-center rounded-lg border transition-colors duration-150 ${
                       isSelectedProductSaved
                         ? 'border-accent bg-primary/30 text-accent'
                         : 'border-border bg-surface text-text hover:bg-surface-raised'
                     }`}
                   >
                     <Bookmark className="w-4 h-4" aria-hidden="true" />
-                    <span>{isSelectedProductSaved ? 'Saved' : 'Save'}</span>
                   </button>
                   <button
                     type="button"
+                    aria-label="Share"
+                    title="Share"
                     onClick={() => void handleShareProductLink(selectedProduct)}
-                    className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-xs font-medium text-text hover:bg-surface-raised transition-colors duration-150"
+                    className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface text-text hover:bg-surface-raised transition-colors duration-150"
                   >
                     {linkCopied ? (
-                      <>
-                        <Check className="w-4 h-4 text-success" aria-hidden="true" />
-                        <span className="text-success">Link copied</span>
-                      </>
+                      <Check className="w-4 h-4 text-success" aria-hidden="true" />
                     ) : (
-                      <>
-                        <Share2 className="w-4 h-4" aria-hidden="true" />
-                        <span>Share</span>
-                      </>
+                      <Share2 className="w-4 h-4" aria-hidden="true" />
                     )}
                   </button>
                 </div>

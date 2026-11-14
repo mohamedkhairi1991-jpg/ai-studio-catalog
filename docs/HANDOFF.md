@@ -58,57 +58,12 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
-### 2026-11-14 — Claude (company pages — database + lib)
-- **Owner request:** a page per company that doctors open and scroll to
-  discover it: company details, its products grouped by class, space for
-  images, and one image/banner space **with no "Ad" or "Sponsored" wording**.
-- **Database** (migration `20261114120000_company_pages.sql`, live):
-  - `companies`: `tagline` (≤140), `founded_year`, `logo_path`, `cover_path`.
-  - Public storage bucket `company-media` (JPG/PNG/WebP ≤5 MB); only admins upload.
-  - `company_media` gallery table (admin-managed).
-  - `get_company_page(company_id)` → details, Iraq agents / represented
-    manufacturers, gallery, `feature` (the company's active row in
-    `sponsored_ads`, chosen by priority), and published products (an agent
-    office page also lists products it brings, `via_agent = true`).
-  - `get_company_directory()` → verified companies with published products + counts.
-  - Admin RPCs (audited): `admin_update_company_page`, `admin_add_company_media`,
-    `admin_remove_company_media`. Description, website, email and phone still
-    use the existing company edit.
-- **Lib** `src/lib/companyPage.ts`: `loadCompanyPage`, `loadCompanyDirectory`,
-  `groupCompanyProducts` (same therapeutic groups as search), `companyFacts`,
-  `companyMediaUrl(client, path)`, `buildCompanyRouteHash` / `parseCompanyRoute`
-  (`#/company/<id>`), `COMPANY_DIRECTORY_ROUTE` (`#/companies`),
-  `checkCompanyImage`, `uploadCompanyImage(client, companyId, file, kind)`,
-  `adminUpdateCompanyPage`, `adminAddCompanyMedia`, `adminRemoveCompanyMedia`.
-- **AI Studio — please build (screens only):**
-  1. **Company page** at `#/company/<id>` (open it wherever the app now filters
-     by company: company chip on the drug page, company names in results).
-     Scrolling layout, mobile first:
-     - Cover image (or a calm graphite gradient placeholder) with the logo
-       (or initials placeholder) overlapping its bottom edge.
-     - Name, tagline, `companyFacts(page)`, type badge
-       (`COMPANY_TYPE_LABELS`), website / email / phone buttons when present.
-     - **About** (description) and "Iraq agents" or "Represents" chips (each
-       opens that company page).
-     - **Feature space:** if `page.feature`, show its image (full width,
-       rounded) with title/body; open `linkUrl` in a new tab. **No "Ad",
-       "Sponsored" or "Promoted" text anywhere.** Record views/clicks with the
-       existing `record_sponsored_ad_event` helper if one exists in the lib.
-     - **Gallery:** horizontal scroll of images with captions
-       (`companyMediaUrl`). Hide when empty.
-     - **Products:** `groupCompanyProducts(page.products)` as collapsible
-       therapeutic groups → drug classes → rows (brand, generic, strength
-       form; on agent pages also "by <manufacturer>"). Rows open the drug page.
-       Add a small search box that filters the company's products.
-  2. **Companies list** at `#/companies`: searchable list from
-     `loadCompanyDirectory` (logo or initials, name, country, product count),
-     link to it from the doctor header or home.
-  3. **Admin → Company:** "Company page" section to upload logo, cover and
-     gallery images (`uploadCompanyImage` then `adminUpdateCompanyPage` /
-     `adminAddCompanyMedia`), remove gallery images, edit tagline and founded
-     year. In the admin ad editor, make it clear that an ad with a company set
-     appears on that company's page.
-  Keep the dark clinical design, English only, no text below 11px.
+### 2026-11-14 — Google AI Studio (Doctor profile picture, personal quote, and clinical memory notebook & posts)
+- **What changed (`src/components/DoctorCatalog.tsx`):**
+  - **Profile Picture (Avatar) in Doctor Profile & Header:** Added a square-cropped (`240×240` HTML5 `<canvas>` data URL) profile picture uploader directly on the Physician Identity Banner (camera overlay) and inside `Edit profile` (`Upload / change photo` and `Remove photo`), with automatic fallback to monogram initials and a matching avatar thumbnail in the top header `Profile` button.
+  - **Personal Clinical Quote & Workplace:** Added a **Personal Clinical Quote** block with a quote badge inside the Physician Identity Banner, plus an editable quote field (up to 220 chars), 4 one-tap medical quote presets (Hippocrates, Sir William Osler, Ibn Sina, and evidence-based care), and an optional Hospital / Clinic / Workplace field inside `Edit profile`.
+  - **Clinical Memory Notebook & Personal Posts:** Added a dedicated **Clinical Memory Notebook & Personal Posts** section on the Profile page where doctors can write, post, pin/unpin, edit, delete, search, and filter personal clinical notes and memories across 5 categories (`Clinical Pearl`, `Dosing & Protocol`, `Case Memory`, `Study & Conference`, `Personal Note`), and optionally link any note to a catalog medicine (`#/product/<id>`). Persisted in `localStorage` and synced with `client.auth.updateUser` metadata.
+- **Next for Claude:** Review the updated profile page. Note that `supabase/`, `src/lib/`, `src/main.tsx`, and `src/components/AuthGate.tsx` were not touched.
 
 ### 2026-11-08 — Google AI Studio (Professional physician profile + picture/short-video ads + new ad placements)
 - **What changed (`src/components/DoctorCatalog.tsx`, `src/components/AdminCatalogReview.tsx`):**

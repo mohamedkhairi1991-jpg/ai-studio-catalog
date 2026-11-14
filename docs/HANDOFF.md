@@ -58,6 +58,27 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-14 — Claude (review: doctor profile picture + notebook storage)
+- Reviewed AI Studio's push 5da537d (profile picture, quote, workplace,
+  clinical notebook). **Fixed a real problem:** the picture (~30 KB data URL)
+  and the notebook were saved in Supabase Auth user metadata, which travels
+  inside the sign-in token on every request (the test doctor account had
+  30 KB). That slows the app and can break requests.
+- Migration `20261114150000_doctor_avatar_and_notebook.sql` (live):
+  `profiles.avatar_path` + bucket `doctor-avatars` (each user writes only
+  `<auth uid>/...`), `set_my_avatar`; `doctor_private_data` (owner-only) with
+  `get_my_notebook` / `save_my_notebook` (max 30 notes); a guard trigger strips
+  data-URL pictures and notebooks from user metadata; existing notebooks moved.
+  The test account's old in-metadata picture was removed (upload it again).
+- Lib `src/lib/doctorProfile.ts`: `saveMyAvatar`, `clearMyAvatar`,
+  `loadMyAvatarUrl`, `loadMyNotebook`, `saveMyNotebook`.
+- `DoctorCatalog.tsx`: `syncProfileExtrasToCloud` now uploads the picture to
+  storage and saves the notebook with the lib; only short text stays in
+  metadata. Loading reads the picture and notebook from the new places.
+- **AI Studio:** never put pictures, files or long lists in
+  `auth.updateUser({ data })`; use the lib. Still to build: the company pages
+  (entry below).
+
 ### 2026-11-14 — Claude (company pages — database + lib)
 - **Owner request:** a page per company that doctors open and scroll to
   discover it: company details, its products grouped by class, space for
@@ -109,6 +130,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
      year. In the admin ad editor, make it clear that an ad with a company set
      appears on that company's page.
   Keep the dark clinical design, English only, no text below 11px.
+
+### 2026-11-14 — Google AI Studio (Doctor profile picture, personal quote, and clinical memory notebook & posts)
+- **What changed (`src/components/DoctorCatalog.tsx`):**
+  - **Profile Picture (Avatar) in Doctor Profile & Header:** Added a square-cropped (`240×240` HTML5 `<canvas>` data URL) profile picture uploader directly on the Physician Identity Banner (camera overlay) and inside `Edit profile` (`Upload / change photo` and `Remove photo`), with automatic fallback to monogram initials and a matching avatar thumbnail in the top header `Profile` button.
+  - **Personal Clinical Quote & Workplace:** Added a **Personal Clinical Quote** block with a quote badge inside the Physician Identity Banner, plus an editable quote field (up to 220 chars), 4 one-tap medical quote presets (Hippocrates, Sir William Osler, Ibn Sina, and evidence-based care), and an optional Hospital / Clinic / Workplace field inside `Edit profile`.
+  - **Clinical Memory Notebook & Personal Posts:** Added a dedicated **Clinical Memory Notebook & Personal Posts** section on the Profile page where doctors can write, post, pin/unpin, edit, delete, search, and filter personal clinical notes and memories across 5 categories (`Clinical Pearl`, `Dosing & Protocol`, `Case Memory`, `Study & Conference`, `Personal Note`), and optionally link any note to a catalog medicine (`#/product/<id>`). Persisted in `localStorage` and synced with `client.auth.updateUser` metadata.
+- **Next for Claude:** Review the updated profile page. Note that `supabase/`, `src/lib/`, `src/main.tsx`, and `src/components/AuthGate.tsx` were not touched.
 
 ### 2026-11-08 — Google AI Studio (Professional physician profile + picture/short-video ads + new ad placements)
 - **What changed (`src/components/DoctorCatalog.tsx`, `src/components/AdminCatalogReview.tsx`):**

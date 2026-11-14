@@ -71,6 +71,15 @@ import {
   type CompanyType,
 } from '../lib/companies';
 import {
+  adminAddCompanyMedia,
+  adminRemoveCompanyMedia,
+  adminUpdateCompanyPage,
+  companyMediaUrl,
+  loadCompanyPage,
+  uploadCompanyImage,
+  type CompanyPageImage,
+} from '../lib/companyPage';
+import {
   computeUserRegistrationStats,
   listCities,
   listCountries,
@@ -3096,6 +3105,426 @@ function CompanyProfileAndAgentsManager({
           </div>
         </div>
       )}
+
+      <AdminCompanyPageSection
+        client={client}
+        company={company}
+        onError={onError}
+        onNotice={onNotice}
+      />
+    </div>
+  );
+}
+
+function AdminCompanyPageSection({
+  client,
+  company,
+  onError,
+  onNotice,
+}: {
+  client: SupabaseClient;
+  company: CompanySummary;
+  onError: (msg: string) => void;
+  onNotice: (msg: string) => void;
+}) {
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [tagline, setTagline] = useState('');
+  const [foundedYear, setFoundedYear] = useState('');
+  const [logoPath, setLogoPath] = useState<string | null>(null);
+  const [coverPath, setCoverPath] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<CompanyPageImage[]>([]);
+  const [galleryCaption, setGalleryCaption] = useState('');
+  const [savingPage, setSavingPage] = useState(false);
+  const [uploadingKind, setUploadingKind] = useState<
+    'logo' | 'cover' | 'gallery' | null
+  >(null);
+  const [removingMediaId, setRemovingMediaId] = useState<string | null>(null);
+
+  const refreshCompanyPage = useCallback(async () => {
+    setLoadingPage(true);
+    const res = await loadCompanyPage(client, company.id);
+    setLoadingPage(false);
+    if (!res.ok) {
+      return;
+    }
+    setTagline(res.data.tagline ?? '');
+    setFoundedYear(
+      res.data.foundedYear != null ? String(res.data.foundedYear) : ''
+    );
+    setLogoPath(res.data.logoPath ?? null);
+    setCoverPath(res.data.coverPath ?? null);
+    setGallery(res.data.gallery ?? []);
+  }, [client, company.id]);
+
+  useEffect(() => {
+    void refreshCompanyPage();
+  }, [refreshCompanyPage]);
+
+  const parsedFoundedYear = (): number | null | 'invalid' => {
+    const clean = foundedYear.trim();
+    if (!clean) return null;
+    const num = Number(clean);
+    if (!Number.isInteger(num)) return 'invalid';
+    return num;
+  };
+
+  const handleSavePageDetails = async () => {
+    const yr = parsedFoundedYear();
+    if (yr === 'invalid') {
+      onError('Enter a founded year between 1800 and 2100.');
+      return;
+    }
+    setSavingPage(true);
+    const res = await adminUpdateCompanyPage(client, {
+      companyId: company.id,
+      tagline: tagline.trim() || null,
+      foundedYear: yr,
+      logoPath,
+      coverPath,
+    });
+    setSavingPage(false);
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+    onNotice(`Updated company page for ${company.companyName}.`);
+  };
+
+  const handleUploadLogoOrCover = async (
+    kind: 'logo' | 'cover',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const yr = parsedFoundedYear();
+    if (yr === 'invalid') {
+      onError('Enter a founded year between 1800 and 2100.');
+      return;
+    }
+    setUploadingKind(kind);
+    const up = await uploadCompanyImage(client, company.id, file, kind);
+    if (!up.ok) {
+      setUploadingKind(null);
+      onError(up.message);
+      return;
+    }
+    const nextLogo = kind === 'logo' ? up.data : logoPath;
+    const nextCover = kind === 'cover' ? up.data : coverPath;
+    const saveRes = await adminUpdateCompanyPage(client, {
+      companyId: company.id,
+      tagline: tagline.trim() || null,
+      foundedYear: yr,
+      logoPath: nextLogo,
+      coverPath: nextCover,
+    });
+    setUploadingKind(null);
+    if (!saveRes.ok) {
+      onError(saveRes.message);
+      return;
+    }
+    setLogoPath(nextLogo);
+    setCoverPath(nextCover);
+    onNotice(
+      kind === 'logo'
+        ? `Uploaded logo for ${company.companyName}.`
+        : `Uploaded cover image for ${company.companyName}.`
+    );
+  };
+
+  const handleClearLogoOrCover = async (kind: 'logo' | 'cover') => {
+    const yr = parsedFoundedYear();
+    if (yr === 'invalid') {
+      onError('Enter a founded year between 1800 and 2100.');
+      return;
+    }
+    setSavingPage(true);
+    const nextLogo = kind === 'logo' ? null : logoPath;
+    const nextCover = kind === 'cover' ? null : coverPath;
+    const res = await adminUpdateCompanyPage(client, {
+      companyId: company.id,
+      tagline: tagline.trim() || null,
+      foundedYear: yr,
+      logoPath: nextLogo,
+      coverPath: nextCover,
+    });
+    setSavingPage(false);
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+    setLogoPath(nextLogo);
+    setCoverPath(nextCover);
+    onNotice(
+      kind === 'logo' ? 'Removed company logo.' : 'Removed company cover image.'
+    );
+  };
+
+  const handleUploadGalleryImage = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingKind('gallery');
+    const up = await uploadCompanyImage(client, company.id, file, 'gallery');
+    if (!up.ok) {
+      setUploadingKind(null);
+      onError(up.message);
+      return;
+    }
+    const addRes = await adminAddCompanyMedia(client, {
+      companyId: company.id,
+      storagePath: up.data,
+      caption: galleryCaption.trim() || null,
+      sortOrder: gallery.length,
+    });
+    setUploadingKind(null);
+    if (!addRes.ok) {
+      onError(addRes.message);
+      return;
+    }
+    setGalleryCaption('');
+    onNotice('Added gallery image.');
+    await refreshCompanyPage();
+  };
+
+  const handleRemoveGalleryImage = async (mediaId: string) => {
+    setRemovingMediaId(mediaId);
+    const res = await adminRemoveCompanyMedia(client, mediaId);
+    setRemovingMediaId(null);
+    if (!res.ok) {
+      onError(res.message);
+      return;
+    }
+    setGallery((prev) => prev.filter((item) => item.id !== mediaId));
+    onNotice('Removed gallery image.');
+  };
+
+  const logoPreviewUrl = companyMediaUrl(client, logoPath);
+  const coverPreviewUrl = companyMediaUrl(client, coverPath);
+
+  return (
+    <div className="border-t border-[#304451] pt-3 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
+          Company page
+        </div>
+        <a
+          href={`#/company/${encodeURIComponent(company.id)}`}
+          className="text-[11px] font-medium text-[#5DB4F2] hover:underline"
+        >
+          Preview public page →
+        </a>
+      </div>
+
+      {loadingPage ? (
+        <div className="text-xs text-[#B8C3CC]">Loading company page…</div>
+      ) : (
+        <div className="space-y-3">
+          {/* Tagline and Founded Year */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <label className="sm:col-span-2 block space-y-1">
+              <span className="block text-[11px] font-medium text-[#B8C3CC]">
+                Tagline (max 140 chars)
+              </span>
+              <input
+                type="text"
+                maxLength={140}
+                placeholder="e.g. Reimagining medicine"
+                aria-label={`Tagline for ${company.companyName}`}
+                value={tagline}
+                onChange={(e) => setTagline(e.target.value)}
+                className="w-full rounded-md bg-[#263744] border border-[#304451] px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="block text-[11px] font-medium text-[#B8C3CC]">
+                Founded year
+              </span>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="number"
+                  min={1800}
+                  max={2100}
+                  placeholder="1996"
+                  aria-label={`Founded year for ${company.companyName}`}
+                  value={foundedYear}
+                  onChange={(e) => setFoundedYear(e.target.value)}
+                  className="w-full rounded-md bg-[#263744] border border-[#304451] px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+                />
+                <button
+                  type="button"
+                  disabled={savingPage}
+                  onClick={() => void handleSavePageDetails()}
+                  className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 transition-colors shrink-0"
+                >
+                  {savingPage ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </label>
+          </div>
+
+          {/* Logo and Cover uploads + previews */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-md bg-[#263744] border border-[#304451] p-2.5 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-medium text-[#B8C3CC]">
+                  Logo (JPG, PNG, WebP · max 5 MB)
+                </span>
+                {logoPath && (
+                  <button
+                    type="button"
+                    disabled={savingPage || uploadingKind === 'logo'}
+                    onClick={() => void handleClearLogoOrCover('logo')}
+                    className="text-[11px] text-[#F59E0B] hover:underline disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {logoPreviewUrl ? (
+                <img
+                  src={logoPreviewUrl}
+                  alt={`${company.companyName} logo preview`}
+                  className="h-14 w-14 rounded-lg object-contain bg-[#1F2D38] border border-[#304451] p-1"
+                />
+              ) : (
+                <div className="h-14 w-14 rounded-lg bg-[#1F2D38] border border-dashed border-[#304451] flex items-center justify-center text-[11px] text-[#B8C3CC]">
+                  No logo
+                </div>
+              )}
+              <label className="inline-flex items-center justify-center rounded-md bg-[#1F2D38] hover:bg-[#1769AA] border border-[#304451] px-2.5 py-1.5 text-xs font-medium text-[#F2F5F8] cursor-pointer transition-colors">
+                <span>
+                  {uploadingKind === 'logo' ? 'Uploading…' : 'Upload logo'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={uploadingKind !== null}
+                  onChange={(e) => void handleUploadLogoOrCover('logo', e)}
+                  className="sr-only"
+                />
+              </label>
+            </div>
+
+            <div className="rounded-md bg-[#263744] border border-[#304451] p-2.5 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-medium text-[#B8C3CC]">
+                  Cover image (JPG, PNG, WebP · max 5 MB)
+                </span>
+                {coverPath && (
+                  <button
+                    type="button"
+                    disabled={savingPage || uploadingKind === 'cover'}
+                    onClick={() => void handleClearLogoOrCover('cover')}
+                    className="text-[11px] text-[#F59E0B] hover:underline disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {coverPreviewUrl ? (
+                <img
+                  src={coverPreviewUrl}
+                  alt={`${company.companyName} cover preview`}
+                  className="h-14 w-full rounded-lg object-cover bg-[#1F2D38] border border-[#304451]"
+                />
+              ) : (
+                <div className="h-14 w-full rounded-lg bg-[#1F2D38] border border-dashed border-[#304451] flex items-center justify-center text-[11px] text-[#B8C3CC]">
+                  No cover image
+                </div>
+              )}
+              <label className="inline-flex items-center justify-center rounded-md bg-[#1F2D38] hover:bg-[#1769AA] border border-[#304451] px-2.5 py-1.5 text-xs font-medium text-[#F2F5F8] cursor-pointer transition-colors">
+                <span>
+                  {uploadingKind === 'cover' ? 'Uploading…' : 'Upload cover'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={uploadingKind !== null}
+                  onChange={(e) => void handleUploadLogoOrCover('cover', e)}
+                  className="sr-only"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Gallery images */}
+          <div className="rounded-md bg-[#263744] border border-[#304451] p-2.5 space-y-2.5">
+            <div className="text-[11px] font-medium text-[#B8C3CC]">
+              Gallery images ({gallery.length})
+            </div>
+
+            {gallery.length > 0 && (
+              <div className="flex gap-2.5 overflow-x-auto pb-1">
+                {gallery.map((img) => {
+                  const url = companyMediaUrl(client, img.storagePath);
+                  return (
+                    <div
+                      key={img.id}
+                      className="shrink-0 w-36 rounded-lg bg-[#1F2D38] border border-[#304451] overflow-hidden flex flex-col justify-between"
+                    >
+                      {url ? (
+                        <img
+                          src={url}
+                          alt={img.caption ?? 'Gallery'}
+                          className="h-20 w-full object-cover bg-[#141F28]"
+                        />
+                      ) : (
+                        <div className="h-20 w-full bg-[#141F28] flex items-center justify-center text-[11px] text-[#B8C3CC]">
+                          Image
+                        </div>
+                      )}
+                      <div className="p-1.5 space-y-1">
+                        {img.caption && (
+                          <div className="text-[11px] text-[#B8C3CC] truncate">
+                            {img.caption}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          disabled={removingMediaId === img.id}
+                          onClick={() => void handleRemoveGalleryImage(img.id)}
+                          className="text-[11px] font-medium text-[#F59E0B] hover:text-white disabled:opacity-50"
+                        >
+                          {removingMediaId === img.id ? 'Removing…' : 'Remove'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <input
+                type="text"
+                maxLength={200}
+                placeholder="Optional caption for next gallery image…"
+                aria-label={`Gallery caption for ${company.companyName}`}
+                value={galleryCaption}
+                onChange={(e) => setGalleryCaption(e.target.value)}
+                className="flex-1 min-w-0 rounded-md bg-[#1F2D38] border border-[#304451] px-2.5 py-1.5 text-xs text-[#F2F5F8]"
+              />
+              <label className="inline-flex items-center justify-center rounded-md bg-[#1F2D38] hover:bg-[#1769AA] border border-[#304451] px-3 py-1.5 text-xs font-medium text-[#F2F5F8] cursor-pointer transition-colors shrink-0">
+                <span>
+                  {uploadingKind === 'gallery'
+                    ? 'Uploading…'
+                    : '+ Add gallery image'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={uploadingKind !== null}
+                  onChange={(e) => void handleUploadGalleryImage(e)}
+                  className="sr-only"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -5208,6 +5637,9 @@ function AdminSponsoredAdsView({
                       </option>
                     ))}
                   </select>
+                  <p className="text-[11px] text-[#B8C3CC] mt-1">
+                    If a company is set, this also appears on that company&apos;s page.
+                  </p>
                 </Field>
               </div>
 

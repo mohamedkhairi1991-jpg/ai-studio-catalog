@@ -6,10 +6,14 @@ import {
   Building2,
   Camera,
   Check,
+  ChevronDown,
   ChevronRight,
   Clock,
   ExternalLink,
+  Globe,
+  Mail,
   Pencil,
+  Phone,
   Pin,
   Layers,
   Package,
@@ -74,7 +78,23 @@ import {
   type DrugSources,
   type ErrorTopic,
 } from '../lib/feedback';
-import { agentLine, manufacturerLine } from '../lib/companies';
+import {
+  COMPANY_TYPE_LABELS,
+  agentLine,
+  manufacturerLine,
+} from '../lib/companies';
+import {
+  COMPANY_DIRECTORY_ROUTE,
+  buildCompanyRouteHash,
+  companyFacts,
+  companyMediaUrl,
+  groupCompanyProducts,
+  loadCompanyDirectory,
+  loadCompanyPage,
+  parseCompanyRoute,
+  type CompanyDirectoryEntry,
+  type CompanyPage,
+} from '../lib/companyPage';
 import {
   alternativeSubtitle,
   closeMatchNotice,
@@ -530,9 +550,22 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     DoctorNoteCategory | 'all' | 'pinned'
   >('all');
 
-  // Standalone #/product/<id> drug page state
+  // Standalone #/product/<id>, #/company/<id>, and #/companies route state
   const [activeProductId, setActiveProductId] = useState<string | null>(() =>
     typeof window !== 'undefined' ? parseProductRoute(window.location.hash) : null
+  );
+  const [activeCompanyId, setActiveCompanyId] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? parseCompanyRoute(window.location.hash) : null
+  );
+  const [companiesDirectoryOpen, setCompaniesDirectoryOpen] = useState<boolean>(
+    () =>
+      typeof window !== 'undefined'
+        ? window.location.hash
+            .replace(/^#/, '')
+            .trim()
+            .replace(/^\/+|\/+$/g, '')
+            .toLowerCase() === 'companies'
+        : false
   );
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(
     null
@@ -582,11 +615,21 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   });
   const viewedAdIdsRef = useRef<Set<string>>(new Set());
 
-  // Listen to hashchange so #/product/<id> and phone/browser Back button work seamlessly
+  // Listen to hashchange so #/product/<id>, #/company/<id>, #/companies and phone/browser Back button work seamlessly
   useEffect(() => {
     const onHashChange = () => {
-      const nextProductId = parseProductRoute(window.location.hash);
+      const hash = window.location.hash;
+      const nextProductId = parseProductRoute(hash);
+      const nextCompanyId = parseCompanyRoute(hash);
+      const nextDirectoryOpen =
+        hash
+          .replace(/^#/, '')
+          .trim()
+          .replace(/^\/+|\/+$/g, '')
+          .toLowerCase() === 'companies';
       setActiveProductId(nextProductId);
+      setActiveCompanyId(nextCompanyId);
+      setCompaniesDirectoryOpen(nextDirectoryOpen);
       setLinkCopied(false);
     };
     window.addEventListener('hashchange', onHashChange);
@@ -943,6 +986,9 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
   const openProductPage = (productId: string) => {
     setSavedOpen(false);
+    setProfileOpen(false);
+    setActiveCompanyId(null);
+    setCompaniesDirectoryOpen(false);
     const targetHash = buildProductRouteHash(productId);
     if (window.location.hash === targetHash) {
       setActiveProductId(productId);
@@ -954,7 +1000,44 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     }
   };
 
+  const openCompanyPage = (targetCompanyId: string) => {
+    const clean = targetCompanyId.trim();
+    if (!clean) return;
+    setSavedOpen(false);
+    setProfileOpen(false);
+    setActiveProductId(null);
+    setCompaniesDirectoryOpen(false);
+    const targetHash = buildCompanyRouteHash(clean);
+    if (window.location.hash === targetHash) {
+      setActiveCompanyId(clean);
+      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+        window.scrollTo(0, 0);
+      }
+    } else {
+      window.location.hash = targetHash.slice(1);
+    }
+  };
+
+  const openCompaniesDirectory = () => {
+    setSavedOpen(false);
+    setProfileOpen(false);
+    setActiveProductId(null);
+    setActiveCompanyId(null);
+    setCompaniesDirectoryOpen(true);
+    if (typeof window !== 'undefined') {
+      if (window.location.hash !== COMPANY_DIRECTORY_ROUTE) {
+        window.location.hash = COMPANY_DIRECTORY_ROUTE.slice(1);
+      }
+      if (typeof window.scrollTo === 'function') {
+        window.scrollTo(0, 0);
+      }
+    }
+  };
+
   const handleBackToCatalog = () => {
+    setActiveProductId(null);
+    setActiveCompanyId(null);
+    setCompaniesDirectoryOpen(false);
     window.location.hash = '/catalog';
   };
 
@@ -969,6 +1052,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setProfileOpen(false);
     setSavedOpen(false);
     setActiveProductId(null);
+    setActiveCompanyId(null);
+    setCompaniesDirectoryOpen(false);
     if (typeof window !== 'undefined' && window.location.hash !== '#/catalog') {
       window.location.hash = '/catalog';
     }
@@ -984,23 +1069,25 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setQuery(clean);
     setDebouncedQuery(clean);
     setActiveProductId(null);
+    setActiveCompanyId(null);
+    setCompaniesDirectoryOpen(false);
     window.location.hash = '/catalog';
   };
 
   const handleFilterByCompany = (targetCompanyId: string, companyName: string) => {
+    if (targetCompanyId.trim()) {
+      openCompanyPage(targetCompanyId);
+      return;
+    }
     setSpecialtyId('');
     setTherapeuticGroup('');
     setSelectedSubclass('');
-    if (companies.some((c) => c.id === targetCompanyId)) {
-      setQuery('');
-      setDebouncedQuery('');
-      setCompanyId(targetCompanyId);
-    } else {
-      setCompanyId('');
-      setQuery(companyName);
-      setDebouncedQuery(companyName);
-    }
+    setCompanyId('');
+    setQuery(companyName);
+    setDebouncedQuery(companyName);
     setActiveProductId(null);
+    setActiveCompanyId(null);
+    setCompaniesDirectoryOpen(false);
     window.location.hash = '/catalog';
   };
 
@@ -1011,6 +1098,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     setTherapeuticGroup(groupKey);
     setSelectedSubclass(subclassLabel ?? '');
     setActiveProductId(null);
+    setActiveCompanyId(null);
+    setCompaniesDirectoryOpen(false);
     window.location.hash = '/catalog';
   };
 
@@ -1421,6 +1510,20 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
           <div className="flex items-center gap-1.5">
             <NotificationBell client={client} profileId={access.profileId} />
+            <button
+              type="button"
+              aria-label="Companies"
+              aria-current={companiesDirectoryOpen ? 'page' : undefined}
+              title="Companies"
+              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
+                companiesDirectoryOpen || Boolean(activeCompanyId)
+                  ? 'border-accent bg-background text-accent'
+                  : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
+              }`}
+              onClick={openCompaniesDirectory}
+            >
+              <Building2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            </button>
             <button
               type="button"
               aria-label="Saved medicines"
@@ -2049,6 +2152,22 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               />
             </section>
           </div>
+        ) : activeCompanyId ? (
+          <DoctorCompanyPageView
+            key={activeCompanyId}
+            client={client}
+            companyId={activeCompanyId}
+            onBack={handleBackToCatalog}
+            onOpenCompaniesDirectory={openCompaniesDirectory}
+            onOpenCompany={openCompanyPage}
+            onOpenProduct={openProductPage}
+          />
+        ) : companiesDirectoryOpen ? (
+          <DoctorCompaniesDirectoryView
+            client={client}
+            onBack={handleBackToCatalog}
+            onOpenCompany={openCompanyPage}
+          />
         ) : activeProductId ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -2495,9 +2614,18 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                                         {genericName}
                                       </span>
                                     </div>
-                                    <span className="text-xs text-text-muted truncate shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        openCompanyPage(row.companyId);
+                                      }}
+                                      title={`Open ${row.companyName} page`}
+                                      className="text-xs text-text-muted hover:text-accent hover:underline truncate shrink-0 text-left sm:text-right"
+                                    >
                                       {row.companyName}
-                                    </span>
+                                    </button>
                                   </div>
                                   <ChevronRight
                                     className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors duration-150"
@@ -2789,15 +2917,32 @@ function DoctorProductDetail({
                   onClick={() =>
                     onFilterCompany(product.companyId, product.companyName)
                   }
-                  title="View all products from this company"
+                  title="Open company page"
                   className="text-xs sm:text-sm font-medium text-text hover:text-accent hover:underline text-left"
                 >
                   {makerLine}
                 </button>
               </div>
-              {iraqAgent && (
-                <div className="text-xs text-text-muted">{iraqAgent}</div>
-              )}
+              {iraqAgent &&
+                (product.agentCompanyId ? (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onFilterCompany(
+                          product.agentCompanyId!,
+                          product.agentCompanyName ?? ''
+                        )
+                      }
+                      title="Open Iraq agent company page"
+                      className="text-xs text-text-muted hover:text-accent hover:underline text-left"
+                    >
+                      {iraqAgent}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-xs text-text-muted">{iraqAgent}</div>
+                ))}
             </div>
             <p className="text-sm sm:text-[15px] text-text-muted leading-snug">
               {product.genericNameEn ? (
@@ -2986,9 +3131,18 @@ function DoctorProductDetail({
                             <div className="font-semibold text-sm text-text group-hover:text-accent truncate transition-colors duration-150">
                               {alt.brandNameEn}
                             </div>
-                            <div className="text-xs text-text-muted truncate">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onFilterCompany(alt.companyId, alt.companyName);
+                              }}
+                              title={`Open ${alt.companyName} page`}
+                              className="text-xs text-text-muted hover:text-accent hover:underline truncate block text-left max-w-full"
+                            >
                               {alternativeSubtitle(alt)}
-                            </div>
+                            </button>
                           </div>
                           <ChevronRight
                             className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors duration-150"
@@ -3468,3 +3622,790 @@ export function SponsoredAdCard({
 
   return content;
 }
+
+function getCompanyInitials(name: string | null | undefined): string {
+  const words = (name ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return 'CO';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return `${words[0][0] ?? ''}${words[1][0] ?? ''}`.toUpperCase();
+}
+
+function DoctorCompaniesDirectoryView({
+  client,
+  onBack,
+  onOpenCompany,
+}: {
+  client: SupabaseClient;
+  onBack: () => void;
+  onOpenCompany: (companyId: string) => void;
+}) {
+  const [entries, setEntries] = useState<CompanyDirectoryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+    void loadCompanyDirectory(client).then((res) => {
+      if (!active) return;
+      if (!res.ok) {
+        setError(res.message);
+        setEntries([]);
+      } else {
+        setEntries(res.data);
+      }
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [client]);
+
+  const filteredEntries = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return entries;
+    return entries.filter((entry) => {
+      const hay = [
+        entry.companyName,
+        entry.originCountryName ?? '',
+        entry.originCountryCode ?? '',
+        entry.tagline ?? '',
+        COMPANY_TYPE_LABELS[entry.companyType],
+      ]
+        .join(' ')
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [entries, search]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            aria-label="Back"
+            title="Back"
+            onClick={onBack}
+            className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface hover:bg-surface-raised text-sm font-medium text-text transition-colors duration-150"
+          >
+            ←
+          </button>
+          <div>
+            <h1 className="text-base sm:text-lg font-semibold text-text">
+              Companies
+            </h1>
+            <p className="text-xs text-text-muted">
+              Verified pharmaceutical manufacturers and Iraq agents
+            </p>
+          </div>
+        </div>
+        {!loading && entries.length > 0 && (
+          <span className="text-xs text-text-muted tabular-nums">
+            {filteredEntries.length} of {entries.length}
+          </span>
+        )}
+      </div>
+
+      <div className="relative">
+        <Search
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
+          aria-hidden="true"
+        />
+        <input
+          type="search"
+          aria-label="Search companies"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search companies by name or country…"
+          className={`${inputClass} pl-10 min-h-[42px] bg-surface ${
+            search ? 'pr-10' : ''
+          }`}
+        />
+        {search && (
+          <button
+            type="button"
+            aria-label="Clear company search"
+            onClick={() => setSearch('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 inline-flex items-center justify-center rounded-md text-text-muted hover:text-text"
+          >
+            <X className="w-4 h-4" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
+      {error && <CatalogBanner tone="error">{error}</CatalogBanner>}
+
+      {loading ? (
+        <div
+          role="status"
+          aria-label="Loading companies"
+          className="rounded-xl bg-surface border border-border divide-y divide-border overflow-hidden"
+        >
+          {[0, 1, 2, 3, 4, 5].map((idx) => (
+            <div
+              key={idx}
+              className="p-3.5 flex items-center justify-between gap-3 animate-pulse"
+            >
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-10 h-10 rounded-xl bg-surface-raised shrink-0" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-3.5 w-40 rounded bg-surface-raised" />
+                  <div className="h-3 w-28 rounded bg-surface-raised" />
+                </div>
+              </div>
+              <div className="h-4 w-16 rounded bg-surface-raised shrink-0" />
+            </div>
+          ))}
+        </div>
+      ) : filteredEntries.length === 0 ? (
+        <div className="rounded-xl bg-surface border border-border p-8 text-center space-y-1.5">
+          <div className="text-sm font-semibold text-text">
+            No matching companies found
+          </div>
+          <p className="text-xs text-text-muted">
+            Try searching by another company name or country.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-xl bg-surface border border-border divide-y divide-border overflow-hidden">
+          {filteredEntries.map((entry) => {
+            const logoUrl = companyMediaUrl(client, entry.logoPath);
+            const subtitleParts = [
+              entry.originCountryName,
+              COMPANY_TYPE_LABELS[entry.companyType],
+            ].filter(Boolean);
+            return (
+              <a
+                key={entry.companyId}
+                href={buildCompanyRouteHash(entry.companyId)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onOpenCompany(entry.companyId);
+                }}
+                className="group flex items-center justify-between gap-3 px-3.5 py-3 hover:bg-surface-raised/60 transition-colors duration-150"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {logoUrl ? (
+                    <img
+                      src={logoUrl}
+                      alt={entry.companyName}
+                      loading="lazy"
+                      className="w-10 h-10 rounded-xl object-contain bg-background border border-border p-1 shrink-0"
+                    />
+                  ) : (
+                    <div
+                      aria-hidden="true"
+                      className="w-10 h-10 rounded-xl bg-primary/20 border border-accent/35 flex items-center justify-center text-xs font-semibold tracking-wider text-accent shrink-0"
+                    >
+                      {getCompanyInitials(entry.companyName)}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-text group-hover:text-accent truncate transition-colors duration-150">
+                      {entry.companyName}
+                    </div>
+                    <div className="text-xs text-text-muted truncate">
+                      {subtitleParts.join(' · ')}
+                      {entry.tagline ? ` — ${entry.tagline}` : ''}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-text-muted tabular-nums">
+                    {entry.productCount}{' '}
+                    {entry.productCount === 1 ? 'medicine' : 'medicines'}
+                  </span>
+                  <ChevronRight
+                    className="w-4 h-4 text-text-muted group-hover:text-accent transition-colors duration-150"
+                    aria-hidden="true"
+                  />
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DoctorCompanyPageView({
+  client,
+  companyId,
+  onBack,
+  onOpenCompaniesDirectory,
+  onOpenCompany,
+  onOpenProduct,
+}: {
+  client: SupabaseClient;
+  companyId: string;
+  onBack: () => void;
+  onOpenCompaniesDirectory: () => void;
+  onOpenCompany: (companyId: string) => void;
+  onOpenProduct: (productId: string) => void;
+}) {
+  const [page, setPage] = useState<CompanyPage | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [productQuery, setProductQuery] = useState('');
+  const [collapsedGroups, setCollapsedGroups] = useState<
+    Record<string, boolean>
+  >({});
+  const viewedFeatureIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+    setPage(null);
+    setProductQuery('');
+    setCollapsedGroups({});
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo(0, 0);
+    }
+    void loadCompanyPage(client, companyId).then((res) => {
+      if (!active) return;
+      if (!res.ok) {
+        setError(res.message);
+        setPage(null);
+      } else {
+        setPage(res.data);
+      }
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [client, companyId]);
+
+  useEffect(() => {
+    const featureId = page?.feature?.id;
+    if (featureId && !viewedFeatureIdsRef.current.has(featureId)) {
+      viewedFeatureIdsRef.current.add(featureId);
+      void recordSponsoredAdEvent(client, featureId, 'view');
+    }
+  }, [client, page?.feature?.id]);
+
+  const filteredProducts = useMemo(() => {
+    if (!page) return [];
+    const q = productQuery.trim().toLowerCase();
+    if (!q) return page.products;
+    return page.products.filter((prod) => {
+      const hay = [
+        prod.brandNameEn,
+        prod.genericNameEn ?? '',
+        prod.drugClassNameEn ?? '',
+        prod.strength ?? '',
+        prod.dosageForm ?? '',
+        prod.manufacturerName ?? '',
+      ]
+        .join(' ')
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [page, productQuery]);
+
+  const groupedProducts = useMemo(
+    () => groupCompanyProducts(filteredProducts),
+    [filteredProducts]
+  );
+
+  const toggleGroup = (groupKey: string) => {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
+    }));
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            aria-label="Back"
+            title="Back"
+            onClick={onBack}
+            className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface hover:bg-surface-raised text-sm font-medium text-text transition-colors duration-150"
+          >
+            ←
+          </button>
+        </div>
+        <div
+          role="status"
+          aria-label="Loading company page"
+          className="rounded-2xl bg-surface border border-border overflow-hidden animate-pulse"
+        >
+          <div className="h-32 sm:h-40 bg-surface-raised" />
+          <div className="p-5 space-y-3">
+            <div className="h-6 w-48 rounded bg-surface-raised" />
+            <div className="h-4 w-64 rounded bg-surface-raised" />
+            <div className="h-16 w-full rounded-xl bg-background/60" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !page) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            aria-label="Back"
+            title="Back"
+            onClick={onBack}
+            className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface hover:bg-surface-raised text-sm font-medium text-text transition-colors duration-150"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={onOpenCompaniesDirectory}
+            className="text-xs font-medium text-accent hover:underline"
+          >
+            All companies
+          </button>
+        </div>
+        <CatalogBanner tone="error">
+          {error ?? 'Company not found.'}
+        </CatalogBanner>
+      </div>
+    );
+  }
+
+  const coverUrl = companyMediaUrl(client, page.coverPath);
+  const logoUrl = companyMediaUrl(client, page.logoPath);
+  const factsLine = companyFacts(page);
+  const feature = page.feature;
+  const featureImageUrl =
+    feature?.imageUrl && /^https:\/\/[^ ]+$/.test(feature.imageUrl.trim())
+      ? feature.imageUrl.trim()
+      : null;
+  const featureLinkUrl =
+    feature?.linkUrl && /^https:\/\/[^ ]+$/.test(feature.linkUrl.trim())
+      ? feature.linkUrl.trim()
+      : null;
+
+  return (
+    <div className="space-y-5">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          aria-label="Back"
+          title="Back"
+          onClick={onBack}
+          className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface hover:bg-surface-raised text-sm font-medium text-text transition-colors duration-150"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          onClick={onOpenCompaniesDirectory}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised px-3 py-1.5 text-xs font-medium text-text transition-colors duration-150"
+        >
+          <Building2 className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+          <span>All companies</span>
+        </button>
+      </div>
+
+      {/* Company Header Card with Cover + Overlapping Logo */}
+      <section className="rounded-2xl bg-surface border border-border shadow-soft overflow-hidden">
+        {coverUrl ? (
+          <div className="h-32 sm:h-44 w-full bg-background overflow-hidden">
+            <img
+              src={coverUrl}
+              alt={`${page.name} cover`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div
+            aria-hidden="true"
+            className="h-28 sm:h-36 w-full bg-gradient-to-br from-[#253645] via-[#1B2834] to-[#131D26] border-b border-border/60"
+          />
+        )}
+
+        <div className="px-4 sm:px-6 pb-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 -mt-8 sm:-mt-10">
+            <div className="flex items-end gap-3.5 min-w-0">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={page.name}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-background border-2 border-surface p-1.5 shadow-md shrink-0"
+                />
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#18242E] border-2 border-surface flex items-center justify-center text-lg sm:text-xl font-semibold tracking-wider text-accent shadow-md shrink-0"
+                >
+                  {getCompanyInitials(page.name)}
+                </div>
+              )}
+
+              <div className="min-w-0 pt-2 sm:pt-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-semibold text-text leading-tight">
+                    {page.name}
+                  </h1>
+                  <span className="inline-flex items-center rounded-full border border-accent/40 bg-primary/20 px-2.5 py-0.5 text-[11px] font-medium text-accent">
+                    {COMPANY_TYPE_LABELS[page.companyType]}
+                  </span>
+                </div>
+                {page.tagline && (
+                  <p className="text-xs sm:text-sm text-text-muted mt-0.5">
+                    {page.tagline}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Website / Email / Call buttons when present */}
+            {(page.websiteUrl || page.contactEmail || page.contactPhone) && (
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {page.websiteUrl && (
+                  <a
+                    href={page.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/70 hover:bg-surface-raised px-3 py-1.5 text-xs font-medium text-accent transition-colors"
+                  >
+                    <Globe className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Website</span>
+                  </a>
+                )}
+                {page.contactEmail && (
+                  <a
+                    href={`mailto:${page.contactEmail}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/70 hover:bg-surface-raised px-3 py-1.5 text-xs font-medium text-text hover:text-accent transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+                    <span>Email</span>
+                  </a>
+                )}
+                {page.contactPhone && (
+                  <a
+                    href={`tel:${page.contactPhone}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/70 hover:bg-surface-raised px-3 py-1.5 text-xs font-medium text-text hover:text-accent transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+                    <span>Call</span>
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+
+          {factsLine && (
+            <div className="text-xs text-text-muted font-medium">
+              {factsLine}
+            </div>
+          )}
+
+          {page.description && (
+            <div className="space-y-1 pt-1 border-t border-border/60">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                About
+              </h2>
+              <p className="text-xs sm:text-sm text-text leading-relaxed whitespace-pre-line">
+                {page.description}
+              </p>
+            </div>
+          )}
+
+          {page.agents.length > 0 && (
+            <div className="space-y-1.5 pt-1 border-t border-border/60">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                Iraq agents
+              </h2>
+              <div className="flex flex-wrap gap-1.5">
+                {page.agents.map((ag) => (
+                  <button
+                    key={ag.id}
+                    type="button"
+                    onClick={() => onOpenCompany(ag.id)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 hover:border-accent/60 hover:text-accent px-3 py-1 text-xs font-medium text-text transition-colors"
+                  >
+                    <Building2 className="w-3 h-3 text-accent" aria-hidden="true" />
+                    <span>{ag.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {page.represents.length > 0 && (
+            <div className="space-y-1.5 pt-1 border-t border-border/60">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                Represents
+              </h2>
+              <div className="flex flex-wrap gap-1.5">
+                {page.represents.map((rep) => (
+                  <button
+                    key={rep.id}
+                    type="button"
+                    onClick={() => onOpenCompany(rep.id)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 hover:border-accent/60 hover:text-accent px-3 py-1 text-xs font-medium text-text transition-colors"
+                  >
+                    <Building2 className="w-3 h-3 text-accent" aria-hidden="true" />
+                    <span>{rep.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Feature space when page.feature exists (NO Ad / Sponsored / Promoted text anywhere) */}
+      {feature && (
+        <section>
+          {featureLinkUrl ? (
+            <a
+              href={featureLinkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                void recordSponsoredAdEvent(client, feature.id, 'click')
+              }
+              className="block rounded-2xl bg-surface border border-border overflow-hidden hover:border-accent/50 transition-colors duration-150"
+            >
+              {featureImageUrl && (
+                <div className="w-full bg-background border-b border-border overflow-hidden">
+                  <img
+                    src={featureImageUrl}
+                    alt={feature.title}
+                    loading="lazy"
+                    className="w-full max-h-64 object-cover"
+                  />
+                </div>
+              )}
+              <div className="p-4 sm:p-5 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-sm sm:text-base font-semibold text-text">
+                    {feature.title}
+                  </h2>
+                  <ExternalLink
+                    className="w-3.5 h-3.5 text-accent shrink-0"
+                    aria-hidden="true"
+                  />
+                </div>
+                {feature.body && (
+                  <p className="text-xs sm:text-sm text-text-muted leading-relaxed whitespace-pre-line">
+                    {feature.body}
+                  </p>
+                )}
+              </div>
+            </a>
+          ) : (
+            <div className="rounded-2xl bg-surface border border-border overflow-hidden">
+              {featureImageUrl && (
+                <div className="w-full bg-background border-b border-border overflow-hidden">
+                  <img
+                    src={featureImageUrl}
+                    alt={feature.title}
+                    loading="lazy"
+                    className="w-full max-h-64 object-cover"
+                  />
+                </div>
+              )}
+              <div className="p-4 sm:p-5 space-y-1">
+                <h2 className="text-sm sm:text-base font-semibold text-text">
+                  {feature.title}
+                </h2>
+                {feature.body && (
+                  <p className="text-xs sm:text-sm text-text-muted leading-relaxed whitespace-pre-line">
+                    {feature.body}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Gallery (horizontal scroll, captions) hidden when empty */}
+      {page.gallery.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted px-0.5">
+            Gallery
+          </h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {page.gallery.map((img) => {
+              const imgUrl = companyMediaUrl(client, img.storagePath);
+              if (!imgUrl) return null;
+              return (
+                <figure
+                  key={img.id}
+                  className="shrink-0 w-60 sm:w-72 rounded-xl bg-surface border border-border overflow-hidden flex flex-col"
+                >
+                  <img
+                    src={imgUrl}
+                    alt={img.caption ?? page.name}
+                    loading="lazy"
+                    className="h-36 sm:h-40 w-full object-cover bg-background"
+                  />
+                  {img.caption && (
+                    <figcaption className="px-3 py-2 text-xs text-text-muted truncate">
+                      {img.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Products grouped by collapsible therapeutic groups -> drug classes -> rows */}
+      <section className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <h2 className="text-base font-semibold text-text px-0.5">
+            Medicines ({page.products.length})
+          </h2>
+          {page.products.length > 0 && (
+            <div className="relative sm:w-72">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted"
+                aria-hidden="true"
+              />
+              <input
+                type="search"
+                aria-label="Filter company medicines"
+                value={productQuery}
+                onChange={(e) => setProductQuery(e.target.value)}
+                placeholder="Filter company medicines…"
+                className={`${inputClass} pl-8 py-1.5 text-xs bg-surface`}
+              />
+              {productQuery && (
+                <button
+                  type="button"
+                  aria-label="Clear medicine filter"
+                  onClick={() => setProductQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded text-text-muted hover:text-text"
+                >
+                  <X className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {page.products.length === 0 ? (
+          <div className="rounded-xl bg-surface border border-border p-6 text-center text-xs text-text-muted">
+            No published medicines for this company yet.
+          </div>
+        ) : groupedProducts.length === 0 ? (
+          <div className="rounded-xl bg-surface border border-border p-6 text-center text-xs text-text-muted">
+            No medicines match &ldquo;{productQuery}&rdquo;.
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {groupedProducts.map((grp) => {
+              const isCollapsed = Boolean(collapsedGroups[grp.groupKey]);
+              return (
+                <div
+                  key={grp.groupKey}
+                  className="rounded-xl bg-surface border border-border overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    aria-expanded={!isCollapsed}
+                    onClick={() => toggleGroup(grp.groupKey)}
+                    className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-surface-raised/90 hover:bg-surface-raised text-left transition-colors"
+                  >
+                    <span className="text-xs sm:text-sm font-semibold text-text">
+                      {grp.groupLabel}
+                    </span>
+                    <span className="inline-flex items-center gap-2 text-xs text-text-muted tabular-nums">
+                      <span>{grp.totalCount}</span>
+                      {isCollapsed ? (
+                        <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" aria-hidden="true" />
+                      )}
+                    </span>
+                  </button>
+
+                  {!isCollapsed && (
+                    <div className="divide-y divide-border border-t border-border">
+                      {grp.subclasses.map((sub) => (
+                        <div key={`${grp.groupKey}-${sub.subclassLabel}`}>
+                          <div className="flex items-center justify-between gap-2 px-3.5 py-1.5 bg-background/50">
+                            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted truncate">
+                              {sub.subclassLabel}
+                            </h3>
+                            <span className="text-[11px] text-text-muted tabular-nums shrink-0">
+                              {sub.items.length}
+                            </span>
+                          </div>
+                          <div className="divide-y divide-border">
+                            {sub.items.map((prod) => {
+                              const formLine = [
+                                prod.strength,
+                                prod.dosageForm,
+                              ]
+                                .filter(Boolean)
+                                .join(' ');
+                              return (
+                                <a
+                                  key={prod.productId}
+                                  href={buildProductRouteHash(prod.productId)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    onOpenProduct(prod.productId);
+                                  }}
+                                  className="group flex items-center justify-between gap-3 px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                                >
+                                  <div className="min-w-0 flex-1 space-y-0.5">
+                                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                                      <span className="font-semibold text-sm text-text group-hover:text-accent transition-colors duration-150">
+                                        {prod.brandNameEn}
+                                      </span>
+                                      <span className="text-xs font-medium text-accent">
+                                        {prod.genericNameEn ??
+                                          'Dietary Supplement'}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-text-muted">
+                                      {formLine && <span>{formLine}</span>}
+                                      {prod.viaAgent &&
+                                        prod.manufacturerName && (
+                                          <span>
+                                            {formLine ? '· ' : ''}by{' '}
+                                            {prod.manufacturerName}
+                                          </span>
+                                        )}
+                                    </div>
+                                  </div>
+                                  <ChevronRight
+                                    className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors duration-150"
+                                    aria-hidden="true"
+                                  />
+                                </a>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+

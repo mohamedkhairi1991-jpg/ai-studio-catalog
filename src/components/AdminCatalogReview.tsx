@@ -90,7 +90,11 @@ import {
 } from '../lib/feedback';
 import AdminApprovals from './AdminApprovals';
 import { StatusText } from './CompanyCatalog';
-import { CatalogBanner as Banner, SponsoredAdCard } from './DoctorCatalog';
+import {
+  CatalogBanner as Banner,
+  SponsoredAdCard,
+  isSponsoredAdVideoUrl,
+} from './DoctorCatalog';
 import { NotificationBell } from './NotificationBell';
 import { recordAppOpen } from '../lib/notifications';
 import { BrandLogo, Field, LegalFooter, buttonClass, inputClass, secondaryButtonClass } from './ui';
@@ -4569,6 +4573,25 @@ function AdminSponsoredAdsView({
   const [isActive, setIsActive] = useState(true);
   const [priority, setPriority] = useState(0);
 
+  // Media upload (Pictures & Short Videos) state
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [mediaUploadStatus, setMediaUploadStatus] = useState<{
+    tone: 'ok' | 'warn' | 'error';
+    text: string;
+  } | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+  const [localPreviewIsVideo, setLocalPreviewIsVideo] = useState(false);
+  const [previewCompact, setPreviewCompact] = useState(false);
+  const [showPlacementGuide, setShowPlacementGuide] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+    };
+  }, [localPreviewUrl]);
+
   const loadAdsData = useCallback(async () => {
     setLoading(true);
     const [adsRes, statsRes] = await Promise.all([
@@ -4604,6 +4627,15 @@ function AdminSponsoredAdsView({
     return map;
   }, [bundle]);
 
+  const clearLocalPreview = () => {
+    if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(localPreviewUrl);
+    }
+    setLocalPreviewUrl(null);
+    setLocalPreviewIsVideo(false);
+    setMediaUploadStatus(null);
+  };
+
   const resetForm = () => {
     setEditingAdId(null);
     setSponsorName('');
@@ -4618,6 +4650,7 @@ function AdminSponsoredAdsView({
     setIsActive(true);
     setPriority(0);
     setFormErrors([]);
+    clearLocalPreview();
   };
 
   const openCreateForm = () => {
@@ -4626,6 +4659,7 @@ function AdminSponsoredAdsView({
   };
 
   const openEditForm = (ad: SponsoredAdRecord) => {
+    clearLocalPreview();
     setEditingAdId(ad.id);
     setSponsorName(ad.sponsorName);
     setTitle(ad.title);
@@ -4640,6 +4674,151 @@ function AdminSponsoredAdsView({
     setPriority(ad.priority);
     setFormErrors([]);
     setShowForm(true);
+  };
+
+  const inspectVideoDurationSeconds = (file: File): Promise<number | null> =>
+    new Promise((resolve) => {
+      if (typeof document === 'undefined' || typeof URL === 'undefined') {
+        resolve(null);
+        return;
+      }
+      const tempUrl = URL.createObjectURL(file);
+      const videoEl = document.createElement('video');
+      videoEl.preload = 'metadata';
+      const cleanup = () => {
+        URL.revokeObjectURL(tempUrl);
+      };
+      videoEl.onloadedmetadata = () => {
+        const dur = Number.isFinite(videoEl.duration) ? videoEl.duration : null;
+        cleanup();
+        resolve(dur);
+      };
+      videoEl.onerror = () => {
+        cleanup();
+        resolve(null);
+      };
+      videoEl.src = tempUrl;
+    });
+
+  const handleMediaFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const isImage =
+      /^image\/(png|jpeg|jpg|webp|gif)$/i.test(file.type) ||
+      /\.(png|jpe?g|webp|gif)$/i.test(file.name);
+    const isVideo =
+      /^video\/(mp4|webm|quicktime|x-m4v|ogg)$/i.test(file.type) ||
+      /\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name);
+
+    if (!isImage && !isVideo) {
+      setMediaUploadStatus({
+        tone: 'error',
+        text: 'Unsupported file format. Please choose a Picture (PNG, JPG, WEBP, GIF) or Short Video (MP4, WEBM, MOV).',
+      });
+      return;
+    }
+
+    const maxBytes = isVideo ? 25 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setMediaUploadStatus({
+        tone: 'error',
+        text: isVideo
+          ? 'Short video file must be 25 MB or smaller.'
+          : 'Picture file must be 10 MB or smaller.',
+      });
+      return;
+    }
+
+    let durationSec: number | null = null;
+    if (isVideo) {
+      durationSec = await inspectVideoDurationSeconds(file);
+      if (durationSec !== null && durationSec > 45) {
+        setMediaUploadStatus({
+          tone: 'error',
+          text: `Video is ${Math.round(durationSec)}s long. Short video ads must be 45 seconds or shorter (6–15s recommended).`,
+        });
+        return;
+      }
+    }
+
+    if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(localPreviewUrl);
+    }
+    const blobUrl =
+      typeof URL !== 'undefined' ? URL.createObjectURL(file) : null;
+    setLocalPreviewUrl(blobUrl);
+    setLocalPreviewIsVideo(isVideo);
+
+    setUploadingMedia(true);
+    setMediaUploadStatus(null);
+
+    const extMatch = file.name.match(/\.[a-zA-Z0-9]+$/);
+    const defaultExt = isVideo ? '.mp4' : '.png';
+    const ext = (extMatch ? extMatch[0] : defaultExt).toLowerCase();
+    const safeBase = file.name
+      .replace(/\.[a-zA-Z0-9]+$/, '')
+      .replace(/[^a-zA-Z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'ad-media';
+    const storagePath = `ads/${Date.now()}-${safeBase}${ext}`;
+
+    const candidateBuckets = ['sponsored-ads', 'product-media', 'public'];
+    let uploadedPublicUrl: string | null = null;
+    let lastStorageError = '';
+
+    for (const bucketName of candidateBuckets) {
+      try {
+        const storageBucket = client.storage.from(bucketName);
+        const { error: uploadErr } = await storageBucket.upload(
+          storagePath,
+          file,
+          {
+            cacheControl: '3600',
+            upsert: false,
+            contentType:
+              file.type || (isVideo ? 'video/mp4' : 'image/png'),
+          }
+        );
+        if (!uploadErr) {
+          const { data: pubData } = storageBucket.getPublicUrl(storagePath);
+          if (pubData?.publicUrl && pubData.publicUrl.startsWith('https://')) {
+            uploadedPublicUrl =
+              isVideo && !isSponsoredAdVideoUrl(pubData.publicUrl)
+                ? `${pubData.publicUrl}#media=video`
+                : pubData.publicUrl;
+            break;
+          }
+        } else {
+          lastStorageError = uploadErr.message;
+        }
+      } catch (err) {
+        lastStorageError =
+          err instanceof Error ? err.message : 'Storage upload unavailable';
+      }
+    }
+
+    setUploadingMedia(false);
+
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    const durationLabel =
+      isVideo && durationSec !== null ? `, ${durationSec.toFixed(1)}s` : '';
+
+    if (uploadedPublicUrl) {
+      setImageUrl(uploadedPublicUrl);
+      setMediaUploadStatus({
+        tone: 'ok',
+        text: `Uploaded ${isVideo ? 'short video' : 'picture'} (${file.name}, ${sizeMb} MB${durationLabel}) and linked to ad.`,
+      });
+    } else {
+      setMediaUploadStatus({
+        tone: 'warn',
+        text: `Validated ${isVideo ? 'short video' : 'picture'} (${file.name}, ${sizeMb} MB${durationLabel}) in live preview. Cloud bucket ("sponsored-ads") is not provisioned yet (${lastStorageError || 'bucket missing'}) — paste an https:// media URL below or ask backend admin to enable the "sponsored-ads" public storage bucket.`,
+      });
+    }
   };
 
   const handleSaveAd = async (e: React.FormEvent) => {
@@ -4712,6 +4891,16 @@ function AdminSponsoredAdsView({
     await loadAdsData();
   };
 
+  const currentMediaKind = isSponsoredAdVideoUrl(imageUrl)
+    ? 'video'
+    : imageUrl.trim().startsWith('https://')
+    ? 'image'
+    : localPreviewUrl
+    ? localPreviewIsVideo
+      ? 'video'
+      : 'image'
+    : 'none';
+
   return (
     <section className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#263744] border border-[#304451] p-5">
@@ -4720,10 +4909,17 @@ function AdminSponsoredAdsView({
             Sponsored ads ({ads.length})
           </h1>
           <p className="text-xs text-[#B8C3CC] mt-0.5">
-            Manage doctor home Sponsored placements, specialty targeting, schedule dates, and 30-day impressions.
+            Manage picture &amp; short-video placements across Doctor Home, Search Results, Drug Monographs, and Profile.
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setShowPlacementGuide((v) => !v)}
+            className={secondaryButtonClass}
+          >
+            {showPlacementGuide ? 'Hide Ad Spaces Guide' : 'Ad Spaces & Specs'}
+          </button>
           <button
             type="button"
             onClick={() => void loadAdsData()}
@@ -4749,6 +4945,69 @@ function AdminSponsoredAdsView({
         </div>
       </div>
 
+      {/* Ad Placement Spaces & Media Specifications Guide */}
+      {showPlacementGuide && (
+        <div className="rounded-xl bg-[#263744] border border-[#304451] p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#304451] pb-3">
+            <div>
+              <h2 className="text-sm font-semibold text-[#F2F5F8]">
+                Active Clinical Ad Placements &amp; Media Specifications
+              </h2>
+              <p className="text-xs text-[#B8C3CC] mt-0.5">
+                Active ads automatically rotate by priority and physician specialty across four non-intrusive clinical placements.
+              </p>
+            </div>
+            <span className="rounded-full bg-[#1769AA]/25 border border-[#5DB4F2]/40 px-3 py-0.5 text-[11px] font-medium text-[#5DB4F2]">
+              Pictures &amp; Short Videos Supported
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 space-y-1">
+              <div className="font-semibold text-[#F2F5F8]">
+                1. Doctor Home Hero Banner
+              </div>
+              <p className="text-[#B8C3CC] leading-relaxed">
+                Primary high-visibility card directly below the search bar when doctors open the catalog. Supports full-width Picture or muted autoplay Short Video.
+              </p>
+            </div>
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 space-y-1">
+              <div className="font-semibold text-[#5DB4F2]">
+                2. Drug Monograph Footer (New)
+              </div>
+              <p className="text-[#B8C3CC] leading-relaxed">
+                Compact clinical partner card placed below the monograph dosing &amp; verified sources section where doctors finish reading drug details.
+              </p>
+            </div>
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 space-y-1">
+              <div className="font-semibold text-[#5DB4F2]">
+                3. Search &amp; Class Results Footer (New)
+              </div>
+              <p className="text-[#B8C3CC] leading-relaxed">
+                Compact placement below medication search results and therapeutic class lists so active filters still surface partner announcements.
+              </p>
+            </div>
+            <div className="rounded-lg bg-[#1F2D38] border border-[#304451] p-3.5 space-y-1">
+              <div className="font-semibold text-[#F2F5F8]">
+                4. Physician Profile Dossier
+              </div>
+              <p className="text-[#B8C3CC] leading-relaxed">
+                Partner card displayed at the bottom of the doctor&apos;s personal profile and saved monographs workspace.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+            <div className="rounded-lg bg-[#1F2D38]/70 border border-[#304451] px-3.5 py-2.5 text-[#B8C3CC]">
+              <strong className="text-[#F2F5F8]">Picture Specs:</strong> PNG, JPG, WEBP, or GIF · Recommended 1200×628 px (16:9 or 2:1 landscape) · Max 10 MB.
+            </div>
+            <div className="rounded-lg bg-[#1F2D38]/70 border border-[#304451] px-3.5 py-2.5 text-[#B8C3CC]">
+              <strong className="text-[#F2F5F8]">Short Video Specs:</strong> MP4, WEBM, or MOV · 6–15 seconds recommended (max 45 seconds) · Muted inline autoplay with user controls · Max 25 MB.
+            </div>
+          </div>
+        </div>
+      )}
+
       {showForm && (
         <form
           onSubmit={handleSaveAd}
@@ -4760,7 +5019,7 @@ function AdminSponsoredAdsView({
                 {editingAdId ? 'Edit Sponsored Ad' : 'Create Sponsored Ad'}
               </h2>
               <p className="text-xs text-[#B8C3CC] mt-0.5">
-                Title and sponsor name are required (max 80 chars). Body max 280 chars. Image and link URLs must start with https://.
+                Title and sponsor name are required (max 80 chars). Upload a picture or short video (or enter an https:// media URL).
               </p>
             </div>
             <button
@@ -4823,25 +5082,102 @@ function AdminSponsoredAdsView({
                 />
               </Field>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Image URL (https:// only)">
-                  <input
-                    type="url"
-                    placeholder="https://example.com/banner.png"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className={inputClass}
-                  />
-                </Field>
-                <Field label="Destination Link URL (https:// only)">
-                  <input
-                    type="url"
-                    placeholder="https://www.ema.europa.eu/..."
-                    value={linkUrl}
-                    onChange={(e) => setLinkUrl(e.target.value)}
-                    className={inputClass}
-                  />
-                </Field>
+              {/* Ad Media Settings: Picture or Short Video Upload + Direct URL */}
+              <div className="rounded-xl bg-[#1F2D38] border border-[#304451] p-4 space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-semibold text-[#F2F5F8]">
+                      Ad Media — Picture or Short Video (optional)
+                    </div>
+                    <p className="text-[11px] text-[#B8C3CC] mt-0.5">
+                      Upload a picture (PNG, JPG, WEBP ≤ 10 MB) or short video (MP4, WEBM, MOV ≤ 45s, ≤ 25 MB), or paste a direct https:// URL.
+                    </p>
+                  </div>
+                  {currentMediaKind !== 'none' && (
+                    <span className="rounded-md bg-[#1769AA]/25 border border-[#5DB4F2]/40 px-2.5 py-0.5 text-[11px] font-medium text-[#5DB4F2]">
+                      {currentMediaKind === 'video' ? 'Short Video' : 'Picture'}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <label className="inline-flex items-center gap-2 rounded-md bg-[#1769AA] hover:bg-[#1E78BA] text-white text-xs font-medium px-3.5 py-2 cursor-pointer transition-colors">
+                    <span>
+                      {uploadingMedia
+                        ? 'Uploading media…'
+                        : 'Upload Picture or Short Video'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+                      disabled={uploadingMedia}
+                      onChange={(e) => void handleMediaFileSelect(e)}
+                      className="sr-only"
+                    />
+                  </label>
+
+                  {(imageUrl.trim() || localPreviewUrl) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageUrl('');
+                        clearLocalPreview();
+                      }}
+                      className={secondaryButtonClass}
+                    >
+                      Remove Media
+                    </button>
+                  )}
+
+                  {imageUrl.trim().startsWith('https://') &&
+                    !isSponsoredAdVideoUrl(imageUrl) && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setImageUrl((prev) => `${prev.trim()}#media=video`)
+                        }
+                        title="Mark this HTTPS URL as a short video stream if it does not end in .mp4/.webm"
+                        className={secondaryButtonClass}
+                      >
+                        Mark URL as Video
+                      </button>
+                    )}
+                </div>
+
+                {mediaUploadStatus && (
+                  <div
+                    className={`rounded-lg border px-3 py-2 text-xs leading-relaxed ${
+                      mediaUploadStatus.tone === 'error'
+                        ? 'border-[#C94A4A]/50 bg-[#C94A4A]/10 text-[#F29B9B]'
+                        : mediaUploadStatus.tone === 'warn'
+                        ? 'border-[#D99B26]/50 bg-[#D99B26]/10 text-[#F5C96B]'
+                        : 'border-[#2E8B57]/50 bg-[#2E8B57]/10 text-[#68D391]'
+                    }`}
+                  >
+                    {mediaUploadStatus.text}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Media URL — Picture or Short Video (https:// only)">
+                    <input
+                      type="url"
+                      placeholder="https://example.com/banner.png or https://example.com/video.mp4"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="Destination Link URL (https:// only)">
+                    <input
+                      type="url"
+                      placeholder="https://www.ema.europa.eu/..."
+                      value={linkUrl}
+                      onChange={(e) => setLinkUrl(e.target.value)}
+                      className={inputClass}
+                    />
+                  </Field>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -4928,7 +5264,7 @@ function AdminSponsoredAdsView({
                 </button>
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || uploadingMedia}
                   className="rounded-md bg-[#1769AA] hover:bg-[#1E78BA] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 transition-colors"
                 >
                   {saving ? 'Saving…' : editingAdId ? 'Save Changes' : 'Create Ad'}
@@ -4936,20 +5272,88 @@ function AdminSponsoredAdsView({
               </div>
             </div>
 
-            <div className="lg:col-span-5 space-y-2">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
-                Card Preview (Doctor Home)
+            <div className="lg:col-span-5 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-[#B8C3CC]">
+                  Live Placement Preview
+                </div>
+                <div className="inline-flex rounded-lg border border-[#304451] bg-[#1F2D38] p-0.5 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewCompact(false)}
+                    className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                      !previewCompact
+                        ? 'bg-[#1769AA] text-white'
+                        : 'text-[#B8C3CC] hover:text-white'
+                    }`}
+                  >
+                    Home / Profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewCompact(true)}
+                    className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                      previewCompact
+                        ? 'bg-[#1769AA] text-white'
+                        : 'text-[#B8C3CC] hover:text-white'
+                    }`}
+                  >
+                    Search / Monograph
+                  </button>
+                </div>
               </div>
-              <SponsoredAdCard
-                ad={{
-                  adId: editingAdId ?? 'preview',
-                  sponsorName: sponsorName.trim() || 'Sponsor Name',
-                  title: title.trim() || 'Sponsored Ad Title',
-                  body: body.trim() || null,
-                  imageUrl: imageUrl.trim() || null,
-                  linkUrl: linkUrl.trim() || null,
-                }}
-              />
+
+              {/* If a local file was selected before https:// URL is saved, show local file preview */}
+              {localPreviewUrl && !imageUrl.trim().startsWith('https://') ? (
+                <div className="rounded-2xl border border-[#304451] bg-[#1C2B36] p-4 space-y-3">
+                  <div className="flex items-center justify-end">
+                    <span className="text-xs font-medium text-[#5DB4F2]">
+                      {sponsorName.trim() || 'Sponsor Name'}
+                    </span>
+                  </div>
+                  <div className="rounded-xl bg-[#141F28] border border-[#304451] p-2 flex items-center justify-center overflow-hidden">
+                    {localPreviewIsVideo ? (
+                      <video
+                        src={localPreviewUrl}
+                        controls
+                        muted
+                        autoPlay
+                        loop
+                        playsInline
+                        className="max-h-[220px] w-full object-contain rounded"
+                      />
+                    ) : (
+                      <img
+                        src={localPreviewUrl}
+                        alt={title.trim() || 'Preview'}
+                        className="max-h-[200px] w-full object-contain rounded"
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-base font-semibold text-[#F2F5F8]">
+                      {title.trim() || 'Sponsored Ad Title'}
+                    </div>
+                    {body.trim() && (
+                      <p className="text-xs text-[#B8C3CC] whitespace-pre-line">
+                        {body.trim()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <SponsoredAdCard
+                  compact={previewCompact}
+                  ad={{
+                    adId: editingAdId ?? 'preview',
+                    sponsorName: sponsorName.trim() || 'Sponsor Name',
+                    title: title.trim() || 'Sponsored Ad Title',
+                    body: body.trim() || null,
+                    imageUrl: imageUrl.trim() || null,
+                    linkUrl: linkUrl.trim() || null,
+                  }}
+                />
+              )}
             </div>
           </div>
         </form>
@@ -4969,7 +5373,8 @@ function AdminSponsoredAdsView({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-[#304451] bg-[#1F2D38]/60 text-[11px] font-semibold uppercase tracking-wider text-[#B8C3CC]">
-                  <th className="py-3 px-4">Title & Sponsor</th>
+                  <th className="py-3 px-4">Title &amp; Sponsor</th>
+                  <th className="py-3 px-4">Media</th>
                   <th className="py-3 px-4">Target Specialty</th>
                   <th className="py-3 px-4">Dates</th>
                   <th className="py-3 px-4">Status</th>
@@ -4985,6 +5390,11 @@ function AdminSponsoredAdsView({
                   const specialtyLabel = ad.targetSpecialtyId
                     ? specialtiesMap.get(ad.targetSpecialtyId) ?? 'Specialty'
                     : 'All doctors';
+                  const adMediaType = isSponsoredAdVideoUrl(ad.imageUrl)
+                    ? 'Short Video'
+                    : ad.imageUrl
+                    ? 'Picture'
+                    : 'Text only';
                   return (
                     <tr key={ad.id} className="hover:bg-[#1F2D38]/40">
                       <td className="py-3.5 px-4">
@@ -4994,6 +5404,19 @@ function AdminSponsoredAdsView({
                         <div className="text-[#B8C3CC] mt-0.5">
                           {ad.sponsorName}
                         </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${
+                            adMediaType === 'Short Video'
+                              ? 'bg-[#1769AA]/25 text-[#5DB4F2] border border-[#5DB4F2]/40'
+                              : adMediaType === 'Picture'
+                              ? 'bg-[#1F2D38] text-[#F2F5F8] border border-[#304451]'
+                              : 'text-[#B8C3CC]'
+                          }`}
+                        >
+                          {adMediaType}
+                        </span>
                       </td>
                       <td className="py-3.5 px-4 text-[#F2F5F8]">
                         {specialtyLabel}

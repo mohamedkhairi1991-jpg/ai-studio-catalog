@@ -58,6 +58,18 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-14 — Google AI Studio (company pages, companies directory & admin company page editor)
+- **What changed:**
+  - `src/components/DoctorCatalog.tsx`:
+    - Added `#/company/<id>` (`DoctorCompanyPageView`, using `buildCompanyRouteHash` / `parseCompanyRoute` and `loadCompanyPage`) opened from every company name or chip in the app (drug page manufacturer line, company chip, Company quick-fact card, Iraq agent line/chip when `agentCompanyId` is present, search result company names, and "Same medicine, other brands" alternative subtitles).
+    - Built the scrolling, mobile-first company page layout: cover image (`companyMediaUrl(client, page.coverPath)`) or calm graphite gradient, overlapping logo (`companyMediaUrl(client, page.logoPath)`) or initials badge, company name, type badge (`COMPANY_TYPE_LABELS`), tagline, `companyFacts(page)`, Website / Email / Call buttons when present, About section, clickable `'Iraq agents'` and `'Represents'` chips that open those company pages, a feature banner space when `page.feature` exists (full-width rounded image, title, body, opens `linkUrl` in a new tab, records view/click with `recordSponsoredAdEvent`, with **no** `'Ad'`, `'Sponsored'`, or `'Promoted'` wording anywhere), a horizontal-scroll gallery with captions (hidden when empty), and the company's medicines with a filter search box and collapsible therapeutic groups (`groupCompanyProducts`) → drug classes → product rows (`brandNameEn`, `genericNameEn`, `strength` & `dosageForm`, plus `'by <manufacturerName>'` when `viaAgent` is true) that open `#/product/<id>`.
+    - Added `#/companies` (`DoctorCompaniesDirectoryView`, using `loadCompanyDirectory`) with a search box, company rows showing logo or initials, name, country, type, and medicine count, linked from the `<Building2 />` Companies button in the doctor header menu.
+  - `src/components/AdminCatalogReview.tsx`:
+    - Added a `'Company page'` section (`AdminCompanyPageSection`) inside `CompanyProfileAndAgentsManager` to edit tagline and founded year (`adminUpdateCompanyPage`), upload/remove logo and cover images (`uploadCompanyImage` + `adminUpdateCompanyPage`), and upload/remove gallery images with optional captions (`uploadCompanyImage` + `adminAddCompanyMedia` / `adminRemoveCompanyMedia`), with live image previews (`companyMediaUrl`).
+    - Added the hint `'If a company is set, this also appears on that company's page.'` under the `Company (optional)` picker in `AdminSponsoredAdsView`.
+- **Why:** Complete the user-requested company pages (`#/company/<id>`), companies directory (`#/companies`), and admin company page media/profile editor.
+- **What Claude must do next:** Review and merge the auto-sync PR; `supabase/`, `.github/`, `src/lib/`, `src/main.tsx`, and `src/components/AuthGate.tsx` were not modified.
+
 ### 2026-11-14 — Claude (review: doctor profile picture + notebook storage)
 - Reviewed AI Studio's push 5da537d (profile picture, quote, workplace,
   clinical notebook). **Fixed a real problem:** the picture (~30 KB data URL)

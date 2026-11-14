@@ -125,6 +125,43 @@ function extractDoctorFirstName(fullName: string, email?: string): string | null
   return firstName;
 }
 
+function formatDoctorDisplayTitle(fullName: string): string {
+  const cleaned = fullName.trim();
+  if (!cleaned) return 'Verified Clinical Physician';
+  if (/^(dr\.?|doctor)\b/i.test(cleaned)) {
+    return cleaned.replace(/^dr\.?\s+/i, 'Dr. ');
+  }
+  return `Dr. ${cleaned}`;
+}
+
+function getDoctorInitials(fullName: string, email?: string): string {
+  const cleaned = fullName
+    .replace(/^(dr\.?|doctor|د\.?|دكتور)\s+/i, '')
+    .trim();
+  if (cleaned) {
+    const parts = cleaned.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0] ?? ''}${parts[parts.length - 1][0] ?? ''}`.toUpperCase();
+    }
+    return (parts[0]?.slice(0, 2) ?? 'DR').toUpperCase();
+  }
+  const emailChar = (email ?? '').trim().charAt(0).toUpperCase();
+  return emailChar && /[A-Z]/.test(emailChar) ? `D${emailChar}` : 'DR';
+}
+
+export function isSponsoredAdVideoUrl(
+  url: string | null | undefined
+): boolean {
+  if (!url) return false;
+  const trimmed = url.trim();
+  if (!/^https:\/\/[^ ]+$/.test(trimmed)) return false;
+  return (
+    /\.(mp4|webm|mov|m4v|ogv)(\?[^#]*)?(#.*)?$/i.test(trimmed) ||
+    /[?&#](media|type|format)=video\b/i.test(trimmed)
+  );
+}
+
+
 export function CatalogBanner({
   tone,
   children,
@@ -507,18 +544,16 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     totalCount,
   ]);
 
-  // Record anonymous ad view once per page load when a sponsored ad is displayed on Home
+  // Record anonymous ad view once per session when an active sponsored ad is displayed
   useEffect(() => {
     if (
-      !activeProductId &&
-      !isSearchingOrFiltering &&
       sponsoredAd?.adId &&
       !viewedAdIdsRef.current.has(sponsoredAd.adId)
     ) {
       viewedAdIdsRef.current.add(sponsoredAd.adId);
       void recordSponsoredAdEvent(client, sponsoredAd.adId, 'view');
     }
-  }, [client, activeProductId, isSearchingOrFiltering, sponsoredAd]);
+  }, [client, activeProductId, isSearchingOrFiltering, profileOpen, sponsoredAd]);
 
   // Load single product detail and scroll to top when activeProductId (#/product/<id>) changes
   useEffect(() => {
@@ -945,7 +980,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         {/* Standalone My Profile & Preferences Page */}
         {profileOpen ? (
           <div className="flex-1 flex flex-col gap-5">
-            <div>
+            <div className="flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -956,188 +991,367 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               >
                 ← Back
               </button>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-success/40 bg-success/15 px-3 py-1 text-xs font-medium text-success">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>Verified Physician Access</span>
+              </span>
             </div>
 
-            <section className="rounded-2xl bg-surface border border-border shadow-soft p-4 sm:p-5 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                <div className="flex flex-wrap items-center gap-2 min-w-0">
-                  <h2 className="text-base font-semibold text-text">
-                    My profile
-                  </h2>
-                  {!profileEditing ? (
-                    <span
-                      className="inline-flex items-center gap-1 rounded-md bg-background/80 border border-border px-2 py-0.5 text-[11px] font-medium text-text-muted"
-                      title="Your details are locked. Tap Edit profile to change them."
+            {/* Physician Identity & Clinical Dossier Card */}
+            <section className="rounded-2xl bg-surface border border-border shadow-soft overflow-hidden">
+              {/* Top Physician Identity Banner */}
+              <div className="p-4 sm:p-6 bg-gradient-to-r from-surface via-surface-raised/70 to-surface border-b border-border">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                    <div
+                      aria-hidden="true"
+                      className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-primary/25 border border-accent/40 flex items-center justify-center text-base sm:text-lg font-semibold tracking-wider text-accent shadow-inner"
                     >
-                      <Lock className="w-3 h-3" aria-hidden="true" />
-                      Locked
-                    </span>
-                  ) : (
-                    <span className="text-xs text-text-muted">
-                      Update your details below, then save.
-                    </span>
-                  )}
-                  {profileNotice && (
-                    <span
-                      className={`text-xs font-medium ${
-                        profileNotice.tone === 'error'
-                          ? 'text-danger'
-                          : 'text-success'
-                      }`}
-                    >
-                      · {profileNotice.text}
-                    </span>
-                  )}
-                </div>
-                {!profileEditing && (
-                  <button
-                    type="button"
-                    onClick={startProfileEdit}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-[#1E7BC4] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors duration-150"
-                  >
-                    <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                    Edit profile
-                  </button>
-                )}
-              </div>
-              {!profileEditing ? (
-                <div className="space-y-4">
-                  <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2.5 rounded-xl bg-background/70 border border-border px-4 py-3">
-                    {[
-                      { label: 'Full name', value: profileSaved.fullName, isEmail: false },
-                      { label: 'Medical specialty', value: savedSpecialtyName, isEmail: false },
-                      { label: 'Phone number', value: profileSaved.phone, isEmail: false },
-                      { label: 'Email', value: access.email ?? '', isEmail: true },
-                    ].map((row) => (
-                      <div
-                        key={row.label}
-                        className={`min-w-0 ${row.isEmail ? 'col-span-2 sm:col-span-1' : ''}`}
-                      >
-                        <dt className="text-[11px] font-medium text-text-muted">
-                          {row.label}
-                        </dt>
-                        <dd
-                          className={`mt-0.5 text-xs sm:text-sm font-medium text-text ${
-                            row.isEmail ? 'break-all' : 'break-words'
-                          }`}
-                        >
-                          {row.value || <span className="text-text-muted">Not set</span>}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-
-                  <div className="space-y-2 border-t border-border/70 pt-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-accent tabular-nums">
-                        My saved medicines ({savedDrugs.length})
-                      </span>
-                      {savedDrugs.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setProfileOpen(false);
-                            setSavedOpen(true);
-                          }}
-                          className="text-xs font-medium text-accent hover:underline"
-                        >
-                          Saved & recent
-                        </button>
-                      )}
+                      {getDoctorInitials(profileSaved.fullName || profileFullName, access.email)}
                     </div>
-                    {savedDrugs.length === 0 ? (
-                      <p className="text-xs text-text-muted rounded-lg bg-background/70 border border-border px-3 py-2.5">
-                        No saved medicines yet. Open any medicine and tap Save to keep it here.
-                      </p>
-                    ) : (
-                      <div className="max-h-56 overflow-y-auto divide-y divide-border rounded-xl bg-background/70 border border-border">
-                        {savedDrugs.map((item) => (
-                          <button
-                            key={item.productId}
-                            type="button"
-                            onClick={() => {
-                              setProfileOpen(false);
-                              openProductPage(item.productId);
-                            }}
-                            className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h1 className="text-lg sm:text-xl font-semibold text-text truncate">
+                          {formatDoctorDisplayTitle(profileSaved.fullName || profileFullName)}
+                        </h1>
+                        {!profileEditing && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-md bg-background/80 border border-border px-2 py-0.5 text-[11px] font-medium text-text-muted"
+                            title="Your details are locked. Tap Edit profile to change them."
                           >
-                            <span className="min-w-0 flex items-baseline gap-2 truncate">
-                              <span className="text-xs font-semibold text-text truncate">
-                                {item.brandNameEn}
-                              </span>
-                              <span className="text-xs text-text-muted truncate">
-                                {item.genericNameEn ?? 'Dietary Supplement'} · {item.companyName}
-                              </span>
-                            </span>
-                            <ChevronRight className="w-3.5 h-3.5 shrink-0 text-text-muted" aria-hidden="true" />
-                          </button>
-                        ))}
+                            <Lock className="w-3 h-3" aria-hidden="true" />
+                            Locked
+                          </span>
+                        )}
                       </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
+                        <span className="inline-flex items-center gap-1 text-accent font-medium">
+                          <Stethoscope className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                          <span>{savedSpecialtyName || 'Specialty not specified'}</span>
+                        </span>
+                        {access.email && (
+                          <>
+                            <span aria-hidden="true">·</span>
+                            <span className="break-all">{access.email}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {!profileEditing ? (
+                      <button
+                        type="button"
+                        onClick={startProfileEdit}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-[#1E7BC4] px-3.5 py-2 text-xs font-semibold text-white transition-colors duration-150"
+                      >
+                        <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                        Edit profile
+                      </button>
+                    ) : (
+                      <span className="rounded-lg border border-accent/40 bg-primary/20 px-3 py-1.5 text-xs font-medium text-accent">
+                        Editing credentials
+                      </span>
                     )}
                   </div>
                 </div>
-              ) : (
-                <form
-                  onSubmit={(e) => void handleSaveProfile(e)}
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end"
-                >
-                  <Field label="Full name (optional)">
-                    <input
-                      className={inputClass}
-                      type="text"
-                      value={profileFullName}
-                      onChange={(e) => setProfileFullName(e.target.value)}
-                      placeholder="Dr. Full Name"
-                    />
-                  </Field>
-                  <Field label="Phone number">
-                    <input
-                      className={inputClass}
-                      type="tel"
-                      required
-                      value={profilePhone}
-                      onChange={(e) => setProfilePhone(e.target.value)}
-                      placeholder="+964 770 123 4567"
-                    />
-                  </Field>
-                  <Field label="Medical specialty">
-                    <select
-                      className={inputClass}
-                      required
-                      value={profileSpecialtyId}
-                      onChange={(e) => setProfileSpecialtyId(e.target.value)}
-                    >
-                      <option value="">— Select specialty —</option>
-                      {physicianSpecialties.map((spec) => (
-                        <option key={spec.id} value={spec.id}>
-                          {spec.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <div className="sm:col-span-3 flex flex-wrap items-center justify-end gap-2 pt-1">
-                    <button
-                      type="submit"
-                      disabled={
-                        profileBusy ||
-                        !profilePhone.trim() ||
-                        !profileSpecialtyId.trim()
-                      }
-                      className={`${buttonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
-                    >
-                      {profileBusy ? 'Saving…' : 'Save profile'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelProfileEdit}
-                      disabled={profileBusy}
-                      className={`${secondaryButtonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
-                    >
-                      Cancel
-                    </button>
+
+                {/* Quick Clinical Activity Bar */}
+                <div className="grid grid-cols-3 gap-2.5 mt-4 pt-4 border-t border-border/70">
+                  <div className="rounded-xl bg-background/60 border border-border px-3 py-2">
+                    <div className="text-[11px] font-medium text-text-muted">
+                      Saved monographs
+                    </div>
+                    <div className="text-sm sm:text-base font-semibold text-text tabular-nums mt-0.5">
+                      {savedDrugs.length}
+                    </div>
                   </div>
-                </form>
-              )}
+                  <div className="rounded-xl bg-background/60 border border-border px-3 py-2">
+                    <div className="text-[11px] font-medium text-text-muted">
+                      Recently viewed
+                    </div>
+                    <div className="text-sm sm:text-base font-semibold text-text tabular-nums mt-0.5">
+                      {recentDrugs.length}
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-background/60 border border-border px-3 py-2">
+                    <div className="text-[11px] font-medium text-text-muted">
+                      Formulary region
+                    </div>
+                    <div className="text-xs sm:text-sm font-semibold text-success mt-0.5 truncate">
+                      Iraq Official
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Credentials Body */}
+              <div className="p-4 sm:p-6 space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-sm font-semibold text-text">
+                      My profile & clinical credentials
+                    </h2>
+                    <p className="text-xs text-text-muted mt-0.5">
+                      {!profileEditing
+                        ? 'Your verified physician profile used for specialty-matched clinical references.'
+                        : 'Update your clinical details below, then save to lock your profile.'}
+                    </p>
+                  </div>
+                  {profileNotice && (
+                    <span
+                      className={`rounded-lg border px-3 py-1 text-xs font-medium ${
+                        profileNotice.tone === 'error'
+                          ? 'border-danger/40 bg-danger/10 text-danger'
+                          : 'border-success/40 bg-success/10 text-success'
+                      }`}
+                    >
+                      {profileNotice.text}
+                    </span>
+                  )}
+                </div>
+
+                {!profileEditing ? (
+                  <div className="space-y-5">
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
+                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                          <User className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+                          <span>Full name</span>
+                        </dt>
+                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text break-words">
+                          {profileSaved.fullName ? (
+                            formatDoctorDisplayTitle(profileSaved.fullName)
+                          ) : (
+                            <span className="text-text-muted">Not set</span>
+                          )}
+                        </dd>
+                      </div>
+
+                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
+                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                          <Stethoscope className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+                          <span>Medical specialty</span>
+                        </dt>
+                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text break-words">
+                          {savedSpecialtyName || (
+                            <span className="text-text-muted">Not set</span>
+                          )}
+                        </dd>
+                        {profileSaved.specialtyId &&
+                          specialties.some((s) => s.id === profileSaved.specialtyId) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSpecialtyId(profileSaved.specialtyId);
+                                setProfileOpen(false);
+                              }}
+                              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+                            >
+                              <span>Browse specialty drugs</span>
+                              <ChevronRight className="w-3 h-3" aria-hidden="true" />
+                            </button>
+                          )}
+                      </div>
+
+                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
+                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                          <ShieldCheck className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+                          <span>Phone number</span>
+                        </dt>
+                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text tabular-nums break-words">
+                          {profileSaved.phone || (
+                            <span className="text-text-muted">Not set</span>
+                          )}
+                        </dd>
+                      </div>
+
+                      <div className="rounded-xl bg-background/70 border border-border p-3.5 min-w-0">
+                        <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                          <Lock className="w-3.5 h-3.5 text-text-muted shrink-0" aria-hidden="true" />
+                          <span>Account email</span>
+                        </dt>
+                        <dd className="mt-1.5 text-xs sm:text-sm font-medium text-text break-all">
+                          {access.email || (
+                            <span className="text-text-muted">Not set</span>
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    {/* Saved & Recently Consulted Clinical Workspace */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border/70 pt-4">
+                      {/* Saved Medicines */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-accent tabular-nums">
+                            <Bookmark className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>My saved medicines ({savedDrugs.length})</span>
+                          </span>
+                          {savedDrugs.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProfileOpen(false);
+                                setSavedOpen(true);
+                              }}
+                              className="text-xs font-medium text-accent hover:underline"
+                            >
+                              Saved & recent
+                            </button>
+                          )}
+                        </div>
+                        {savedDrugs.length === 0 ? (
+                          <p className="text-xs text-text-muted rounded-xl bg-background/70 border border-border px-3.5 py-3">
+                            No saved medicines yet. Open any monograph and tap Save to keep it in your quick clinical reference list.
+                          </p>
+                        ) : (
+                          <div className="max-h-60 overflow-y-auto divide-y divide-border rounded-xl bg-background/70 border border-border">
+                            {savedDrugs.map((item) => (
+                              <button
+                                key={item.productId}
+                                type="button"
+                                onClick={() => {
+                                  setProfileOpen(false);
+                                  openProductPage(item.productId);
+                                }}
+                                className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                              >
+                                <span className="min-w-0 flex-1">
+                                  <span className="block text-xs font-semibold text-text truncate">
+                                    {item.brandNameEn}
+                                  </span>
+                                  <span className="block text-[11px] text-text-muted truncate">
+                                    {item.genericNameEn ?? 'Dietary Supplement'}
+                                    {item.strength ? ` · ${item.strength}` : ''} · {item.companyName}
+                                  </span>
+                                </span>
+                                <ChevronRight className="w-3.5 h-3.5 shrink-0 text-text-muted" aria-hidden="true" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Recently Consulted Monographs */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted tabular-nums">
+                            <Clock className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+                            <span>Recently consulted ({recentDrugs.length})</span>
+                          </span>
+                          {recentDrugs.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setRecentDrugs(clearRecentDoctorDrugs())}
+                              className="text-xs font-medium text-accent hover:underline"
+                            >
+                              Clear history
+                            </button>
+                          )}
+                        </div>
+                        {recentDrugs.length === 0 ? (
+                          <p className="text-xs text-text-muted rounded-xl bg-background/70 border border-border px-3.5 py-3">
+                            Monographs you view during clinical consultations will appear here for immediate recall.
+                          </p>
+                        ) : (
+                          <div className="max-h-60 overflow-y-auto divide-y divide-border rounded-xl bg-background/70 border border-border">
+                            {recentDrugs.map((item) => (
+                              <button
+                                key={item.productId}
+                                type="button"
+                                onClick={() => {
+                                  setProfileOpen(false);
+                                  openProductPage(item.productId);
+                                }}
+                                className="w-full flex items-center justify-between gap-2 text-left px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                              >
+                                <span className="min-w-0 flex-1">
+                                  <span className="block text-xs font-semibold text-text truncate">
+                                    {item.brandNameEn}
+                                  </span>
+                                  <span className="block text-[11px] text-text-muted truncate">
+                                    {item.genericNameEn ?? 'Dietary Supplement'}
+                                    {item.strength ? ` · ${item.strength}` : ''} · {item.companyName}
+                                  </span>
+                                </span>
+                                <ChevronRight className="w-3.5 h-3.5 shrink-0 text-text-muted" aria-hidden="true" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => void handleSaveProfile(e)}
+                    className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end rounded-xl bg-background/60 border border-border p-4"
+                  >
+                    <Field label="Full name (optional)">
+                      <input
+                        className={inputClass}
+                        type="text"
+                        value={profileFullName}
+                        onChange={(e) => setProfileFullName(e.target.value)}
+                        placeholder="Dr. Full Name"
+                      />
+                    </Field>
+                    <Field label="Phone number">
+                      <input
+                        className={inputClass}
+                        type="tel"
+                        required
+                        value={profilePhone}
+                        onChange={(e) => setProfilePhone(e.target.value)}
+                        placeholder="+964 770 123 4567"
+                      />
+                    </Field>
+                    <Field label="Medical specialty">
+                      <select
+                        className={inputClass}
+                        required
+                        value={profileSpecialtyId}
+                        onChange={(e) => setProfileSpecialtyId(e.target.value)}
+                      >
+                        <option value="">— Select specialty —</option>
+                        {physicianSpecialties.map((spec) => (
+                          <option key={spec.id} value={spec.id}>
+                            {spec.label}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                    <div className="sm:col-span-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/70">
+                      <span className="text-xs text-text-muted break-all">
+                        Account email: <strong className="text-text">{access.email ?? '—'}</strong>
+                      </span>
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={cancelProfileEdit}
+                          disabled={profileBusy}
+                          className={`${secondaryButtonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={
+                            profileBusy ||
+                            !profilePhone.trim() ||
+                            !profileSpecialtyId.trim()
+                          }
+                          className={`${buttonClass} flex-1 sm:flex-none sm:w-auto px-4 py-2 text-xs`}
+                        >
+                          {profileBusy ? 'Saving…' : 'Save profile'}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
+              </div>
             </section>
 
             <section aria-label="Partner notice" className="mt-auto pt-2">
@@ -1232,6 +1446,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 <DoctorProductDetail
                   client={client}
                   product={selectedProduct}
+                  sponsoredAd={sponsoredAd}
                   onOpenProduct={openProductPage}
                   onSearchGeneric={handleSearchByGeneric}
                   onFilterCompany={handleFilterByCompany}
@@ -1633,6 +1848,19 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         Can&apos;t find this drug? Tell us
                       </button>
                     </div>
+
+                    {sponsoredAd && (
+                      <div className="pt-2">
+                        <SponsoredAdCard
+                          ad={sponsoredAd}
+                          compact
+                          hideWhenEmpty
+                          onAdClick={(adId) =>
+                            void recordSponsoredAdEvent(client, adId, 'click')
+                          }
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </section>
@@ -1750,6 +1978,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 function DoctorProductDetail({
   client,
   product,
+  sponsoredAd,
   onOpenProduct,
   onSearchGeneric,
   onFilterCompany,
@@ -1757,6 +1986,7 @@ function DoctorProductDetail({
 }: {
   client: SupabaseClient;
   product: CatalogProduct;
+  sponsoredAd?: DoctorSponsoredAd | null;
   onOpenProduct: (productId: string) => void;
   onSearchGeneric: (genericName: string) => void;
   onFilterCompany: (companyId: string, companyName: string) => void;
@@ -2184,6 +2414,20 @@ function DoctorProductDetail({
         </div>
       </section>
 
+      {/* Drug Monograph Footer Partner Ad Placement */}
+      {sponsoredAd && (
+        <section aria-label="Partner notice">
+          <SponsoredAdCard
+            ad={sponsoredAd}
+            compact
+            hideWhenEmpty
+            onAdClick={(adId) =>
+              void recordSponsoredAdEvent(client, adId, 'click')
+            }
+          />
+        </section>
+      )}
+
       {/* Report an Error Bottom Sheet */}
       {reportOpen && (
         <div
@@ -2389,28 +2633,114 @@ function MonographSection({
 export function SponsoredAdCard({
   ad,
   onAdClick,
+  compact = false,
+  hideWhenEmpty = false,
 }: {
   ad: DoctorSponsoredAd | null;
   onAdClick?: (adId: string) => void;
+  compact?: boolean;
+  hideWhenEmpty?: boolean;
 }) {
   if (!ad) {
+    if (hideWhenEmpty) return null;
     return (
       <div className="w-full min-h-[84px] rounded-2xl border border-dashed border-border/70 bg-surface/30" />
     );
   }
 
-  const validImageUrl =
+  const validMediaUrl =
     ad.imageUrl && /^https:\/\/[^ ]+$/.test(ad.imageUrl.trim())
       ? ad.imageUrl.trim()
       : null;
+  const isVideo = isSponsoredAdVideoUrl(validMediaUrl);
   const validLinkUrl =
     ad.linkUrl && /^https:\/\/[^ ]+$/.test(ad.linkUrl.trim())
       ? ad.linkUrl.trim()
       : null;
 
+  const textBlock = (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2">
+        <div
+          className={`${
+            compact ? 'text-sm sm:text-base' : 'text-base'
+          } font-semibold text-text`}
+        >
+          {ad.title}
+        </div>
+        {validLinkUrl && (
+          <ExternalLink
+            className="w-3.5 h-3.5 shrink-0 text-accent"
+            aria-hidden="true"
+          />
+        )}
+      </div>
+      {ad.body && (
+        <p className="text-xs sm:text-sm text-text-muted leading-relaxed whitespace-pre-line">
+          {ad.body}
+        </p>
+      )}
+    </div>
+  );
+
+  // When a short video is present alongside a link URL, keep video playback controls independent from the link anchor
+  if (isVideo && validMediaUrl) {
+    return (
+      <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
+        <div
+          className={`w-full rounded-[15px] bg-surface/95 ${
+            compact ? 'p-3.5 sm:p-4 space-y-2.5' : 'p-4 sm:p-5 space-y-3'
+          }`}
+        >
+          {ad.sponsorName && (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <span className="text-xs font-medium text-accent">
+                {ad.sponsorName}
+              </span>
+            </div>
+          )}
+
+          <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center overflow-hidden">
+            <video
+              src={validMediaUrl}
+              controls
+              muted
+              autoPlay
+              loop
+              playsInline
+              preload="metadata"
+              aria-label={ad.title}
+              className={`${
+                compact ? 'max-h-[180px]' : 'max-h-[240px]'
+              } w-full object-contain rounded`}
+            />
+          </div>
+
+          {validLinkUrl ? (
+            <a
+              href={validLinkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => onAdClick?.(ad.adId)}
+              className="block rounded-lg hover:opacity-90 transition-opacity"
+            >
+              {textBlock}
+            </a>
+          ) : (
+            textBlock
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const content = (
     <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
-      <div className="w-full rounded-[15px] bg-surface/95 p-4 sm:p-5 space-y-3">
+      <div
+        className={`w-full rounded-[15px] bg-surface/95 ${
+          compact ? 'p-3.5 sm:p-4 space-y-2.5' : 'p-4 sm:p-5 space-y-3'
+        }`}
+      >
         {ad.sponsorName && (
           <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="text-xs font-medium text-accent">
@@ -2419,24 +2749,20 @@ export function SponsoredAdCard({
           </div>
         )}
 
-        {validImageUrl && (
-          <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center">
+        {validMediaUrl && (
+          <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center overflow-hidden">
             <img
-              src={validImageUrl}
+              src={validMediaUrl}
               alt={ad.title}
-              className="max-h-[200px] w-full object-contain rounded"
+              loading="lazy"
+              className={`${
+                compact ? 'max-h-[160px]' : 'max-h-[200px]'
+              } w-full object-contain rounded`}
             />
           </div>
         )}
 
-        <div className="space-y-1">
-          <div className="text-base font-semibold text-text">{ad.title}</div>
-          {ad.body && (
-            <p className="text-xs sm:text-sm text-text-muted leading-relaxed whitespace-pre-line">
-              {ad.body}
-            </p>
-          )}
-        </div>
+        {textBlock}
       </div>
     </div>
   );

@@ -58,6 +58,79 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-14 — Claude (review: doctor profile picture + notebook storage)
+- Reviewed AI Studio's push 5da537d (profile picture, quote, workplace,
+  clinical notebook). **Fixed a real problem:** the picture (~30 KB data URL)
+  and the notebook were saved in Supabase Auth user metadata, which travels
+  inside the sign-in token on every request (the test doctor account had
+  30 KB). That slows the app and can break requests.
+- Migration `20261114150000_doctor_avatar_and_notebook.sql` (live):
+  `profiles.avatar_path` + bucket `doctor-avatars` (each user writes only
+  `<auth uid>/...`), `set_my_avatar`; `doctor_private_data` (owner-only) with
+  `get_my_notebook` / `save_my_notebook` (max 30 notes); a guard trigger strips
+  data-URL pictures and notebooks from user metadata; existing notebooks moved.
+  The test account's old in-metadata picture was removed (upload it again).
+- Lib `src/lib/doctorProfile.ts`: `saveMyAvatar`, `clearMyAvatar`,
+  `loadMyAvatarUrl`, `loadMyNotebook`, `saveMyNotebook`.
+- `DoctorCatalog.tsx`: `syncProfileExtrasToCloud` now uploads the picture to
+  storage and saves the notebook with the lib; only short text stays in
+  metadata. Loading reads the picture and notebook from the new places.
+- **AI Studio:** never put pictures, files or long lists in
+  `auth.updateUser({ data })`; use the lib. Still to build: the company pages
+  (entry below).
+
+### 2026-11-14 — Claude (company pages — database + lib)
+- **Owner request:** a page per company that doctors open and scroll to
+  discover it: company details, its products grouped by class, space for
+  images, and one image/banner space **with no "Ad" or "Sponsored" wording**.
+- **Database** (migration `20261114120000_company_pages.sql`, live):
+  - `companies`: `tagline` (≤140), `founded_year`, `logo_path`, `cover_path`.
+  - Public storage bucket `company-media` (JPG/PNG/WebP ≤5 MB); only admins upload.
+  - `company_media` gallery table (admin-managed).
+  - `get_company_page(company_id)` → details, Iraq agents / represented
+    manufacturers, gallery, `feature` (the company's active row in
+    `sponsored_ads`, chosen by priority), and published products (an agent
+    office page also lists products it brings, `via_agent = true`).
+  - `get_company_directory()` → verified companies with published products + counts.
+  - Admin RPCs (audited): `admin_update_company_page`, `admin_add_company_media`,
+    `admin_remove_company_media`. Description, website, email and phone still
+    use the existing company edit.
+- **Lib** `src/lib/companyPage.ts`: `loadCompanyPage`, `loadCompanyDirectory`,
+  `groupCompanyProducts` (same therapeutic groups as search), `companyFacts`,
+  `companyMediaUrl(client, path)`, `buildCompanyRouteHash` / `parseCompanyRoute`
+  (`#/company/<id>`), `COMPANY_DIRECTORY_ROUTE` (`#/companies`),
+  `checkCompanyImage`, `uploadCompanyImage(client, companyId, file, kind)`,
+  `adminUpdateCompanyPage`, `adminAddCompanyMedia`, `adminRemoveCompanyMedia`.
+- **AI Studio — please build (screens only):**
+  1. **Company page** at `#/company/<id>` (open it wherever the app now filters
+     by company: company chip on the drug page, company names in results).
+     Scrolling layout, mobile first:
+     - Cover image (or a calm graphite gradient placeholder) with the logo
+       (or initials placeholder) overlapping its bottom edge.
+     - Name, tagline, `companyFacts(page)`, type badge
+       (`COMPANY_TYPE_LABELS`), website / email / phone buttons when present.
+     - **About** (description) and "Iraq agents" or "Represents" chips (each
+       opens that company page).
+     - **Feature space:** if `page.feature`, show its image (full width,
+       rounded) with title/body; open `linkUrl` in a new tab. **No "Ad",
+       "Sponsored" or "Promoted" text anywhere.** Record views/clicks with the
+       existing `record_sponsored_ad_event` helper if one exists in the lib.
+     - **Gallery:** horizontal scroll of images with captions
+       (`companyMediaUrl`). Hide when empty.
+     - **Products:** `groupCompanyProducts(page.products)` as collapsible
+       therapeutic groups → drug classes → rows (brand, generic, strength
+       form; on agent pages also "by <manufacturer>"). Rows open the drug page.
+       Add a small search box that filters the company's products.
+  2. **Companies list** at `#/companies`: searchable list from
+     `loadCompanyDirectory` (logo or initials, name, country, product count),
+     link to it from the doctor header or home.
+  3. **Admin → Company:** "Company page" section to upload logo, cover and
+     gallery images (`uploadCompanyImage` then `adminUpdateCompanyPage` /
+     `adminAddCompanyMedia`), remove gallery images, edit tagline and founded
+     year. In the admin ad editor, make it clear that an ad with a company set
+     appears on that company's page.
+  Keep the dark clinical design, English only, no text below 11px.
+
 ### 2026-11-14 — Google AI Studio (Doctor profile picture, personal quote, and clinical memory notebook & posts)
 - **What changed (`src/components/DoctorCatalog.tsx`):**
   - **Profile Picture (Avatar) in Doctor Profile & Header:** Added a square-cropped (`240×240` HTML5 `<canvas>` data URL) profile picture uploader directly on the Physician Identity Banner (camera overlay) and inside `Edit profile` (`Upload / change photo` and `Remove photo`), with automatic fallback to monogram initials and a matching avatar thumbnail in the top header `Profile` button.

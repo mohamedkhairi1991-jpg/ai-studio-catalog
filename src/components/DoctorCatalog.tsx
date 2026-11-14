@@ -82,6 +82,13 @@ import {
   loadProductAlternatives,
   type ProductAlternative,
 } from '../lib/alternatives';
+import {
+  clearMyAvatar,
+  loadMyAvatarUrl,
+  loadMyNotebook,
+  saveMyAvatar,
+  saveMyNotebook,
+} from '../lib/doctorProfile';
 import { NotificationBell } from './NotificationBell';
 import {
   BrandLogo,
@@ -608,8 +615,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         doctor_notebook_v1?: DoctorNotebookEntry[] | null;
       };
       const metaName = (meta.full_name ?? meta.name ?? '').trim();
+      const metaAvatar = (meta.doctor_avatar_url ?? '').trim();
+      // Pictures live in the doctor-avatars bucket, never in account metadata.
       const resolvedAvatar =
-        localExtras.avatarUrl || (meta.doctor_avatar_url ?? '').trim();
+        localExtras.avatarUrl ||
+        (metaAvatar && !metaAvatar.startsWith('data:') ? metaAvatar : '') ||
+        (await loadMyAvatarUrl(client)) ||
+        '';
+      if (!active) return;
       const resolvedQuote =
         localExtras.quote || (meta.doctor_quote ?? '').trim();
       const resolvedWorkplace =
@@ -619,13 +632,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       const resolvedBoard =
         localExtras.boardStatus || (meta.doctor_board_status ?? '').trim();
 
-      if (
-        localNotes.length === 0 &&
-        Array.isArray(meta.doctor_notebook_v1) &&
-        meta.doctor_notebook_v1.length > 0
-      ) {
-        setNotebookEntries(meta.doctor_notebook_v1);
-        saveLocalDoctorNotebook(profileStorageKey, meta.doctor_notebook_v1);
+      if (localNotes.length === 0) {
+        // The notebook is stored privately in the database (doctor_private_data).
+        const cloudNotes = await loadMyNotebook<DoctorNotebookEntry>(client);
+        if (!active) return;
+        if (cloudNotes.ok && cloudNotes.data.length > 0) {
+          setNotebookEntries(cloudNotes.data);
+          saveLocalDoctorNotebook(profileStorageKey, cloudNotes.data);
+        }
       }
 
       setProfileAvatarUrl(resolvedAvatar);
@@ -1071,24 +1085,50 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     }
   };
 
+  const uploadedAvatarRef = useRef<{ dataUrl: string; url: string } | null>(null);
+
   const syncProfileExtrasToCloud = async (
     nextExtras: DoctorProfileExtras,
     nextNotes?: DoctorNotebookEntry[]
   ) => {
-    saveLocalProfileExtras(profileStorageKey, nextExtras);
+    // Account metadata travels inside the sign-in token on every request, so
+    // only short text goes there. The picture goes to storage and the notebook
+    // to the database (src/lib/doctorProfile.ts).
+    let extras = nextExtras;
+    if (extras.avatarUrl.startsWith('data:')) {
+      const cached = uploadedAvatarRef.current;
+      let url = cached && cached.dataUrl === extras.avatarUrl ? cached.url : '';
+      if (!url) {
+        const up = await saveMyAvatar(client, extras.avatarUrl);
+        if (up.ok && up.data) {
+          url = up.data;
+          uploadedAvatarRef.current = { dataUrl: extras.avatarUrl, url };
+        }
+      }
+      if (url) {
+        extras = { ...extras, avatarUrl: url };
+        setProfileAvatarUrl(url);
+        setProfileSaved((prev) => ({ ...prev, avatarUrl: url }));
+      }
+    } else if (!extras.avatarUrl) {
+      void clearMyAvatar(client);
+    }
+    saveLocalProfileExtras(profileStorageKey, extras);
     try {
       await client.auth.updateUser({
         data: {
-          doctor_avatar_url: nextExtras.avatarUrl || null,
-          doctor_quote: nextExtras.quote || null,
-          doctor_workplace: nextExtras.workplace || null,
-          doctor_clinical_level: nextExtras.clinicalLevel || null,
-          doctor_board_status: nextExtras.boardStatus || null,
-          ...(nextNotes ? { doctor_notebook_v1: nextNotes.slice(0, 30) } : {}),
+          doctor_avatar_url: extras.avatarUrl.startsWith('data:') ? null : extras.avatarUrl || null,
+          doctor_quote: extras.quote || null,
+          doctor_workplace: extras.workplace || null,
+          doctor_clinical_level: extras.clinicalLevel || null,
+          doctor_board_status: extras.boardStatus || null,
         },
       });
     } catch {
       // Ignore offline/metadata update errors; localStorage is already updated
+    }
+    if (nextNotes) {
+      void saveMyNotebook(client, nextNotes);
     }
   };
 

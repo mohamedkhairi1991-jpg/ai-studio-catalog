@@ -58,10 +58,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
-### 2026-11-14 — Google AI Studio (simplify doctor catalog filter panel + drug class subtypes button)
+### 2026-11-14 — Google AI Studio (fix doctor profile picture cross-device sync + simplify catalog filter panel)
 - **What changed:**
-  - `src/components/DoctorCatalog.tsx`: Removed the Specialty filter dropdown from `#doctor-catalog-filters`, keeping only Drug Classes and Companies; added a compact subtypes list button inside the Drug Classes control so doctors can pick subtypes for each drug class.
-- **Why:** Owner requested keeping only Companies and Drug Classes in the filter panel and placing a small list button inside Drug Classes for subtypes of each drug class.
+  - `src/components/DoctorCatalog.tsx`:
+    - Always fetches the doctor's cloud avatar (`loadMyAvatarUrl`) on mount and automatically uploads any legacy local `data:` avatar to the `doctor-avatars` bucket (`saveMyAvatar`) so a picture added on desktop immediately appears on mobile.
+    - Uploads the selected avatar to `doctor-avatars` immediately on file selection (even while `profileEditing` is open) and preserves the returned cloud URL when saving profile details.
+    - Stopped writing `doctor_avatar_url` to auth user metadata (`doctor_avatar_url: null`).
+    - Removed the Specialty filter dropdown from `#doctor-catalog-filters`, keeping only Drug Classes and Companies, with a compact subtypes list button inside Drug Classes.
+    - Adopted `isCompanyDirectoryRoute` from `src/lib/companyPage.ts`.
+- **Why:** Owner reported the profile picture was not appearing on mobile and requested keeping only Companies and Drug Classes (with a subtypes button) in `#doctor-catalog-filters`.
 - **What Claude must do next:** Nothing required on the database/auth side.
 
 ### 2026-11-14 — Claude (company pages did not open for doctors)

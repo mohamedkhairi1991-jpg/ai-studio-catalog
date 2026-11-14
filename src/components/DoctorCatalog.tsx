@@ -90,6 +90,7 @@ import {
   companyFacts,
   companyMediaUrl,
   groupCompanyProducts,
+  isCompanyDirectoryRoute,
   loadCompanyDirectory,
   loadCompanyPage,
   parseCompanyRoute,
@@ -656,11 +657,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [companiesDirectoryOpen, setCompaniesDirectoryOpen] = useState<boolean>(
     () =>
       typeof window !== 'undefined'
-        ? window.location.hash
-            .replace(/^#/, '')
-            .trim()
-            .replace(/^\/+|\/+$/g, '')
-            .toLowerCase() === 'companies'
+        ? isCompanyDirectoryRoute(window.location.hash)
         : false
   );
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(
@@ -717,12 +714,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       const hash = window.location.hash;
       const nextProductId = parseProductRoute(hash);
       const nextCompanyId = parseCompanyRoute(hash);
-      const nextDirectoryOpen =
-        hash
-          .replace(/^#/, '')
-          .trim()
-          .replace(/^\/+|\/+$/g, '')
-          .toLowerCase() === 'companies';
+      const nextDirectoryOpen = isCompanyDirectoryRoute(hash);
       setActiveProductId(nextProductId);
       setActiveCompanyId(nextCompanyId);
       setCompaniesDirectoryOpen(nextDirectoryOpen);
@@ -732,7 +724,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  // Load doctor profile summary immediately on mount so the greeting name, avatar, quote, and notebook resolve right away
+  // Load doctor profile summary immediately on mount so the greeting name, avatar, quote, and notebook resolve right away across desktop & mobile
   useEffect(() => {
     let active = true;
     const localExtras = loadLocalProfileExtras(profileStorageKey);
@@ -751,33 +743,56 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         doctor_workplace?: string | null;
         doctor_clinical_level?: string | null;
         doctor_board_status?: string | null;
-        doctor_notebook_v1?: DoctorNotebookEntry[] | null;
       };
       const metaName = (meta.full_name ?? meta.name ?? '').trim();
       const metaAvatar = (meta.doctor_avatar_url ?? '').trim();
-      // Pictures live in the doctor-avatars bucket, never in account metadata.
-      const resolvedAvatar =
-        localExtras.avatarUrl ||
-        (metaAvatar && !metaAvatar.startsWith('data:') ? metaAvatar : '') ||
-        (await loadMyAvatarUrl(client)) ||
-        '';
-      if (!active) return;
-      const resolvedQuote =
-        localExtras.quote || (meta.doctor_quote ?? '').trim();
-      const resolvedWorkplace =
-        localExtras.workplace || (meta.doctor_workplace ?? '').trim();
-      const resolvedLevel =
-        localExtras.clinicalLevel || (meta.doctor_clinical_level ?? '').trim();
-      const resolvedBoard =
-        localExtras.boardStatus || (meta.doctor_board_status ?? '').trim();
 
-      if (localNotes.length === 0) {
-        // The notebook is stored privately in the database (doctor_private_data).
-        const cloudNotes = await loadMyNotebook<DoctorNotebookEntry>(client);
+      // Always check the cloud avatar from profiles.avatar_path (doctor-avatars bucket)
+      // so the profile picture syncs across desktop and mobile devices.
+      let cloudAvatar = (await loadMyAvatarUrl(client)) ?? '';
+      if (!active) return;
+
+      // If this device still holds a local data: image from earlier and the cloud
+      // bucket does not have it yet, upload it to doctor-avatars now so mobile gets it too.
+      if (!cloudAvatar && localExtras.avatarUrl.startsWith('data:')) {
+        const up = await saveMyAvatar(client, localExtras.avatarUrl);
         if (!active) return;
-        if (cloudNotes.ok && cloudNotes.data.length > 0) {
+        if (up.ok && up.data) {
+          cloudAvatar = up.data;
+          uploadedAvatarRef.current = {
+            dataUrl: localExtras.avatarUrl,
+            url: up.data,
+          };
+        }
+      }
+
+      const resolvedAvatar =
+        cloudAvatar ||
+        (!localExtras.avatarUrl.startsWith('data:')
+          ? localExtras.avatarUrl
+          : '') ||
+        (metaAvatar && !metaAvatar.startsWith('data:') ? metaAvatar : '') ||
+        localExtras.avatarUrl ||
+        '';
+
+      const resolvedQuote =
+        (meta.doctor_quote ?? '').trim() || localExtras.quote;
+      const resolvedWorkplace =
+        (meta.doctor_workplace ?? '').trim() || localExtras.workplace;
+      const resolvedLevel =
+        (meta.doctor_clinical_level ?? '').trim() || localExtras.clinicalLevel;
+      const resolvedBoard =
+        (meta.doctor_board_status ?? '').trim() || localExtras.boardStatus;
+
+      // Sync notebook across devices (doctor_private_data)
+      const cloudNotes = await loadMyNotebook<DoctorNotebookEntry>(client);
+      if (!active) return;
+      if (cloudNotes.ok) {
+        if (cloudNotes.data.length > 0) {
           setNotebookEntries(cloudNotes.data);
           saveLocalDoctorNotebook(profileStorageKey, cloudNotes.data);
+        } else if (localNotes.length > 0) {
+          void saveMyNotebook(client, localNotes);
         }
       }
 
@@ -786,6 +801,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       setProfileWorkplace(resolvedWorkplace);
       setProfileClinicalLevel(resolvedLevel);
       setProfileBoardStatus(resolvedBoard);
+      setProfileSaved((prev) => ({
+        ...prev,
+        avatarUrl: resolvedAvatar,
+        quote: resolvedQuote,
+        workplace: resolvedWorkplace,
+        clinicalLevel: resolvedLevel,
+        boardStatus: resolvedBoard,
+      }));
       saveLocalProfileExtras(profileStorageKey, {
         avatarUrl: resolvedAvatar,
         quote: resolvedQuote,
@@ -1268,11 +1291,12 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const syncProfileExtrasToCloud = async (
     nextExtras: DoctorProfileExtras,
     nextNotes?: DoctorNotebookEntry[]
-  ) => {
+  ): Promise<{ avatarUrl: string; error?: string }> => {
     // Account metadata travels inside the sign-in token on every request, so
     // only short text goes there. The picture goes to storage and the notebook
     // to the database (src/lib/doctorProfile.ts).
     let extras = nextExtras;
+    let uploadError: string | undefined;
     if (extras.avatarUrl.startsWith('data:')) {
       const cached = uploadedAvatarRef.current;
       let url = cached && cached.dataUrl === extras.avatarUrl ? cached.url : '';
@@ -1281,6 +1305,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         if (up.ok && up.data) {
           url = up.data;
           uploadedAvatarRef.current = { dataUrl: extras.avatarUrl, url };
+        } else if (!up.ok) {
+          uploadError = up.message;
         }
       }
       if (url) {
@@ -1295,7 +1321,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     try {
       await client.auth.updateUser({
         data: {
-          doctor_avatar_url: extras.avatarUrl.startsWith('data:') ? null : extras.avatarUrl || null,
+          doctor_avatar_url: null,
           doctor_quote: extras.quote || null,
           doctor_workplace: extras.workplace || null,
           doctor_clinical_level: extras.clinicalLevel || null,
@@ -1308,6 +1334,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     if (nextNotes) {
       void saveMyNotebook(client, nextNotes);
     }
+    return { avatarUrl: extras.avatarUrl, error: uploadError };
   };
 
   const handleAvatarFileChange = async (
@@ -1316,33 +1343,39 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (!/^image\/(jpeg|jpg|png|webp|gif)$/i.test(file.type)) {
+    if (
+      file.type &&
+      !file.type.toLowerCase().startsWith('image/') &&
+      !/\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name)
+    ) {
       setProfileNotice({
         tone: 'error',
-        text: 'Please choose a JPG, PNG, or WebP image for your profile picture.',
+        text: 'Please choose an image file for your profile picture.',
       });
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
+    if (file.size > 15 * 1024 * 1024) {
       setProfileNotice({
         tone: 'error',
-        text: 'Profile picture must be 8 MB or smaller.',
+        text: 'Profile picture must be 15 MB or smaller.',
       });
       return;
     }
     try {
       const dataUrl = await resizeAvatarFileToDataUrl(file);
       setProfileAvatarUrl(dataUrl);
-      if (!profileEditing) {
-        const nextExtras: DoctorProfileExtras = {
-          avatarUrl: dataUrl,
-          quote: profileSaved.quote,
-          workplace: profileSaved.workplace,
-          clinicalLevel: profileSaved.clinicalLevel,
-          boardStatus: profileSaved.boardStatus,
-        };
-        setProfileSaved((prev) => ({ ...prev, avatarUrl: dataUrl }));
-        await syncProfileExtrasToCloud(nextExtras);
+      setProfileSaved((prev) => ({ ...prev, avatarUrl: dataUrl }));
+      const nextExtras: DoctorProfileExtras = {
+        avatarUrl: dataUrl,
+        quote: profileSaved.quote,
+        workplace: profileSaved.workplace,
+        clinicalLevel: profileSaved.clinicalLevel,
+        boardStatus: profileSaved.boardStatus,
+      };
+      const syncRes = await syncProfileExtrasToCloud(nextExtras);
+      if (syncRes.error) {
+        setProfileNotice({ tone: 'error', text: syncRes.error });
+      } else {
         setProfileNotice({ tone: 'ok', text: 'Profile picture updated.' });
       }
     } catch (err) {
@@ -1358,18 +1391,16 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
   const handleRemoveAvatar = async () => {
     setProfileAvatarUrl('');
-    if (!profileEditing) {
-      const nextExtras: DoctorProfileExtras = {
-        avatarUrl: '',
-        quote: profileSaved.quote,
-        workplace: profileSaved.workplace,
-        clinicalLevel: profileSaved.clinicalLevel,
-        boardStatus: profileSaved.boardStatus,
-      };
-      setProfileSaved((prev) => ({ ...prev, avatarUrl: '' }));
-      await syncProfileExtrasToCloud(nextExtras);
-      setProfileNotice({ tone: 'ok', text: 'Profile picture removed.' });
-    }
+    setProfileSaved((prev) => ({ ...prev, avatarUrl: '' }));
+    const nextExtras: DoctorProfileExtras = {
+      avatarUrl: '',
+      quote: profileSaved.quote,
+      workplace: profileSaved.workplace,
+      clinicalLevel: profileSaved.clinicalLevel,
+      boardStatus: profileSaved.boardStatus,
+    };
+    await syncProfileExtrasToCloud(nextExtras);
+    setProfileNotice({ tone: 'ok', text: 'Profile picture removed.' });
   };
 
   const handleSaveProfile = async (e: FormEvent) => {
@@ -1392,10 +1423,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       clinicalLevel: cleanLevel,
       boardStatus: cleanBoard,
     };
-    await syncProfileExtrasToCloud(nextExtras);
+    const syncRes = await syncProfileExtrasToCloud(nextExtras);
     setProfileBusy(false);
     if (!res.ok) {
       setProfileNotice({ tone: 'error', text: res.message });
+      return;
+    }
+    if (syncRes.error) {
+      setProfileNotice({ tone: 'error', text: syncRes.error });
       return;
     }
     setProfileQuote(cleanQuote);
@@ -1406,7 +1441,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       fullName: profileFullName,
       phone: profilePhone,
       specialtyId: profileSpecialtyId,
-      avatarUrl: profileAvatarUrl,
+      avatarUrl: syncRes.avatarUrl,
       quote: cleanQuote,
       workplace: cleanWorkplace,
       clinicalLevel: cleanLevel,
@@ -1656,6 +1691,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 <img
                   src={profileSaved.avatarUrl || profileAvatarUrl}
                   alt=""
+                  onError={() => {
+                    setProfileAvatarUrl('');
+                    setProfileSaved((prev) => ({ ...prev, avatarUrl: '' }));
+                  }}
                   className="w-4 h-4 rounded-full object-cover border border-accent/50 shrink-0"
                 />
               ) : (
@@ -1769,6 +1808,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                         alt={formatDoctorDisplayTitle(
                           profileSaved.fullName || profileFullName
                         )}
+                        onError={() => {
+                          setProfileAvatarUrl('');
+                          setProfileSaved((prev) => ({ ...prev, avatarUrl: '' }));
+                        }}
                         className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border border-accent/50 bg-background"
                       />
                     ) : (
@@ -1790,7 +1833,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                       <span className="sr-only">Upload profile picture</span>
                       <input
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        accept="image/*"
                         onChange={(e) => void handleAvatarFileChange(e)}
                         className="sr-only"
                       />

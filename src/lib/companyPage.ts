@@ -240,6 +240,11 @@ export function parseCompanyRoute(hashOrRoute: string): string | null {
 /** Hash route of the companies list. */
 export const COMPANY_DIRECTORY_ROUTE = '#/companies';
 
+/** True for "#/companies" (the companies list). */
+export function isCompanyDirectoryRoute(hashOrRoute: string): boolean {
+  return hashOrRoute.replace(/^#/, '').trim().replace(/^\/+|\/+$/g, '').toLowerCase() === 'companies';
+}
+
 /** Check an image before upload; returns an error message or null. */
 export function checkCompanyImage(file: { size: number; type: string }): string | null {
   if (!(COMPANY_IMAGE_TYPES as readonly string[]).includes(file.type)) {

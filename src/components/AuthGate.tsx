@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { resolveAccess, type AccessResult, type Audience } from '../lib/access';
 import { parseProductRoute } from '../lib/catalog';
+import { isCompanyDirectoryRoute, parseCompanyRoute } from '../lib/companyPage';
 import {
   doctorSelfSignup,
   listSpecialties,
@@ -155,12 +156,16 @@ export default function AuthGate() {
   const legalPage = resolveLegalPage(route, pathname);
 
   // Redirect rule: signed-in users only ever see the route their database role allows,
-  // plus the public /privacy and /terms pages and #/product/<id> for officialCatalog.
+  // plus the public /privacy and /terms pages, and for officialCatalog (doctors)
+  // the drug pages #/product/<id>, company pages #/company/<id> and #/companies.
   useEffect(() => {
     if (!access || legalPage) return;
     const home = ROUTE_FOR[access.audience];
     if (!home) return;
-    if (access.audience === 'officialCatalog' && parseProductRoute(route)) {
+    if (
+      access.audience === 'officialCatalog' &&
+      (parseProductRoute(route) || parseCompanyRoute(route) || isCompanyDirectoryRoute(route))
+    ) {
       return;
     }
     if (route !== home) window.location.hash = home;

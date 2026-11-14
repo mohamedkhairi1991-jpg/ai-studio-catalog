@@ -58,6 +58,12 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-08 — Google AI Studio (Same medicine, other brands + close-spelling search notice)
+- **What changed (`src/components/DoctorCatalog.tsx`):**
+  - **Drug page (`DoctorProductDetail`):** Added the **"Same medicine, other brands"** section below the quick-facts card using `loadProductAlternatives(client, product.id)`, `groupAlternatives`, and `alternativeSubtitle(row)`. Shows **"Same strength"** first, then **"Other strengths"**, with up to 6 rows per group and a **"Show all"** button when more exist, a compact loading skeleton while loading, and hides the section when empty. Tapping any row navigates to `#/product/<id>`.
+  - **Search results & bar:** Displayed `closeMatchNotice(query, true)` above search results in muted text when `closeMatches` is true, and updated the search input placeholder to `"Search brand, generic, class or company"`.
+- **Next for Claude:** Review and merge the auto-sync PR; `supabase/`, `src/lib/`, `src/main.tsx`, and `src/components/AuthGate.tsx` were not touched.
+
 ### 2026-11-08 — Claude (smart search v2, other brands, faster first load)
 - **Search** (`search_catalog_products_v2`, live): finds typos ("panadool",
   "augmentn", "breaztri"), US/UK names ("acetaminophen", "albuterol",

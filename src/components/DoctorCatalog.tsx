@@ -74,6 +74,13 @@ import {
   type ErrorTopic,
 } from '../lib/feedback';
 import { agentLine, manufacturerLine } from '../lib/companies';
+import {
+  alternativeSubtitle,
+  closeMatchNotice,
+  groupAlternatives,
+  loadProductAlternatives,
+  type ProductAlternative,
+} from '../lib/alternatives';
 import { NotificationBell } from './NotificationBell';
 import {
   BrandLogo,
@@ -161,6 +168,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
   const [rows, setRows] = useState<DoctorSearchRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [closeMatches, setCloseMatches] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -392,6 +400,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         searchReqSeqRef.current++;
         setRows([]);
         setTotalCount(0);
+        setCloseMatches(false);
         setLoading(false);
         setError(null);
         return;
@@ -424,9 +433,16 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         setError(res.message);
         setRows([]);
         setTotalCount(0);
+        setCloseMatches(false);
       } else {
         setRows(res.data.rows);
         setTotalCount(res.data.totalCount);
+        const isClose =
+          'closeMatches' in res.data
+            ? Boolean(res.data.closeMatches)
+            : res.data.rows.length > 0 &&
+              res.data.rows.every((r) => r.matchKind === 'close');
+        setCloseMatches(isClose);
         void recordCatalogSearchOnce(
           client,
           searchQuery,
@@ -1216,6 +1232,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 <DoctorProductDetail
                   client={client}
                   product={selectedProduct}
+                  onOpenProduct={openProductPage}
                   onSearchGeneric={handleSearchByGeneric}
                   onFilterCompany={handleFilterByCompany}
                   onFilterClass={handleFilterByClass}
@@ -1245,10 +1262,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   <input
                     id="doctor-catalog-search"
                     type="search"
-                    aria-label="Search by brand, generic name, or company"
+                    aria-label="Search brand, generic, class or company"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search by brand, generic name, or company"
+                    placeholder="Search brand, generic, class or company"
                     className={`${inputClass} pl-10 min-h-[44px] bg-surface ${
                       query ? 'pr-10' : ''
                     }`}
@@ -1513,6 +1530,12 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   </div>
                 ) : (
                   <div className="space-y-2.5">
+                    {closeMatches && closeMatchNotice(query, true) && (
+                      <p className="text-xs text-text-muted px-0.5">
+                        {closeMatchNotice(query, true)}
+                      </p>
+                    )}
+
                     {/* Slim count line */}
                     <div className="flex items-center justify-between gap-2 px-0.5">
                       <span className="text-xs text-text-muted tabular-nums">
@@ -1727,12 +1750,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 function DoctorProductDetail({
   client,
   product,
+  onOpenProduct,
   onSearchGeneric,
   onFilterCompany,
   onFilterClass,
 }: {
   client: SupabaseClient;
   product: CatalogProduct;
+  onOpenProduct: (productId: string) => void;
   onSearchGeneric: (genericName: string) => void;
   onFilterCompany: (companyId: string, companyName: string) => void;
   onFilterClass: (groupKey: TherapeuticGroupKey, subclass?: string) => void;
@@ -1740,6 +1765,10 @@ function DoctorProductDetail({
   const market = product.market;
   const enClinical = product.marketTranslations.en;
   const [drugSources, setDrugSources] = useState<DrugSources | null>(null);
+  const [alternatives, setAlternatives] = useState<ProductAlternative[]>([]);
+  const [alternativesLoading, setAlternativesLoading] = useState(true);
+  const [showAllSameStrength, setShowAllSameStrength] = useState(false);
+  const [showAllOtherStrengths, setShowAllOtherStrengths] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportTopic, setReportTopic] = useState<ErrorTopic>('dose');
   const [reportMessage, setReportMessage] = useState('');
@@ -1750,16 +1779,32 @@ function DoctorProductDetail({
   useEffect(() => {
     let active = true;
     setDrugSources(null);
+    setAlternatives([]);
+    setAlternativesLoading(true);
+    setShowAllSameStrength(false);
+    setShowAllOtherStrengths(false);
     void loadDrugSources(client, product.id).then((res) => {
       if (!active) return;
       if (res.ok) {
         setDrugSources(res.data);
       }
     });
+    void loadProductAlternatives(client, product.id).then((res) => {
+      if (!active) return;
+      if (res.ok) {
+        setAlternatives(res.data);
+      }
+      setAlternativesLoading(false);
+    });
     return () => {
       active = false;
     };
   }, [client, product.id]);
+
+  const groupedAlternatives = useMemo(
+    () => groupAlternatives(alternatives),
+    [alternatives]
+  );
 
   const fallbackSources = (product.aiSources ?? []).filter((s) =>
     s.url.startsWith('https://')
@@ -1956,6 +2001,104 @@ function DoctorProductDetail({
           />
         </div>
       </div>
+
+      {/* Same medicine, other brands */}
+      {alternativesLoading ? (
+        <section
+          role="status"
+          aria-label="Loading other brands"
+          className="rounded-xl bg-surface border border-border p-4 space-y-2.5 animate-pulse"
+        >
+          <div className="h-4 w-48 rounded bg-surface-raised" />
+          <div className="space-y-2 pt-1">
+            {[0, 1].map((idx) => (
+              <div
+                key={idx}
+                className="h-10 rounded-lg bg-background/60 border border-border"
+              />
+            ))}
+          </div>
+        </section>
+      ) : alternatives.length > 0 ? (
+        <section className="space-y-2.5">
+          <h2 className="text-base font-semibold text-text px-0.5">
+            Same medicine, other brands
+          </h2>
+          <div className="rounded-xl bg-surface border border-border overflow-hidden divide-y divide-border">
+            {[
+              {
+                key: 'same',
+                title: 'Same strength',
+                items: groupedAlternatives.sameStrength,
+                expanded: showAllSameStrength,
+                onExpand: () => setShowAllSameStrength(true),
+              },
+              {
+                key: 'other',
+                title: 'Other strengths',
+                items: groupedAlternatives.otherStrengths,
+                expanded: showAllOtherStrengths,
+                onExpand: () => setShowAllOtherStrengths(true),
+              },
+            ]
+              .filter((group) => group.items.length > 0)
+              .map((group) => {
+                const visibleItems = group.expanded
+                  ? group.items
+                  : group.items.slice(0, 6);
+                return (
+                  <div key={group.key}>
+                    <div className="flex items-center justify-between gap-2 px-3.5 py-1.5 bg-surface-raised/90">
+                      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+                        {group.title}
+                      </h3>
+                      <span className="text-[11px] text-text-muted tabular-nums">
+                        {group.items.length}
+                      </span>
+                    </div>
+                    <div className="divide-y divide-border">
+                      {visibleItems.map((alt) => (
+                        <a
+                          key={alt.productId}
+                          href={buildProductRouteHash(alt.productId)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onOpenProduct(alt.productId);
+                          }}
+                          className="group flex items-center justify-between gap-3 px-3.5 py-2.5 hover:bg-surface-raised/60 transition-colors duration-150"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-sm text-text group-hover:text-accent truncate transition-colors duration-150">
+                              {alt.brandNameEn}
+                            </div>
+                            <div className="text-xs text-text-muted truncate">
+                              {alternativeSubtitle(alt)}
+                            </div>
+                          </div>
+                          <ChevronRight
+                            className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors duration-150"
+                            aria-hidden="true"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                    {group.items.length > 6 && !group.expanded && (
+                      <div className="px-3.5 py-2 bg-background/40 border-t border-border">
+                        <button
+                          type="button"
+                          onClick={group.onExpand}
+                          className="text-xs font-medium text-accent hover:underline"
+                        >
+                          Show all
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </section>
+      ) : null}
 
       {/* Clinical Monograph Cards */}
       {enClinical && (

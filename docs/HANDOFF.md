@@ -58,6 +58,17 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-15 — Claude (catalog edits from the app failed)
+- Since 14 Nov every publish / archive / unarchive / edit made from the app
+  failed: app requests run with pg-safeupdate, and the search-cache refresh
+  used `delete ...` with no WHERE. Fixed (`where true`), live.
+- The cache is now rebuilt once per transaction at commit (deferred
+  constraint triggers `*_refresh_search_cache_at_commit`), not after every
+  statement. One publish: ~2.2 s → ~0.25 s.
+- Migration `20261115120000_catalog_search_cache_safe_refresh.sql`; test
+  `search_cache_refresh.test.sql`. SQL tests that read the cache in the same
+  transaction call `private.refresh_catalog_search_cache()` first.
+
 ### 2026-11-15 — Claude (sign-up blocked: robot-check key missing)
 - Testers could not sign up: `TURNSTILE_SECRET_KEY` is not saved in Supabase
   Edge Function secrets, so `signup-captcha-hook` rejected every sign-up (503).

@@ -140,6 +140,8 @@ reset role;
 insert into public.sponsored_ads (sponsor_name, title, body, image_url, company_id, is_active)
 values ('Pagemaker Pharma', 'Pagemaker banner', 'Banner text', 'https://example.com/banner.png',
         (select id from public.companies where company_name = 'Pagemaker Pharma'), true);
+-- The search cache is rebuilt at commit; tests never commit, so rebuild it here.
+select private.refresh_catalog_search_cache();
 
 -- Approved doctor -----------------------------------------------------------------
 select set_config('request.jwt.claim.sub', '7b000000-0000-4000-8000-000000000002', true);

@@ -49,6 +49,10 @@ from (values
 select public.submit_product_for_review(p.id), public.admin_publish_product(p.id)
 from public.products p
 where p.company_id = (select id from public.companies where company_name = 'Searchco Pharma');
+reset role;
+-- The search cache is rebuilt at commit; tests never commit, so rebuild it here.
+select private.refresh_catalog_search_cache();
+set local role authenticated;
 
 select is(
   (select count(*)::int from public.search_catalog_products_v2('testophage') where match_kind = 'exact'),

@@ -8,7 +8,8 @@
 -- 2. The cache was rebuilt after every statement; one publish runs many
 --    statements, so it rebuilt the whole cache many times. The refresh now runs
 --    once per transaction, at commit (deferred constraint triggers + a
---    transaction-local marker).
+--    transaction-local marker). Tests that read the cache in the same
+--    transaction call private.refresh_catalog_search_cache() first.
 
 create or replace function private.refresh_catalog_search_cache()
 returns void
@@ -86,19 +87,20 @@ $$;
 revoke all on function private.refresh_catalog_search_cache_trigger() from public, anon, authenticated;
 
 -- New triggers run at commit; the first call in a transaction rebuilds, the
--- rest skip.
+-- rest skip. No "set search_path" clause on purpose: a function-level SET
+-- undoes set_config() at function exit, which would lose the marker. Every
+-- name is schema-qualified instead.
 create or replace function private.refresh_catalog_search_cache_at_commit()
 returns trigger
 language plpgsql
 security definer
-set search_path = ''
 as $$
 declare
-  v_tx text := txid_current()::text;
+  v_tx text := pg_catalog.txid_current()::text;
 begin
-  if coalesce(current_setting('pharmaty.search_cache_refreshed_tx', true), '') <> v_tx then
+  if coalesce(pg_catalog.current_setting('pharmaty.search_cache_refreshed_tx', true), '') <> v_tx then
     perform private.refresh_catalog_search_cache();
-    perform set_config('pharmaty.search_cache_refreshed_tx', v_tx, true);
+    perform pg_catalog.set_config('pharmaty.search_cache_refreshed_tx', v_tx, true);
   end if;
   return null;
 end;

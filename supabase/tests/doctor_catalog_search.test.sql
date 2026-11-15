@@ -79,6 +79,8 @@ from public.products p
 join public.product_translations t on t.product_id = p.id and t.locale = 'en'
 where t.brand_name in ('Searcora 10 mg', 'Metasearch 500 mg');
 reset role;
+-- The search cache is rebuilt at commit; tests never commit, so rebuild it here.
+select private.refresh_catalog_search_cache();
 
 -- Doctor searches ----------------------------------------------------------------
 select set_config('request.jwt.claim.sub', '74000000-0000-4000-8000-000000000002', true);

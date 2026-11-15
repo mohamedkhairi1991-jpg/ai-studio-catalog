@@ -58,6 +58,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-15 — Claude (sign-up blocked: robot-check key missing)
+- Testers could not sign up: `TURNSTILE_SECRET_KEY` is not saved in Supabase
+  Edge Function secrets, so `signup-captcha-hook` rejected every sign-up (503).
+- The hook now lets sign-up through (with a log warning) while that secret is
+  missing; the robot check turns on by itself once the owner saves it.
+  Deployed (version 4).
+
 ### 2026-11-14 — Google AI Studio (fix doctor profile picture cross-device sync + simplify catalog filter panel)
 - **What changed:**
   - `src/components/DoctorCatalog.tsx`:

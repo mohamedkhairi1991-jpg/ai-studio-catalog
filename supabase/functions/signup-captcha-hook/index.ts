@@ -8,7 +8,8 @@
 // a database trigger removes it before the user row is saved.
 //
 // Secrets (set by the owner in Supabase → Edge Functions → Secrets; never in code or chat):
-//   TURNSTILE_SECRET_KEY            Cloudflare Turnstile secret key
+//   TURNSTILE_SECRET_KEY            Cloudflare Turnstile secret key (if missing,
+//                                   sign-up is allowed without the check)
 //   BEFORE_USER_CREATED_HOOK_SECRET the "v1,whsec_..." secret from Auth → Hooks
 // Deployed with verify_jwt = false: Supabase Auth signs each call instead.
 
@@ -47,7 +48,11 @@ Deno.serve(async (req: Request) => {
   if (!signed) return json({ error: 'Invalid signature' }, 401);
 
   if (!turnstileSecret) {
-    return json(reject('Sign-up robot check is not set up yet. Please try again later.', 503));
+    // Without the Cloudflare secret the token cannot be checked. Let sign-up
+    // through instead of blocking every new doctor; the check turns on by
+    // itself as soon as the owner saves TURNSTILE_SECRET_KEY.
+    console.warn('TURNSTILE_SECRET_KEY is not set: sign-up allowed without the robot check.');
+    return json({});
   }
 
   let event: HookEvent;

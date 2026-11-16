@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Globe,
   Mail,
+  MoreHorizontal,
   Pencil,
   Phone,
   Pin,
@@ -636,6 +637,9 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   );
   const [, setNoteComposerOpen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  // Note "…" menu: which note's menu is open, and whether it is asking to confirm delete
+  const [noteMenuId, setNoteMenuId] = useState<string | null>(null);
+  const [noteMenuConfirmDelete, setNoteMenuConfirmDelete] = useState(false);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteBody, setNoteBody] = useState('');
   const [noteCategory, setNoteCategory] =
@@ -2190,87 +2194,161 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 </div>
               </form>
 
-              {/* Notes / Posts Feed */}
+              {/* Notes / Posts Feed: one card per note; Pin / Edit / Delete live in the "…" menu */}
               {notebookEntries.length > 0 && (
-                <div className="divide-y divide-border/70 border-t border-border/70">
-                  {filteredNotebookEntries.map((entry) => (
-                    <article
-                      key={entry.id}
-                      className="py-3 last:pb-0 space-y-1"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0 text-[11px] text-text-muted">
-                          {entry.pinned && (
-                            <Pin className="w-3 h-3 text-accent shrink-0" aria-hidden="true" />
-                          )}
-                          {entry.title && (
-                            <span className="text-xs sm:text-sm font-semibold text-text truncate">
-                              {entry.title}
-                            </span>
-                          )}
-                          {formatNoteTimestamp(entry.createdAt) && (
-                            <span className="shrink-0">
-                              {formatNoteTimestamp(entry.createdAt)}
-                            </span>
-                          )}
+                <div className="space-y-2.5 border-t border-border/70 pt-3.5">
+                  {filteredNotebookEntries.map((entry) => {
+                    const menuOpen = noteMenuId === entry.id;
+                    const stamp = formatNoteTimestamp(entry.createdAt);
+                    const closeMenu = () => {
+                      setNoteMenuId(null);
+                      setNoteMenuConfirmDelete(false);
+                    };
+                    return (
+                      <article
+                        key={entry.id}
+                        className={`relative rounded-xl border bg-surface-raised/40 px-3.5 py-3 space-y-1.5 ${
+                          entry.pinned ? 'border-accent/50' : 'border-border'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            {entry.title && (
+                              <h4 className="text-sm font-semibold text-text truncate">
+                                {entry.title}
+                              </h4>
+                            )}
+                            <div className="flex items-center gap-1.5 text-[11px] text-text-muted">
+                              {entry.pinned && (
+                                <span className="inline-flex items-center gap-1 text-accent font-medium">
+                                  <Pin className="w-3 h-3" aria-hidden="true" />
+                                  Pinned
+                                </span>
+                              )}
+                              {entry.pinned && stamp && <span aria-hidden="true">·</span>}
+                              {stamp && <span>{stamp}</span>}
+                            </div>
+                          </div>
+
+                          <div className="relative shrink-0 -mr-1.5 -mt-1">
+                            <button
+                              type="button"
+                              aria-label="Note options"
+                              aria-haspopup="menu"
+                              aria-expanded={menuOpen}
+                              title="Options"
+                              onClick={() => {
+                                setNoteMenuConfirmDelete(false);
+                                setNoteMenuId(menuOpen ? null : entry.id);
+                              }}
+                              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg transition-colors ${
+                                menuOpen
+                                  ? 'bg-surface text-text'
+                                  : 'text-text-muted hover:text-text hover:bg-surface'
+                              }`}
+                            >
+                              <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
+                            </button>
+
+                            {menuOpen && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-30"
+                                  aria-hidden="true"
+                                  onClick={closeMenu}
+                                />
+                                <div
+                                  role="menu"
+                                  className="absolute right-0 top-9 z-40 w-44 rounded-xl border border-border bg-surface shadow-lg p-1"
+                                >
+                                  {noteMenuConfirmDelete ? (
+                                    <div className="p-2 space-y-2">
+                                      <p className="text-xs text-text">Delete this note?</p>
+                                      <div className="flex gap-1.5">
+                                        <button
+                                          type="button"
+                                          role="menuitem"
+                                          onClick={() => {
+                                            closeMenu();
+                                            handleDeleteNote(entry.id);
+                                          }}
+                                          className="flex-1 rounded-lg bg-danger/90 hover:bg-danger text-white text-xs font-semibold py-1.5"
+                                        >
+                                          Delete
+                                        </button>
+                                        <button
+                                          type="button"
+                                          role="menuitem"
+                                          onClick={() => setNoteMenuConfirmDelete(false)}
+                                          className="flex-1 rounded-lg border border-border text-text-muted hover:text-text text-xs font-medium py-1.5"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <button
+                                        type="button"
+                                        role="menuitem"
+                                        onClick={() => {
+                                          closeMenu();
+                                          handleTogglePinNote(entry.id);
+                                        }}
+                                        className="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text hover:bg-surface-raised"
+                                      >
+                                        <Pin className="w-4 h-4 text-text-muted" aria-hidden="true" />
+                                        {entry.pinned ? 'Unpin' : 'Pin to top'}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        role="menuitem"
+                                        onClick={() => {
+                                          closeMenu();
+                                          handleEditNote(entry);
+                                        }}
+                                        className="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text hover:bg-surface-raised"
+                                      >
+                                        <Pencil className="w-4 h-4 text-text-muted" aria-hidden="true" />
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        role="menuitem"
+                                        onClick={() => setNoteMenuConfirmDelete(true)}
+                                        className="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-danger hover:bg-surface-raised"
+                                      >
+                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                                        Delete
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            aria-label={entry.pinned ? 'Unpin note' : 'Pin note'}
-                            title={entry.pinned ? 'Unpin' : 'Pin'}
-                            onClick={() => handleTogglePinNote(entry.id)}
-                            className={`h-7 w-7 inline-flex items-center justify-center rounded-lg transition-colors ${
-                              entry.pinned
-                                ? 'text-accent'
-                                : 'text-text-muted hover:text-text'
-                            }`}
-                          >
-                            <Pin className="w-3.5 h-3.5" aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Edit note"
-                            title="Edit"
-                            onClick={() => handleEditNote(entry)}
-                            className="h-7 w-7 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-text transition-colors"
-                          >
-                            <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Delete note"
-                            title="Delete"
-                            onClick={() => handleDeleteNote(entry.id)}
-                            className="h-7 w-7 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-danger transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-                          </button>
-                        </div>
-                      </div>
+                        <p className="text-sm text-text leading-relaxed whitespace-pre-line break-words">
+                          {entry.body}
+                        </p>
 
-                      <p className="text-xs sm:text-sm text-text leading-relaxed whitespace-pre-line break-words">
-                        {entry.body}
-                      </p>
-
-                      {entry.linkedProductId && entry.linkedProductName && (
-                        <div className="pt-0.5">
+                        {entry.linkedProductId && entry.linkedProductName && (
                           <button
                             type="button"
                             onClick={() => {
                               setProfileOpen(false);
                               openProductPage(entry.linkedProductId!);
                             }}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-accent hover:border-accent"
                           >
                             <Pill className="w-3.5 h-3.5" aria-hidden="true" />
-                            <span>{entry.linkedProductName}</span>
+                            <span className="truncate max-w-[14rem]">{entry.linkedProductName}</span>
                           </button>
-                        </div>
-                      )}
-                    </article>
-                  ))}
+                        )}
+                      </article>
+                    );
+                  })}
                 </div>
               )}
             </section>
@@ -2848,7 +2926,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                                         openCompanyPage(row.companyId);
                                       }}
                                       title={`Open ${row.companyName} page`}
-                                      className="text-xs text-text-muted hover:text-accent hover:underline truncate shrink-0 text-left sm:text-right"
+                                      className="self-start sm:self-auto w-fit max-w-full text-xs text-text-muted hover:text-accent hover:underline truncate shrink-0 text-left sm:text-right"
                                     >
                                       {row.companyName}
                                     </button>

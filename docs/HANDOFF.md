@@ -58,6 +58,15 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-16 — Claude (show password, note menu, search tap)
+- `AuthGate.tsx`: eye button to show / hide the password (sign in and sign up).
+- `DoctorCatalog.tsx` notes ("post space"): each note is a card; Pin / Edit /
+  Delete moved into a "…" menu (Delete asks to confirm). Linked drug shown as
+  a chip.
+- `DoctorCatalog.tsx` search results: on phones the company name button
+  stretched across the whole second line, so tapping a drug often opened the
+  company page. The button now covers only the name (`self-start w-fit`).
+
 ### 2026-11-15 — Claude (catalog edits from the app failed)
 - Since 14 Nov every publish / archive / unarchive / edit made from the app
   failed: app requests run with pg-safeupdate, and the search-cache refresh

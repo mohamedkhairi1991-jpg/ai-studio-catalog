@@ -1,3 +1,4 @@
+import { Eye, EyeOff } from 'lucide-react';
 import { Suspense, lazy, useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
@@ -60,6 +61,7 @@ export default function AuthGate() {
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [specialtyId, setSpecialtyId] = useState('');
@@ -355,16 +357,32 @@ export default function AuthGate() {
         </Field>
         {mode !== 'reset' && (
           <Field label="Password">
-            <input
-              className={inputClass}
-              type="password"
-              required
-              minLength={8}
-              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              placeholder="Password (at least 8 characters)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                className={`${inputClass} pr-12`}
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={8}
+                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                placeholder="Password (at least 8 characters)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute inset-y-0 right-0 w-11 inline-flex items-center justify-center text-text-muted hover:text-text"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="w-4 h-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </Field>
         )}
         {mode === 'signup' && (

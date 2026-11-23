@@ -58,6 +58,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (home: noble post under the search)
+- `HomeNoblePost` (`src/components/NobleDoctors.tsx`) on the doctor home
+  page, under the search and above the ad space: one noble doctor's post from
+  the doctor's own specialty (falls back to all specialties), next post every
+  12 s, starting at a different post every 10 minutes; tap opens the doctor's
+  page. Hidden when there are no posts or no internet.
+
 ### 2026-11-23 — Claude (noble doctors)
 - Experienced doctors chosen by the admin, listed by specialty, each with a
   public page of posts (title, text, topic, pictures, linked drugs). Owner

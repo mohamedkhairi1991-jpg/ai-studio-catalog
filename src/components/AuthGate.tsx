@@ -14,6 +14,7 @@ import {
 import { isOffline } from '../lib/offlineCatalog';
 import { parseProductRoute } from '../lib/catalog';
 import { isCompanyDirectoryRoute, parseCompanyRoute } from '../lib/companyPage';
+import { parseNobleRoute } from '../lib/nobleDoctors';
 import {
   doctorSelfSignup,
   listSpecialties,
@@ -217,7 +218,7 @@ export default function AuthGate() {
     if (!home) return;
     if (
       access.audience === 'officialCatalog' &&
-      (parseProductRoute(route) || parseCompanyRoute(route) || isCompanyDirectoryRoute(route))
+      (parseProductRoute(route) || parseCompanyRoute(route) || isCompanyDirectoryRoute(route) || parseNobleRoute(route))
     ) {
       return;
     }

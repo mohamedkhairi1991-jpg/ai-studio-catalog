@@ -105,6 +105,7 @@ import {
   isSponsoredAdVideoUrl,
 } from './DoctorCatalog';
 import { NotificationBell } from './NotificationBell';
+import { AdminNobleDoctorsPanel } from './NobleDoctors';
 import { recordAppOpen } from '../lib/notifications';
 import { BrandLogo, Field, LegalFooter, buttonClass, inputClass, secondaryButtonClass } from './ui';
 
@@ -116,7 +117,7 @@ interface Props {
 
 export function AdminCatalogReview({ client, access, onSignOut }: Props) {
   const [adminView, setAdminView] = useState<
-    'catalog' | 'companies' | 'ads' | 'usage' | 'approvals' | 'feedback'
+    'catalog' | 'companies' | 'ads' | 'usage' | 'approvals' | 'feedback' | 'noble'
   >('catalog');
   const [companySubView, setCompanySubView] = useState<
     'drafts' | 'published' | 'archived' | 'other'
@@ -512,6 +513,20 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
                 type="button"
                 onClick={() => {
                   setSelectedId(null);
+                  setAdminView('noble');
+                }}
+                className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
+                  adminView === 'noble'
+                    ? 'bg-[#1769AA] text-white'
+                    : 'text-[#B8C3CC] hover:text-white'
+                }`}
+              >
+                Noble doctors
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedId(null);
                   setAdminView('usage');
                 }}
                 className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
@@ -632,6 +647,8 @@ export function AdminCatalogReview({ client, access, onSignOut }: Props) {
               setAdminView('catalog');
             }}
           />
+        ) : adminView === 'noble' ? (
+          <AdminNobleDoctorsPanel client={client} />
         ) : adminView === 'ads' ? (
           <AdminSponsoredAdsView
             client={client}

@@ -58,6 +58,20 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (noble doctors)
+- Experienced doctors chosen by the admin, listed by specialty, each with a
+  public page of posts (title, text, topic, pictures, linked drugs). Owner
+  decisions: posts go live without approval, any pictures, no company-link
+  notes. Small disclaimer under each post; the admin can hide a post or remove
+  the role.
+- Database: migration `20261123150000_noble_doctors.sql` (tables noble_*,
+  bucket `noble-posts`, functions get_noble_* / noble_save_post /
+  noble_delete_post / noble_update_my_profile / admin_*). Live.
+- App: `src/lib/nobleDoctors.ts`, `src/components/NobleDoctors.tsx`.
+  Doctor header has a "Noble doctors" button (`#/noble`, `#/noble/<id>`,
+  allowed in `AuthGate.tsx`); drug pages show "Noble doctors’ notes";
+  Admin has a "Noble doctors" tab.
+
 ### 2026-11-23 — Claude (offline mode)
 - The app opens with no internet: `sw.js` (built by `vite.config.ts` from
   `src/offline/sw.template.js`) saves the app files on the phone;

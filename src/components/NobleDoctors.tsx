@@ -1304,12 +1304,10 @@ function AdminNoblePosts({ client, doctorId }: { client: SupabaseClient; doctorI
 // ---------------------------------------------------------------------------
 // Home page: two noble doctors' posts above the ad space. The top card shows
 // posts from the doctor's own specialty, the second card posts from all
-// noble doctors. Each card goes through all its posts again and again (next
-// post every 12 s, soft fade); the two cards never show the same post at the
-// same time. Hidden with no posts or no internet.
+// noble doctors. Each card shows a different post on every visit or refresh
+// (no changing while the page is open); the two cards never show the same
+// post. Hidden with no posts or no internet.
 
-const HOME_ROTATE_MS = 12000;
-const HOME_SLOT_MS = 10 * 60 * 1000;
 const HOME_FEED_LIMIT = 50;
 
 function RotatingNoblePost({
@@ -1334,16 +1332,13 @@ function RotatingNoblePost({
   onShow?: (postId: string | null) => void;
   onOpenDoctor: (profileId: string) => void;
 }) {
-  const [index, setIndex] = useState(() =>
-    posts.length > 0 ? Math.floor(Date.now() / HOME_SLOT_MS) % posts.length : 0
-  );
-  const [shown, setShown] = useState(true);
+  const [index, setIndex] = useState(() => (posts.length > 0 ? Math.floor(Math.random() * posts.length) : 0));
   const avoidRef = useRef(avoidPostId);
   avoidRef.current = avoidPostId;
 
-  // When the list changes, start again at this 10-minute slot's post.
+  // A random post each time the list loads (each visit or refresh).
   useEffect(() => {
-    setIndex(posts.length > 0 ? Math.floor(Date.now() / HOME_SLOT_MS) % posts.length : 0);
+    setIndex(posts.length > 0 ? Math.floor(Math.random() * posts.length) : 0);
   }, [posts]);
 
   // Never show the post the other card is showing.
@@ -1351,30 +1346,6 @@ function RotatingNoblePost({
     if (posts.length > 1 && posts[index]?.id === avoidPostId) setIndex((i) => (i + 1) % posts.length);
   }, [posts, index, avoidPostId]);
 
-  useEffect(() => {
-    if (posts.length < 2) return;
-    let fade: number | undefined;
-    let timer: number | undefined;
-    const start = window.setTimeout(() => {
-      timer = window.setInterval(() => {
-        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-        setShown(false);
-        fade = window.setTimeout(() => {
-          setIndex((i) => {
-            let next = (i + 1) % posts.length;
-            if (posts[next]?.id === avoidRef.current && posts.length > 2) next = (next + 1) % posts.length;
-            return next;
-          });
-          setShown(true);
-        }, 250);
-      }, HOME_ROTATE_MS);
-    }, delayMs);
-    return () => {
-      window.clearTimeout(start);
-      if (timer) window.clearInterval(timer);
-      if (fade) window.clearTimeout(fade);
-    };
-  }, [posts, delayMs]);
 
   const post = posts[index];
   useEffect(() => {
@@ -1399,9 +1370,7 @@ function RotatingNoblePost({
       <button
         type="button"
         onClick={() => onOpenDoctor(author.profileId)}
-        className={`w-full text-left rounded-2xl border border-border bg-surface hover:bg-surface-raised/60 p-3.5 flex gap-3 transition-opacity duration-200 ${
-          shown ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`w-full text-left rounded-2xl border border-border bg-surface hover:bg-surface-raised/60 p-3.5 flex gap-3 transition-colors`}
       >
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex items-center gap-2">
@@ -1488,7 +1457,6 @@ export function HomeNoblePosts({
           posts={general}
           label="From all noble doctors"
           avoidPostId={mine.length > 0 ? topShowing : null}
-          delayMs={mine.length > 0 ? HOME_ROTATE_MS / 2 : 0}
           onOpenDoctor={onOpenDoctor}
         />
       )}

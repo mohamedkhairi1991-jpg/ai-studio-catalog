@@ -58,6 +58,20 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (profile like noble page, navigation)
+- Doctor profile uses the noble page layout but is private: header card
+  (cover band, picture with camera, name, level · specialty, workplace,
+  board / phone / email, quote, "Edit page" opens the edit form), a
+  "Write a note" button that opens the note box, then the note cards.
+  Saved medicines moved out of the profile (they are in the "…" menu).
+- Header: Home · bell · Noble doctors · "…" (My profile, Companies, Saved
+  medicines, Sign out).
+- Every Back button goes to the home page (`handleBackToCatalog` →
+  `handleGoHome`).
+- Search results: the company name is plain text, so tapping anywhere on a
+  result opens the drug.
+- Home noble posts change only on each visit / refresh (no timer).
+
 ### 2026-11-23 — Claude (standard ad card)
 - `SponsoredAdCard` redesigned and used everywhere (home, drug pages, company
   page feature, admin preview): 16:9 picture filling the top (object-cover),

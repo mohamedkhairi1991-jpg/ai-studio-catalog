@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   AlertOctagon,
+  Plus,
+  Home,
   Award,
   AlertTriangle,
   Bookmark,
@@ -652,7 +654,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   const [notebookEntries, setNotebookEntries] = useState<DoctorNotebookEntry[]>(
     () => loadLocalDoctorNotebook(profileStorageKey)
   );
-  const [, setNoteComposerOpen] = useState(false);
+  // "Write a note" box on the profile page (opens on tap, like "Write a post").
+  const [noteComposerOpen, setNoteComposerOpen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   // Note "…" menu: which note's menu is open, and whether it is asking to confirm delete
   const [noteMenuId, setNoteMenuId] = useState<string | null>(null);
@@ -685,9 +688,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   // A noble doctor's profile is their noble page; profile settings and private
   // notes open below it.
   const [myNoble, setMyNoble] = useState<NobleDoctor | null>(null);
-  // Header "…" menu (Companies, Saved medicines, Sign out)
+  // Header "…" menu (My profile, Companies, Saved medicines, Sign out)
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
+
   useEffect(() => {
     if (isOffline()) return;
     let active = true;
@@ -975,6 +979,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       specialtyId ||
       therapeuticGroup
   );
+  const isHomeView =
+    !isSearchingOrFiltering &&
+    !profileOpen &&
+    !savedOpen &&
+    !activeProductId &&
+    !activeCompanyId &&
+    !companiesDirectoryOpen &&
+    !nobleRoute;
 
   const runSearch = useCallback(
     async (
@@ -1212,11 +1224,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   };
 
+  // Every Back button returns to the home page (owner request).
   const handleBackToCatalog = () => {
-    setActiveProductId(null);
-    setActiveCompanyId(null);
-    setCompaniesDirectoryOpen(false);
-    window.location.hash = '/catalog';
+    cancelProfileEdit();
+    handleGoHome();
   };
 
   const handleGoHome = () => {
@@ -1706,6 +1717,19 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           </div>
 
           <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              aria-label="Home"
+              title="Home"
+              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
+                isHomeView
+                  ? 'border-accent bg-background text-accent'
+                  : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
+              }`}
+              onClick={handleGoHome}
+            >
+              <Home className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            </button>
             <NotificationBell client={client} profileId={access.profileId} />
             <button
               type="button"
@@ -1721,37 +1745,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             >
               <Award className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             </button>
-            <button
-              type="button"
-              aria-label="My profile"
-              aria-expanded={profileOpen}
-              title="My profile"
-              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
-                profileOpen
-                  ? 'border-accent bg-background text-accent'
-                  : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
-              }`}
-              onClick={() => {
-                setProfileOpen((v) => !v);
-                setSavedOpen(false);
-                setProfileNotice(null);
-                cancelProfileEdit();
-              }}
-            >
-              {(profileSaved.avatarUrl || profileAvatarUrl) ? (
-                <img
-                  src={profileSaved.avatarUrl || profileAvatarUrl}
-                  alt=""
-                  onError={() => {
-                    setProfileAvatarUrl('');
-                    setProfileSaved((prev) => ({ ...prev, avatarUrl: '' }));
-                  }}
-                  className="w-4 h-4 rounded-full object-cover border border-accent/50 shrink-0"
-                />
-              ) : (
-                <User className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              )}
-            </button>
             {/* More: Companies, Saved medicines, Sign out */}
             <div className="relative">
               <button
@@ -1761,7 +1754,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 aria-expanded={headerMenuOpen}
                 title="More"
                 className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
-                  headerMenuOpen || savedOpen || companiesDirectoryOpen || Boolean(activeCompanyId)
+                  headerMenuOpen || profileOpen || savedOpen || companiesDirectoryOpen || Boolean(activeCompanyId)
                     ? 'border-accent bg-background text-accent'
                     : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
                 }`}
@@ -1776,6 +1769,30 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     role="menu"
                     className="absolute right-0 top-10 z-40 w-56 rounded-xl border border-border bg-surface shadow-lg p-1"
                   >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setHeaderMenuOpen(false);
+                        setProfileOpen(true);
+                        setSavedOpen(false);
+                        setProfileNotice(null);
+                        cancelProfileEdit();
+                        if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+                      }}
+                      className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm text-text hover:bg-surface-raised"
+                    >
+                      {profileSaved.avatarUrl || profileAvatarUrl ? (
+                        <img
+                          src={profileSaved.avatarUrl || profileAvatarUrl}
+                          alt=""
+                          className="w-4 h-4 rounded-full object-cover border border-accent/50"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-text-muted" aria-hidden="true" />
+                      )}
+                      My profile
+                    </button>
                     <button
                       type="button"
                       role="menuitem"
@@ -1913,10 +1930,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 type="button"
                 aria-label="Back"
                 title="Back"
-                onClick={() => {
-                  cancelProfileEdit();
-                  setProfileOpen(false);
-                }}
+                onClick={handleBackToCatalog}
                 className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-border bg-surface hover:bg-surface-raised text-sm font-medium text-text transition-colors duration-150"
               >
                 ←
@@ -1956,45 +1970,37 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               </>
             )}
 
-            {/* Minimal Profile Header + Always-Open Info Row + Always-Open Square Note Box */}
+            {/* Profile page (same layout as a noble doctor's page, but private: only the doctor sees it) */}
             {(!myNoble || profileSettingsOpen) && (
-            <section className="rounded-2xl bg-surface border border-border shadow-soft p-4 sm:p-5 space-y-4">
-              {/* Row 1: Avatar + Name + Quote + Saved Medicines Symbol */}
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3.5 min-w-0">
+            <>
+            <section className="rounded-2xl border border-border bg-surface overflow-hidden" aria-label="My profile">
+              <div className="h-16 bg-gradient-to-r from-primary/40 via-surface-raised to-surface" aria-hidden="true" />
+              <div className="px-4 pb-4 -mt-10 space-y-3">
+                <div className="flex items-end justify-between gap-3">
                   <div className="relative shrink-0">
                     {(profileEditing ? profileAvatarUrl : profileSaved.avatarUrl || profileAvatarUrl) ? (
                       <img
-                        src={
-                          profileEditing
-                            ? profileAvatarUrl
-                            : profileSaved.avatarUrl || profileAvatarUrl
-                        }
-                        alt={formatDoctorDisplayTitle(
-                          profileSaved.fullName || profileFullName
-                        )}
+                        src={profileEditing ? profileAvatarUrl : profileSaved.avatarUrl || profileAvatarUrl}
+                        alt={formatDoctorDisplayTitle(profileSaved.fullName || profileFullName)}
                         onError={() => {
                           setProfileAvatarUrl('');
                           setProfileSaved((prev) => ({ ...prev, avatarUrl: '' }));
                         }}
-                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border border-accent/50 bg-background"
+                        className="w-20 h-20 rounded-full object-cover border border-border bg-surface-raised"
                       />
                     ) : (
                       <div
                         aria-hidden="true"
-                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/25 border border-accent/40 flex items-center justify-center text-base sm:text-lg font-semibold tracking-wider text-accent"
+                        className="w-20 h-20 rounded-full bg-primary/25 border border-accent/30 flex items-center justify-center text-xl font-semibold text-accent"
                       >
-                        {getDoctorInitials(
-                          profileSaved.fullName || profileFullName,
-                          access.email
-                        )}
+                        {getDoctorInitials(profileSaved.fullName || profileFullName, access.email)}
                       </div>
                     )}
                     <label
                       title="Upload or change profile picture"
-                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary hover:bg-[#1E7BC4] border border-surface text-white flex items-center justify-center cursor-pointer shadow-sm transition-colors"
+                      className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary hover:bg-[#1E7BC4] border-2 border-surface text-white flex items-center justify-center cursor-pointer shadow-sm transition-colors"
                     >
-                      <Camera className="w-3 h-3" aria-hidden="true" />
+                      <Camera className="w-3.5 h-3.5" aria-hidden="true" />
                       <span className="sr-only">Upload profile picture</span>
                       <input
                         type="file"
@@ -2004,120 +2010,47 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                       />
                     </label>
                   </div>
-
-                  <div className="min-w-0">
-                    <h1 className="text-base sm:text-lg font-semibold text-text truncate">
-                      {formatDoctorDisplayTitle(
-                        profileSaved.fullName || profileFullName
-                      )}
-                    </h1>
-                    <p className="text-xs italic text-text-muted leading-snug break-words mt-0.5">
-                      “{profileSaved.quote ||
-                        profileQuote ||
-                        'Wherever the art of medicine is loved, there is also a love of humanity.'}”
-                    </p>
-                  </div>
+                  {!profileEditing && (
+                    <button
+                      type="button"
+                      onClick={startProfileEdit}
+                      className="min-h-[40px] inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised px-3 text-sm font-medium text-text"
+                    >
+                      <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                      Edit page
+                    </button>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    aria-label="Saved medicines"
-                    aria-expanded={profileSavedListOpen}
-                    title="Saved medicines"
-                    onClick={() => setProfileSavedListOpen((v) => !v)}
-                    className={`relative h-8 min-w-[32px] px-2 inline-flex items-center justify-center gap-1 rounded-lg border transition-colors ${
-                      profileSavedListOpen
-                        ? 'border-accent bg-primary/20 text-accent'
-                        : 'border-border bg-background/60 text-text-muted hover:text-text'
-                    }`}
-                  >
-                    <Bookmark className="w-4 h-4" aria-hidden="true" />
-                    {savedDrugs.length > 0 && (
-                      <span className="text-[11px] font-semibold tabular-nums">
-                        {savedDrugs.length}
-                      </span>
-                    )}
-                  </button>
+                <div className="space-y-0.5">
+                  <h1 className="text-lg font-semibold text-text">
+                    {formatDoctorDisplayTitle(profileSaved.fullName || profileFullName)}
+                  </h1>
+                  <p className="text-sm text-text-muted">
+                    {[profileSaved.clinicalLevel || profileClinicalLevel, savedSpecialtyName]
+                      .filter(Boolean)
+                      .join(' · ') || '—'}
+                  </p>
+                  {(profileSaved.workplace || profileWorkplace) && (
+                    <p className="text-xs text-text-muted">{profileSaved.workplace || profileWorkplace}</p>
+                  )}
                 </div>
-              </div>
 
-              {/* Row 2 (div:nth-of-type(2)): Always-open user details + Profile symbol button that widens Level & Board status */}
-              <div className="border-t border-border/70 pt-3.5 space-y-3">
-                {!profileEditing ? (
-                  <div className="space-y-2.5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-text-muted">
-                        <span className="inline-flex items-center gap-1 text-accent font-medium">
-                          <Stethoscope className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                          <span>{savedSpecialtyName || '—'}</span>
-                        </span>
-                        {(profileSaved.workplace || profileWorkplace) && (
-                          <span className="inline-flex items-center gap-1 text-text">
-                            <Building2 className="w-3.5 h-3.5 text-text-muted shrink-0" aria-hidden="true" />
-                            <span>{profileSaved.workplace || profileWorkplace}</span>
-                          </span>
-                        )}
-                        {profileSaved.phone && (
-                          <span className="tabular-nums text-text">
-                            {profileSaved.phone}
-                          </span>
-                        )}
-                        {access.email && (
-                          <span className="break-all">{access.email}</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          type="button"
-                          aria-label="More profile details"
-                          aria-expanded={profileDetailsOpen}
-                          title="Level & board status"
-                          onClick={() => setProfileDetailsOpen((v) => !v)}
-                          className={`h-7 w-7 inline-flex items-center justify-center rounded-lg border transition-colors ${
-                            profileDetailsOpen
-                              ? 'border-accent bg-primary/20 text-accent'
-                              : 'border-border bg-background/60 text-text-muted hover:text-accent'
-                          }`}
-                        >
-                          <User className="w-3.5 h-3.5" aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Edit profile"
-                          title="Edit profile"
-                          onClick={startProfileEdit}
-                          className="h-7 w-7 inline-flex items-center justify-center rounded-lg border border-border bg-background/60 text-text-muted hover:text-accent transition-colors"
-                        >
-                          <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Widened Professional Details (Level: Resident/Specialist & Board Student status) when Profile symbol is pressed */}
-                    {profileDetailsOpen && (
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-2 border-t border-border/50 text-xs">
-                        <div>
-                          <span className="text-text-muted">Level: </span>
-                          <span className="font-medium text-text">
-                            {profileSaved.clinicalLevel ||
-                              profileClinicalLevel ||
-                              'Resident / Specialist'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-text-muted">Board status: </span>
-                          <span className="font-medium text-accent">
-                            {profileSaved.boardStatus ||
-                              profileBoardStatus ||
-                              'Board Student'}
-                          </span>
-                        </div>
-                      </div>
+                {!profileEditing && (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
+                    {(profileSaved.boardStatus || profileBoardStatus) && (
+                      <span className="text-accent font-medium">{profileSaved.boardStatus || profileBoardStatus}</span>
                     )}
+                    {profileSaved.phone && <span className="tabular-nums">{profileSaved.phone}</span>}
+                    {access.email && <span className="break-all">{access.email}</span>}
                   </div>
-                ) : (
+                )}
+
+                {!profileEditing && (profileSaved.quote || profileQuote) && (
+                  <p className="text-sm text-text leading-relaxed italic">“{profileSaved.quote || profileQuote}”</p>
+                )}
+
+                {profileEditing && (
                   <form
                     onSubmit={(e) => void handleSaveProfile(e)}
                     className="space-y-3"
@@ -2266,98 +2199,70 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     {profileNotice.text}
                   </p>
                 )}
+
+                {!profileEditing && (
+                  <p className="text-[11px] text-text-muted">
+                    {notebookEntries.length === 1 ? '1 note' : `${notebookEntries.length} notes`} · only you can see your page
+                  </p>
+                )}
               </div>
+            </section>
 
-              {/* Saved Medicines List (Opens when pressing the Bookmark symbol button) */}
-              {profileSavedListOpen && (
-                <div className="border-t border-border/70 pt-3.5">
-                  {savedDrugs.length === 0 ? (
-                    <p className="text-xs text-text-muted">
-                      No saved medicines yet.
-                    </p>
-                  ) : (
-                    <div className="max-h-56 overflow-y-auto divide-y divide-border/60">
-                      {savedDrugs.map((item) => (
-                        <div
-                          key={item.productId}
-                          className="flex items-center justify-between gap-2 py-2 first:pt-0 last:pb-0"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setProfileOpen(false);
-                              openProductPage(item.productId);
-                            }}
-                            className="min-w-0 flex-1 text-left hover:text-accent transition-colors duration-150"
-                          >
-                            <span className="text-xs font-semibold text-text">
-                              {item.brandNameEn}
-                            </span>
-                            <span className="text-xs text-text-muted ml-2">
-                              {item.genericNameEn ?? 'Dietary Supplement'}
-                              {item.strength ? ` · ${item.strength}` : ''} · {item.companyName}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={`Remove ${item.brandNameEn}`}
-                            title="Remove"
-                            onClick={() => setSavedDrugs(toggleSavedDoctorDrug(item))}
-                            className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-danger transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Always-Open Square Note / Post Space (No + button required) */}
+            {/* Write a note (opens like "Write a post" on a noble page) */}
+            {noteComposerOpen || editingNoteId ? (
               <form
-                onSubmit={(e) => void handleSaveNote(e)}
-                className="border-t border-border/70 pt-3.5 space-y-2"
+                onSubmit={(e) => {
+                  void handleSaveNote(e);
+                  setNoteComposerOpen(false);
+                }}
+                className="rounded-2xl border border-accent/40 bg-surface p-4 space-y-3"
+                aria-label={editingNoteId ? 'Edit note' : 'New note'}
               >
-                <div className="relative">
-                  <textarea
-                    rows={3}
-                    required
-                    maxLength={2000}
-                    value={noteBody}
-                    onChange={(e) => setNoteBody(e.target.value)}
-                    placeholder="Write a note…"
-                    aria-label="Write a note"
-                    className={`${inputClass} py-2.5 pr-12 text-xs sm:text-sm leading-relaxed`}
-                  />
-                  <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1">
-                    {editingNoteId && (
-                      <button
-                        type="button"
-                        aria-label="Cancel edit"
-                        title="Cancel"
-                        onClick={resetNoteComposer}
-                        className="h-7 w-7 inline-flex items-center justify-center rounded-lg border border-border bg-surface text-text-muted hover:text-text transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" aria-hidden="true" />
-                      </button>
-                    )}
-                    <button
-                      type="submit"
-                      aria-label="Save note"
-                      title="Save note"
-                      disabled={!noteBody.trim()}
-                      className="h-7 w-7 inline-flex items-center justify-center rounded-lg bg-primary hover:bg-[#1E7BC4] text-white disabled:opacity-40 transition-colors"
-                    >
-                      <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                    </button>
-                  </div>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-sm font-semibold text-text">{editingNoteId ? 'Edit note' : 'New note'}</h2>
+                  <button
+                    type="button"
+                    aria-label="Close"
+                    onClick={() => {
+                      resetNoteComposer();
+                      setNoteComposerOpen(false);
+                    }}
+                    className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-text-muted hover:text-text"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+                <textarea
+                  rows={5}
+                  required
+                  maxLength={2000}
+                  value={noteBody}
+                  onChange={(e) => setNoteBody(e.target.value)}
+                  placeholder="Write a note…"
+                  aria-label="Write a note"
+                  className={`${inputClass} min-h-[120px] leading-relaxed`}
+                />
+                <div className="flex justify-end">
+                  <button type="submit" disabled={!noteBody.trim()} className={buttonClass}>
+                    {editingNoteId ? 'Save changes' : 'Save note'}
+                  </button>
                 </div>
               </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setNoteComposerOpen(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed border-accent/50 bg-primary/10 px-4 py-3 text-sm font-semibold text-accent hover:bg-primary/20"
+              >
+                <Plus className="w-4 h-4" aria-hidden="true" />
+                Write a note
+              </button>
+            )}
 
+            {/* My notes (private) */}
               {/* Notes / Posts Feed: one card per note; Pin / Edit / Delete live in the "…" menu */}
               {notebookEntries.length > 0 && (
-                <div className="space-y-2.5 border-t border-border/70 pt-3.5">
+                <div className="space-y-2.5">
                   {filteredNotebookEntries.map((entry) => {
                     const menuOpen = noteMenuId === entry.id;
                     const stamp = formatNoteTimestamp(entry.createdAt);
@@ -2512,7 +2417,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   })}
                 </div>
               )}
-            </section>
+            </>
             )}
 
             <section aria-label="Partner notice" className="mt-auto pt-2">
@@ -2532,7 +2437,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               client={client}
               doctorId={nobleRoute.doctorId}
               myProfileId={access.profileId ?? null}
-              onBack={() => openNoble()}
+              onBack={handleBackToCatalog}
               onOpenProduct={openProductPage}
             />
           ) : (
@@ -3108,18 +3013,9 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                                         {genericName}
                                       </span>
                                     </div>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        openCompanyPage(row.companyId);
-                                      }}
-                                      title={`Open ${row.companyName} page`}
-                                      className="self-start sm:self-auto w-fit max-w-full text-xs text-text-muted hover:text-accent hover:underline truncate shrink-0 text-left sm:text-right"
-                                    >
+                                    <span className="self-start sm:self-auto w-fit max-w-full text-xs text-text-muted truncate shrink-0 text-left sm:text-right">
                                       {row.companyName}
-                                    </button>
+                                    </span>
                                   </div>
                                   <ChevronRight
                                     className="w-4 h-4 shrink-0 text-text-muted group-hover:text-accent transition-colors duration-150"

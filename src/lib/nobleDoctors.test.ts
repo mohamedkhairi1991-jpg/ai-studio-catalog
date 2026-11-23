@@ -39,6 +39,8 @@ describe('noble doctors', () => {
     expect(post).toMatchObject({ topic: 'approach', isPinned: true, images: ['u/1.jpg'], drugs: [{ productId: 'd1', brandName: 'Ventolin' }] });
     expect(post?.author?.fullName).toBe('Dr. Sara');
     expect(parseNoblePost({ id: 'n2', body: 'x', topic: 'weird' })?.topic).toBe('tip');
+    expect(parseNoblePost({ id: 'n3', body: 'x' })?.viewCount).toBeNull();
+    expect(parseNoblePost({ id: 'n4', body: 'x', viewCount: 12 })?.viewCount).toBe(12);
   });
 
   it('loads a page and saves a post with the right arguments', async () => {

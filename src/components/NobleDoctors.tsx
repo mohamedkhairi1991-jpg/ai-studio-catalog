@@ -36,6 +36,7 @@ import {
   loadNobleFeed,
   loadNobleSpecialties,
   loadProductNobleNotes,
+  queueNoblePostView,
   nobleAvatarUrl,
   nobleImageUrl,
   saveNoblePost,
@@ -130,6 +131,11 @@ function Banner({ tone, children }: { tone: 'error' | 'info'; children: React.Re
   );
 }
 
+/** Shown once above a list of posts. */
+function NobleDisclaimer() {
+  return <p className="text-[11px] text-text-muted px-1">{NOBLE_DISCLAIMER}</p>;
+}
+
 function ImageViewer({ url, onClose }: { url: string; onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -215,8 +221,31 @@ export function NoblePostCard({
 
   const showMenu = canManage || isAdmin;
 
+  // Count a view when at least half of the post is on screen (not for the author).
+  const cardRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (canManage || post.isHidden) return;
+    const el = cardRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      queueNoblePostView(client, post.id);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          queueNoblePostView(client, post.id);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [client, post.id, post.isHidden, canManage]);
+
   return (
     <article
+      ref={cardRef}
       className={`relative rounded-2xl border bg-surface p-4 space-y-3 ${
         post.isHidden ? 'border-danger/40 opacity-80' : post.isPinned ? 'border-accent/40' : 'border-border'
       }`}
@@ -406,7 +435,13 @@ export function NoblePostCard({
         </div>
       )}
 
-      <p className="text-[11px] text-text-muted border-t border-border/70 pt-2">{NOBLE_DISCLAIMER}</p>
+      {canManage && post.viewCount !== null && (
+        <p className="flex items-center gap-1.5 text-xs text-text-muted border-t border-border/70 pt-2">
+          <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+          {post.viewCount === 1 ? 'Seen by 1 doctor' : `Seen by ${post.viewCount.toLocaleString()} doctors`}
+          <span className="text-[11px]">· only you see this</span>
+        </p>
+      )}
       {error && <p className="text-xs text-danger">{error}</p>}
       {viewer && <ImageViewer url={viewer} onClose={() => setViewer(null)} />}
     </article>
@@ -787,6 +822,7 @@ export function NobleDoctorsView({
       {!loading && feed.length > 0 && (
         <section className="space-y-2.5" aria-label="Latest posts">
           <h2 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted px-1">Latest posts</h2>
+          <NobleDisclaimer />
           {feed.map((p) => (
             <NoblePostCard
               key={p.id}
@@ -980,6 +1016,7 @@ export function NobleDoctorPageView({
             <Banner tone="info">{isMine ? 'Your first post will appear here.' : 'No posts yet.'}</Banner>
           ) : (
             <div className="space-y-2.5">
+              <NobleDisclaimer />
               {page.posts.map((p) => (
                 <NoblePostCard
                   key={p.id}
@@ -1038,6 +1075,7 @@ export function ProductNobleNotes({
         <Award className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
         Noble doctors’ notes
       </h2>
+      <NobleDisclaimer />
       {notes.map((p) => (
         <NoblePostCard
           key={p.id}
@@ -1277,6 +1315,7 @@ function RotatingNoblePost({
   client,
   posts,
   label,
+  showLabel = false,
   avoidPostId,
   delayMs = 0,
   onShow,
@@ -1285,6 +1324,8 @@ function RotatingNoblePost({
   client: SupabaseClient;
   posts: NoblePost[];
   label: string;
+  /** Show the label as a heading above the card (otherwise screen readers only). */
+  showLabel?: boolean;
   /** Skip this post (shown by the other card right now). */
   avoidPostId?: string | null;
   /** Start the timer later so the two cards do not change at the same moment. */
@@ -1337,44 +1378,49 @@ function RotatingNoblePost({
   const post = posts[index];
   useEffect(() => {
     onShow?.(post?.id ?? null);
-  }, [post?.id, onShow]);
+    if (post?.id && (typeof document === 'undefined' || document.visibilityState !== 'hidden')) {
+      queueNoblePostView(client, post.id);
+    }
+  }, [client, post?.id, onShow]);
 
   if (!post?.author) return null;
   const author = post.author;
   const firstImage = post.images[0];
   const dots = Math.min(posts.length, 8);
 
+  const dotsRow =
+    posts.length > 1 ? (
+      <div className="flex items-center justify-end gap-1 px-1" role="tablist" aria-label="Choose a post">
+        {Array.from({ length: dots }).map((_, i) => {
+          const active = index % dots === i;
+          return (
+            <button
+              key={i}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              aria-label={`Post ${i + 1}`}
+              onClick={() => {
+                setIndex(i);
+                setShown(true);
+              }}
+              className="h-5 w-4 inline-flex items-center justify-center"
+            >
+              <span className={`block h-1.5 rounded-full transition-all ${active ? 'w-3 bg-accent' : 'w-1.5 bg-border'}`} />
+            </button>
+          );
+        })}
+      </div>
+    ) : null;
+
   return (
-    <section aria-label={label} className="space-y-1.5">
-      <div className="flex items-center justify-between gap-2 px-1">
-        <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted min-w-0">
+    <section aria-label={label} className="space-y-1">
+      {showLabel && (
+        <h2 className="flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted min-w-0">
           <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
           <span className="truncate">{label}</span>
         </h2>
-        {posts.length > 1 && (
-          <div className="flex items-center gap-1 shrink-0" role="tablist" aria-label="Choose a post">
-            {Array.from({ length: dots }).map((_, i) => {
-              const active = index % dots === i;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  aria-label={`Post ${i + 1}`}
-                  onClick={() => {
-                    setIndex(i);
-                    setShown(true);
-                  }}
-                  className="h-6 w-4 inline-flex items-center justify-center"
-                >
-                  <span className={`block h-1.5 rounded-full transition-all ${active ? 'w-3 bg-accent' : 'w-1.5 bg-border'}`} />
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      )}
       <button
         type="button"
         onClick={() => onOpenDoctor(author.profileId)}
@@ -1408,6 +1454,7 @@ function RotatingNoblePost({
           />
         )}
       </button>
+      {dotsRow}
     </section>
   );
 }
@@ -1448,7 +1495,11 @@ export function HomeNoblePosts({
 
   if (mine.length === 0 && general.length === 0) return null;
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
+      <h2 className="flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+        <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+        From noble doctors
+      </h2>
       {mine.length > 0 && (
         <RotatingNoblePost
           client={client}

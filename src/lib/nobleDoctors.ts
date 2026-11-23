@@ -49,6 +49,8 @@ export interface NoblePost {
   updatedAt: string;
   images: string[];
   drugs: Array<{ productId: string; brandName: string }>;
+  /** How many doctors have seen it; only sent to the author (and admins). */
+  viewCount: number | null;
   /** In feeds and drug notes: who wrote it. */
   author: NobleDoctor | null;
 }
@@ -125,6 +127,7 @@ export function parseNoblePost(raw: unknown): NoblePost | null {
     drugs: list(r.drugs)
       .filter((d) => typeof d.productId === 'string')
       .map((d) => ({ productId: d.productId as string, brandName: str(d.brandName) ?? 'Drug' })),
+    viewCount: r.viewCount === undefined || r.viewCount === null ? null : Number(r.viewCount),
     author: parseNobleDoctor(r.author),
   };
 }
@@ -346,4 +349,26 @@ export async function adminHideNoblePost(
 ): Promise<NobleResult<void>> {
   const { error } = await client.rpc('admin_hide_noble_post', { p_post_id: postId, p_hidden: hidden });
   return error ? fail(error, 'Could not change the post.') : { ok: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
+// Views: the app reports posts a doctor has seen (each doctor counts once per
+// post; the author never counts). Sent in small batches.
+
+const sentViews = new Set<string>();
+let pendingViews: string[] = [];
+let viewTimer: ReturnType<typeof setTimeout> | null = null;
+
+function flushNobleViews(client: SupabaseClient): void {
+  viewTimer = null;
+  const ids = pendingViews.splice(0, 50);
+  if (ids.length > 0) void client.rpc('record_noble_post_views', { p_post_ids: ids }).then(() => undefined);
+  if (pendingViews.length > 0) viewTimer = setTimeout(() => flushNobleViews(client), 2000);
+}
+
+export function queueNoblePostView(client: SupabaseClient, postId: string): void {
+  if (!postId || sentViews.has(postId)) return;
+  sentViews.add(postId);
+  pendingViews.push(postId);
+  if (!viewTimer) viewTimer = setTimeout(() => flushNobleViews(client), 2000);
 }

@@ -58,6 +58,16 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (noble posts: one heading, view counts)
+- Home: one "From noble doctors" heading above both rotating cards (dots
+  under each card). The disclaimer shows once above each list of posts, not
+  under every post.
+- Views: `noble_post_views` + `record_noble_post_views(uuid[])` (migration
+  `20261123170000_noble_post_views.sql`, live). A view counts when half a post
+  is on screen (or when a home card shows it); each doctor once per post; the
+  author never counts. `viewCount` is sent only to the author and admins and
+  shown as "Seen by N doctors · only you see this" on the author's own page.
+
 ### 2026-11-23 — Claude (doctor top bar: "…" menu)
 - Doctor header now shows bell, Noble doctors, My profile and a "…" button.
   Companies, Saved medicines (with count) and Sign out moved into the "…"

@@ -260,8 +260,9 @@ export function NoblePostCard({
             >
               <DoctorAvatar client={client} doctor={post.author} size="sm" />
               <span className="min-w-0">
-                <span className="block text-sm font-semibold text-text group-hover:text-accent truncate">
-                  {post.author.fullName}
+                <span className="flex items-center gap-1 text-sm font-semibold text-text group-hover:text-accent min-w-0">
+                  <span className="truncate">{post.author.fullName}</span>
+                  <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-label="Noble doctor" />
                 </span>
                 <span className="block text-[11px] text-text-muted truncate">
                   {[post.author.title, post.author.specialtyName].filter(Boolean).join(' · ')}
@@ -1386,32 +1387,6 @@ function RotatingNoblePost({
   if (!post?.author) return null;
   const author = post.author;
   const firstImage = post.images[0];
-  const dots = Math.min(posts.length, 8);
-
-  const dotsRow =
-    posts.length > 1 ? (
-      <div className="flex items-center justify-end gap-1 px-1" role="tablist" aria-label="Choose a post">
-        {Array.from({ length: dots }).map((_, i) => {
-          const active = index % dots === i;
-          return (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              aria-label={`Post ${i + 1}`}
-              onClick={() => {
-                setIndex(i);
-                setShown(true);
-              }}
-              className="h-5 w-4 inline-flex items-center justify-center"
-            >
-              <span className={`block h-1.5 rounded-full transition-all ${active ? 'w-3 bg-accent' : 'w-1.5 bg-border'}`} />
-            </button>
-          );
-        })}
-      </div>
-    ) : null;
 
   return (
     <section aria-label={label} className="space-y-1">
@@ -1432,7 +1407,10 @@ function RotatingNoblePost({
           <div className="flex items-center gap-2">
             <DoctorAvatar client={client} doctor={author} size="sm" />
             <span className="min-w-0">
-              <span className="block text-sm font-semibold text-text truncate">{author.fullName}</span>
+              <span className="flex items-center gap-1 text-sm font-semibold text-text min-w-0">
+                <span className="truncate">{author.fullName}</span>
+                <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-label="Noble doctor" />
+              </span>
               <span className="block text-[11px] text-text-muted truncate">
                 {[author.title, author.specialtyName].filter(Boolean).join(' · ')}
               </span>
@@ -1454,7 +1432,6 @@ function RotatingNoblePost({
           />
         )}
       </button>
-      {dotsRow}
     </section>
   );
 }
@@ -1495,11 +1472,7 @@ export function HomeNoblePosts({
 
   if (mine.length === 0 && general.length === 0) return null;
   return (
-    <div className="space-y-2">
-      <h2 className="flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-        <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
-        From noble doctors
-      </h2>
+    <div className="space-y-3">
       {mine.length > 0 && (
         <RotatingNoblePost
           client={client}

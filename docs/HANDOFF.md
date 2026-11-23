@@ -58,6 +58,11 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (home noble posts: cleaner)
+- Home: no heading and no dots around the two noble posts; a small noble
+  (award) badge sits next to the doctor's name inside each post (also in
+  feeds and drug notes).
+
 ### 2026-11-23 — Claude (noble posts: one heading, view counts)
 - Home: one "From noble doctors" heading above both rotating cards (dots
   under each card). The disclaimer shows once above each list of posts, not

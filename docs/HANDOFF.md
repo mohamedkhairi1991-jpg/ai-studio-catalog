@@ -58,6 +58,12 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (noble doctor's profile = noble page)
+- For a noble doctor, the profile screen shows their noble page first
+  (`NobleDoctorPageView embedded`: header, Edit page, Write a post, posts),
+  then a "Profile settings and private notes" button that opens the usual
+  profile section. Other doctors' profile screen is unchanged.
+
 ### 2026-11-23 — Claude (home: two noble posts)
 - `HomeNoblePosts` replaces `HomeNoblePost`: two cards under the search,
   above the ad space. Top = posts from the doctor's own specialty; second =

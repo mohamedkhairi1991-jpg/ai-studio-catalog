@@ -811,6 +811,7 @@ export function NobleDoctorPageView({
   doctorId,
   myProfileId,
   isAdmin = false,
+  embedded = false,
   onBack,
   onOpenProduct,
 }: {
@@ -818,6 +819,8 @@ export function NobleDoctorPageView({
   doctorId: string;
   myProfileId?: string | null;
   isAdmin?: boolean;
+  /** Shown inside the doctor's own profile (no back row, no scroll to top). */
+  embedded?: boolean;
   onBack: () => void;
   onOpenProduct: (productId: string) => void;
 }) {
@@ -845,9 +848,9 @@ export function NobleDoctorPageView({
 
   useEffect(() => {
     setLoading(true);
-    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+    if (!embedded && typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
     void reload();
-  }, [reload]);
+  }, [reload, embedded]);
 
   const doctor = page?.doctor;
 
@@ -864,12 +867,14 @@ export function NobleDoctorPageView({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2.5">
-        <button type="button" aria-label="Back" title="Back" onClick={onBack} className={backButtonClass}>
-          ←
-        </button>
-        <span className="text-xs text-text-muted">Noble Doctors</span>
-      </div>
+      {!embedded && (
+        <div className="flex items-center gap-2.5">
+          <button type="button" aria-label="Back" title="Back" onClick={onBack} className={backButtonClass}>
+            ←
+          </button>
+          <span className="text-xs text-text-muted">Noble Doctors</span>
+        </div>
+      )}
 
       {error && <Banner tone="error">{error}</Banner>}
 

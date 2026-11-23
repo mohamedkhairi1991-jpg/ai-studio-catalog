@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   Pencil,
   Phone,
+  Play,
   Pin,
   Layers,
   ListFilter,
@@ -37,6 +38,7 @@ import {
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AccessResult } from '../lib/access';
 import {
+  AD_CTA_LABELS,
   CATEGORY_LABELS,
   MARKET_STATUS_LABELS,
   THERAPEUTIC_GROUPS,
@@ -907,7 +909,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       loadVerifiedCompanies(client),
       loadSpecialtiesCatalog(client),
       listSpecialties(client),
-      loadDoctorSponsoredAd(client, 0),
+      // A different ad on each visit (when there are several).
+      loadDoctorSponsoredAd(client, Math.floor(Math.random() * 1_000_000)),
     ]).then(([companyList, specialtyList, physicianSpecList, ad]) => {
       if (!active) return;
       setCompanies(companyList);
@@ -2514,6 +2517,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
             <section aria-label="Partner notice" className="mt-auto pt-2">
               <SponsoredAdCard
+                onOpenCompany={(id) => openCompanyPage(id)}
                 ad={sponsoredAd}
                 onAdClick={(adId) =>
                   void recordSponsoredAdEvent(client, adId, 'click')
@@ -2969,6 +2973,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             {!isSearchingOrFiltering ? (
               <section aria-label="Ad">
                 <SponsoredAdCard
+                  onOpenCompany={(id) => openCompanyPage(id)}
                   ad={sponsoredAd}
                   onAdClick={(adId) =>
                     void recordSponsoredAdEvent(client, adId, 'click')
@@ -3155,6 +3160,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                     {sponsoredAd && (
                       <div className="pt-2">
                         <SponsoredAdCard
+                          onOpenCompany={(id) => openCompanyPage(id)}
                           ad={sponsoredAd}
                           compact
                           hideWhenEmpty
@@ -3757,6 +3763,7 @@ function DoctorProductDetail({
       {sponsoredAd && (
         <section aria-label="Partner notice">
           <SponsoredAdCard
+            onOpenCompany={onFilterCompany}
             ad={sponsoredAd}
             compact
             hideWhenEmpty
@@ -3969,158 +3976,181 @@ function MonographSection({
   );
 }
 
+/**
+ * Standard ad card (home, drug pages, company pages, admin preview).
+ * 16:9 picture or video filling the top, then title, one short text, and a
+ * footer with the company and one button (only when the ad leads somewhere).
+ * No "Ad" / "Sponsored" wording. Nothing is shown when there is no ad.
+ */
 export function SponsoredAdCard({
   ad,
   onAdClick,
+  onOpenCompany,
   compact = false,
-  hideWhenEmpty = false,
 }: {
   ad: DoctorSponsoredAd | null;
   onAdClick?: (adId: string) => void;
+  /** For the "View products" button: open the company's page in the app. */
+  onOpenCompany?: (companyId: string, companyName: string) => void;
   compact?: boolean;
+  /** Kept for older callers; an empty ad space is always hidden now. */
   hideWhenEmpty?: boolean;
 }) {
-  if (!ad) {
-    if (hideWhenEmpty) return null;
-    return (
-      <div className="w-full min-h-[84px] rounded-2xl border border-dashed border-border/70 bg-surface/30" />
-    );
+  const [playing, setPlaying] = useState(false);
+  const [logoBroken, setLogoBroken] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  if (!ad) return null;
+
+  const media =
+    ad.imageUrl && /^(https:\/\/|blob:)[^ ]+$/.test(ad.imageUrl.trim()) ? ad.imageUrl.trim() : null;
+  const isVideo = ad.mediaIsVideo ?? isSponsoredAdVideoUrl(media);
+  const link = ad.linkUrl && /^https:\/\/[^ ]+$/.test(ad.linkUrl.trim()) ? ad.linkUrl.trim() : null;
+  const cta = ad.cta ?? 'learn_more';
+  const companyName = (ad.companyName || ad.sponsorName || '').trim();
+
+  // Where the card leads (the button shows only when there is somewhere to go).
+  type Target = { kind: 'url'; href: string; label: string } | { kind: 'company'; id: string; label: string };
+  let target: Target | null = null;
+  if (cta === 'call' && ad.companyPhone) {
+    target = { kind: 'url', href: `tel:${ad.companyPhone.replace(/[^\d+]/g, '')}`, label: AD_CTA_LABELS.call };
+  } else if (cta === 'view_products' && ad.companyId && onOpenCompany) {
+    target = { kind: 'company', id: ad.companyId, label: AD_CTA_LABELS.view_products };
+  } else if (link) {
+    target = { kind: 'url', href: link, label: AD_CTA_LABELS[cta === 'visit_website' ? 'visit_website' : 'learn_more'] };
   }
 
-  const validMediaUrl =
-    ad.imageUrl && /^https:\/\/[^ ]+$/.test(ad.imageUrl.trim())
-      ? ad.imageUrl.trim()
-      : null;
-  const isVideo = isSponsoredAdVideoUrl(validMediaUrl);
-  const validLinkUrl =
-    ad.linkUrl && /^https:\/\/[^ ]+$/.test(ad.linkUrl.trim())
-      ? ad.linkUrl.trim()
-      : null;
+  const go = () => {
+    if (!target) return;
+    onAdClick?.(ad.adId);
+    if (target.kind === 'company') onOpenCompany?.(target.id, companyName);
+  };
 
-  const textBlock = (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between gap-2">
-        <div
-          className={`${
-            compact ? 'text-sm sm:text-base' : 'text-base'
-          } font-semibold text-text`}
-        >
+  const initials = getCompanyInitials(companyName);
+  const body = (
+    <div className={compact ? 'p-3 space-y-2' : 'p-3.5 sm:p-4 space-y-2.5'}>
+      <div className="space-y-1">
+        <h3 className={`${compact ? 'text-sm' : 'text-[15px] sm:text-base'} font-semibold text-text leading-snug line-clamp-2`}>
           {ad.title}
-        </div>
-        {validLinkUrl && (
-          <ExternalLink
-            className="w-3.5 h-3.5 shrink-0 text-accent"
-            aria-hidden="true"
-          />
+        </h3>
+        {ad.body && (
+          <p className="text-xs sm:text-[13px] text-text-muted leading-relaxed line-clamp-2">{ad.body}</p>
         )}
       </div>
-      {ad.body && (
-        <p className="text-xs sm:text-sm text-text-muted leading-relaxed whitespace-pre-line">
-          {ad.body}
-        </p>
-      )}
-    </div>
-  );
-
-  // When a short video is present alongside a link URL, keep video playback controls independent from the link anchor
-  if (isVideo && validMediaUrl) {
-    return (
-      <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
-        <div
-          className={`w-full rounded-[15px] bg-surface/95 ${
-            compact ? 'p-3.5 sm:p-4 space-y-2.5' : 'p-4 sm:p-5 space-y-3'
-          }`}
-        >
-          {ad.sponsorName && (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <span className="text-xs font-medium text-accent">
-                {ad.sponsorName}
-              </span>
-            </div>
-          )}
-
-          <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center overflow-hidden">
-            {/* Plays only when tapped: autoplay would download the whole video
-                for every doctor and use up the monthly data allowance. */}
-            <video
-              src={validMediaUrl}
-              controls
-              muted
-              playsInline
-              preload="none"
-              aria-label={ad.title}
-              className={`${
-                compact ? 'max-h-[180px]' : 'max-h-[240px]'
-              } w-full object-contain rounded`}
-            />
-          </div>
-
-          {validLinkUrl ? (
-            <a
-              href={validLinkUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => onAdClick?.(ad.adId)}
-              className="block rounded-lg hover:opacity-90 transition-opacity"
-            >
-              {textBlock}
-            </a>
-          ) : (
-            textBlock
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  const content = (
-    <div className="w-full rounded-2xl p-[1px] bg-gradient-to-r from-border via-accent/35 to-border transition-all duration-150 hover:via-accent/60">
-      <div
-        className={`w-full rounded-[15px] bg-surface/95 ${
-          compact ? 'p-3.5 sm:p-4 space-y-2.5' : 'p-4 sm:p-5 space-y-3'
-        }`}
-      >
-        {ad.sponsorName && (
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="text-xs font-medium text-accent">
-              {ad.sponsorName}
-            </span>
-          </div>
-        )}
-
-        {validMediaUrl && (
-          <div className="rounded-xl bg-background border border-border p-2 flex items-center justify-center overflow-hidden">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          {ad.companyLogoUrl && !logoBroken ? (
             <img
-              src={validMediaUrl}
-              alt={ad.title}
-              loading="lazy"
-              className={`${
-                compact ? 'max-h-[160px]' : 'max-h-[200px]'
-              } w-full object-contain rounded`}
+              src={ad.companyLogoUrl}
+              alt=""
+              onError={() => setLogoBroken(true)}
+              className="w-7 h-7 rounded-lg object-contain bg-white border border-border shrink-0"
             />
-          </div>
+          ) : companyName ? (
+            <span
+              aria-hidden="true"
+              className="w-7 h-7 rounded-lg bg-primary/20 border border-accent/30 text-accent text-[11px] font-semibold inline-flex items-center justify-center shrink-0"
+            >
+              {initials}
+            </span>
+          ) : null}
+          {companyName && <span className="text-xs font-medium text-text-muted truncate">{companyName}</span>}
+        </div>
+        {target && (
+          <span className="shrink-0 inline-flex items-center gap-1 h-8 px-3.5 rounded-full bg-primary text-white text-xs font-semibold">
+            {target.kind === 'url' && target.href.startsWith('tel:') ? (
+              <Phone className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : null}
+            {target.label}
+            {target.kind === 'url' && !target.href.startsWith('tel:') ? (
+              <ExternalLink className="w-3 h-3" aria-hidden="true" />
+            ) : target.kind === 'company' ? (
+              <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : null}
+          </span>
         )}
-
-        {textBlock}
       </div>
     </div>
   );
 
-  if (validLinkUrl) {
-    return (
-      <a
-        href={validLinkUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => onAdClick?.(ad.adId)}
-        className="block rounded-2xl"
-      >
-        {content}
-      </a>
-    );
-  }
+  const picture =
+    media && !isVideo ? (
+      <div className="relative w-full aspect-video bg-surface-raised overflow-hidden">
+        <img src={media} alt={ad.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+      </div>
+    ) : null;
 
-  return content;
+  // The video plays only when tapped: autoplay would download the whole video
+  // for every doctor and use up the monthly data allowance.
+  const video =
+    media && isVideo ? (
+      <div className="relative w-full aspect-video bg-black overflow-hidden">
+        <video
+          ref={videoRef}
+          src={media}
+          preload="metadata"
+          playsInline
+          controls={playing}
+          aria-label={ad.title}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {!playing && (
+          <button
+            type="button"
+            aria-label="Play video"
+            onClick={() => {
+              setPlaying(true);
+              void videoRef.current?.play().catch(() => undefined);
+            }}
+            className="absolute inset-0 flex items-center justify-center bg-black/25 hover:bg-black/35 transition-colors"
+          >
+            <span className="w-14 h-14 rounded-full bg-white/90 shadow-lg inline-flex items-center justify-center">
+              <Play className="w-6 h-6 text-[#111A21] translate-x-0.5" fill="currentColor" aria-hidden="true" />
+            </span>
+          </button>
+        )}
+      </div>
+    ) : null;
+
+  const shell = 'block w-full text-left rounded-2xl overflow-hidden border border-border bg-surface shadow-soft';
+  const clickable = 'transition-colors hover:border-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent';
+
+  const inner = (
+    <>
+      {picture}
+      {body}
+    </>
+  );
+
+  const linked =
+    target?.kind === 'url' ? (
+      <a
+        href={target.href}
+        target={target.href.startsWith('tel:') ? undefined : '_blank'}
+        rel="noopener noreferrer"
+        onClick={go}
+        className={video ? 'block' : `${shell} ${clickable}`}
+      >
+        {inner}
+      </a>
+    ) : target?.kind === 'company' ? (
+      <button type="button" onClick={go} className={video ? 'block w-full text-left' : `${shell} ${clickable}`}>
+        {inner}
+      </button>
+    ) : video ? (
+      inner
+    ) : (
+      <div className={shell}>{inner}</div>
+    );
+
+  // With a video, the video stays outside the link so tapping it plays it.
+  return video ? (
+    <div className={`${shell} ${target ? clickable : ''}`}>
+      {video}
+      {linked}
+    </div>
+  ) : (
+    linked
+  );
 }
 
 function getCompanyInitials(name: string | null | undefined): string {
@@ -4666,70 +4696,23 @@ function DoctorCompanyPageView({
         </div>
       </section>
 
-      {/* Feature space when page.feature exists (NO Ad / Sponsored / Promoted text anywhere) */}
+      {/* Feature space (the standard ad card; NO Ad / Sponsored / Promoted text anywhere) */}
       {feature && (
         <section>
-          {featureLinkUrl ? (
-            <a
-              href={featureLinkUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() =>
-                void recordSponsoredAdEvent(client, feature.id, 'click')
-              }
-              className="block rounded-2xl bg-surface border border-border overflow-hidden hover:border-accent/50 transition-colors duration-150"
-            >
-              {featureImageUrl && (
-                <div className="w-full bg-background border-b border-border overflow-hidden">
-                  <img
-                    src={featureImageUrl}
-                    alt={feature.title}
-                    loading="lazy"
-                    className="w-full max-h-64 object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-4 sm:p-5 space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-sm sm:text-base font-semibold text-text">
-                    {feature.title}
-                  </h2>
-                  <ExternalLink
-                    className="w-3.5 h-3.5 text-accent shrink-0"
-                    aria-hidden="true"
-                  />
-                </div>
-                {feature.body && (
-                  <p className="text-xs sm:text-sm text-text-muted leading-relaxed whitespace-pre-line">
-                    {feature.body}
-                  </p>
-                )}
-              </div>
-            </a>
-          ) : (
-            <div className="rounded-2xl bg-surface border border-border overflow-hidden">
-              {featureImageUrl && (
-                <div className="w-full bg-background border-b border-border overflow-hidden">
-                  <img
-                    src={featureImageUrl}
-                    alt={feature.title}
-                    loading="lazy"
-                    className="w-full max-h-64 object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-4 sm:p-5 space-y-1">
-                <h2 className="text-sm sm:text-base font-semibold text-text">
-                  {feature.title}
-                </h2>
-                {feature.body && (
-                  <p className="text-xs sm:text-sm text-text-muted leading-relaxed whitespace-pre-line">
-                    {feature.body}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+          <SponsoredAdCard
+            ad={{
+              adId: feature.id,
+              sponsorName: page.name,
+              title: feature.title,
+              body: feature.body ?? null,
+              imageUrl: featureImageUrl,
+              linkUrl: featureLinkUrl,
+              cta: 'learn_more',
+              companyName: page.name,
+              companyLogoUrl: page.logoPath ? companyMediaUrl(client, page.logoPath) : null,
+            }}
+            onAdClick={(adId) => void recordSponsoredAdEvent(client, adId, 'click')}
+          />
         </section>
       )}
 

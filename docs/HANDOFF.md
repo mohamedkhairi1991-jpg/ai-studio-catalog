@@ -58,6 +58,22 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (standard ad card)
+- `SponsoredAdCard` redesigned and used everywhere (home, drug pages, company
+  page feature, admin preview): 16:9 picture filling the top (object-cover),
+  video with a play button (plays only when tapped), title (2 lines), short
+  text (2 lines), footer with company logo/initials + name and one button.
+  Button only when the ad leads somewhere. Empty ad space is hidden (no dashed
+  box). Random ad per visit when there are several.
+- DB: `sponsored_ads.cta` ('learn_more' | 'visit_website' | 'call' |
+  'view_products'), `doctor_sponsored_ad_v2(p_seed)` (adds button + company
+  name/logo/phone), `admin_set_sponsored_ad_cta` (migration
+  `20261123190000_sponsored_ad_card.sql`, live). The old
+  `doctor_sponsored_ad` stays for older app versions.
+- Admin ad editor: "Button on the card" choice, length guides (best under
+  60 / 120), a phone-width live preview, and a warning when the picture is
+  not 16:9 (1200 × 675).
+
 ### 2026-11-23 — Claude (home noble posts: cleaner)
 - Home: no heading and no dots around the two noble posts; a small noble
   (award) badge sits next to the doctor's name inside each post (also in

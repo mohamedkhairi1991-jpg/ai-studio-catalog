@@ -1337,6 +1337,10 @@ describe('Admin Review Drafts helpers', () => {
             error: null,
           };
         }
+        if (fn === 'doctor_sponsored_ad_v2') {
+          // Older database: v2 missing, the loader falls back to doctor_sponsored_ad.
+          return { data: null, error: { message: 'Could not find the function public.doctor_sponsored_ad_v2' } };
+        }
         if (fn === 'admin_sponsored_ad_stats') {
           return {
             data: [
@@ -1421,6 +1425,7 @@ describe('Admin Review Drafts helpers', () => {
         endsOn: null,
         isActive: true,
         priority: 10,
+        cta: 'learn_more',
         createdAt: '2026-11-04T10:00:00Z',
         updatedAt: '2026-11-04T10:00:00Z',
       },

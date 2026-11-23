@@ -2990,6 +2990,18 @@ export function findNextCompanyWithDrafts(
   return null;
 }
 
+/** The button on the ad card (sponsored_ads.cta). */
+export type AdCta = 'learn_more' | 'visit_website' | 'call' | 'view_products';
+export const AD_CTA_LABELS: Record<AdCta, string> = {
+  learn_more: 'Learn more',
+  visit_website: 'Visit website',
+  call: 'Call',
+  view_products: 'View products',
+};
+export function asAdCta(value: unknown): AdCta {
+  return value === 'visit_website' || value === 'call' || value === 'view_products' ? value : 'learn_more';
+}
+
 export interface DoctorSponsoredAd {
   adId: string;
   sponsorName: string;
@@ -2997,6 +3009,13 @@ export interface DoctorSponsoredAd {
   body: string | null;
   imageUrl: string | null;
   linkUrl: string | null;
+  cta?: AdCta;
+  companyId?: string | null;
+  companyName?: string | null;
+  companyLogoUrl?: string | null;
+  companyPhone?: string | null;
+  /** Admin preview of a file not uploaded yet (blob: URL): say whether it is a video. */
+  mediaIsVideo?: boolean;
 }
 
 export interface SponsoredAdRecord {
@@ -3012,6 +3031,7 @@ export interface SponsoredAdRecord {
   endsOn: string | null;
   isActive: boolean;
   priority: number;
+  cta: AdCta;
   createdAt: string;
   updatedAt: string;
 }
@@ -3029,6 +3049,8 @@ export interface SponsoredAdFormInput {
   endsOn?: string | null;
   isActive?: boolean;
   priority?: number | string;
+  /** Card button; saved with admin_set_sponsored_ad_cta after the ad. */
+  cta?: AdCta;
 }
 
 export interface AdminSponsoredAdStat {
@@ -3107,40 +3129,47 @@ export function validateSponsoredAdForm(input: SponsoredAdFormInput): string[] {
   return errors;
 }
 
+const httpsOrNull = (v: unknown): string | null =>
+  typeof v === 'string' && /^https:\/\/[^ ]+$/.test(v.trim()) ? v.trim() : null;
+
+/** One ad for the signed-in doctor (with the card button and the linked company). */
 export async function loadDoctorSponsoredAd(
   client: SupabaseClient,
   seed = 0
 ): Promise<DoctorSponsoredAd | null> {
   try {
-    const { data, error } = await client.rpc('doctor_sponsored_ad', {
-      p_seed: seed,
-    });
+    const v2 = await client.rpc('doctor_sponsored_ad_v2', { p_seed: seed });
+    if (!v2.error) {
+      const r = v2.data as Record<string, unknown> | null;
+      if (!r || typeof r.adId !== 'string' || typeof r.title !== 'string') return null;
+      const logoPath = typeof r.companyLogoPath === 'string' && r.companyLogoPath.trim() ? r.companyLogoPath.trim() : null;
+      return {
+        adId: r.adId,
+        sponsorName: typeof r.sponsorName === 'string' ? r.sponsorName : '',
+        title: r.title,
+        body: typeof r.body === 'string' ? r.body : null,
+        imageUrl: httpsOrNull(r.imageUrl),
+        linkUrl: httpsOrNull(r.linkUrl),
+        cta: asAdCta(r.cta),
+        companyId: typeof r.companyId === 'string' ? r.companyId : null,
+        companyName: typeof r.companyName === 'string' ? r.companyName : null,
+        companyLogoUrl: logoPath ? client.storage.from('company-media').getPublicUrl(logoPath).data.publicUrl : null,
+        companyPhone: typeof r.companyPhone === 'string' && r.companyPhone.trim() ? r.companyPhone.trim() : null,
+      };
+    }
+    // Older database without doctor_sponsored_ad_v2.
+    const { data, error } = await client.rpc('doctor_sponsored_ad', { p_seed: seed });
     if (error || !data) return null;
     const rows = Array.isArray(data) ? data : [data];
-    const first = rows[0] as
-      | {
-          ad_id?: string;
-          sponsor_name?: string;
-          title?: string;
-          body?: string | null;
-          image_url?: string | null;
-          link_url?: string | null;
-        }
-      | undefined;
-    if (!first?.ad_id || !first.title || !first.sponsor_name) return null;
+    const first = rows[0] as Record<string, unknown> | undefined;
+    if (!first || typeof first.ad_id !== 'string' || typeof first.title !== 'string') return null;
     return {
       adId: first.ad_id,
-      sponsorName: first.sponsor_name,
+      sponsorName: typeof first.sponsor_name === 'string' ? first.sponsor_name : '',
       title: first.title,
-      body: first.body ?? null,
-      imageUrl:
-        first.image_url && /^https:\/\/[^ ]+$/.test(first.image_url)
-          ? first.image_url
-          : null,
-      linkUrl:
-        first.link_url && /^https:\/\/[^ ]+$/.test(first.link_url)
-          ? first.link_url
-          : null,
+      body: typeof first.body === 'string' ? first.body : null,
+      imageUrl: httpsOrNull(first.image_url),
+      linkUrl: httpsOrNull(first.link_url),
     };
   } catch {
     return null;
@@ -3222,6 +3251,7 @@ function mapSponsoredAdRow(row: Record<string, unknown>): SponsoredAdRecord {
     endsOn: typeof row.ends_on === 'string' ? row.ends_on : null,
     isActive: Boolean(row.is_active),
     priority: Number(row.priority ?? 0),
+    cta: asAdCta(row.cta),
     createdAt: String(row.created_at ?? ''),
     updatedAt: String(row.updated_at ?? ''),
   };
@@ -3233,7 +3263,7 @@ export async function loadAdminSponsoredAds(
   const { data, error } = await client
     .from('sponsored_ads')
     .select(
-      'id,sponsor_name,title,body,image_url,link_url,company_id,target_specialty_id,starts_on,ends_on,is_active,priority,created_at,updated_at'
+      'id,sponsor_name,title,body,image_url,link_url,company_id,target_specialty_id,starts_on,ends_on,is_active,priority,cta,created_at,updated_at'
     )
     .order('is_active', { ascending: false })
     .order('priority', { ascending: false })
@@ -3290,7 +3320,13 @@ export async function rpcAdminSaveSponsoredAd(
   if (!row || !row.id) {
     return { ok: false, message: 'Ad save did not return a record.' };
   }
-  return { ok: true, data: mapSponsoredAdRow(row) };
+  const saved = mapSponsoredAdRow(row);
+  if (input.cta && input.cta !== saved.cta) {
+    const ctaRes = await client.rpc('admin_set_sponsored_ad_cta', { p_ad_id: saved.id, p_cta: input.cta });
+    if (ctaRes.error) return { ok: false, message: formatRpcError(ctaRes.error) };
+    saved.cta = input.cta;
+  }
+  return { ok: true, data: saved };
 }
 
 export async function loadAdminSponsoredAdStats(

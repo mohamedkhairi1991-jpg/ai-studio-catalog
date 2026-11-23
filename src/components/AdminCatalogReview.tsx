@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AccessResult } from '../lib/access';
 import {
+  type AdCta,
   CATEGORY_LABELS,
   MARKET_STATUS_LABELS,
   STATUS_LABELS,
@@ -5028,6 +5029,8 @@ function AdminSponsoredAdsView({
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const [localPreviewIsVideo, setLocalPreviewIsVideo] = useState(false);
   const [previewCompact, setPreviewCompact] = useState(false);
+  const [cta, setCta] = useState<AdCta>('learn_more');
+  const [imageRatioWarning, setImageRatioWarning] = useState<string | null>(null);
   const [showPlacementGuide, setShowPlacementGuide] = useState(false);
 
   useEffect(() => {
@@ -5095,6 +5098,8 @@ function AdminSponsoredAdsView({
     setEndsOn('');
     setIsActive(true);
     setPriority(0);
+    setCta('learn_more');
+    setImageRatioWarning(null);
     setFormErrors([]);
     clearLocalPreview();
   };
@@ -5118,6 +5123,8 @@ function AdminSponsoredAdsView({
     setEndsOn(ad.endsOn ?? '');
     setIsActive(ad.isActive);
     setPriority(ad.priority);
+    setCta(ad.cta);
+    setImageRatioWarning(null);
     setFormErrors([]);
     setShowForm(true);
   };
@@ -5282,6 +5289,7 @@ function AdminSponsoredAdsView({
       endsOn,
       isActive,
       priority: Number(priority),
+      cta,
     };
 
     const validationErrors = validateSponsoredAdForm(input);
@@ -5504,7 +5512,7 @@ function AdminSponsoredAdsView({
                     className={inputClass}
                   />
                 </Field>
-                <Field label={`Title * (${title.trim().length}/80)`}>
+                <Field label={`Title * (${title.trim().length}/80 · best under 60)`}>
                   <input
                     type="text"
                     required
@@ -5517,7 +5525,7 @@ function AdminSponsoredAdsView({
                 </Field>
               </div>
 
-              <Field label={`Body (${body.trim().length}/280)`}>
+              <Field label={`Body (${body.trim().length}/280 · best under 120, shows 2 lines)`}>
                 <textarea
                   rows={3}
                   maxLength={280}
@@ -5622,6 +5630,18 @@ function AdminSponsoredAdsView({
                       onChange={(e) => setLinkUrl(e.target.value)}
                       className={inputClass}
                     />
+                  </Field>
+                  <Field label="Button on the card">
+                    <select
+                      value={cta}
+                      onChange={(e) => setCta(e.target.value as AdCta)}
+                      className={inputClass}
+                    >
+                      <option value="learn_more">Learn more (opens the link)</option>
+                      <option value="visit_website">Visit website (opens the link)</option>
+                      <option value="call">Call (the linked company's phone)</option>
+                      <option value="view_products">View products (the linked company's page)</option>
+                    </select>
                   </Field>
                 </div>
               </div>
@@ -5752,57 +5772,52 @@ function AdminSponsoredAdsView({
                 </div>
               </div>
 
-              {/* If a local file was selected before https:// URL is saved, show local file preview */}
-              {localPreviewUrl && !imageUrl.trim().startsWith('https://') ? (
-                <div className="rounded-2xl border border-[#304451] bg-[#1C2B36] p-4 space-y-3">
-                  <div className="flex items-center justify-end">
-                    <span className="text-xs font-medium text-[#5DB4F2]">
-                      {sponsorName.trim() || 'Sponsor Name'}
-                    </span>
-                  </div>
-                  <div className="rounded-xl bg-[#141F28] border border-[#304451] p-2 flex items-center justify-center overflow-hidden">
-                    {localPreviewIsVideo ? (
-                      <video
-                        src={localPreviewUrl}
-                        controls
-                        muted
-                        autoPlay
-                        loop
-                        playsInline
-                        className="max-h-[220px] w-full object-contain rounded"
-                      />
-                    ) : (
-                      <img
-                        src={localPreviewUrl}
-                        alt={title.trim() || 'Preview'}
-                        className="max-h-[200px] w-full object-contain rounded"
-                      />
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-base font-semibold text-[#F2F5F8]">
-                      {title.trim() || 'Sponsored Ad Title'}
-                    </div>
-                    {body.trim() && (
-                      <p className="text-xs text-[#B8C3CC] whitespace-pre-line">
-                        {body.trim()}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <SponsoredAdCard
-                  compact={previewCompact}
-                  ad={{
-                    adId: editingAdId ?? 'preview',
-                    sponsorName: sponsorName.trim() || 'Sponsor Name',
-                    title: title.trim() || 'Sponsored Ad Title',
-                    body: body.trim() || null,
-                    imageUrl: imageUrl.trim() || null,
-                    linkUrl: linkUrl.trim() || null,
-                  }}
-                />
+              {/* Exactly what doctors see (phone width) */}
+              <div className="mx-auto w-full max-w-[380px] rounded-[28px] border border-[#304451] bg-[#111A21] p-3">
+                {(() => {
+                  const previewMedia = imageUrl.trim().startsWith('https://') ? imageUrl.trim() : localPreviewUrl;
+                  const companyName = (bundle?.companies ?? []).find((c) => c.id === companyId)?.companyName ?? null;
+                  return (
+                    <SponsoredAdCard
+                      compact={previewCompact}
+                      onOpenCompany={() => undefined}
+                      ad={{
+                        adId: editingAdId ?? 'preview',
+                        sponsorName: sponsorName.trim() || 'Sponsor Name',
+                        title: title.trim() || 'Ad title',
+                        body: body.trim() || null,
+                        imageUrl: previewMedia || null,
+                        linkUrl: linkUrl.trim() || null,
+                        cta,
+                        companyId: companyId || null,
+                        companyName,
+                        companyPhone: cta === 'call' ? '+964' : null,
+                        mediaIsVideo: previewMedia === localPreviewUrl ? localPreviewIsVideo : undefined,
+                      }}
+                    />
+                  );
+                })()}
+              </div>
+              {imageRatioWarning && (
+                <p className="text-xs text-[#F59E0B]">{imageRatioWarning}</p>
               )}
+              {(imageUrl.trim().startsWith('https://') || (localPreviewUrl && !localPreviewIsVideo)) &&
+                !isSponsoredAdVideoUrl(imageUrl) && (
+                  <img
+                    src={imageUrl.trim().startsWith('https://') ? imageUrl.trim() : localPreviewUrl ?? undefined}
+                    alt=""
+                    hidden
+                    onLoad={(e) => {
+                      const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
+                      const ratio = h > 0 ? w / h : 0;
+                      setImageRatioWarning(
+                        ratio > 0 && Math.abs(ratio - 16 / 9) > 0.12
+                          ? `This picture is ${w} × ${h}. For a perfect fit use a 16:9 picture, e.g. 1200 × 675 (the edges will be cut).`
+                          : null
+                      );
+                    }}
+                  />
+                )}
             </div>
           </div>
         </form>

@@ -58,6 +58,13 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (home: two noble posts)
+- `HomeNoblePosts` replaces `HomeNoblePost`: two cards under the search,
+  above the ad space. Top = posts from the doctor's own specialty; second =
+  posts from all noble doctors. Each card goes through all its posts again and
+  again (next every 12 s; the second card changes 6 s after the first); the
+  two cards never show the same post at once.
+
 ### 2026-11-23 — Claude (home: noble post under the search)
 - `HomeNoblePost` (`src/components/NobleDoctors.tsx`) on the doctor home
   page, under the search and above the ad space: one noble doctor's post from

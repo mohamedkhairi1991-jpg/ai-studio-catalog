@@ -58,6 +58,11 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (noble posts: clearer text)
+- Home noble cards: post text in the main text colour, 13–14 px (was small
+  grey); doctor's title line brighter (`text-text/80`) in home cards and
+  post cards.
+
 ### 2026-11-23 — Claude (profile like noble page, navigation)
 - Doctor profile uses the noble page layout but is private: header card
   (cover band, picture with camera, name, level · specialty, workplace,

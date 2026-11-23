@@ -264,7 +264,7 @@ export function NoblePostCard({
                   <span className="truncate">{post.author.fullName}</span>
                   <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-label="Noble doctor" />
                 </span>
-                <span className="block text-[11px] text-text-muted truncate">
+                <span className="block text-xs text-text/80 truncate">
                   {[post.author.title, post.author.specialtyName].filter(Boolean).join(' · ')}
                 </span>
               </span>
@@ -1380,13 +1380,13 @@ function RotatingNoblePost({
                 <span className="truncate">{author.fullName}</span>
                 <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-label="Noble doctor" />
               </span>
-              <span className="block text-[11px] text-text-muted truncate">
+              <span className="block text-xs text-text/80 truncate">
                 {[author.title, author.specialtyName].filter(Boolean).join(' · ')}
               </span>
             </span>
           </div>
           {post.title && <p className="text-sm font-semibold text-text leading-snug line-clamp-1">{post.title}</p>}
-          <p className="text-xs text-text-muted leading-relaxed line-clamp-3 whitespace-pre-line">{post.body}</p>
+          <p className="text-[13px] sm:text-sm text-text leading-relaxed line-clamp-3 whitespace-pre-line">{post.body}</p>
           <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
             Read more
             <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />

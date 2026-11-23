@@ -2,7 +2,16 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Suspense, lazy, useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
-import { resolveAccess, type AccessResult, type Audience } from '../lib/access';
+import {
+  clearOfflineAccess,
+  loadOfflineAccess,
+  readSavedSession,
+  resolveAccess,
+  saveOfflineAccess,
+  type AccessResult,
+  type Audience,
+} from '../lib/access';
+import { isOffline } from '../lib/offlineCatalog';
 import { parseProductRoute } from '../lib/catalog';
 import { isCompanyDirectoryRoute, parseCompanyRoute } from '../lib/companyPage';
 import {
@@ -114,8 +123,22 @@ export default function AuthGate() {
       setLoading(false);
       return;
     }
-    let resolved = await resolveAccess(supabase, next.user);
-    if (resolved.audience === 'pending') {
+    // With no internet, any database call waits ~30 s for the token refresh to
+    // give up, so go straight to the access saved on this phone.
+    let resolved: AccessResult = isOffline()
+      ? { audience: 'pending', email: next.user.email ?? '', role: null, networkError: true }
+      : await resolveAccess(supabase, next.user);
+    // No internet: a doctor who signed in on this phone before keeps using
+    // the catalog saved on the phone.
+    if (resolved.networkError || (isOffline() && resolved.audience === 'pending')) {
+      const saved = loadOfflineAccess(next.user.id);
+      if (saved) {
+        setAccess(saved);
+        setLoading(false);
+        return;
+      }
+    }
+    if (resolved.audience === 'pending' && !resolved.networkError) {
       const meta = (next.user.user_metadata ?? {}) as {
         full_name?: string | null;
         phone?: string | null;
@@ -139,6 +162,7 @@ export default function AuthGate() {
       }
     }
     void recordAppOpen(supabase);
+    saveOfflineAccess(next.user.id, resolved);
     setAccess(resolved);
     setLoading(false);
   }, []);
@@ -148,11 +172,38 @@ export default function AuthGate() {
       setLoading(false);
       return;
     }
-    void supabase.auth.getSession().then(({ data }) => load(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+    const client = supabase;
+    // Offline, supabase-js cannot refresh an expired token and returns no
+    // session; the session saved on the phone is enough to open the saved catalog.
+    // (With no internet, getSession() keeps retrying the token refresh for about
+    // 30 seconds, so use the saved session straight away instead.)
+    const start = () => {
+      if (isOffline()) {
+        const saved = readSavedSession();
+        if (saved) return load(saved);
+      }
+      return client.auth.getSession().then(({ data }) => {
+        const saved = !data.session && isOffline() ? readSavedSession() : null;
+        return load(data.session ?? saved);
+      });
+    };
+    void start();
+    const { data } = client.auth.onAuthStateChange((event, next) => {
+      if (!next && event !== 'SIGNED_OUT' && isOffline()) return;
       void load(next);
     });
-    return () => data.subscription.unsubscribe();
+    // Back online after opening offline: check the account with the database again.
+    const onOnline = () => {
+      setAccess((current) => {
+        if (current?.offline) void start();
+        return current;
+      });
+    };
+    window.addEventListener('online', onOnline);
+    return () => {
+      data.subscription.unsubscribe();
+      window.removeEventListener('online', onOnline);
+    };
   }, [load]);
 
   const legalPage = resolveLegalPage(route, pathname);
@@ -200,11 +251,29 @@ export default function AuthGate() {
   }
 
   const signOut = async () => {
-    await client.auth.signOut();
+    clearOfflineAccess();
+    // With no internet, sign out on this phone only (the server cannot be reached).
+    await client.auth.signOut(isOffline() ? { scope: 'local' } : undefined);
+    setSession(null);
+    setAccess(null);
     window.location.hash = '/';
   };
 
   if (session && access) {
+    if (access.networkError) {
+      return (
+        <Screen>
+          <div className="space-y-3">
+            <p className="text-sm text-text">
+              No internet. Connect once while signed in, and Pharmaty will then work on this phone without internet.
+            </p>
+            <button className={buttonClass} onClick={() => window.location.reload()}>
+              Try again
+            </button>
+          </div>
+        </Screen>
+      );
+    }
     if (access.audience === 'pending') {
       const meta = (session.user.user_metadata ?? {}) as {
         full_name?: string | null;

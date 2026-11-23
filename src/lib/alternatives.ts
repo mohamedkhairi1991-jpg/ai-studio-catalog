@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { countryNameFromCode } from './companies';
+import { getOfflineCatalog, isNetworkErrorMessage, isOffline, offlineAlternatives } from './offlineCatalog';
 
 /**
  * "Same medicine, other brands" for the drug page, and the search notice for
@@ -32,10 +33,16 @@ export async function loadProductAlternatives(
 ): Promise<AlternativesResult> {
   const id = productId.trim();
   if (!id) return { ok: true, data: [] };
+  const saved = async (): Promise<AlternativesResult> => {
+    const catalog = await getOfflineCatalog();
+    return { ok: true, data: catalog ? offlineAlternatives(catalog, id, limit) : [] };
+  };
+  if (isOffline()) return saved();
   const { data, error } = await client.rpc('get_product_alternatives', {
     p_product_id: id,
     p_limit: limit,
   });
+  if (error && isNetworkErrorMessage(error.message)) return saved();
   if (error) {
     return { ok: false, message: error.message?.trim() || 'Could not load other brands.' };
   }

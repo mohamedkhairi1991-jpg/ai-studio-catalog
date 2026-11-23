@@ -58,6 +58,24 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (offline mode)
+- The app opens with no internet: `sw.js` (built by `vite.config.ts` from
+  `src/offline/sw.template.js`) saves the app files on the phone;
+  `src/offline/registerServiceWorker.ts` registers it in production.
+- The whole doctor catalog is saved on the phone (IndexedDB,
+  `src/lib/offlineCatalog.ts`): first a full download, then only changed drugs;
+  version checked at most every 6 h (`useOfflineCatalog`). Database:
+  `get_offline_catalog_version()`, `get_offline_catalog_changes(p_since)`
+  (migration `20261123120000_offline_catalog.sql`).
+- With no internet: search, drug pages, other brands, company pages and the
+  companies list read the saved catalog (fallbacks inside `catalog.ts`,
+  `alternatives.ts`, `companyPage.ts`); a doctor who signed in on the phone
+  before opens straight in (`access.ts` saved doctor access, `AuthGate.tsx`).
+- Notes: every change (also pin / delete, which were phone-only before) is
+  saved on the phone and marked waiting to upload until the database has it
+  (`saveMyNotebookOrQueue` in `doctorProfile.ts`). AI Studio: use it for any
+  new note action.
+
 ### 2026-11-16 — Claude (show password, note menu, search tap)
 - `AuthGate.tsx`: eye button to show / hide the password (sign in and sign up).
 - `DoctorCatalog.tsx` notes ("post space"): each note is a card; Pin / Edit /

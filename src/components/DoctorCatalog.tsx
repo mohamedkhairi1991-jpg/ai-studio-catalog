@@ -110,9 +110,13 @@ import {
   loadMyAvatarUrl,
   loadMyNotebook,
   saveMyAvatar,
+  notebookUploadPending,
   saveMyNotebook,
+  saveMyNotebookOrQueue,
 } from '../lib/doctorProfile';
 import { NotificationBell } from './NotificationBell';
+import { isOffline } from '../lib/offlineCatalog';
+import { useOfflineCatalog } from '../lib/useOfflineCatalog';
 import {
   BrandLogo,
   Field,
@@ -553,6 +557,8 @@ interface Props {
 }
 
 export function DoctorCatalog({ client, access, onSignOut }: Props) {
+  // Whole catalog saved on the phone for use with no internet (lib/offlineCatalog).
+  const offlineStatus = useOfflineCatalog(client);
   const [companies, setCompanies] = useState<CompanySummary[]>([]);
   const [specialties, setSpecialties] = useState<TaxonomyItem[]>([]);
   const [physicianSpecialties, setPhysicianSpecialties] = useState<Option[]>([]);
@@ -728,6 +734,17 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  // Back online: upload notes that were written or changed with no internet.
+  useEffect(() => {
+    const onOnline = () => {
+      if (notebookUploadPending(profileStorageKey)) {
+        void saveMyNotebookOrQueue(client, profileStorageKey, loadLocalDoctorNotebook(profileStorageKey));
+      }
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [client, profileStorageKey]);
+
   // Load doctor profile summary immediately on mount so the greeting name, avatar, quote, and notebook resolve right away across desktop & mobile
   useEffect(() => {
     let active = true;
@@ -789,9 +806,15 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         (meta.doctor_board_status ?? '').trim() || localExtras.boardStatus;
 
       // Sync notebook across devices (doctor_private_data)
-      const cloudNotes = await loadMyNotebook<DoctorNotebookEntry>(client);
+      // Notes changed on this phone (e.g. offline) and not uploaded yet win over the cloud copy.
+      const pendingUpload = notebookUploadPending(profileStorageKey);
+      const cloudNotes = pendingUpload
+        ? { ok: false as const, message: '' }
+        : await loadMyNotebook<DoctorNotebookEntry>(client);
       if (!active) return;
-      if (cloudNotes.ok) {
+      if (pendingUpload) {
+        void saveMyNotebookOrQueue(client, profileStorageKey, localNotes);
+      } else if (cloudNotes.ok) {
         if (cloudNotes.data.length > 0) {
           setNotebookEntries(cloudNotes.data);
           saveLocalDoctorNotebook(profileStorageKey, cloudNotes.data);
@@ -824,7 +847,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       if (metaName) {
         setProfileFullName((prev) => prev || metaName);
       }
-      if (userId) {
+      if (userId && !isOffline()) {
         void recordAppOpen(client);
         const summary = await loadDoctorProfileSummary(client, userId);
         if (!active) return;
@@ -1299,6 +1322,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     // Account metadata travels inside the sign-in token on every request, so
     // only short text goes there. The picture goes to storage and the notebook
     // to the database (src/lib/doctorProfile.ts).
+    // Notes first: saved now, or kept waiting to upload when there is no internet.
+    if (nextNotes) {
+      void saveMyNotebookOrQueue(client, profileStorageKey, nextNotes);
+    }
+    if (isOffline()) {
+      saveLocalProfileExtras(profileStorageKey, nextExtras);
+      return { avatarUrl: nextExtras.avatarUrl };
+    }
     let extras = nextExtras;
     let uploadError: string | undefined;
     if (extras.avatarUrl.startsWith('data:')) {
@@ -1334,9 +1365,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       });
     } catch {
       // Ignore offline/metadata update errors; localStorage is already updated
-    }
-    if (nextNotes) {
-      void saveMyNotebook(client, nextNotes);
     }
     return { avatarUrl: extras.avatarUrl, error: uploadError };
   };
@@ -1567,12 +1595,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
     );
     setNotebookEntries(nextEntries);
     saveLocalDoctorNotebook(profileStorageKey, nextEntries);
+    void saveMyNotebookOrQueue(client, profileStorageKey, nextEntries);
   };
 
   const handleDeleteNote = (noteId: string) => {
     const nextEntries = notebookEntries.filter((entry) => entry.id !== noteId);
     setNotebookEntries(nextEntries);
     saveLocalDoctorNotebook(profileStorageKey, nextEntries);
+    void saveMyNotebookOrQueue(client, profileStorageKey, nextEntries);
     if (editingNoteId === noteId) {
       resetNoteComposer();
       setNoteComposerOpen(false);
@@ -1717,6 +1747,26 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
           </div>
         </div>
       </header>
+
+      {!offlineStatus.online && (
+        <div
+          role="status"
+          className="border-b border-border bg-surface-raised/70 text-text-muted text-xs"
+        >
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#F59E0B] shrink-0" aria-hidden="true" />
+            <span>
+              {offlineStatus.savedCount > 0
+                ? `Offline · searching the ${offlineStatus.savedCount.toLocaleString()} drugs saved on this phone${
+                    offlineStatus.savedAt
+                      ? ` (updated ${new Date(offlineStatus.savedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })})`
+                      : ''
+                  }. Your notes are kept on this phone and upload when you are back online.`
+                : 'Offline · connect once to save the catalog on this phone for offline use.'}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">

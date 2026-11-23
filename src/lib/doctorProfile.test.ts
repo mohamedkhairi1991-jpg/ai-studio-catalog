@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { DOCTOR_NOTEBOOK_MAX, dataUrlToBlob, loadMyNotebook, saveMyAvatar, saveMyNotebook } from './doctorProfile';
+import {
+  DOCTOR_NOTEBOOK_MAX,
+  dataUrlToBlob,
+  loadMyNotebook,
+  notebookUploadPending,
+  saveMyAvatar,
+  saveMyNotebook,
+  saveMyNotebookOrQueue,
+} from './doctorProfile';
 
 const PNG_1PX =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
@@ -57,5 +65,29 @@ describe('doctor profile storage', () => {
     const many = Array.from({ length: 40 }, (_, i) => ({ id: `n${i}` }));
     await saveMyNotebook(client, many);
     expect((rpcs[1].args?.p_notebook as unknown[]).length).toBe(DOCTOR_NOTEBOOK_MAX);
+  });
+
+  it('keeps offline note changes waiting until the database has them', async () => {
+    const store = new Map<string, string>();
+    const g = globalThis as unknown as { localStorage?: Storage; navigator?: { onLine: boolean } };
+    const prevStorage = g.localStorage;
+    g.localStorage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    } as unknown as Storage;
+    let fail = true;
+    const client = {
+      rpc: async () => ({ data: null, error: fail ? { message: 'TypeError: Failed to fetch' } : null }),
+    } as unknown as SupabaseClient;
+    try {
+      expect(await saveMyNotebookOrQueue(client, 'doc1', [{ id: 'n1' }])).toBe(false);
+      expect(notebookUploadPending('doc1')).toBe(true);
+      fail = false;
+      expect(await saveMyNotebookOrQueue(client, 'doc1', [{ id: 'n1' }])).toBe(true);
+      expect(notebookUploadPending('doc1')).toBe(false);
+    } finally {
+      g.localStorage = prevStorage;
+    }
   });
 });

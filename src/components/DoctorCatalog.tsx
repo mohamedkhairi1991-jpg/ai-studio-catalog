@@ -116,7 +116,7 @@ import {
   saveMyNotebookOrQueue,
 } from '../lib/doctorProfile';
 import { NotificationBell } from './NotificationBell';
-import { HomeNoblePost, NobleDoctorPageView, NobleDoctorsView, ProductNobleNotes } from './NobleDoctors';
+import { HomeNoblePosts, NobleDoctorPageView, NobleDoctorsView, ProductNobleNotes } from './NobleDoctors';
 import { NOBLE_ROUTE, buildNobleDoctorRouteHash, parseNobleRoute } from '../lib/nobleDoctors';
 import { isOffline } from '../lib/offlineCatalog';
 import { useOfflineCatalog } from '../lib/useOfflineCatalog';
@@ -2881,7 +2881,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
             {/* Home View (when not actively filtering/searching) */}
             {!isSearchingOrFiltering && (
-              <HomeNoblePost
+              <HomeNoblePosts
                 client={client}
                 specialtyId={profileSpecialtyId || null}
                 onOpenDoctor={(id) => openNoble(id)}

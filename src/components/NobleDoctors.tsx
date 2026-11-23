@@ -1258,103 +1258,115 @@ function AdminNoblePosts({ client, doctorId }: { client: SupabaseClient; doctorI
 }
 
 // ---------------------------------------------------------------------------
-// Home page: one noble doctor's post from the doctor's own specialty, above
-// the ad space. Changes every few seconds, and starts at a different post
-// every 10 minutes. Falls back to all specialties; hidden when there are none
-// (or with no internet).
+// Home page: two noble doctors' posts above the ad space. The top card shows
+// posts from the doctor's own specialty, the second card posts from all
+// noble doctors. Each card goes through all its posts again and again (next
+// post every 12 s, soft fade); the two cards never show the same post at the
+// same time. Hidden with no posts or no internet.
 
 const HOME_ROTATE_MS = 12000;
 const HOME_SLOT_MS = 10 * 60 * 1000;
+const HOME_FEED_LIMIT = 50;
 
-export function HomeNoblePost({
+function RotatingNoblePost({
   client,
-  specialtyId,
+  posts,
+  label,
+  avoidPostId,
+  delayMs = 0,
+  onShow,
   onOpenDoctor,
 }: {
   client: SupabaseClient;
-  specialtyId?: string | null;
+  posts: NoblePost[];
+  label: string;
+  /** Skip this post (shown by the other card right now). */
+  avoidPostId?: string | null;
+  /** Start the timer later so the two cards do not change at the same moment. */
+  delayMs?: number;
+  onShow?: (postId: string | null) => void;
   onOpenDoctor: (profileId: string) => void;
 }) {
-  const [posts, setPosts] = useState<NoblePost[]>([]);
-  const [ownSpecialty, setOwnSpecialty] = useState(false);
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() =>
+    posts.length > 0 ? Math.floor(Date.now() / HOME_SLOT_MS) % posts.length : 0
+  );
   const [shown, setShown] = useState(true);
+  const avoidRef = useRef(avoidPostId);
+  avoidRef.current = avoidPostId;
 
+  // When the list changes, start again at this 10-minute slot's post.
   useEffect(() => {
-    let active = true;
-    if (isOffline()) return;
-    void (async () => {
-      let list: NoblePost[] = [];
-      let own = false;
-      if (specialtyId) {
-        const res = await loadNobleFeed(client, { specialtyId, limit: 20 });
-        if (res.ok && res.data.length > 0) {
-          list = res.data;
-          own = true;
-        }
-      }
-      if (list.length === 0) {
-        const res = await loadNobleFeed(client, { limit: 20 });
-        if (res.ok) list = res.data;
-      }
-      if (!active) return;
-      setPosts(list);
-      setOwnSpecialty(own);
-      setIndex(list.length > 0 ? Math.floor(Date.now() / HOME_SLOT_MS) % list.length : 0);
-    })();
-    return () => {
-      active = false;
-    };
-  }, [client, specialtyId]);
+    setIndex(posts.length > 0 ? Math.floor(Date.now() / HOME_SLOT_MS) % posts.length : 0);
+  }, [posts]);
 
-  // Next post every few seconds while the page is visible (soft fade).
+  // Never show the post the other card is showing.
+  useEffect(() => {
+    if (posts.length > 1 && posts[index]?.id === avoidPostId) setIndex((i) => (i + 1) % posts.length);
+  }, [posts, index, avoidPostId]);
+
   useEffect(() => {
     if (posts.length < 2) return;
     let fade: number | undefined;
-    const timer = window.setInterval(() => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-      setShown(false);
-      fade = window.setTimeout(() => {
-        setIndex((i) => (i + 1) % posts.length);
-        setShown(true);
-      }, 250);
-    }, HOME_ROTATE_MS);
+    let timer: number | undefined;
+    const start = window.setTimeout(() => {
+      timer = window.setInterval(() => {
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+        setShown(false);
+        fade = window.setTimeout(() => {
+          setIndex((i) => {
+            let next = (i + 1) % posts.length;
+            if (posts[next]?.id === avoidRef.current && posts.length > 2) next = (next + 1) % posts.length;
+            return next;
+          });
+          setShown(true);
+        }, 250);
+      }, HOME_ROTATE_MS);
+    }, delayMs);
     return () => {
-      window.clearInterval(timer);
+      window.clearTimeout(start);
+      if (timer) window.clearInterval(timer);
       if (fade) window.clearTimeout(fade);
     };
-  }, [posts.length]);
+  }, [posts, delayMs]);
 
   const post = posts[index];
+  useEffect(() => {
+    onShow?.(post?.id ?? null);
+  }, [post?.id, onShow]);
+
   if (!post?.author) return null;
   const author = post.author;
   const firstImage = post.images[0];
+  const dots = Math.min(posts.length, 8);
 
   return (
-    <section aria-label="From noble doctors" className="space-y-1.5">
+    <section aria-label={label} className="space-y-1.5">
       <div className="flex items-center justify-between gap-2 px-1">
-        <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-          <Award className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
-          {ownSpecialty && author.specialtyName ? `Noble doctors · ${author.specialtyName}` : 'From noble doctors'}
+        <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted min-w-0">
+          <Award className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+          <span className="truncate">{label}</span>
         </h2>
         {posts.length > 1 && (
-          <div className="flex items-center gap-1" role="tablist" aria-label="Choose a post">
-            {posts.slice(0, 8).map((p, i) => (
-              <button
-                key={p.id}
-                type="button"
-                role="tab"
-                aria-selected={i === index}
-                aria-label={`Post ${i + 1}`}
-                onClick={() => {
-                  setIndex(i);
-                  setShown(true);
-                }}
-                className="h-6 w-4 inline-flex items-center justify-center"
-              >
-                <span className={`block h-1.5 rounded-full transition-all ${i === index ? 'w-3 bg-accent' : 'w-1.5 bg-border'}`} />
-              </button>
-            ))}
+          <div className="flex items-center gap-1 shrink-0" role="tablist" aria-label="Choose a post">
+            {Array.from({ length: dots }).map((_, i) => {
+              const active = index % dots === i;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  aria-label={`Post ${i + 1}`}
+                  onClick={() => {
+                    setIndex(i);
+                    setShown(true);
+                  }}
+                  className="h-6 w-4 inline-flex items-center justify-center"
+                >
+                  <span className={`block h-1.5 rounded-full transition-all ${active ? 'w-3 bg-accent' : 'w-1.5 bg-border'}`} />
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -1392,5 +1404,65 @@ export function HomeNoblePost({
         )}
       </button>
     </section>
+  );
+}
+
+export function HomeNoblePosts({
+  client,
+  specialtyId,
+  onOpenDoctor,
+}: {
+  client: SupabaseClient;
+  specialtyId?: string | null;
+  onOpenDoctor: (profileId: string) => void;
+}) {
+  const [mine, setMine] = useState<NoblePost[]>([]);
+  const [all, setAll] = useState<NoblePost[]>([]);
+  const [topShowing, setTopShowing] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (isOffline()) return;
+    void loadNobleFeed(client, { limit: HOME_FEED_LIMIT }).then((res) => active && res.ok && setAll(res.data));
+    if (specialtyId) {
+      void loadNobleFeed(client, { specialtyId, limit: HOME_FEED_LIMIT }).then(
+        (res) => active && setMine(res.ok ? res.data : [])
+      );
+    } else {
+      setMine([]);
+    }
+    return () => {
+      active = false;
+    };
+  }, [client, specialtyId]);
+
+  const specialtyName = mine[0]?.author?.specialtyName ?? null;
+  // With only one post in total, show it once (in the top card if it is from the doctor's specialty).
+  const general = mine.length > 0 && all.length <= 1 ? [] : all;
+  const onTopShow = useCallback((id: string | null) => setTopShowing(id), []);
+
+  if (mine.length === 0 && general.length === 0) return null;
+  return (
+    <div className="space-y-3">
+      {mine.length > 0 && (
+        <RotatingNoblePost
+          client={client}
+          posts={mine}
+          label={specialtyName ? `Noble doctors · ${specialtyName}` : 'Noble doctors · your specialty'}
+          onShow={onTopShow}
+          onOpenDoctor={onOpenDoctor}
+        />
+      )}
+      {general.length > 0 && (
+        <RotatingNoblePost
+          client={client}
+          posts={general}
+          label="From all noble doctors"
+          avoidPostId={mine.length > 0 ? topShowing : null}
+          delayMs={mine.length > 0 ? HOME_ROTATE_MS / 2 : 0}
+          onOpenDoctor={onOpenDoctor}
+        />
+      )}
+    </div>
   );
 }

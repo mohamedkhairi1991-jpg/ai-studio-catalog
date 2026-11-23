@@ -683,6 +683,8 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
   // A noble doctor's profile is their noble page; profile settings and private
   // notes open below it.
   const [myNoble, setMyNoble] = useState<NobleDoctor | null>(null);
+  // Header "…" menu (Companies, Saved medicines, Sign out)
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   useEffect(() => {
     if (isOffline()) return;
@@ -1718,42 +1720,6 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
             </button>
             <button
               type="button"
-              aria-label="Companies"
-              aria-current={companiesDirectoryOpen ? 'page' : undefined}
-              title="Companies"
-              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
-                companiesDirectoryOpen || Boolean(activeCompanyId)
-                  ? 'border-accent bg-background text-accent'
-                  : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
-              }`}
-              onClick={openCompaniesDirectory}
-            >
-              <Building2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              aria-label="Saved medicines"
-              aria-expanded={savedOpen}
-              title="Saved medicines"
-              className={`relative h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
-                savedOpen
-                  ? 'border-accent bg-background text-accent'
-                  : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
-              }`}
-              onClick={() => {
-                setSavedOpen((v) => !v);
-                setProfileOpen(false);
-              }}
-            >
-              <Bookmark className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              {savedDrugs.length > 0 && (
-                <span className="ml-0.5 text-[11px] font-semibold tabular-nums text-accent">
-                  {savedDrugs.length}
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
               aria-label="My profile"
               aria-expanded={profileOpen}
               title="My profile"
@@ -1783,15 +1749,75 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 <User className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
               )}
             </button>
-            <button
-              type="button"
-              aria-label="Sign out"
-              title="Sign out"
-              className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-border bg-surface/60 text-xs text-text hover:bg-surface-raised hover:text-danger transition-colors duration-150"
-              onClick={onSignOut}
-            >
-              <Power className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            </button>
+            {/* More: Companies, Saved medicines, Sign out */}
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="More"
+                aria-haspopup="menu"
+                aria-expanded={headerMenuOpen}
+                title="More"
+                className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
+                  headerMenuOpen || savedOpen || companiesDirectoryOpen || Boolean(activeCompanyId)
+                    ? 'border-accent bg-background text-accent'
+                    : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
+                }`}
+                onClick={() => setHeaderMenuOpen((v) => !v)}
+              >
+                <MoreHorizontal className="w-4 h-4 shrink-0" aria-hidden="true" />
+              </button>
+              {headerMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" aria-hidden="true" onClick={() => setHeaderMenuOpen(false)} />
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-10 z-40 w-56 rounded-xl border border-border bg-surface shadow-lg p-1"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setHeaderMenuOpen(false);
+                        openCompaniesDirectory();
+                      }}
+                      className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm text-text hover:bg-surface-raised"
+                    >
+                      <Building2 className="w-4 h-4 text-text-muted" aria-hidden="true" />
+                      Companies
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setHeaderMenuOpen(false);
+                        setSavedOpen(true);
+                        setProfileOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm text-text hover:bg-surface-raised"
+                    >
+                      <Bookmark className="w-4 h-4 text-text-muted" aria-hidden="true" />
+                      <span className="flex-1">Saved medicines</span>
+                      {savedDrugs.length > 0 && (
+                        <span className="text-xs font-semibold tabular-nums text-accent">{savedDrugs.length}</span>
+                      )}
+                    </button>
+                    <div className="my-1 border-t border-border/70" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setHeaderMenuOpen(false);
+                        onSignOut();
+                      }}
+                      className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm text-danger hover:bg-surface-raised"
+                    >
+                      <Power className="w-4 h-4" aria-hidden="true" />
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>

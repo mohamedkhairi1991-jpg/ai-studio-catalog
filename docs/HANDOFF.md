@@ -58,6 +58,11 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (doctor top bar: "…" menu)
+- Doctor header now shows bell, Noble doctors, My profile and a "…" button.
+  Companies, Saved medicines (with count) and Sign out moved into the "…"
+  menu (`headerMenuOpen` in `DoctorCatalog.tsx`).
+
 ### 2026-11-23 — Claude (noble doctor's profile = noble page)
 - For a noble doctor, the profile screen shows their noble page first
   (`NobleDoctorPageView embedded`: header, Edit page, Write a post, posts),

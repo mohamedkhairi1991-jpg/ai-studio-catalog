@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   AlertOctagon,
+  Award,
   AlertTriangle,
   Bookmark,
   Building2,
@@ -115,6 +116,8 @@ import {
   saveMyNotebookOrQueue,
 } from '../lib/doctorProfile';
 import { NotificationBell } from './NotificationBell';
+import { NobleDoctorPageView, NobleDoctorsView, ProductNobleNotes } from './NobleDoctors';
+import { NOBLE_ROUTE, buildNobleDoctorRouteHash, parseNobleRoute } from '../lib/nobleDoctors';
 import { isOffline } from '../lib/offlineCatalog';
 import { useOfflineCatalog } from '../lib/useOfflineCatalog';
 import {
@@ -670,6 +673,10 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         ? isCompanyDirectoryRoute(window.location.hash)
         : false
   );
+  // Noble doctors: #/noble (list) and #/noble/<profileId> (a doctor's page)
+  const [nobleRoute, setNobleRoute] = useState<{ doctorId: string | null } | null>(() =>
+    typeof window !== 'undefined' ? parseNobleRoute(window.location.hash) : null
+  );
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(
     null
   );
@@ -728,6 +735,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
       setActiveProductId(nextProductId);
       setActiveCompanyId(nextCompanyId);
       setCompaniesDirectoryOpen(nextDirectoryOpen);
+      setNobleRoute(parseNobleRoute(hash));
       setLinkCopied(false);
     };
     window.addEventListener('hashchange', onHashChange);
@@ -1171,6 +1179,14 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         window.scrollTo(0, 0);
       }
     }
+  };
+
+  const openNoble = (doctorId?: string | null) => {
+    setSavedOpen(false);
+    setProfileOpen(false);
+    const target = doctorId ? buildNobleDoctorRouteHash(doctorId) : NOBLE_ROUTE;
+    if (window.location.hash !== target) window.location.hash = target.slice(1);
+    if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   };
 
   const handleBackToCatalog = () => {
@@ -1668,6 +1684,20 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
 
           <div className="flex items-center gap-1.5">
             <NotificationBell client={client} profileId={access.profileId} />
+            <button
+              type="button"
+              aria-label="Noble doctors"
+              aria-current={nobleRoute ? 'page' : undefined}
+              title="Noble doctors"
+              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border text-xs transition-colors duration-150 ${
+                nobleRoute
+                  ? 'border-accent bg-background text-accent'
+                  : 'border-border bg-surface/60 text-text hover:bg-surface-raised'
+              }`}
+              onClick={() => openNoble()}
+            >
+              <Award className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            </button>
             <button
               type="button"
               aria-label="Companies"
@@ -2412,6 +2442,24 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               />
             </section>
           </div>
+        ) : nobleRoute ? (
+          nobleRoute.doctorId ? (
+            <NobleDoctorPageView
+              key={nobleRoute.doctorId}
+              client={client}
+              doctorId={nobleRoute.doctorId}
+              myProfileId={access.profileId ?? null}
+              onBack={() => openNoble()}
+              onOpenProduct={openProductPage}
+            />
+          ) : (
+            <NobleDoctorsView
+              client={client}
+              onBack={handleBackToCatalog}
+              onOpenDoctor={(id) => openNoble(id)}
+              onOpenProduct={openProductPage}
+            />
+          )
         ) : activeCompanyId ? (
           <DoctorCompanyPageView
             key={activeCompanyId}
@@ -2515,6 +2563,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                   onSearchGeneric={handleSearchByGeneric}
                   onFilterCompany={handleFilterByCompany}
                   onFilterClass={handleFilterByClass}
+                  onOpenNobleDoctor={(id) => openNoble(id)}
                 />
               )
             )}
@@ -3151,6 +3200,7 @@ function DoctorProductDetail({
   onSearchGeneric,
   onFilterCompany,
   onFilterClass,
+  onOpenNobleDoctor,
 }: {
   client: SupabaseClient;
   product: CatalogProduct;
@@ -3159,6 +3209,7 @@ function DoctorProductDetail({
   onSearchGeneric: (genericName: string) => void;
   onFilterCompany: (companyId: string, companyName: string) => void;
   onFilterClass: (groupKey: TherapeuticGroupKey, subclass?: string) => void;
+  onOpenNobleDoctor: (profileId: string) => void;
 }) {
   const market = product.market;
   const enClinical = product.marketTranslations.en;
@@ -3564,6 +3615,14 @@ function DoctorProductDetail({
           </div>
         </section>
       )}
+
+      {/* Noble doctors' notes about this drug (hidden when there are none) */}
+      <ProductNobleNotes
+        client={client}
+        productId={product.id}
+        onOpenDoctor={onOpenNobleDoctor}
+        onOpenProduct={onOpenProduct}
+      />
 
       {/* Bottom Sources, Checked Line & Report an Error */}
       <section className="rounded-xl bg-surface border border-border px-4 py-3.5 space-y-2.5">

@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { searchCatalogProducts, type DoctorSearchRow } from '../lib/catalog';
+import { isOffline } from '../lib/offlineCatalog';
 import {
   NOBLE_DISCLAIMER,
   NOBLE_MAX_DRUGS,
@@ -1253,5 +1254,143 @@ function AdminNoblePosts({ client, doctorId }: { client: SupabaseClient; doctorI
         />
       ))}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Home page: one noble doctor's post from the doctor's own specialty, above
+// the ad space. Changes every few seconds, and starts at a different post
+// every 10 minutes. Falls back to all specialties; hidden when there are none
+// (or with no internet).
+
+const HOME_ROTATE_MS = 12000;
+const HOME_SLOT_MS = 10 * 60 * 1000;
+
+export function HomeNoblePost({
+  client,
+  specialtyId,
+  onOpenDoctor,
+}: {
+  client: SupabaseClient;
+  specialtyId?: string | null;
+  onOpenDoctor: (profileId: string) => void;
+}) {
+  const [posts, setPosts] = useState<NoblePost[]>([]);
+  const [ownSpecialty, setOwnSpecialty] = useState(false);
+  const [index, setIndex] = useState(0);
+  const [shown, setShown] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    if (isOffline()) return;
+    void (async () => {
+      let list: NoblePost[] = [];
+      let own = false;
+      if (specialtyId) {
+        const res = await loadNobleFeed(client, { specialtyId, limit: 20 });
+        if (res.ok && res.data.length > 0) {
+          list = res.data;
+          own = true;
+        }
+      }
+      if (list.length === 0) {
+        const res = await loadNobleFeed(client, { limit: 20 });
+        if (res.ok) list = res.data;
+      }
+      if (!active) return;
+      setPosts(list);
+      setOwnSpecialty(own);
+      setIndex(list.length > 0 ? Math.floor(Date.now() / HOME_SLOT_MS) % list.length : 0);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [client, specialtyId]);
+
+  // Next post every few seconds while the page is visible (soft fade).
+  useEffect(() => {
+    if (posts.length < 2) return;
+    let fade: number | undefined;
+    const timer = window.setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      setShown(false);
+      fade = window.setTimeout(() => {
+        setIndex((i) => (i + 1) % posts.length);
+        setShown(true);
+      }, 250);
+    }, HOME_ROTATE_MS);
+    return () => {
+      window.clearInterval(timer);
+      if (fade) window.clearTimeout(fade);
+    };
+  }, [posts.length]);
+
+  const post = posts[index];
+  if (!post?.author) return null;
+  const author = post.author;
+  const firstImage = post.images[0];
+
+  return (
+    <section aria-label="From noble doctors" className="space-y-1.5">
+      <div className="flex items-center justify-between gap-2 px-1">
+        <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+          <Award className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+          {ownSpecialty && author.specialtyName ? `Noble doctors · ${author.specialtyName}` : 'From noble doctors'}
+        </h2>
+        {posts.length > 1 && (
+          <div className="flex items-center gap-1" role="tablist" aria-label="Choose a post">
+            {posts.slice(0, 8).map((p, i) => (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={i === index}
+                aria-label={`Post ${i + 1}`}
+                onClick={() => {
+                  setIndex(i);
+                  setShown(true);
+                }}
+                className="h-6 w-4 inline-flex items-center justify-center"
+              >
+                <span className={`block h-1.5 rounded-full transition-all ${i === index ? 'w-3 bg-accent' : 'w-1.5 bg-border'}`} />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => onOpenDoctor(author.profileId)}
+        className={`w-full text-left rounded-2xl border border-border bg-surface hover:bg-surface-raised/60 p-3.5 flex gap-3 transition-opacity duration-200 ${
+          shown ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex items-center gap-2">
+            <DoctorAvatar client={client} doctor={author} size="sm" />
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-text truncate">{author.fullName}</span>
+              <span className="block text-[11px] text-text-muted truncate">
+                {[author.title, author.specialtyName].filter(Boolean).join(' · ')}
+              </span>
+            </span>
+          </div>
+          {post.title && <p className="text-sm font-semibold text-text leading-snug line-clamp-1">{post.title}</p>}
+          <p className="text-xs text-text-muted leading-relaxed line-clamp-3 whitespace-pre-line">{post.body}</p>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
+            Read more
+            <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+          </span>
+        </div>
+        {firstImage && (
+          <img
+            src={nobleImageUrl(client, firstImage)}
+            alt=""
+            loading="lazy"
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-border shrink-0 self-center"
+          />
+        )}
+      </button>
+    </section>
   );
 }

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { isOffline } from './offlineCatalog';
 
 /**
  * Doctor profile picture and notebook storage.
@@ -89,4 +90,43 @@ export async function saveMyNotebook<T>(client: SupabaseClient, entries: readonl
     p_notebook: entries.slice(0, DOCTOR_NOTEBOOK_MAX),
   });
   return error ? { ok: false, message: errorText(error, 'Could not save your notebook.') } : { ok: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
+// Offline notes: every change is saved on the phone first and marked "waiting
+// to upload". The mark is cleared only when the database has the same list, so
+// notes written with no internet upload when the connection returns (and are
+// not replaced by the older cloud copy).
+
+const NOTEBOOK_PENDING_PREFIX = 'pharmaty.notebook-pending.';
+
+function setNotebookPending(storageKey: string, pending: boolean): void {
+  try {
+    if (pending) localStorage.setItem(NOTEBOOK_PENDING_PREFIX + storageKey, '1');
+    else localStorage.removeItem(NOTEBOOK_PENDING_PREFIX + storageKey);
+  } catch {
+    // Storage blocked: nothing to remember.
+  }
+}
+
+/** True when notes changed on this phone have not reached the database yet. */
+export function notebookUploadPending(storageKey: string): boolean {
+  try {
+    return localStorage.getItem(NOTEBOOK_PENDING_PREFIX + storageKey) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** Save the notebook to the database, or keep it waiting to upload when offline. Returns true once uploaded. */
+export async function saveMyNotebookOrQueue<T>(
+  client: SupabaseClient,
+  storageKey: string,
+  entries: readonly T[]
+): Promise<boolean> {
+  setNotebookPending(storageKey, true);
+  if (isOffline()) return false;
+  const res = await saveMyNotebook(client, entries);
+  if (res.ok) setNotebookPending(storageKey, false);
+  return res.ok;
 }

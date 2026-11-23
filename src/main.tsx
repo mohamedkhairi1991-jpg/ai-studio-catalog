@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import AuthGate from './components/AuthGate';
 import { isDemoMode } from './lib/supabaseClient';
+import { registerOfflineServiceWorker } from './offline/registerServiceWorker';
 
 // The offline demo prototype (App) is large and only used when
 // VITE_DEMO_MODE=true, so real users never download it.
@@ -26,3 +27,6 @@ createRoot(document.getElementById('root')!).render(
     )}
   </StrictMode>
 );
+
+// Lets the app open with no internet (production builds only).
+registerOfflineServiceWorker();

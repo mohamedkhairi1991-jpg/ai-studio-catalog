@@ -1,6 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { groupProductsByTherapeuticClass, type GroupedTherapeuticClass } from './catalog';
 import { countryNameFromCode, type CompanyType } from './companies';
+import {
+  getOfflineCatalog,
+  isNetworkErrorMessage,
+  isOffline,
+  offlineCompanyDirectory,
+  offlineCompanyPage,
+} from './offlineCatalog';
+
+const OFFLINE_MESSAGE = 'No internet. Connect once to save the catalog on this phone for offline use.';
 
 /**
  * Company pages: a page per company that doctors open and scroll.
@@ -162,7 +171,14 @@ export async function loadCompanyPage(
 ): Promise<CompanyPageResult<CompanyPage>> {
   const id = companyId.trim();
   if (!id) return { ok: false, message: 'Company not found.' };
+  const saved = async (): Promise<CompanyPageResult<CompanyPage>> => {
+    const catalog = await getOfflineCatalog();
+    const page = catalog ? offlineCompanyPage(catalog, id) : null;
+    return page ? { ok: true, data: page } : { ok: false, message: catalog ? 'Company not found.' : OFFLINE_MESSAGE };
+  };
+  if (isOffline()) return saved();
   const { data, error } = await client.rpc('get_company_page', { p_company_id: id });
+  if (error && isNetworkErrorMessage(error.message)) return saved();
   if (error) return { ok: false, message: message(error, 'Could not load the company page.') };
   const page = parseCompanyPage(data);
   return page ? { ok: true, data: page } : { ok: false, message: 'Company not found.' };
@@ -172,7 +188,13 @@ export async function loadCompanyPage(
 export async function loadCompanyDirectory(
   client: SupabaseClient
 ): Promise<CompanyPageResult<CompanyDirectoryEntry[]>> {
+  const saved = async (): Promise<CompanyPageResult<CompanyDirectoryEntry[]>> => {
+    const catalog = await getOfflineCatalog();
+    return catalog ? { ok: true, data: offlineCompanyDirectory(catalog) } : { ok: false, message: OFFLINE_MESSAGE };
+  };
+  if (isOffline()) return saved();
   const { data, error } = await client.rpc('get_company_directory');
+  if (error && isNetworkErrorMessage(error.message)) return saved();
   if (error) return { ok: false, message: message(error, 'Could not load companies.') };
   const rows = (data ?? []) as Array<Record<string, unknown>>;
   return {

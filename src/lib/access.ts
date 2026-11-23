@@ -1,4 +1,5 @@
-import type { SupabaseClient, User } from '@supabase/supabase-js';
+import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import { isNetworkErrorMessage } from './offlineCatalog';
 
 // Mirrors CatalogAudience / CatalogAccessState in packages/pharmaconnect_catalog.
 export type Audience =
@@ -16,6 +17,10 @@ export interface AccessResult {
   profileId?: string;
   companyName?: string;
   canManageDrafts?: boolean;
+  /** The database could not be reached (no internet); audience is not known. */
+  networkError?: boolean;
+  /** Using the access saved on this phone because there is no internet. */
+  offline?: boolean;
 }
 
 interface ProfileRow {
@@ -35,6 +40,9 @@ export async function resolveAccess(client: SupabaseClient, user: User): Promise
     .eq('auth_user_id', user.id)
     .maybeSingle<ProfileRow>();
 
+  if (error && isNetworkErrorMessage(error.message)) {
+    return { audience: 'pending', email, role: null, networkError: true };
+  }
   if (error || !profile) return { audience: 'pending', email, role: null };
 
   const base = {
@@ -98,4 +106,64 @@ async function profileId(client: SupabaseClient, authUserId: string): Promise<st
     .eq('auth_user_id', authUserId)
     .maybeSingle<{ id: string }>();
   return data?.id ?? '';
+}
+
+// ---------------------------------------------------------------------------
+// Offline: a doctor who signed in on this phone can open the catalog with no
+// internet. Only the doctor audience is saved (never admin or company access),
+// and it is used only while the database cannot be reached.
+
+const ACCESS_KEY_PREFIX = 'pharmaty.offline-access.';
+
+export function saveOfflineAccess(userId: string, access: AccessResult): void {
+  try {
+    if (access.audience === 'officialCatalog') {
+      const { networkError: _n, offline: _o, ...rest } = access;
+      localStorage.setItem(ACCESS_KEY_PREFIX + userId, JSON.stringify(rest));
+    } else {
+      localStorage.removeItem(ACCESS_KEY_PREFIX + userId);
+    }
+  } catch {
+    // Storage blocked: offline sign-in is simply not available.
+  }
+}
+
+export function loadOfflineAccess(userId: string): AccessResult | null {
+  try {
+    const raw = localStorage.getItem(ACCESS_KEY_PREFIX + userId);
+    const parsed = raw ? (JSON.parse(raw) as AccessResult) : null;
+    return parsed?.audience === 'officialCatalog' ? { ...parsed, offline: true } : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearOfflineAccess(): void {
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(ACCESS_KEY_PREFIX)) localStorage.removeItem(key);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * The session supabase-js saved on this phone, even if its token has expired.
+ * Used only with no internet (a token cannot be refreshed offline, and offline
+ * screens read only the catalog saved on the phone).
+ */
+export function readSavedSession(): Session | null {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !/^sb-.+-auth-token$/.test(key)) continue;
+      const parsed = JSON.parse(localStorage.getItem(key) ?? 'null') as Session | null;
+      if (parsed?.user?.id) return parsed;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
 }

@@ -1,5 +1,12 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { countryNameFromCode, type CompanyType } from './companies';
+import {
+  getOfflineCatalog,
+  isNetworkErrorMessage,
+  isOffline,
+  offlineProductDetail,
+  searchOfflineCatalog,
+} from './offlineCatalog';
 
 // ---------- Database Enums ----------
 export type ProductStatus =
@@ -333,6 +340,11 @@ export function findMatchingTaxonomyOption(
     ) ?? null
   );
 }
+
+export const OFFLINE_NO_CATALOG_MESSAGE =
+  'No internet. Connect once to save the catalog on this phone for offline use.';
+export const OFFLINE_NOT_SAVED_MESSAGE =
+  'No internet, and this drug is not saved on this phone yet. Connect to the internet and try again.';
 
 export function trimOrNull(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -797,7 +809,16 @@ export async function loadVerifiedCompanies(
 export async function searchCatalogProducts(
   client: SupabaseClient,
   input: SearchCatalogProductsInput = {}
-): Promise<RpcResult<{ rows: DoctorSearchRow[]; totalCount: number; closeMatches: boolean }>> {
+): Promise<RpcResult<{ rows: DoctorSearchRow[]; totalCount: number; closeMatches: boolean; offline?: boolean }>> {
+  // No internet: search the catalog saved on the phone (lib/offlineCatalog).
+  const searchSaved = async () => {
+    const saved = await getOfflineCatalog();
+    return saved ? { ok: true as const, data: { ...searchOfflineCatalog(saved, input), offline: true } } : null;
+  };
+  if (isOffline()) {
+    return (await searchSaved()) ?? { ok: false, message: OFFLINE_NO_CATALOG_MESSAGE };
+  }
+
   // v2: typo tolerance, synonyms, drug classes, several words; adds match_kind.
   const { data, error } = await client.rpc('search_catalog_products_v2', {
     p_query: trimOrNull(input.query),
@@ -808,6 +829,10 @@ export async function searchCatalogProducts(
   });
 
   if (error) {
+    if (isNetworkErrorMessage(error.message)) {
+      const saved = await searchSaved();
+      if (saved) return saved;
+    }
     return { ok: false, message: formatRpcError(error) };
   }
 
@@ -902,6 +927,15 @@ export async function loadProductDetail(
     return { ok: false, message: 'Product ID is required.' };
   }
 
+  // No internet: the drug page from the catalog saved on the phone.
+  const savedDetail = async (): Promise<RpcResult<CatalogProduct>> => {
+    const saved = await getOfflineCatalog();
+    const product = saved ? offlineProductDetail(saved, cleanId, countryNameFromCode) : null;
+    if (product) return { ok: true, data: product };
+    return { ok: false, message: saved ? OFFLINE_NOT_SAVED_MESSAGE : OFFLINE_NO_CATALOG_MESSAGE };
+  };
+  if (isOffline()) return savedDetail();
+
   const [
     productRes,
     transRes,
@@ -944,6 +978,7 @@ export async function loadProductDetail(
   ]);
 
   if (productRes.error) {
+    if (isNetworkErrorMessage(productRes.error.message)) return savedDetail();
     return { ok: false, message: formatRpcError(productRes.error) };
   }
   const productRow = productRes.data as RawProductRow | null;

@@ -1,6 +1,6 @@
 begin;
 
-select plan(8);
+select plan(10);
 
 select ok(
   not has_function_privilege('anon', 'public.get_noble_feed(uuid, integer, integer)', 'execute'),
@@ -13,6 +13,14 @@ select ok(
 select ok(
   not has_table_privilege('authenticated', 'public.noble_posts', 'select'),
   'noble posts are read only through the functions'
+);
+select ok(
+  not has_function_privilege('anon', 'public.record_noble_post_views(uuid[])', 'execute'),
+  'visitors who are not signed in cannot record post views'
+);
+select ok(
+  not has_table_privilege('authenticated', 'public.noble_post_views', 'select'),
+  'view counts are read only through the functions (author and admins)'
 );
 select is(
   (select public from storage.buckets where id = 'noble-posts'),

@@ -58,6 +58,12 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (home shows two noble posts for every specialty)
+- `HomeNoblePosts`: when the doctor's specialty has no noble posts, the top
+  card now uses posts from all noble doctors, and the second card still shows
+  (a different post) whenever there are at least two posts in total.
+- Nothing for AI Studio to do except pull.
+
 ### 2026-11-23 — Claude (ad opens the company page)
 - `SponsoredAdCard`: an ad with a company and no link now opens that
   company's page in the app when pressed (button "View products"). Order:

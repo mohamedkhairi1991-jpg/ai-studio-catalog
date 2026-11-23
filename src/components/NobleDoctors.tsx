@@ -1303,8 +1303,8 @@ function AdminNoblePosts({ client, doctorId }: { client: SupabaseClient; doctorI
 
 // ---------------------------------------------------------------------------
 // Home page: two noble doctors' posts above the ad space. The top card shows
-// posts from the doctor's own specialty, the second card posts from all
-// noble doctors. Each card shows a different post on every visit or refresh
+// posts from the doctor's own specialty (any noble post when that specialty
+// has none yet), the second card posts from all noble doctors. Each card shows a different post on every visit or refresh
 // (no changing while the page is open); the two cards never show the same
 // post. Hidden with no posts or no internet.
 
@@ -1435,28 +1435,29 @@ export function HomeNoblePosts({
   }, [client, specialtyId]);
 
   const specialtyName = mine[0]?.author?.specialtyName ?? null;
-  // With only one post in total, show it once (in the top card if it is from the doctor's specialty).
-  const general = mine.length > 0 && all.length <= 1 ? [] : all;
+  // Top card: the doctor's own specialty; when it has no noble posts yet, any
+  // noble post. Second card: any noble post, never the same one as the top.
+  // With only one post in total, it shows once.
+  const top = mine.length > 0 ? mine : all;
+  const showSecond = all.length >= 2;
   const onTopShow = useCallback((id: string | null) => setTopShowing(id), []);
 
-  if (mine.length === 0 && general.length === 0) return null;
+  if (top.length === 0) return null;
   return (
     <div className="space-y-3">
-      {mine.length > 0 && (
+      <RotatingNoblePost
+        client={client}
+        posts={top}
+        label={mine.length > 0 && specialtyName ? `Noble doctors · ${specialtyName}` : 'From noble doctors'}
+        onShow={onTopShow}
+        onOpenDoctor={onOpenDoctor}
+      />
+      {showSecond && (
         <RotatingNoblePost
           client={client}
-          posts={mine}
-          label={specialtyName ? `Noble doctors · ${specialtyName}` : 'Noble doctors · your specialty'}
-          onShow={onTopShow}
-          onOpenDoctor={onOpenDoctor}
-        />
-      )}
-      {general.length > 0 && (
-        <RotatingNoblePost
-          client={client}
-          posts={general}
+          posts={all}
           label="From all noble doctors"
-          avoidPostId={mine.length > 0 ? topShowing : null}
+          avoidPostId={topShowing}
           onOpenDoctor={onOpenDoctor}
         />
       )}

@@ -117,7 +117,13 @@ import {
 } from '../lib/doctorProfile';
 import { NotificationBell } from './NotificationBell';
 import { HomeNoblePosts, NobleDoctorPageView, NobleDoctorsView, ProductNobleNotes } from './NobleDoctors';
-import { NOBLE_ROUTE, buildNobleDoctorRouteHash, parseNobleRoute } from '../lib/nobleDoctors';
+import {
+  NOBLE_ROUTE,
+  buildNobleDoctorRouteHash,
+  loadMyNobleStatus,
+  parseNobleRoute,
+  type NobleDoctor,
+} from '../lib/nobleDoctors';
 import { isOffline } from '../lib/offlineCatalog';
 import { useOfflineCatalog } from '../lib/useOfflineCatalog';
 import {
@@ -674,6 +680,18 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
         : false
   );
   // Noble doctors: #/noble (list) and #/noble/<profileId> (a doctor's page)
+  // A noble doctor's profile is their noble page; profile settings and private
+  // notes open below it.
+  const [myNoble, setMyNoble] = useState<NobleDoctor | null>(null);
+  const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
+  useEffect(() => {
+    if (isOffline()) return;
+    let active = true;
+    void loadMyNobleStatus(client).then((doctor) => active && setMyNoble(doctor));
+    return () => {
+      active = false;
+    };
+  }, [client, profileOpen]);
   const [nobleRoute, setNobleRoute] = useState<{ doctorId: string | null } | null>(() =>
     typeof window !== 'undefined' ? parseNobleRoute(window.location.hash) : null
   );
@@ -1876,7 +1894,41 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
               </button>
             </div>
 
+            {myNoble && (
+              <>
+                <NobleDoctorPageView
+                  embedded
+                  client={client}
+                  doctorId={myNoble.profileId}
+                  myProfileId={access.profileId ?? null}
+                  onBack={() => setProfileOpen(false)}
+                  onOpenProduct={(id) => {
+                    setProfileOpen(false);
+                    openProductPage(id);
+                  }}
+                />
+                <button
+                  type="button"
+                  aria-expanded={profileSettingsOpen}
+                  onClick={() => setProfileSettingsOpen((v) => !v)}
+                  className="w-full flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface hover:bg-surface-raised/60 px-4 py-3 text-left"
+                >
+                  <span>
+                    <span className="block text-sm font-semibold text-text">Profile settings and private notes</span>
+                    <span className="block text-xs text-text-muted">
+                      Picture, specialty, workplace, phone and your own notes (only you see them)
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-text-muted shrink-0 transition-transform ${profileSettingsOpen ? 'rotate-180' : ''}`}
+                    aria-hidden="true"
+                  />
+                </button>
+              </>
+            )}
+
             {/* Minimal Profile Header + Always-Open Info Row + Always-Open Square Note Box */}
+            {(!myNoble || profileSettingsOpen) && (
             <section className="rounded-2xl bg-surface border border-border shadow-soft p-4 sm:p-5 space-y-4">
               {/* Row 1: Avatar + Name + Quote + Saved Medicines Symbol */}
               <div className="flex items-center justify-between gap-3">
@@ -2432,6 +2484,7 @@ export function DoctorCatalog({ client, access, onSignOut }: Props) {
                 </div>
               )}
             </section>
+            )}
 
             <section aria-label="Partner notice" className="mt-auto pt-2">
               <SponsoredAdCard

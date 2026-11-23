@@ -58,6 +58,11 @@ Both workflows can also be started by hand from the GitHub **Actions** tab
 
 ## Log (newest first)
 
+### 2026-11-23 — Claude (ad opens the company page)
+- `SponsoredAdCard`: an ad with a company and no link now opens that
+  company's page in the app when pressed (button "View products"). Order:
+  Call (phone) → link → company page. Admin hint updated.
+
 ### 2026-11-23 — Claude (noble posts: clearer text)
 - Home noble cards: post text in the main text colour, 13–14 px (was small
   grey); doctor's title line brighter (`text-text/80`) in home cards and

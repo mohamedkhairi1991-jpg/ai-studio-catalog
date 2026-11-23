@@ -3913,6 +3913,9 @@ export function SponsoredAdCard({
     target = { kind: 'company', id: ad.companyId, label: AD_CTA_LABELS.view_products };
   } else if (link) {
     target = { kind: 'url', href: link, label: AD_CTA_LABELS[cta === 'visit_website' ? 'visit_website' : 'learn_more'] };
+  } else if (ad.companyId && onOpenCompany) {
+    // No link: pressing the ad opens the advertising company's page in the app.
+    target = { kind: 'company', id: ad.companyId, label: AD_CTA_LABELS.view_products };
   }
 
   const go = () => {

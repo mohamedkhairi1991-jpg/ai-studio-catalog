@@ -5675,7 +5675,7 @@ function AdminSponsoredAdsView({
                     ))}
                   </select>
                   <p className="text-[11px] text-[#B8C3CC] mt-1">
-                    If a company is set, this also appears on that company&apos;s page.
+                    If a company is set, pressing the ad opens that company&apos;s page (unless the ad has a link), and the ad also appears on the company&apos;s page.
                   </p>
                 </Field>
               </div>
